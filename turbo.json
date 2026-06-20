@@ -6,7 +6,8 @@
     "CUSTAPI_URL",
     "JWT_SECRET",
     "SESSION_COOKIE_SECURE",
-    "EXPERIMENT_MANAGER_URL"
+    "EXPERIMENT_MANAGER_URL",
+    "TICKETING_URL"
   ],
   "tasks": {
     "build": {

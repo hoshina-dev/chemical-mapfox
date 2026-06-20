@@ -1,0 +1,205 @@
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Card,
+  Container,
+  Grid,
+  GridCol,
+  Group,
+  Stack,
+  Text,
+  Timeline,
+  TimelineItem,
+  Title,
+} from "@mantine/core";
+
+import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
+import { CopyableId } from "@/components/internal/CopyableId";
+import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
+import {
+  experimentListingPath,
+  experimentRawPath,
+} from "@/lib/experiment-manager/routes";
+import { getExperimentWorkspace } from "@/lib/internal/experiments";
+import { formatDateTime, statusMeta } from "@/lib/ticketing/tickets";
+
+export const dynamic = "force-dynamic";
+
+export default async function ExperimentWorkspacePage({
+  params,
+}: {
+  params: Promise<{ contextId: string }>;
+}) {
+  const { contextId } = await params;
+  const ws = await getExperimentWorkspace(contextId);
+  const { ticket, requester, state } = ws;
+  const meta = ticket ? statusMeta(ticket.status) : null;
+
+  const stages = [
+    { label: "Created", at: ticket?.createdAt ?? null },
+    { label: "Sample received", at: ticket?.sampleReceivedAt ?? null },
+    { label: "Experiment started", at: ticket?.experimentStartedAt ?? null },
+    { label: "Results submitted", at: ticket?.resultsSubmittedAt ?? null },
+    { label: "Closed", at: ticket?.closedAt ?? null },
+  ];
+  const reachedCount = stages.filter((s) => s.at).length;
+
+  return (
+    <Container size="xl" py="xl">
+      <Stack gap="lg">
+        <Breadcrumbs
+          items={[
+            { label: "Internal", href: "/dashboard" },
+            { label: "Experiments", href: experimentListingPath() },
+            { label: ws.experimentTitle ?? contextId },
+          ]}
+        />
+
+        <Group justify="space-between" align="flex-start" wrap="wrap">
+          <Stack gap={6}>
+            <Group gap="sm" align="center">
+              <Title order={2}>
+                {ws.experimentTitle ?? "Experiment workspace"}
+              </Title>
+              {ws.sampleType && (
+                <Badge variant="light" color="grape" radius="sm">
+                  {ws.sampleType}
+                </Badge>
+              )}
+            </Group>
+            <CopyableId value={contextId} href={experimentRawPath(contextId)} />
+          </Stack>
+          {meta && (
+            <Badge color={meta.color} variant="light" size="lg" radius="sm">
+              {meta.label}
+            </Badge>
+          )}
+        </Group>
+
+        <Alert color="blue" variant="light" title="Realtime editing coming soon">
+          Live collaborative editing of lab values (WebSocket sync with
+          editor-name highlighting) will land here. For now this is a read-only
+          view of the experiment&apos;s current state.
+        </Alert>
+
+        {ws.errors.ticket && (
+          <Alert color="red" variant="light" title="Could not load ticket">
+            {ws.errors.ticket}
+          </Alert>
+        )}
+
+        <Grid gap="lg">
+          <GridCol span={{ base: 12, md: 8 }}>
+            {state ? (
+              <ExperimentStateView state={state} />
+            ) : (
+              <Alert color="gray" variant="light" title="Current state unavailable">
+                {ws.errors.state ??
+                  "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager."}
+              </Alert>
+            )}
+          </GridCol>
+
+          <GridCol span={{ base: 12, md: 4 }}>
+            <Stack gap="lg">
+              <Card withBorder radius="md" padding="lg">
+                <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
+                  Requester
+                </Text>
+                {requester ? (
+                  <Group gap="sm" wrap="nowrap">
+                    <Avatar
+                      src={requester.avatarUrl}
+                      alt={requester.name ?? ""}
+                      radius="xl"
+                    >
+                      {(requester.name ?? requester.email ?? "?")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </Avatar>
+                    <Stack gap={0} style={{ minWidth: 0 }}>
+                      {requester.name && (
+                        <Text size="sm" fw={500}>
+                          {requester.name}
+                        </Text>
+                      )}
+                      <Text size="sm" c="dimmed" truncate>
+                        {requester.email ?? requester.id}
+                      </Text>
+                    </Stack>
+                  </Group>
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    {ticket?.userId ?? "Unknown"}
+                  </Text>
+                )}
+              </Card>
+
+              <Card withBorder radius="md" padding="lg">
+                <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="md">
+                  Lifecycle
+                </Text>
+                <Timeline active={reachedCount - 1} bulletSize={16} lineWidth={2}>
+                  {stages.map((stage) => (
+                    <TimelineItem key={stage.label} title={stage.label}>
+                      <Text size="xs" c="dimmed">
+                        {formatDateTime(stage.at)}
+                      </Text>
+                    </TimelineItem>
+                  ))}
+                </Timeline>
+                {ticket?.closedReason && (
+                  <Text size="sm" c="dimmed" mt="md">
+                    Closed reason: {ticket.closedReason}
+                  </Text>
+                )}
+              </Card>
+
+              <Card withBorder radius="md" padding="lg">
+                <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
+                  Details
+                </Text>
+                <Stack gap="sm">
+                  <Detail label="Organization" value={ticket?.organizationId} mono />
+                  <Detail label="Template ID" value={ticket?.templateId} mono />
+                  <Detail
+                    label="Report status"
+                    value={state?.reportStatus ?? "Not generated"}
+                  />
+                  {state?.reportGeneratedAt && (
+                    <Detail
+                      label="Report generated"
+                      value={formatDateTime(state.reportGeneratedAt)}
+                    />
+                  )}
+                </Stack>
+              </Card>
+            </Stack>
+          </GridCol>
+        </Grid>
+      </Stack>
+    </Container>
+  );
+}
+
+function Detail({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string | null | undefined;
+  mono?: boolean;
+}) {
+  return (
+    <Stack gap={2}>
+      <Text size="xs" c="dimmed">
+        {label}
+      </Text>
+      <Text size="sm" ff={mono ? "monospace" : undefined}>
+        {value ?? "—"}
+      </Text>
+    </Stack>
+  );
+}

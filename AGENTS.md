@@ -43,6 +43,12 @@ are hand-written to mirror it and kept in sync **manually** (accepted tech debt
 — the schema rarely changes). Change one, change the other. See
 `packages/forms/README.md`.
 
+## Routes (current & planned)
+
+The full route map — client-facing and staff (`/internal/*`), with what's
+implemented vs. planned — is in [`docs/routes.md`](docs/routes.md). Check it
+before adding or moving a page.
+
 ## Access control
 
 `/internal/*` is admin-only. It's gated by the middleware (`apps/web/src/proxy.ts`)

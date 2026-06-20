@@ -26,11 +26,20 @@ interface SampleOption {
 
 interface NewTemplateFlowProps {
   samples: SampleOption[];
+  /** Pre-select this sample (from `?sampleId=`) and jump straight to the builder. */
+  presetSampleId?: string;
 }
 
-export function NewTemplateFlow({ samples: initialSamples }: NewTemplateFlowProps) {
+export function NewTemplateFlow({
+  samples: initialSamples,
+  presetSampleId,
+}: NewTemplateFlowProps) {
   const [samples, setSamples] = useState<SampleOption[]>(initialSamples);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    presetSampleId && initialSamples.some((s) => s.id === presetSampleId)
+      ? presetSampleId
+      : null,
+  );
 
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");

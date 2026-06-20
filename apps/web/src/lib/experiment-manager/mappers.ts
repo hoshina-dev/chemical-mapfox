@@ -1,8 +1,14 @@
-import type { ExperimentTemplate, FormDoc, Question } from "@repo/forms";
+import type {
+  AnswerValue,
+  ExperimentTemplate,
+  FormDoc,
+  Question,
+} from "@repo/forms";
 import { ExperimentTemplate as ExperimentTemplateSchema } from "@repo/forms";
 
 import type {
   CalculationSnapshot,
+  ExperimentDetail,
   ExperimentTemplateCreate,
   ExperimentTemplateDetail,
   ExperimentTemplateSummary,
@@ -123,6 +129,42 @@ export function templateDetailToLoaded(
     meta,
     template: parsed.success ? parsed.data : (candidate as ExperimentTemplate),
     valid: parsed.success,
+  };
+}
+
+/** The current state of an experiment (context): its forms + entered values. */
+export interface ExperimentState {
+  id: string;
+  sampleId: string;
+  templateId: string;
+  reportStatus: string | null;
+  reportGeneratedAt: string | null;
+  createdAt: string;
+  template: ExperimentTemplate;
+  /** Whether the embedded forms parsed cleanly against the form schema. */
+  valid: boolean;
+  values: Record<string, AnswerValue>;
+}
+
+export function experimentDetailToState(
+  detail: ExperimentDetail,
+): ExperimentState {
+  const candidate = stripNullFields({
+    clientForm: readFormDoc(detail, "client"),
+    labForm: readFormDoc(detail, "lab"),
+    calculations: normalizeCalculations(detail.calculations),
+  });
+  const parsed = ExperimentTemplateSchema.safeParse(candidate);
+  return {
+    id: detail.id,
+    sampleId: detail.sample_id,
+    templateId: detail.template_id,
+    reportStatus: detail.report_status ?? null,
+    reportGeneratedAt: detail.report_generated_at ?? null,
+    createdAt: detail.created_at,
+    template: parsed.success ? parsed.data : (candidate as ExperimentTemplate),
+    valid: parsed.success,
+    values: (detail.values ?? {}) as Record<string, AnswerValue>,
   };
 }
 

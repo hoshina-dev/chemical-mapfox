@@ -5,7 +5,12 @@ import { listSamples } from "@/lib/experiment-manager/client";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewTemplatePage() {
+export default async function NewTemplatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sampleId?: string }>;
+}) {
+  const { sampleId } = await searchParams;
   let samples: { id: string; name: string }[] = [];
   let loadError: string | null = null;
   try {
@@ -23,7 +28,7 @@ export default async function NewTemplatePage() {
           {loadError}
         </Alert>
       ) : (
-        <NewTemplateFlow samples={samples} />
+        <NewTemplateFlow samples={samples} presetSampleId={sampleId} />
       )}
     </Container>
   );

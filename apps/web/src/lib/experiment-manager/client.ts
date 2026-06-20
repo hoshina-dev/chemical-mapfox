@@ -46,11 +46,15 @@ export async function emFetch<T>(path: string, init?: RequestInit): Promise<T> {
       }
     }
     // Log the raw response so the detail is visible in server logs even if the
-    // UI can't format the body shape.
-    console.error(
-      `[experiment-manager] ${init?.method ?? "GET"} ${path} -> ${res.status}`,
-      body ?? "(no body)",
-    );
+    // UI can't format the body shape. A 404 is an expected "not found" (e.g. an
+    // experiment context that hasn't been created yet) — surface it via the
+    // thrown error, but don't spam the server logs as if it were a failure.
+    if (res.status !== 404) {
+      console.error(
+        `[experiment-manager] ${init?.method ?? "GET"} ${path} -> ${res.status}`,
+        body ?? "(no body)",
+      );
+    }
     throw new ExperimentManagerError(
       `Experiment Manager ${init?.method ?? "GET"} ${path} failed (${res.status})`,
       res.status,
@@ -85,6 +89,16 @@ export interface TemplateSnapshotFields {
 export type ExperimentTemplateDetail = Em["ExperimentTemplateDetail"] &
   TemplateSnapshotFields;
 
+/**
+ * The experiment (context) detail merges the template snapshot plus the current
+ * `values`. OpenAPI types it loosely (extra keys are `unknown`); this narrows
+ * the snapshot/state keys the workspace reads.
+ */
+export type ExperimentDetail = Em["ExperimentDetail"] &
+  TemplateSnapshotFields & {
+    values?: Record<string, unknown> | null;
+  };
+
 // --- Samples ---
 
 export async function listSamples() {
@@ -100,6 +114,12 @@ export async function createSample(body: SampleCreate) {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+// --- Experiments (contexts) ---
+
+export async function getExperiment(expId: string) {
+  return emFetch<ExperimentDetail>(`/api/experiments/${expId}`);
 }
 
 // --- Experiment templates (nested under a sample) ---

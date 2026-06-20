@@ -5,6 +5,12 @@ import Link from "next/link";
 
 const TECHNICIAN_TOOLS = [
   {
+    href: "/internal/experiment/listing",
+    title: "Experiments",
+    description:
+      "Browse every experiment ticket, search by context ID, and open one to work on.",
+  },
+  {
     href: "/internal/experiment/onboarding",
     title: "Experiment onboarding",
     description: "Create and edit experiment templates with the form builder.",
