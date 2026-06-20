@@ -7,7 +7,8 @@ import { decryptSession } from "@/lib/auth/sessionCrypto";
 export default async function proxy(req: NextRequest) {
   const session = req.cookies.get(SESSION_COOKIE)?.value;
   const payload = await decryptSession(session);
-  const isAuthPage = req.nextUrl.pathname === "/";
+  const { pathname } = req.nextUrl;
+  const isAuthPage = pathname === "/";
 
   if (isAuthPage && payload?.userId) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -15,6 +16,11 @@ export default async function proxy(req: NextRequest) {
 
   if (!isAuthPage && !payload?.userId) {
     return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  // /internal/* is admin-only.
+  if (pathname.startsWith("/internal") && payload?.role !== "admin") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   if (payload?.userId && session) {

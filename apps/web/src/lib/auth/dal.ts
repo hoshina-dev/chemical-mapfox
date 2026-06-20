@@ -36,3 +36,11 @@ export async function requireSession(): Promise<SessionPayload> {
   }
   return session;
 }
+
+export async function requireAdmin(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (session.role !== "admin") {
+    redirect("/dashboard");
+  }
+  return session;
+}
