@@ -1,0 +1,267 @@
+{
+  "clientForm": {
+    "title": "Client intake",
+    "description": "Everything we need from the requester before lab work begins.",
+    "questions": [
+      {
+        "id": "full_name",
+        "type": "string",
+        "label": "Full name",
+        "description": "As it should appear on the report.",
+        "required": true,
+        "config": {
+          "minLength": 2,
+          "maxLength": 60,
+          "default": "",
+          "placeholder": "e.g. Hoshina"
+        }
+      },
+      {
+        "id": "bio",
+        "type": "textarea",
+        "label": "Sample background",
+        "description": "Any context about the sample's origin.",
+        "config": {
+          "minLength": 0,
+          "maxLength": 500,
+          "default": "",
+          "placeholder": "Collected from...",
+          "minRows": 3,
+          "maxRows": 8
+        }
+      },
+      {
+        "id": "access_code",
+        "type": "password",
+        "label": "Project access code",
+        "required": true,
+        "config": {
+          "minLength": 4,
+          "maxLength": 32,
+          "placeholder": "••••••"
+        }
+      },
+      {
+        "id": "country",
+        "type": "select-string",
+        "label": "Country of origin",
+        "required": true,
+        "config": {
+          "options": [
+            { "label": "Japan", "value": "JP" },
+            { "label": "Thailand", "value": "TH" },
+            { "label": "United States", "value": "US" }
+          ],
+          "default": "JP",
+          "placeholder": "Pick one"
+        }
+      },
+      {
+        "id": "languages",
+        "type": "multi-select",
+        "label": "Report languages",
+        "config": {
+          "options": [
+            { "label": "English", "value": "en" },
+            { "label": "Japanese", "value": "ja" },
+            { "label": "Thai", "value": "th" }
+          ],
+          "default": ["en"],
+          "placeholder": "Pick any",
+          "maxValues": 3
+        }
+      },
+      {
+        "id": "contact_pref",
+        "type": "radio",
+        "label": "Preferred contact",
+        "required": true,
+        "config": {
+          "options": [
+            { "label": "Email", "value": "email" },
+            { "label": "Phone", "value": "phone" }
+          ],
+          "default": "email"
+        }
+      },
+      {
+        "id": "interests",
+        "type": "checkbox-group",
+        "label": "Analyses requested",
+        "config": {
+          "options": [
+            { "label": "Density", "value": "density" },
+            { "label": "Purity", "value": "purity" },
+            { "label": "Color", "value": "color" }
+          ],
+          "default": ["density"]
+        }
+      },
+      {
+        "id": "newsletter",
+        "type": "boolean",
+        "label": "Subscribe to lab newsletter",
+        "config": { "default": true }
+      },
+      {
+        "id": "skills",
+        "type": "tags",
+        "label": "Keywords",
+        "config": {
+          "default": ["organic"],
+          "placeholder": "Type and press Enter",
+          "maxTags": 8,
+          "suggestions": ["organic", "metallic", "aqueous"]
+        }
+      }
+    ]
+  },
+
+  "labForm": {
+    "title": "Lab measurements",
+    "description": "Filled in by the technician during analysis.",
+    "questions": [
+      {
+        "id": "mass_g",
+        "type": "number",
+        "label": "Mass (g)",
+        "required": true,
+        "config": {
+          "min": 0,
+          "max": 10000,
+          "step": 0.01,
+          "default": 0,
+          "placeholder": "0.00"
+        }
+      },
+      {
+        "id": "tube_size",
+        "type": "select-number",
+        "label": "Tube volume (mL)",
+        "required": true,
+        "config": {
+          "options": [
+            { "label": "Small (10 mL)", "value": 10 },
+            { "label": "Medium (50 mL)", "value": 50 },
+            { "label": "Large (100 mL)", "value": 100 }
+          ],
+          "default": 50,
+          "placeholder": "Pick a tube"
+        }
+      },
+      {
+        "id": "method",
+        "type": "segmented",
+        "label": "Measurement method",
+        "config": {
+          "options": [
+            { "label": "Manual", "value": "manual" },
+            { "label": "Automated", "value": "auto" }
+          ],
+          "default": "auto"
+        }
+      },
+      {
+        "id": "temperature",
+        "type": "slider",
+        "label": "Sample temperature (°C)",
+        "config": {
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 25,
+          "marks": [
+            { "value": 0, "label": "0" },
+            { "value": 50, "label": "50" },
+            { "value": 100, "label": "100" }
+          ]
+        }
+      },
+      {
+        "id": "quality",
+        "type": "rating",
+        "label": "Sample quality",
+        "config": {
+          "count": 5,
+          "fractions": 2,
+          "default": 4
+        }
+      },
+      {
+        "id": "label_color",
+        "type": "color",
+        "label": "Vial label color",
+        "config": {
+          "default": "#7048e8",
+          "placeholder": "#000000",
+          "swatches": ["#fa5252", "#40c057", "#228be6", "#7048e8"],
+          "format": "hex"
+        }
+      },
+      {
+        "id": "measured_on",
+        "type": "date",
+        "label": "Measurement date",
+        "required": true,
+        "config": {
+          "default": "2026-06-18",
+          "min": "2020-01-01",
+          "max": "2030-12-31"
+        }
+      },
+      {
+        "id": "measured_at",
+        "type": "time",
+        "label": "Measurement time",
+        "config": {
+          "default": "09:30",
+          "step": 60
+        }
+      },
+      {
+        "id": "received_at",
+        "type": "datetime",
+        "label": "Sample received",
+        "config": {
+          "default": "2026-06-17T14:00"
+        }
+      }
+    ]
+  },
+
+  "calculations": {
+    "density": {
+      "formula": "mass_g / tube_size",
+      "result": ""
+    },
+    "is_heavy": {
+      "formula": "density > 1.0",
+      "result": ""
+    },
+    "temp_fahrenheit": {
+      "formula": "temperature * 9 / 5 + 32",
+      "result": ""
+    }
+  },
+
+  "values": {
+    "full_name": "Hoshina",
+    "bio": "Collected from a riverbank in spring.",
+    "access_code": "secret123",
+    "country": "JP",
+    "languages": ["en", "ja"],
+    "contact_pref": "email",
+    "interests": ["density", "color"],
+    "newsletter": true,
+    "skills": ["organic", "aqueous"],
+    "mass_g": 62.5,
+    "tube_size": 50,
+    "method": "auto",
+    "temperature": 25,
+    "quality": 4,
+    "label_color": "#7048e8",
+    "measured_on": "2026-06-18",
+    "measured_at": "09:30",
+    "received_at": "2026-06-17T14:00"
+  }
+}

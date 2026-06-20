@@ -10,12 +10,28 @@ scaffolded with `create-turbo`.
 chemical-mapfox/
 ├── apps/
 │   └── web/                      # Next.js (App Router) + Mantine app
+│                                 #   /internal/docs — component reference for form authors
 └── packages/
+    ├── forms/                    # @repo/forms — JSON/Zod form schema + Mantine renderer
     ├── ui/                       # @repo/ui — shared React component package
     ├── api-client/               # @repo/api-client — generated custapi REST client
     ├── eslint-config/            # @repo/eslint-config — shared ESLint configs
     └── typescript-config/        # @repo/typescript-config — shared tsconfig presets
 ```
+
+### `@repo/forms` and the docs section
+
+`@repo/forms` carries the form **schema** and **renderer** for JSON-driven lab
+forms. Its `experiment-template.schema.json` (JSON Schema) is the **source of
+truth** matched by the backend; the Zod schemas in `src/schema.ts` are
+hand-written to mirror it and kept in sync manually — accepted tech debt since
+the schema rarely changes. See [`packages/forms/README.md`](packages/forms/README.md).
+
+The web app's **`/internal/docs`** section imports the components and schema from
+`@repo/forms` to render a component reference for lab technicians building forms
+(one page per question type, with a live preview and the generated schema
+fields). It lives under `apps/web/src/app/internal/docs/` and is gated by the
+same auth middleware as the rest of the app.
 
 ## Getting started
 
@@ -27,7 +43,7 @@ pnpm dev          # runs the web app via turbo (on :3000)
 Run a single app:
 
 ```bash
-pnpm --filter web dev
+pnpm --filter web dev   # docs are at http://localhost:3000/internal/docs
 ```
 
 ## Tasks

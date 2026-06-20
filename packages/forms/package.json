@@ -1,0 +1,47 @@
+{
+  "name": "@repo/forms",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./renderer": {
+      "types": "./src/FormRenderer.tsx",
+      "default": "./src/FormRenderer.tsx"
+    },
+    "./gallery": {
+      "types": "./src/gallery.ts",
+      "default": "./src/gallery.ts"
+    },
+    "./schema": {
+      "types": "./src/schema.ts",
+      "default": "./src/schema.ts"
+    },
+    "./schema.json": "./experiment-template.schema.json"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@mantine/core": "^9.2.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@mantine/core": "^9.3.2",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "eslint": "^9.39.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "5.9.2",
+    "zod": "^4.4.3"
+  }
+}
