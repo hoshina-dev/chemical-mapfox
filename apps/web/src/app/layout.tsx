@@ -9,7 +9,7 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "chemical-mapfox",
+  title: "ChemFox",
   description: "Next.js + Mantine application.",
 };
 

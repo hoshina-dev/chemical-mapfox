@@ -5,7 +5,7 @@ import { DocsNavbar } from "@/components/docs/DocsNavbar";
 import { GallerySidebar } from "@/components/docs/GallerySidebar";
 
 export const metadata: Metadata = {
-  title: "Hoshina Docs",
+  title: "ChemFox Docs",
   description:
     "Reference for lab technicians building forms: every question type the form engine supports.",
 };

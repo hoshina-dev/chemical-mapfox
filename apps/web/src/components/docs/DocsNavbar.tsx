@@ -14,7 +14,7 @@ export function DocsNavbar() {
     >
       <Group justify="space-between">
         <Anchor component={Link} href="/internal/docs" c="dark" underline="never">
-          <Text fw={700}>Hoshina Docs</Text>
+          <Text fw={700}>ChemFox Docs</Text>
         </Anchor>
         <Anchor component={Link} href="/dashboard" size="sm" c="dimmed">
           ← Back to app
