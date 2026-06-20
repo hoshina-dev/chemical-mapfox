@@ -10,6 +10,7 @@ import {
   Title,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useState } from "react";
 
 import { type FormDraft, makeQuestion } from "@/lib/builder";
 
@@ -24,6 +25,8 @@ interface SectionEditorProps {
 export function SectionEditor({ form, path }: SectionEditorProps) {
   const section = form.values[path];
   const questionsPath = `${path}.questions`;
+  // Index of the most recently added question, so it opens expanded.
+  const [lastAdded, setLastAdded] = useState<number | null>(null);
 
   return (
     <Paper withBorder p="md" radius="md">
@@ -50,6 +53,7 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
           {section.questions.map((question, i) => (
             <QuestionEditor
               key={i}
+              defaultExpanded={i === lastAdded}
               form={form}
               path={`${questionsPath}.${i}`}
               question={question}
@@ -69,9 +73,10 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
         <Group>
           <Button
             variant="light"
-            onClick={() =>
-              form.insertListItem(questionsPath, makeQuestion("string"))
-            }
+            onClick={() => {
+              setLastAdded(section.questions.length);
+              form.insertListItem(questionsPath, makeQuestion("string"));
+            }}
           >
             Add question
           </Button>

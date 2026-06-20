@@ -3,8 +3,10 @@
 import type { Question, QuestionType } from "@repo/forms";
 import {
   ActionIcon,
+  Badge,
   Button,
   Checkbox,
+  Collapse,
   Group,
   NumberInput,
   Paper,
@@ -12,9 +14,10 @@ import {
   Stack,
   Text,
   TextInput,
-  Title,
+  UnstyledButton,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useState } from "react";
 
 import {
   type FormDraft,
@@ -37,6 +40,8 @@ interface QuestionEditorProps {
   onMoveDown: () => void;
   onRemove: () => void;
   nested?: boolean;
+  /** Start expanded — used to open a just-added question for editing. */
+  defaultExpanded?: boolean;
 }
 
 export function QuestionEditor({
@@ -49,7 +54,12 @@ export function QuestionEditor({
   onMoveDown,
   onRemove,
   nested = false,
+  defaultExpanded = false,
 }: QuestionEditorProps) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  // Track which child question was just added, so it opens expanded.
+  const [lastAddedChild, setLastAddedChild] = useState<number | null>(null);
+
   const handleTypeChange = (next: QuestionType) => {
     const base = {
       id: question.id,
@@ -66,71 +76,107 @@ export function QuestionEditor({
     form.setFieldValue(path, fresh);
   };
 
+  const summary = question.label?.trim() || question.id?.trim() || "Untitled question";
+
   return (
     <Paper withBorder p="md" radius="md">
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Title order={5}>Question #{index + 1}</Title>
-          <Group gap={4}>
-            <ActionIcon
-              variant="subtle"
-              onClick={onMoveUp}
-              disabled={index === 0}
-              aria-label="Move up"
-            >
-              ↑
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              onClick={onMoveDown}
-              disabled={index === total - 1}
-              aria-label="Move down"
-            >
-              ↓
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              onClick={onRemove}
-              aria-label="Remove question"
-            >
-              ✕
-            </ActionIcon>
+      <Group justify="space-between" wrap="nowrap" gap="sm">
+        <UnstyledButton
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          style={{ flex: 1, minWidth: 0 }}
+        >
+          <Group gap="xs" wrap="nowrap">
+            <Text c="dimmed" w={12} ta="center" aria-hidden>
+              {expanded ? "▾" : "▸"}
+            </Text>
+            <Text size="sm" fw={600} c="dimmed">
+              #{index + 1}
+            </Text>
+            <Text size="sm" fw={500} truncate>
+              {summary}
+            </Text>
+            <Badge size="xs" variant="light" radius="sm" tt="none">
+              {question.type}
+            </Badge>
+            {question.required && (
+              <Badge size="xs" color="red" variant="light" radius="sm">
+                required
+              </Badge>
+            )}
           </Group>
+        </UnstyledButton>
+        <Group gap={4} wrap="nowrap">
+          <ActionIcon
+            variant="subtle"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            aria-label="Move up"
+          >
+            ↑
+          </ActionIcon>
+          <ActionIcon
+            variant="subtle"
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            aria-label="Move down"
+          >
+            ↓
+          </ActionIcon>
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            onClick={onRemove}
+            aria-label="Remove question"
+          >
+            ✕
+          </ActionIcon>
         </Group>
+      </Group>
 
-        <Group gap="sm" grow>
+      <Collapse expanded={expanded}>
+        <Stack gap="sm" pt="md">
+          <Group gap="sm" grow>
+            <TextInput
+              label="ID"
+              placeholder="snake_case identifier"
+              required
+              {...textProps(form, `${path}.id`)}
+            />
+            <Select
+              label="Type"
+              data={
+                nested ? NESTED_QUESTION_TYPE_OPTIONS : QUESTION_TYPE_OPTIONS
+              }
+              value={question.type}
+              onChange={(v) => v && handleTypeChange(v as QuestionType)}
+              allowDeselect={false}
+            />
+          </Group>
+
           <TextInput
-            label="ID"
-            placeholder="snake_case identifier"
+            label="Label"
             required
-            {...textProps(form, `${path}.id`)}
+            {...textProps(form, `${path}.label`)}
           />
-          <Select
-            label="Type"
-            data={nested ? NESTED_QUESTION_TYPE_OPTIONS : QUESTION_TYPE_OPTIONS}
-            value={question.type}
-            onChange={(v) => v && handleTypeChange(v as QuestionType)}
-            allowDeselect={false}
+          <TextInput
+            label="Description"
+            {...textProps(form, `${path}.description`)}
           />
-        </Group>
+          <Checkbox
+            label="Required"
+            {...checkboxProps(form, `${path}.required`)}
+          />
 
-        <TextInput
-          label="Label"
-          required
-          {...textProps(form, `${path}.label`)}
-        />
-        <TextInput
-          label="Description"
-          {...textProps(form, `${path}.description`)}
-        />
-        <Checkbox
-          label="Required"
-          {...checkboxProps(form, `${path}.required`)}
-        />
-
-        <TypeSpecificFields form={form} path={path} question={question} />
-      </Stack>
+          <TypeSpecificFields
+            form={form}
+            path={path}
+            question={question}
+            lastAddedChild={lastAddedChild}
+            onAddChild={setLastAddedChild}
+          />
+        </Stack>
+      </Collapse>
     </Paper>
   );
 }
@@ -139,9 +185,18 @@ interface TypeSpecificFieldsProps {
   form: UseFormReturnType<FormDraft>;
   path: string;
   question: Question;
+  /** Index of the most recently added child (repeatable-group) to auto-expand. */
+  lastAddedChild?: number | null;
+  onAddChild?: (index: number) => void;
 }
 
-function TypeSpecificFields({ form, path, question }: TypeSpecificFieldsProps) {
+function TypeSpecificFields({
+  form,
+  path,
+  question,
+  lastAddedChild,
+  onAddChild,
+}: TypeSpecificFieldsProps) {
   switch (question.type) {
     case "string":
       return (
@@ -493,6 +548,7 @@ function TypeSpecificFields({ form, path, question }: TypeSpecificFieldsProps) {
               <QuestionEditor
                 key={j}
                 nested
+                defaultExpanded={j === lastAddedChild}
                 form={form}
                 path={`${childrenPath}.${j}`}
                 question={child}
@@ -511,9 +567,10 @@ function TypeSpecificFields({ form, path, question }: TypeSpecificFieldsProps) {
           <Button
             size="xs"
             variant="light"
-            onClick={() =>
-              form.insertListItem(childrenPath, makeNestedQuestion("number"))
-            }
+            onClick={() => {
+              onAddChild?.(children.length);
+              form.insertListItem(childrenPath, makeNestedQuestion("number"));
+            }}
           >
             Add child question
           </Button>
