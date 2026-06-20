@@ -8,8 +8,9 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-
+import { TechnicianTools } from "@/components/dashboard/TechnicianTools";
 import { LogoutButton } from "@/components/LogoutButton";
+import { appRoleForSession } from "@/lib/auth/appRole";
 import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
 
@@ -17,6 +18,8 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await requireSession();
+
+  const isTechnician = appRoleForSession(session) === "technician";
 
   let memberships: UserMembershipResponse[] = [];
   try {
@@ -44,6 +47,8 @@ export default async function DashboardPage() {
             <LogoutButton />
           </Group>
         </Group>
+
+        {isTechnician && <TechnicianTools />}
 
         <div>
           <Title order={3} mb="sm">

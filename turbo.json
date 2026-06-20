@@ -5,7 +5,8 @@
     "NODE_ENV",
     "CUSTAPI_URL",
     "JWT_SECRET",
-    "SESSION_COOKIE_SECURE"
+    "SESSION_COOKIE_SECURE",
+    "EXPERIMENT_MANAGER_URL"
   ],
   "tasks": {
     "build": {
