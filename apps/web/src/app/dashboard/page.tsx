@@ -9,10 +9,15 @@ import {
   Title,
 } from "@mantine/core";
 import { TechnicianTools } from "@/components/dashboard/TechnicianTools";
+import { LinkButton } from "@/components/links";
 import { LogoutButton } from "@/components/LogoutButton";
 import { appRoleForSession } from "@/lib/auth/appRole";
 import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
+import {
+  myExperimentsPath,
+  requestCatalogPath,
+} from "@/lib/experiment/routes";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +52,28 @@ export default async function DashboardPage() {
             <LogoutButton />
           </Group>
         </Group>
+
+        {!isTechnician && (
+          <Card withBorder radius="md" padding="lg">
+            <Stack gap="sm">
+              <div>
+                <Title order={3}>Experiments</Title>
+                <Text c="dimmed" size="sm">
+                  Request a new experiment from the lab&apos;s catalogue, or
+                  track the ones you&apos;ve already submitted.
+                </Text>
+              </div>
+              <Group gap="sm">
+                <LinkButton href={requestCatalogPath()}>
+                  Request an experiment
+                </LinkButton>
+                <LinkButton href={myExperimentsPath()} variant="light">
+                  My experiments
+                </LinkButton>
+              </Group>
+            </Stack>
+          </Card>
+        )}
 
         {isTechnician && <TechnicianTools />}
 

@@ -23,6 +23,14 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
+  // The client experiment flow (/experiment/*) is client-only; lab staff
+  // (mapfox admins, i.e. app-role technician) use /internal/* instead.
+  const isClientFlow =
+    pathname === "/experiment" || pathname.startsWith("/experiment/");
+  if (isClientFlow && payload?.role === "admin") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
   if (payload?.userId && session) {
     const res = NextResponse.next();
     res.cookies.set(

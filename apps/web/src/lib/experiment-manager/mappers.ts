@@ -13,6 +13,7 @@ import type {
   ExperimentTemplateDetail,
   ExperimentTemplateSummary,
   ExperimentTemplateUpdate,
+  ExperimentUpdate,
   FormDocSnapshot,
 } from "./client";
 
@@ -219,6 +220,23 @@ export function templateToUpdate(
   template: ExperimentTemplate,
 ): ExperimentTemplateUpdate {
   return templateToCreate(meta, template);
+}
+
+/**
+ * Build the experiment-manager PUT body that seeds a freshly created context
+ * with the template's forms/calculations plus the client's intake answers.
+ * Mirrors the template snapshot the backend expects (see `ExperimentUpdate`).
+ */
+export function templateToExperimentUpdate(
+  template: ExperimentTemplate,
+  values: Record<string, AnswerValue>,
+): ExperimentUpdate {
+  return {
+    clientForm: normalizeFormDocForApi(template.clientForm),
+    labForm: normalizeFormDocForApi(template.labForm),
+    calculations: mapCalculationsToApi(template.calculations),
+    values,
+  };
 }
 
 export function toTemplateSummary(

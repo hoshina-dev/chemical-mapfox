@@ -75,6 +75,8 @@ export type CalculationSnapshot = Em["Calculation"];
 export type ExperimentTemplateCreate = Em["ExperimentTemplateCreate"];
 export type ExperimentTemplateUpdate = Em["ExperimentTemplateUpdate"];
 export type ExperimentTemplateSummary = Em["ExperimentTemplateSummary"];
+export type ExperimentCreate = Em["ExperimentCreate"];
+export type ExperimentUpdate = Em["ExperimentUpdate"];
 
 /**
  * Fields merged from the experiment template JSONB. OpenAPI types the detail
@@ -120,6 +122,20 @@ export async function createSample(body: SampleCreate) {
 
 export async function getExperiment(expId: string) {
   return emFetch<ExperimentDetail>(`/api/experiments/${expId}`);
+}
+
+export async function createExperiment(body: ExperimentCreate) {
+  return emFetch<ExperimentDetail>("/api/experiments", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateExperiment(expId: string, body: ExperimentUpdate) {
+  return emFetch<ExperimentDetail>(`/api/experiments/${expId}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 // --- Experiment templates (nested under a sample) ---

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { appRoleForSession } from "./appRole";
 import { SESSION_COOKIE } from "./constants";
 import type { SessionPayload, SessionUser } from "./definitions";
 import { decrypt } from "./session";
@@ -40,6 +41,19 @@ export async function requireSession(): Promise<SessionPayload> {
 export async function requireAdmin(): Promise<SessionPayload> {
   const session = await requireSession();
   if (session.role !== "admin") {
+    redirect("/dashboard");
+  }
+  return session;
+}
+
+/**
+ * Backstop for the client-facing experiment flow (`/experiment/*`). Lab staff
+ * (app-role `technician`) have their own `/internal/*` workspace and must not
+ * see or act in the client request flow, so they're sent back to the dashboard.
+ */
+export async function requireClient(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (appRoleForSession(session) === "technician") {
     redirect("/dashboard");
   }
   return session;

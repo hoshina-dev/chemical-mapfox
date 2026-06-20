@@ -48,6 +48,10 @@ export interface StatusMeta {
 // fall back to a humanised label in grey, so the table never breaks if the
 // backend introduces a new status.
 const STATUS_META: Record<string, StatusMeta> = {
+  // The ticketing backend emits SCREAMING_SNAKE_CASE; keys here are lowercase
+  // because statusMeta() lowercases before lookup. "requested" is the initial
+  // state a freshly created request lands in.
+  requested: { label: "Requested", color: "blue" },
   open: { label: "Open", color: "gray" },
   pending: { label: "Pending", color: "gray" },
   sample_received: { label: "Sample received", color: "blue" },

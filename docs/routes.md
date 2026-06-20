@@ -18,28 +18,47 @@ middleware (`apps/web/src/proxy.ts`) and the server-side backstop layout
 
 ## Client-facing
 
-### `/experiment/listing` 🚧
+All client routes live under `apps/web/src/app/experiment/` and share a layout
+(`experiment/layout.tsx`) that requires a signed-in user (any role) and renders
+the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
+`lib/experiment/data.ts`; path helpers in `lib/experiment/routes.ts`.
 
-- Lists every experiment the user requested, across stages, with dates.
-- Sourced from the **ticketing-service**; presented like a Linear board.
-- Each item links to its (read-only) detail page.
+### `/experiment/listing` ✅
 
-### `/experiment/listing/{expcontext:id}` 🚧
+- Lists every experiment the **current user** requested, presented like a
+  Linear board (cards grouped into lifecycle lanes). Sourced from the
+  **ticketing-service** (`listMyExperiments(userId)`), enriched best-effort with
+  the template title + specimen from **experiment-manager**.
+- Each card links to its read-only detail page.
+- Page: `apps/web/src/app/experiment/listing/page.tsx` →
+  `components/experiment/MyExperimentsBoard.tsx`.
 
-- **Read-only** experiment detail.
-- Live experiment values streamed from **experiment-manager**.
+### `/experiment/listing/{expcontext:id}` ✅ (read-only)
 
-### `/experiment/request/listing` 🚧
+- **Read-only** experiment detail for the requester. Reuses
+  `getExperimentWorkspace()` + the `@repo/forms` renderer (via
+  `ExperimentStateView`), with a lifecycle timeline. **Ownership-checked**: a
+  ticket owned by another user returns `notFound()`.
+- Page: `apps/web/src/app/experiment/listing/[contextId]/page.tsx`.
 
-- Lists all specimens supported by the labs, **grouped by specimen type**
-  (expandable groups).
-- Each specimen/template links to its onboarding page.
+### `/experiment/request/listing` ✅
 
-### `/experiment/request/{exptemplate:id}` 🚧
+- Lists the specimens (samples) the labs support as expandable **Accordion**
+  groups; each group lists the **current** version of its templates. Searchable.
+- Each template links to its onboarding page.
+- Page: `apps/web/src/app/experiment/request/listing/page.tsx` →
+  `components/experiment/request/RequestCatalog.tsx` (`listRequestCatalog()`).
 
-- Onboarding flow for a new experiment from a template.
-- On success it creates a context and **redirects to
-  `/experiment/listing/{expcontext:id}`**.
+### `/experiment/request/{exptemplate:id}` ✅
+
+- Onboarding flow for a new experiment from a template (accepts `?sampleId=` to
+  load the template directly; falls back to a specimen sweep). Renders the
+  template's **client intake form** (`@repo/forms` renderer).
+- On submit (`requestExperimentAction`) it creates the **ticket** (the context),
+  best-effort seeds the experiment-manager context with the template snapshot +
+  intake answers, then **redirects to `/experiment/listing/{expcontext:id}`**.
+- Page: `apps/web/src/app/experiment/request/[templateId]/page.tsx` →
+  `components/experiment/request/RequestExperimentForm.tsx`.
 
 ---
 
