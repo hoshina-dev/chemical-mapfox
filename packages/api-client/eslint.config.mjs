@@ -4,6 +4,11 @@ import { config } from "@repo/eslint-config/base";
 export default [
   ...config,
   {
-    ignores: ["src/custapi/**", "dist/**"],
+    ignores: [
+      "src/custapi/**",
+      "src/ticketing/**",
+      "src/experiment-manager.d.ts",
+      "dist/**",
+    ],
   },
 ];
