@@ -14,12 +14,13 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { LinkButton } from "@/components/links";
+import { LocalDateTime } from "@/components/LocalDateTime";
 import type { MyExperiment } from "@/lib/experiment/data";
 import {
   myExperimentDetailPath,
   requestCatalogPath,
 } from "@/lib/experiment/routes";
-import { formatDateTime, statusMeta } from "@/lib/ticketing/tickets";
+import { statusMeta } from "@/lib/ticketing/tickets";
 
 interface Lane {
   key: string;
@@ -29,52 +30,61 @@ interface Lane {
   statuses: string[];
 }
 
-// Lifecycle lanes for the Kanban, in flow order. Raw ticket statuses are mapped
-// to a lane; anything unrecognised falls into the trailing "Other" lane.
-const LANES: Lane[] = [
+// Lifecycle lanes for the Kanban, in flow order. Statuses are the canonical
+// ticketing enum (REQUESTED → PENDING → EXPERIMENTING → FINALIZING → CLOSED,
+// lowercased); legacy/frontend-only keys are kept as harmless fallbacks. Note
+// PENDING is the "Sample received" stage — it must not fall into Requested.
+const PIPELINE_LANES: Lane[] = [
   {
     key: "requested",
     label: "Requested",
     color: "blue",
-    statuses: ["requested", "open", "pending"],
+    statuses: ["requested", "open"],
   },
   {
     key: "sample_received",
     label: "Sample received",
     color: "cyan",
-    statuses: ["sample_received"],
+    statuses: ["pending", "sample_received"],
   },
   {
     key: "in_progress",
     label: "In progress",
     color: "yellow",
-    statuses: ["experiment_started", "in_progress"],
+    statuses: ["experimenting", "experiment_started", "in_progress"],
   },
   {
-    key: "results_submitted",
-    label: "Results submitted",
+    key: "finalizing",
+    label: "Finalizing",
     color: "teal",
-    statuses: ["results_submitted"],
+    statuses: ["finalizing", "results_submitted"],
   },
   {
-    key: "completed",
-    label: "Completed",
+    key: "closed",
+    label: "Closed",
     color: "green",
-    statuses: ["completed", "closed"],
-  },
-  {
-    key: "cancelled",
-    label: "Cancelled",
-    color: "red",
-    statuses: ["cancelled", "canceled"],
+    statuses: ["closed", "completed"],
   },
 ];
 
+// Cancelled and the catch-all "Other" are only shown when something lands in
+// them, so the default board is the clean 5-stage pipeline that fits a wide
+// screen without horizontal scrolling.
+const CANCELLED_LANE: Lane = {
+  key: "cancelled",
+  label: "Cancelled",
+  color: "red",
+  statuses: ["cancelled", "canceled"],
+};
 const OTHER_LANE: Lane = { key: "other", label: "Other", color: "gray", statuses: [] };
+
+const LANE_LOOKUP: Lane[] = [...PIPELINE_LANES, CANCELLED_LANE];
 
 function laneFor(status: string): Lane {
   const normalized = status.toLowerCase();
-  return LANES.find((lane) => lane.statuses.includes(normalized)) ?? OTHER_LANE;
+  return (
+    LANE_LOOKUP.find((lane) => lane.statuses.includes(normalized)) ?? OTHER_LANE
+  );
 }
 
 export function MyExperimentsBoard({
@@ -103,8 +113,9 @@ export function MyExperimentsBoard({
       else buckets.set(lane.key, [exp]);
     }
     // Always show the full lifecycle pipeline so the board structure is stable;
-    // the catch-all "Other" column only appears when something lands in it.
-    const columns: Lane[] = [...LANES];
+    // Cancelled and the catch-all "Other" columns only appear when populated.
+    const columns: Lane[] = [...PIPELINE_LANES];
+    if (buckets.get(CANCELLED_LANE.key)?.length) columns.push(CANCELLED_LANE);
     if (buckets.get(OTHER_LANE.key)?.length) columns.push(OTHER_LANE);
     return columns.map((lane) => ({
       lane,
@@ -155,8 +166,12 @@ export function MyExperimentsBoard({
             radius="md"
             p="sm"
             style={{
-              flex: "0 0 280px",
-              minWidth: 280,
+              // Grow to share the row equally on wide screens (no scroll for
+              // the 5-stage pipeline); `minWidth` keeps columns readable and
+              // lets the row scroll horizontally only when it genuinely can't
+              // fit (narrow screens or extra Cancelled/Other lanes).
+              flex: "1 1 0",
+              minWidth: 240,
               backgroundColor: "var(--mantine-color-default-hover)",
             }}
           >
@@ -212,7 +227,7 @@ function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
           </Badge>
         </Group>
         <Text size="xs" c="dimmed">
-          Updated {formatDateTime(experiment.updatedAt)}
+          Updated <LocalDateTime iso={experiment.updatedAt} />
         </Text>
       </Stack>
     </Card>

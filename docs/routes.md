@@ -39,6 +39,11 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
   `getExperimentWorkspace()` + the `@repo/forms` renderer (via
   `ExperimentStateView`), with a lifecycle timeline. **Ownership-checked**: a
   ticket owned by another user returns `notFound()`.
+- While the ticket is **`REQUESTED`** (sample not yet received) it shows a
+  **printable QR sample label** (`components/experiment/SampleLabel.tsx`) the
+  requester attaches to their shipping box. The QR encodes the absolute
+  staff check-in URL (`getRequestOrigin()` + `experimentCheckinPath()`); a
+  "Print label" button and a copyable raw URL are included.
 - Page: `apps/web/src/app/experiment/listing/[contextId]/page.tsx`.
 
 ### `/experiment/request/listing` ✅
@@ -78,9 +83,27 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
   `components/internal/ExperimentListingTable.tsx` (client search/sort/filter).
   Ticketing client: `apps/web/src/lib/ticketing/`.
 
+### `/internal/experiment/checkin/{expcontext:id}` ✅
+
+- **Sample check-in** — the target of the QR label printed by the requester.
+  Lab staff scan it on arrival; the page shows brief ticket info + a read-only
+  experiment detail (`ExperimentStateView`) and a **Check in sample** button
+  (`components/internal/CheckInButton.tsx` → `checkInSampleAction`) that
+  transitions the ticket **`REQUESTED → PENDING`** ("Sample received"), then
+  forwards to the workspace. If the sample was already received it shows that
+  and links to the workspace instead.
+- Page: `apps/web/src/app/internal/experiment/checkin/[contextId]/page.tsx`.
+  (Static `checkin` segment; sits beside the `[contextId]` workspace route.)
+
 ### `/internal/experiment/{expcontext:id}` ✅ (collaborative editing)
 
-- Lab technician's workspace for an experiment.
+- Lab technician's workspace for an experiment. The lab form is editable **only
+  while the ticket is `EXPERIMENTING`**; other stages render it read-only:
+  - **`REQUESTED`** — a notice that the sample hasn't been received, linking to
+    the check-in page.
+  - **`PENDING`** ("Sample received") — a **Start experiment** button
+    (`components/internal/StartExperimentButton.tsx` → `startExperimentAction`)
+    that transitions `PENDING → EXPERIMENTING` and unlocks the editor.
 - **Lab form** is a live collaborative editor (`ExperimentStateView` →
   `components/internal/collab/LabFormEditor.tsx`): multiple staff edit at once,
   see each other's presence (avatar + hover name, per-editor color via

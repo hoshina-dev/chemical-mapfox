@@ -14,16 +14,22 @@ import {
   Title,
 } from "@mantine/core";
 
+import type { ReactNode } from "react";
+
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
+import { StartExperimentButton } from "@/components/internal/StartExperimentButton";
+import { LinkButton } from "@/components/links";
+import { LocalDateTime } from "@/components/LocalDateTime";
 import { requireSession, toSessionUser } from "@/lib/auth/dal";
 import {
+  experimentCheckinPath,
   experimentListingPath,
   experimentRawPath,
 } from "@/lib/experiment-manager/routes";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { formatDateTime, statusMeta } from "@/lib/ticketing/tickets";
+import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +42,12 @@ export default async function ExperimentWorkspacePage({
   const session = await requireSession();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
+  const status = ticket?.status ?? null;
   const meta = ticket ? statusMeta(ticket.status) : null;
+  // Editing/collaboration is only allowed once the experiment has started.
+  // Earlier stages (REQUESTED, PENDING) and later ones (FINALIZING, CLOSED)
+  // render the lab form read-only.
+  const canEdit = status === "EXPERIMENTING";
 
   const stages = [
     { label: "Created", at: ticket?.createdAt ?? null },
@@ -87,21 +98,68 @@ export default async function ExperimentWorkspacePage({
 
         <Grid gap="lg">
           <GridCol span={{ base: 12, md: 8 }}>
-            {state ? (
-              <ExperimentStateView
-                state={state}
-                editable={{
-                  contextId,
-                  currentUser: toSessionUser(session),
-                  canSubmit: ticket?.status === "EXPERIMENTING",
-                }}
-              />
-            ) : (
-              <Alert color="gray" variant="light" title="Current state unavailable">
-                {ws.errors.state ??
-                  "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager."}
-              </Alert>
-            )}
+            <Stack gap="lg">
+              {status === "REQUESTED" && (
+                <Alert
+                  color="blue"
+                  variant="light"
+                  title="Sample not received yet"
+                >
+                  <Stack gap="sm" align="flex-start">
+                    <Text size="sm">
+                      This experiment is waiting for its sample to arrive. Check
+                      it in once the box reaches the lab to begin.
+                    </Text>
+                    <LinkButton
+                      href={experimentCheckinPath(contextId)}
+                      variant="light"
+                    >
+                      Go to check-in
+                    </LinkButton>
+                  </Stack>
+                </Alert>
+              )}
+
+              {status === "PENDING" && (
+                <Alert
+                  color="blue"
+                  variant="light"
+                  title="Sample received — ready to start"
+                >
+                  <Stack gap="sm" align="flex-start">
+                    <Text size="sm">
+                      The sample is checked in. Start the experiment to enter and
+                      collaborate on lab values.
+                    </Text>
+                    <StartExperimentButton contextId={contextId} />
+                  </Stack>
+                </Alert>
+              )}
+
+              {state ? (
+                <ExperimentStateView
+                  state={state}
+                  editable={
+                    canEdit
+                      ? {
+                          contextId,
+                          currentUser: toSessionUser(session),
+                          canSubmit: true,
+                        }
+                      : undefined
+                  }
+                />
+              ) : (
+                <Alert
+                  color="gray"
+                  variant="light"
+                  title="Current state unavailable"
+                >
+                  {ws.errors.state ??
+                    "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager."}
+                </Alert>
+              )}
+            </Stack>
           </GridCol>
 
           <GridCol span={{ base: 12, md: 4 }}>
@@ -147,7 +205,7 @@ export default async function ExperimentWorkspacePage({
                   {stages.map((stage) => (
                     <TimelineItem key={stage.label} title={stage.label}>
                       <Text size="xs" c="dimmed">
-                        {formatDateTime(stage.at)}
+                        <LocalDateTime iso={stage.at} />
                       </Text>
                     </TimelineItem>
                   ))}
@@ -173,7 +231,7 @@ export default async function ExperimentWorkspacePage({
                   {state?.reportGeneratedAt && (
                     <Detail
                       label="Report generated"
-                      value={formatDateTime(state.reportGeneratedAt)}
+                      value={<LocalDateTime iso={state.reportGeneratedAt} />}
                     />
                   )}
                 </Stack>
@@ -192,7 +250,7 @@ function Detail({
   mono,
 }: {
   label: string;
-  value: string | null | undefined;
+  value: ReactNode;
   mono?: boolean;
 }) {
   return (

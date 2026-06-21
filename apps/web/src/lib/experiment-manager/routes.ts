@@ -14,6 +14,15 @@ export function experimentRawPath(contextId: string) {
   return `${BASE}/${contextId}/raw`;
 }
 
+/**
+ * Sample check-in page (the target of the QR label printed by the requester).
+ * Lab staff open it to confirm a shipped sample has arrived, transitioning the
+ * ticket REQUESTED → PENDING ("Sample received").
+ */
+export function experimentCheckinPath(contextId: string) {
+  return `${BASE}/checkin/${contextId}`;
+}
+
 export function onboardingPath() {
   return `${BASE}/onboarding`;
 }

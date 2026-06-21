@@ -13,14 +13,19 @@ import {
   Title,
 } from "@mantine/core";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
+import { LocalDateTime } from "@/components/LocalDateTime";
+import { SampleLabel } from "@/components/experiment/SampleLabel";
 import { requireSession } from "@/lib/auth/dal";
+import { experimentCheckinPath } from "@/lib/experiment-manager/routes";
 import { myExperimentsPath } from "@/lib/experiment/routes";
+import { getRequestOrigin } from "@/lib/http/origin";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { formatDateTime, statusMeta } from "@/lib/ticketing/tickets";
+import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +46,13 @@ export default async function MyExperimentDetailPage({
   }
 
   const meta = ticket ? statusMeta(ticket.status) : null;
+
+  // While the request is still awaiting its sample, offer a printable QR label
+  // the requester attaches to the shipping box; lab staff scan it to check in.
+  const showSampleLabel = ticket?.status === "REQUESTED";
+  const checkinUrl = showSampleLabel
+    ? `${await getRequestOrigin()}${experimentCheckinPath(contextId)}`
+    : null;
 
   const stages = [
     { label: "Created", at: ticket?.createdAt ?? null },
@@ -87,6 +99,14 @@ export default async function MyExperimentDetailPage({
           </Alert>
         )}
 
+        {checkinUrl && (
+          <SampleLabel
+            url={checkinUrl}
+            title={ws.experimentTitle ?? "Experiment"}
+            contextId={contextId}
+          />
+        )}
+
         <Grid gap="lg">
           <GridCol span={{ base: 12, md: 8 }}>
             {state ? (
@@ -109,7 +129,7 @@ export default async function MyExperimentDetailPage({
                   {stages.map((stage) => (
                     <TimelineItem key={stage.label} title={stage.label}>
                       <Text size="xs" c="dimmed">
-                        {formatDateTime(stage.at)}
+                        <LocalDateTime iso={stage.at} />
                       </Text>
                     </TimelineItem>
                   ))}
@@ -133,7 +153,7 @@ export default async function MyExperimentDetailPage({
                   {state?.reportGeneratedAt && (
                     <Detail
                       label="Report generated"
-                      value={formatDateTime(state.reportGeneratedAt)}
+                      value={<LocalDateTime iso={state.reportGeneratedAt} />}
                     />
                   )}
                 </Stack>
@@ -151,7 +171,7 @@ function Detail({
   value,
 }: {
   label: string;
-  value: string | null | undefined;
+  value: ReactNode;
 }) {
   return (
     <Stack gap={2}>

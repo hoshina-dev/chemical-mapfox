@@ -22,12 +22,13 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { CopyableId } from "@/components/internal/CopyableId";
+import { LocalDateTime } from "@/components/LocalDateTime";
 import {
   experimentRawPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
 import type { EnrichedTicket } from "@/lib/internal/experiments";
-import { formatDateTime, statusMeta } from "@/lib/ticketing/tickets";
+import { statusMeta } from "@/lib/ticketing/tickets";
 
 type SortField = "experiment" | "requester" | "status" | "createdAt" | "updatedAt";
 type SortDir = "asc" | "desc";
@@ -209,12 +210,12 @@ export function ExperimentListingTable({
                   </TableTd>
                   <TableTd>
                     <Text size="sm" c="dimmed">
-                      {formatDateTime(ticket.createdAt)}
+                      <LocalDateTime iso={ticket.createdAt} />
                     </Text>
                   </TableTd>
                   <TableTd>
                     <Text size="sm" c="dimmed">
-                      {formatDateTime(ticket.updatedAt)}
+                      <LocalDateTime iso={ticket.updatedAt} />
                     </Text>
                   </TableTd>
                   <TableTd onClick={(e) => e.stopPropagation()}>

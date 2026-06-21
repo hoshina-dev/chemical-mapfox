@@ -5,7 +5,10 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { getSession } from "@/lib/auth/dal";
 import { hydrate, persistNow } from "@/lib/collab/room";
-import { experimentWorkspacePath } from "@/lib/experiment-manager/routes";
+import {
+  experimentCheckinPath,
+  experimentWorkspacePath,
+} from "@/lib/experiment-manager/routes";
 import { ticketsApi } from "@/lib/ticketing/client";
 
 async function errorText(error: unknown, fallback: string): Promise<string> {
@@ -70,6 +73,65 @@ export async function submitExperimentAction(
     return {
       success: false,
       error: await errorText(error, "Could not submit to the final stage."),
+    };
+  }
+}
+
+/**
+ * Check in a shipped sample. Transitions the ticket REQUESTED → PENDING
+ * ("Sample received") — the step that confirms the physical sample has arrived
+ * at the lab, after which an experiment can be started. The transition is only
+ * valid from REQUESTED; the ticketing backend rejects others with a 422.
+ */
+export async function checkInSampleAction(
+  contextId: string,
+): Promise<ActionResult<{ status: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to check in this sample." };
+  }
+
+  try {
+    const ticket = await ticketsApi.apiV1TicketsIdStatusPatch(contextId, {
+      status: "PENDING",
+    });
+    revalidatePath(experimentCheckinPath(contextId));
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: { status: ticket.status ?? "PENDING" } };
+  } catch (error) {
+    return {
+      success: false,
+      error: await errorText(error, "Could not check in this sample."),
+    };
+  }
+}
+
+/**
+ * Start the experiment. Transitions the ticket PENDING → EXPERIMENTING, which
+ * unlocks the collaborative lab-form editor in the workspace. Only valid from
+ * PENDING ("Sample received"); the ticketing backend rejects others with a 422.
+ */
+export async function startExperimentAction(
+  contextId: string,
+): Promise<ActionResult<{ status: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return {
+      success: false,
+      error: "You aren't allowed to start this experiment.",
+    };
+  }
+
+  try {
+    const ticket = await ticketsApi.apiV1TicketsIdStatusPatch(contextId, {
+      status: "EXPERIMENTING",
+    });
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: { status: ticket.status ?? "EXPERIMENTING" } };
+  } catch (error) {
+    return {
+      success: false,
+      error: await errorText(error, "Could not start this experiment."),
     };
   }
 }
