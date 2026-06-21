@@ -38,6 +38,13 @@ interface FormRendererProps {
   lockedValues?: Record<QuestionId, AnswerValue>;
   initialValues?: FormAnswers;
   readOnly?: boolean;
+  /**
+   * When false, questions absent from `initialValues` render empty instead of
+   * their configured default. Use for read-only views of *stored answers* so
+   * the display reflects what's actually saved (not fabricated defaults).
+   * Defaults to true (pre-fill), which is what editable forms / previews want.
+   */
+  fillDefaults?: boolean;
   submitLabel?: string;
   saveDraftLabel?: string;
   onSubmit?: (answers: FormAnswers) => void;
@@ -134,6 +141,7 @@ export function FormRenderer({
   lockedValues = {},
   initialValues = {},
   readOnly = false,
+  fillDefaults = true,
   submitLabel = "Submit",
   saveDraftLabel = "Save draft",
   onSubmit,
@@ -148,7 +156,7 @@ export function FormRenderer({
             (initialValues[child.id] as RepeatableColumn | undefined) ?? [];
           answers[child.id] = Array.from(
             { length: q.config.count },
-            (_, k) => column[k] ?? defaultFor(child),
+            (_, k) => column[k] ?? (fillDefaults ? defaultFor(child) : undefined),
           ) as AnswerValue;
         }
       } else if (q.id in lockedValues) {
@@ -156,11 +164,11 @@ export function FormRenderer({
       } else if (initialValues[q.id] !== undefined) {
         answers[q.id] = initialValues[q.id];
       } else {
-        answers[q.id] = defaultFor(q);
+        answers[q.id] = fillDefaults ? defaultFor(q) : undefined;
       }
     }
     return answers;
-  }, [doc, lockedValues, initialValues]);
+  }, [doc, lockedValues, initialValues, fillDefaults]);
 
   const [answers, setAnswers] = useState<FormAnswers>(initialAnswers);
 

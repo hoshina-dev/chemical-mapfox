@@ -1,0 +1,28 @@
+/*
+ * Present non-interactive (disabled) form fields at full, readable contrast.
+ *
+ * Mantine dims disabled controls (reduced opacity + muted text). Inside this
+ * container we keep them disabled — non-interactive, accessible, and uniform
+ * across every field type — but restore legibility. Shared by the read-only
+ * experiment view (client side) and the collaborative soft-lock (lab staff) so
+ * the "you can view but not edit this" state looks identical in both.
+ *
+ * `!important` is intentional: we're overriding Mantine's own disabled styles.
+ * Backgrounds are left as-is, so a field still reads subtly as non-editable.
+ */
+
+.readable input:disabled,
+.readable textarea:disabled,
+.readable select:disabled {
+  color: var(--mantine-color-text) !important;
+  -webkit-text-fill-color: var(--mantine-color-text) !important;
+  opacity: 1 !important;
+  cursor: default !important;
+}
+
+/* Controls that dim their whole root via [data-disabled]
+   (Checkbox, Radio, Switch, SegmentedControl, Slider, Rating, …). */
+.readable [data-disabled] {
+  opacity: 1 !important;
+  cursor: default !important;
+}

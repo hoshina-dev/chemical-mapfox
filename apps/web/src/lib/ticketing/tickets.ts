@@ -55,6 +55,10 @@ const STATUS_META: Record<string, StatusMeta> = {
   open: { label: "Open", color: "gray" },
   pending: { label: "Pending", color: "gray" },
   sample_received: { label: "Sample received", color: "blue" },
+  // Canonical ticketing-service statuses (ticket_status.go):
+  // REQUESTED → PENDING → EXPERIMENTING → FINALIZING → CLOSED.
+  experimenting: { label: "In progress", color: "yellow" },
+  finalizing: { label: "Finalizing", color: "teal" },
   experiment_started: { label: "In progress", color: "yellow" },
   in_progress: { label: "In progress", color: "yellow" },
   results_submitted: { label: "Results submitted", color: "teal" },

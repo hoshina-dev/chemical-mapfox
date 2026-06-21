@@ -37,6 +37,7 @@ same auth middleware as the rest of the app.
 
 ```bash
 pnpm install
+docker compose -f docker-compose.dev.yml up -d   # Redis on :6379 (see below)
 pnpm dev          # runs the web app via turbo (on :3000)
 ```
 
@@ -45,6 +46,13 @@ Run a single app:
 ```bash
 pnpm --filter web dev   # docs are at http://localhost:3000/internal/docs
 ```
+
+### Redis (collaborative editing)
+
+The staff experiment workspace supports **live collaborative editing** of the lab
+form (presence, soft field locks, autosave) backed by Redis. `docker-compose.dev.yml`
+provides a local Redis; set `REDIS_URL` (see `apps/web/.env.example`). Architecture:
+[`docs/collaborative-editing.md`](docs/collaborative-editing.md).
 
 ## Tasks
 
@@ -57,6 +65,7 @@ All tasks are pipelined through Turborepo at the repo root:
 | `pnpm lint`         | ESLint across apps and packages       |
 | `pnpm check-types`  | `tsc --noEmit` across the workspace   |
 | `pnpm format`       | Prettier across the workspace         |
+| `pnpm --filter web test` | Vitest unit + browser-mode component tests |
 
 Scope a task to one package with `pnpm --filter <name> <task>`, e.g.
 `pnpm --filter web check-types`.
@@ -91,4 +100,6 @@ pnpm --filter web dev
 - React 19, TypeScript 5
 - Mantine 9 (`@mantine/core`, `@mantine/hooks`) wired through `postcss-preset-mantine`
 - custapi client generated with OpenAPI Generator (`typescript-fetch`)
+- Redis (`ioredis`) backing collaborative lab-form editing (SSE + pub/sub)
+- Vitest (unit + browser mode) for the collaborative-editing layer
 - pnpm workspaces + Turborepo 2

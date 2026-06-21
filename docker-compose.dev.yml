@@ -1,0 +1,25 @@
+# Local development services for ChemFox.
+#
+#   docker compose -f docker-compose.dev.yml up -d     # start
+#   docker compose -f docker-compose.dev.yml down      # stop
+#
+# Provides the Redis that backs the experiment workspace's collaborative editing
+# layer (presence, soft field locks, the live value buffer, and pub/sub fan-out).
+# apps/web connects via REDIS_URL — see apps/web/.env.local / .env.example.
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: chemfox-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - chemfox-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  chemfox-redis-data:

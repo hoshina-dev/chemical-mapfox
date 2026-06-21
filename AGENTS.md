@@ -64,6 +64,15 @@ experiment-manager types (`experiment-manager.d.ts`, used as the
 `pnpm --filter @repo/api-client codegen` (runs via `pnpm dlx`; skips services
 that are unreachable). Generated dirs are committed and excluded from eslint.
 
+## Collaborative editing (staff workspace)
+
+The lab-form tab of `/internal/experiment/{contextId}` is a live multi-staff editor
+(SSE + POST + Redis pub/sub, all in `apps/web` — no new service). Requires `REDIS_URL`
+(local Redis via `docker compose -f docker-compose.dev.yml up -d`). Identity is keyed
+by a per-tab `connectionId` (distinct from `userId`); locks are advisory + last-write-wins;
+clearing a field sends explicit `null`. Full design + key files:
+[`docs/collaborative-editing.md`](docs/collaborative-editing.md).
+
 ## Known backend issues / workarounds
 
 Open issues in the `experiment-manager` backend (with the frontend workarounds
@@ -74,4 +83,6 @@ it before adding new client-side patches for backend quirks.
 ## Before you finish
 
 Run from the repo root: `pnpm check-types` and `pnpm lint` (Turborepo pipelines
-every workspace). For app-facing changes, `pnpm --filter web build`.
+every workspace). For app-facing changes, `pnpm --filter web build`. For the
+collaborative-editing layer, `pnpm --filter web test` (browser tests need a one-time
+`pnpm --filter web exec playwright install chromium`).

@@ -78,17 +78,23 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
   `components/internal/ExperimentListingTable.tsx` (client search/sort/filter).
   Ticketing client: `apps/web/src/lib/ticketing/`.
 
-### `/internal/experiment/{expcontext:id}` ✅ (read-only; realtime pending)
+### `/internal/experiment/{expcontext:id}` ✅ (collaborative editing)
 
 - Lab technician's workspace for an experiment.
-- **Current:** full read-only view of the experiment's current state — lab +
-  client forms rendered read-only with the entered `values` (via the
-  `@repo/forms` renderer), calculations with results, requester card, lifecycle
-  timeline, and report status. Data joined in `getExperimentWorkspace()`
+- **Lab form** is a live collaborative editor (`ExperimentStateView` →
+  `components/internal/collab/LabFormEditor.tsx`): multiple staff edit at once,
+  see each other's presence (avatar + hover name, per-editor color via
+  `lib/collab/colors.ts`), a soft field-lock highlights/disables the box someone
+  else is editing, and edits stream live + autosave to experiment-manager.
+  **Submit to final stage** transitions the ticket `EXPERIMENTING → FINALIZING`.
+  Client intake + calculations stay read-only.
+- **Transport:** SSE push + POST events + Redis pub/sub (no new service; stateless
+  BFF). Routes: `collab/stream/route.ts` (SSE) and `collab/event/route.ts` (POST);
+  shared state in `lib/collab/room.ts` + Redis; fan-out in `lib/collab/sse-hub.ts`.
+  Requires `REDIS_URL`.
+- Read-only state join still via `getExperimentWorkspace()`
   (`lib/internal/experiments.ts`); each source is best-effort.
   Page: `apps/web/src/app/internal/experiment/[contextId]/page.tsx`.
-- **Planned (realtime only):** WebSocket sync with editor-name highlighting on
-  input fields (Google-Docs-style collaborative editing).
 
 ### `/internal/experiment/{expcontext:id}/raw` ✅
 

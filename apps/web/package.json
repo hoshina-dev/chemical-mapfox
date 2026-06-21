@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
-    "check-types": "next typegen && tsc --noEmit"
+    "check-types": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:browser": "vitest run --project browser",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@mantine/core": "^9.3.2",
@@ -17,6 +21,7 @@
     "@repo/api-client": "workspace:^",
     "@repo/forms": "workspace:*",
     "bcryptjs": "^3.0.3",
+    "ioredis": "^5.4.1",
     "jose": "^6.2.3",
     "next": "16.2.0",
     "react": "^19.2.0",
@@ -27,13 +32,23 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser": "^3.0.5",
     "eslint": "^9.39.1",
+    "ioredis-mock": "^8.9.0",
+    "playwright": "^1.50.0",
     "postcss": "^8.5.15",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.5"
   }
 }

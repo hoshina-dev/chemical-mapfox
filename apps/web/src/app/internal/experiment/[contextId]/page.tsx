@@ -17,6 +17,7 @@ import {
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
+import { requireSession, toSessionUser } from "@/lib/auth/dal";
 import {
   experimentListingPath,
   experimentRawPath,
@@ -32,6 +33,7 @@ export default async function ExperimentWorkspacePage({
   params: Promise<{ contextId: string }>;
 }) {
   const { contextId } = await params;
+  const session = await requireSession();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const meta = ticket ? statusMeta(ticket.status) : null;
@@ -77,12 +79,6 @@ export default async function ExperimentWorkspacePage({
           )}
         </Group>
 
-        <Alert color="blue" variant="light" title="Realtime editing coming soon">
-          Live collaborative editing of lab values (WebSocket sync with
-          editor-name highlighting) will land here. For now this is a read-only
-          view of the experiment&apos;s current state.
-        </Alert>
-
         {ws.errors.ticket && (
           <Alert color="red" variant="light" title="Could not load ticket">
             {ws.errors.ticket}
@@ -92,7 +88,14 @@ export default async function ExperimentWorkspacePage({
         <Grid gap="lg">
           <GridCol span={{ base: 12, md: 8 }}>
             {state ? (
-              <ExperimentStateView state={state} />
+              <ExperimentStateView
+                state={state}
+                editable={{
+                  contextId,
+                  currentUser: toSessionUser(session),
+                  canSubmit: ticket?.status === "EXPERIMENTING",
+                }}
+              />
             ) : (
               <Alert color="gray" variant="light" title="Current state unavailable">
                 {ws.errors.state ??
