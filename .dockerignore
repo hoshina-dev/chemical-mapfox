@@ -1,0 +1,14 @@
+**/.next
+**/.turbo
+**/node_modules
+**/out
+.git
+.github
+.DS_Store
+.env*
+*.tsbuildinfo
+coverage
+build
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

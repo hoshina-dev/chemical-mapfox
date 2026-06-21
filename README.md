@@ -94,6 +94,28 @@ cp apps/web/.env.example apps/web/.env.local
 pnpm --filter web dev
 ```
 
+## Deployment
+
+`.github/workflows/deploy.yml` builds `apps/web/Dockerfile` from the repository
+root for `linux/amd64` and `linux/arm64` on every push to `main` (and via
+`workflow_dispatch`), then pushes the multi-arch image to
+`ghcr.io/<owner>/chemical-mapfox-web` (tagged `latest` and the short commit SHA).
+The app runs the Next.js `output: "standalone"` Node server on port `3000`.
+
+At runtime supply the env vars from [`apps/web/.env.example`](apps/web/.env.example) —
+notably `JWT_SECRET` (required) and `REDIS_URL` (collaborative editing). Per the
+BFF pattern, all backend URLs are server-side only.
+
+Build and run the image locally from the repository root:
+
+```bash
+docker build -f apps/web/Dockerfile -t chemical-mapfox-web .
+docker run --rm -p 3000:3000 \
+  -e JWT_SECRET=dev-secret \
+  -e REDIS_URL=redis://host.docker.internal:6379 \
+  chemical-mapfox-web
+```
+
 ## Tech
 
 - Next.js 16 (App Router, Turbopack)
