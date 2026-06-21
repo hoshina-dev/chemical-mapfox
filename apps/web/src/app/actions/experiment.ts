@@ -6,6 +6,13 @@ import type { ActionResult } from "@/app/actions/experiment-manager";
 import { getSession } from "@/lib/auth/dal";
 import { hydrate, persistNow } from "@/lib/collab/room";
 import {
+  calculateExperiment,
+  generateReport,
+  getExperiment,
+  getReportDownloadUrl,
+} from "@/lib/experiment-manager/client";
+import { errorMessage } from "@/lib/experiment-manager/errors";
+import {
   experimentCheckinPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
@@ -132,6 +139,109 @@ export async function startExperimentAction(
     return {
       success: false,
       error: await errorText(error, "Could not start this experiment."),
+    };
+  }
+}
+
+/**
+ * Run the experiment's calculations (FINALIZING stage). Evaluates every
+ * `calculations[*].formula` against the entered values and writes the results
+ * back in experiment-manager. Idempotent and re-runnable; report generation
+ * depends on this having run when the template defines calculations.
+ */
+export async function calculateExperimentAction(
+  contextId: string,
+): Promise<ActionResult<null>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to run calculations." };
+  }
+
+  try {
+    await calculateExperiment(contextId);
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: null };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not run calculations."),
+    };
+  }
+}
+
+/**
+ * Queue PDF report generation (FINALIZING stage). Generation is asynchronous —
+ * this returns the queued status; the worker renders + uploads the PDF and the
+ * caller polls `getReportStatusAction` until it reaches a terminal state.
+ */
+export async function generateReportAction(
+  contextId: string,
+): Promise<ActionResult<{ status: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to generate a report." };
+  }
+
+  try {
+    const res = await generateReport(contextId);
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: { status: res.status } };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not start report generation."),
+    };
+  }
+}
+
+/**
+ * Current report-generation status for an experiment, read from its
+ * experiment-manager context. Used to poll while a report is pending/processing.
+ */
+export async function getReportStatusAction(
+  contextId: string,
+): Promise<ActionResult<{ status: string | null; generatedAt: string | null }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to view this report." };
+  }
+
+  try {
+    const exp = await getExperiment(contextId);
+    return {
+      success: true,
+      data: {
+        status: exp.report_status ?? null,
+        generatedAt: exp.report_generated_at ?? null,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not check the report status."),
+    };
+  }
+}
+
+/**
+ * A short-lived presigned download URL for the generated PDF report. Only
+ * resolves once generation has succeeded; surfaces a friendly error otherwise.
+ */
+export async function getReportDownloadUrlAction(
+  contextId: string,
+): Promise<ActionResult<{ url: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to download this report." };
+  }
+
+  try {
+    const res = await getReportDownloadUrl(contextId);
+    return { success: true, data: { url: res.url } };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "The report isn't ready to download yet."),
     };
   }
 }

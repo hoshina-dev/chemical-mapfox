@@ -77,6 +77,8 @@ export type ExperimentTemplateUpdate = Em["ExperimentTemplateUpdate"];
 export type ExperimentTemplateSummary = Em["ExperimentTemplateSummary"];
 export type ExperimentCreate = Em["ExperimentCreate"];
 export type ExperimentUpdate = Em["ExperimentUpdate"];
+export type ReportStatusResponse = Em["ReportStatusResponse"];
+export type ReportDownloadResponse = Em["ReportDownloadResponse"];
 
 /**
  * Fields merged from the experiment template JSONB. OpenAPI types the detail
@@ -136,6 +138,37 @@ export async function updateExperiment(expId: string, body: ExperimentUpdate) {
     method: "PUT",
     body: JSON.stringify(body),
   });
+}
+
+/**
+ * Evaluate the experiment's `calculations` against its current `values`,
+ * writing each `result` back. Returns the updated context. Idempotent — safe to
+ * re-run whenever values change. Must precede report generation when the
+ * template defines calculations (the PDF renders `{{var}}` from these results).
+ */
+export async function calculateExperiment(expId: string) {
+  return emFetch<ExperimentDetail>(`/api/experiments/${expId}/calculate`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Queue PDF report generation (async; returns the queued status). The worker
+ * renders from the experiment context and uploads to R2. Rejects with 409 while
+ * a generation is already pending/processing.
+ */
+export async function generateReport(expId: string) {
+  return emFetch<ReportStatusResponse>(
+    `/api/experiments/${expId}/report/generate`,
+    { method: "POST" },
+  );
+}
+
+/** A short-lived presigned URL for the generated PDF. 404 until one exists. */
+export async function getReportDownloadUrl(expId: string) {
+  return emFetch<ReportDownloadResponse>(
+    `/api/experiments/${expId}/report/download`,
+  );
 }
 
 // --- Experiment templates (nested under a sample) ---

@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
+import { FinalizingActions } from "@/components/internal/FinalizingActions";
 import { StartExperimentButton } from "@/components/internal/StartExperimentButton";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
@@ -48,6 +49,20 @@ export default async function ExperimentWorkspacePage({
   // Earlier stages (REQUESTED, PENDING) and later ones (FINALIZING, CLOSED)
   // render the lab form read-only.
   const canEdit = status === "EXPERIMENTING";
+
+  // FINALIZING-stage gating: report generation depends on calculations having
+  // been run, but only when the template defines any. A calculation counts as
+  // "run" once its result is populated (`POST /calculate` writes it).
+  const calcEntries = state ? Object.entries(state.template.calculations) : [];
+  const hasCalculations = calcEntries.length > 0;
+  const calculationsReady =
+    !hasCalculations ||
+    calcEntries.every(
+      ([, calc]) =>
+        calc.result !== undefined &&
+        calc.result !== null &&
+        calc.result !== "",
+    );
 
   const stages = [
     { label: "Created", at: ticket?.createdAt ?? null },
@@ -134,6 +149,16 @@ export default async function ExperimentWorkspacePage({
                     <StartExperimentButton contextId={contextId} />
                   </Stack>
                 </Alert>
+              )}
+
+              {status === "FINALIZING" && state && (
+                <FinalizingActions
+                  contextId={contextId}
+                  hasCalculations={hasCalculations}
+                  calculationsReady={calculationsReady}
+                  initialReportStatus={state.reportStatus}
+                  reportGeneratedAt={state.reportGeneratedAt}
+                />
               )}
 
               {state ? (
