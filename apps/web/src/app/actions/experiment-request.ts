@@ -123,7 +123,7 @@ export async function requestExperimentAction(
   try {
     await updateExperiment(
       contextId,
-      templateToExperimentUpdate(resolved.template.template, input.values),
+      templateToExperimentUpdate(resolved.template.wireSnapshot, input.values),
     );
   } catch {
     warning =

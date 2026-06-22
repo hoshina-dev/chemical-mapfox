@@ -289,7 +289,7 @@ export type QuestionType = Question["type"];
 export type QuestionId = Question["id"];
 
 export const FormDoc = z.object({
-  title: z.string(),
+  name: z.string(),
   description: z.string().optional(),
   questions: z.array(Question),
 });

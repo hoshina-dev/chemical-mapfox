@@ -9,41 +9,14 @@ Backend base URL (dev): `http://experiment-manager.mapfox.hoshina.san`
 
 ---
 
-## 1. Template **detail** response omits the template's own `description`
+## 1. Template **detail** response omits the template's own `description` — RESOLVED
 
-**Endpoint:** `GET /api/samples/{sample_id}/experiments/{template_id}`
+**Fixed in:** experiment-manager PR #11 (`Fix migration`).
 
-The detail response returns only these top-level keys:
-
-```
-id, lineage_id, name, version, is_current, clientForm, labForm, calculations
-```
-
-There is **no top-level `description`**, even though the template has one and the
-**list** endpoint (`GET /api/samples/{sample_id}/experiments`) returns it per row.
-
-```bash
-# list -> includes description
-curl .../api/samples/<sid>/experiments
-# {"experiments":[{"id":"...","name":"Skibidi Form","description":"skibidi six seven", ...}]}
-
-# detail -> no description
-curl .../api/samples/<sid>/experiments/<tid>
-# {"id":"...","name":"Skibidi Form","version":1,"is_current":true,"clientForm":{...},...}
-```
-
-**Symptom in the app:** the editor's Metadata → Description loads **empty**, and
-saving then overwrites the real description with an empty value.
-
-**Backend fix needed:**
-
-- Include the template's `description` in the detail response (and add it to the
-  `ExperimentTemplateDetail` OpenAPI schema so the generated types pick it up).
-
-**Frontend state:** the temporary list-based recovery was **reverted** (per
-request). `templateDetailToLoaded` reads `detail.description`, which is absent
-until the backend is fixed — so the Description field will be empty in the editor
-until then. Re-run `pnpm --filter @repo/api-client codegen` after the fix.
+The detail response now includes top-level `description`, and
+`ExperimentTemplateDetail` in the OpenAPI schema reflects it. After codegen,
+`templateDetailToLoaded` reads `detail.description` and the onboarding editor
+Metadata → Description field loads correctly.
 
 ---
 

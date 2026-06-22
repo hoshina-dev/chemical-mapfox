@@ -28,9 +28,9 @@ const detail = {
   id: ctx,
   sample_id: "s1",
   template_id: "t1",
-  clientForm: { title: "Client", questions: [] },
+  clientForm: { name: "Client", questions: [] },
   labForm: {
-    title: "Lab",
+    name: "Lab",
     questions: [{ id: "ph", type: "number", label: "pH", required: false }],
   },
   calculations: {},
@@ -66,8 +66,8 @@ describe("buffer + flush", () => {
     const call = vi.mocked(updateExperiment).mock.calls[0]!;
     expect(call[0]).toBe(ctx);
     expect(call[1].values).toEqual({ ph: 8, note: "looks good" });
-    expect(call[1].labForm).toBeDefined();
-    expect(call[1].clientForm).toBeDefined();
+    expect(call[1].labForm).toEqual(detail.labForm);
+    expect(call[1].clientForm).toEqual(detail.clientForm);
   });
 
   it("does not re-flush when nothing is dirty", async () => {

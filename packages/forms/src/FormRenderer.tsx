@@ -34,7 +34,7 @@ import type {
 } from "./schema";
 
 interface FormRendererProps {
-  doc: { title: string; description?: string; questions: Question[] };
+  doc: { name: string; description?: string; questions: Question[] };
   lockedValues?: Record<QuestionId, AnswerValue>;
   initialValues?: FormAnswers;
   readOnly?: boolean;
@@ -188,7 +188,7 @@ export function FormRenderer({
       }}
     >
       <div>
-        <Title order={3}>{doc.title}</Title>
+        <Title order={3}>{doc.name}</Title>
         {doc.description && (
           <Text c="dimmed" size="sm">
             {doc.description}

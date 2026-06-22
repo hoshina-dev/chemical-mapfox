@@ -47,7 +47,7 @@ export function CollaborativeFormRenderer({
   return (
     <Stack component="form" gap="md" onSubmit={(e) => e.preventDefault()}>
       <div>
-        <Title order={3}>{doc.title}</Title>
+        <Title order={3}>{doc.name}</Title>
         {doc.description && (
           <Text c="dimmed" size="sm">
             {doc.description}

@@ -6,7 +6,7 @@ const schemaText = JSON.stringify(schemaJson, null, 2);
 
 const TEMPLATE_EXAMPLE = `{
   "clientForm": {
-    "title": "Client intake",
+    "name": "Client intake",
     "questions": [
       {
         "id": "sample_id",
@@ -17,7 +17,7 @@ const TEMPLATE_EXAMPLE = `{
     ]
   },
   "labForm": {
-    "title": "Lab measurements",
+    "name": "Lab measurements",
     "questions": []
   },
   "calculations": {
@@ -51,7 +51,7 @@ export default function DocsIndexPage() {
           An experiment template is the top-level document the form engine
           loads. It pairs two forms — <Code>clientForm</Code> and{" "}
           <Code>labForm</Code> — each a <Code>FormDoc</Code> with a{" "}
-          <Code>title</Code>, optional <Code>description</Code>, and a{" "}
+          <Code>name</Code>, optional <Code>description</Code>, and a{" "}
           <Code>questions</Code> array. Named <Code>calculations</Code> map
           variable names to objects with a Python <Code>formula</Code>{" "}
           (evaluated by the backend) and an optional computed{" "}

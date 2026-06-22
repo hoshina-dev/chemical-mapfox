@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
+import type { AnswerValue } from "@repo/forms";
 
 import {
   getExperiment,
@@ -9,6 +9,7 @@ import {
 import {
   experimentDetailToState,
   templateToExperimentUpdate,
+  type TemplateWireSnapshot,
 } from "@/lib/experiment-manager/mappers";
 import { getRedis } from "@/lib/redis/client";
 
@@ -16,6 +17,7 @@ import type { LockMap, PresenceEntry, ServerMessage } from "./events";
 
 // --- Key helpers (see plan "Redis model") ---
 const kTemplate = (ctx: string) => `template:${ctx}`;
+const kRawSnapshot = (ctx: string) => `rawSnapshot:${ctx}`;
 const kValues = (ctx: string) => `values:${ctx}`;
 const kDirty = (ctx: string) => `dirty:${ctx}`;
 const kFlushLock = (ctx: string) => `flush:${ctx}`;
@@ -45,6 +47,13 @@ export async function hydrate(ctx: string): Promise<void> {
 
   const multi = redis.multi();
   multi.set(kTemplate(ctx), JSON.stringify(state.template), "EX", ROOM_TTL_S, "NX");
+  multi.set(
+    kRawSnapshot(ctx),
+    JSON.stringify(state.wireSnapshot),
+    "EX",
+    ROOM_TTL_S,
+    "NX",
+  );
   const entries = Object.entries(state.values).filter(
     ([, v]) => v !== undefined && v !== null,
   );
@@ -58,9 +67,9 @@ export async function hydrate(ctx: string): Promise<void> {
   await multi.exec();
 }
 
-async function readTemplate(ctx: string): Promise<ExperimentTemplate | null> {
-  const raw = await getRedis().get(kTemplate(ctx));
-  return raw ? (JSON.parse(raw) as ExperimentTemplate) : null;
+async function readRawSnapshot(ctx: string): Promise<TemplateWireSnapshot | null> {
+  const raw = await getRedis().get(kRawSnapshot(ctx));
+  return raw ? (JSON.parse(raw) as TemplateWireSnapshot) : null;
 }
 
 export async function readValues(
@@ -101,10 +110,10 @@ export async function flushNow(ctx: string): Promise<boolean> {
   if (got !== "OK") return false;
   try {
     if (!(await redis.get(kDirty(ctx)))) return false;
-    const template = await readTemplate(ctx);
-    if (!template) return false;
+    const snapshot = await readRawSnapshot(ctx);
+    if (!snapshot) return false;
     const values = await readValues(ctx);
-    await updateExperiment(ctx, templateToExperimentUpdate(template, values));
+    await updateExperiment(ctx, templateToExperimentUpdate(snapshot, values));
     await redis.del(kDirty(ctx));
     return true;
   } finally {
@@ -119,10 +128,10 @@ export async function flushNow(ctx: string): Promise<boolean> {
  * hydrated first.
  */
 export async function persistNow(ctx: string): Promise<void> {
-  const template = await readTemplate(ctx);
-  if (!template) throw new Error(`room ${ctx} is not hydrated`);
+  const snapshot = await readRawSnapshot(ctx);
+  if (!snapshot) throw new Error(`room ${ctx} is not hydrated`);
   const values = await readValues(ctx);
-  await updateExperiment(ctx, templateToExperimentUpdate(template, values));
+  await updateExperiment(ctx, templateToExperimentUpdate(snapshot, values));
   await getRedis().del(kDirty(ctx));
 }
 

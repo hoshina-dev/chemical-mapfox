@@ -101,13 +101,13 @@ export interface UserResponse {
  * Check if a given object implements the UserResponse interface.
  */
 export function instanceOfUserResponse(value: object): value is UserResponse {
-    if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
+    if ((!('createdAt' in value) && !('created_at' in value)) || (value['createdAt'] === undefined && value['created_at'] === undefined)) return false;
     if (!('email' in value) || value['email'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('researchCategories' in value) || value['researchCategories'] === undefined) return false;
+    if ((!('researchCategories' in value) && !('research_categories' in value)) || (value['researchCategories'] === undefined && value['research_categories'] === undefined)) return false;
     if (!('role' in value) || value['role'] === undefined) return false;
-    if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
+    if ((!('updatedAt' in value) && !('updated_at' in value)) || (value['updatedAt'] === undefined && value['updated_at'] === undefined)) return false;
     return true;
 }
 

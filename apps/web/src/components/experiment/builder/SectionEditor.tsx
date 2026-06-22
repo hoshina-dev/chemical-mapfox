@@ -35,9 +35,9 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
           {path === "clientForm" ? "Client form" : "Lab form"}
         </Title>
         <TextInput
-          label="Section title"
+          label="Section name"
           required
-          {...textProps(form, `${path}.title`)}
+          {...textProps(form, `${path}.name`)}
         />
         <TextInput
           label="Section description"

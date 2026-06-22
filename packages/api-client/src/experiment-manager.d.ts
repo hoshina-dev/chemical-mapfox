@@ -4,1493 +4,1499 @@
  */
 
 export interface paths {
-  "/api/samples": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Samples */
+        get: operations["list_samples_api_samples_get"];
+        put?: never;
+        /** Create Sample */
+        post: operations["create_sample_api_samples_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List Samples */
-    get: operations["list_samples_api_samples_get"];
-    put?: never;
-    /** Create Sample */
-    post: operations["create_sample_api_samples_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sample */
+        get: operations["get_sample_api_samples__sample_id__get"];
+        /** Update Sample */
+        put: operations["update_sample_api_samples__sample_id__put"];
+        post?: never;
+        /** Delete Sample */
+        delete: operations["delete_sample_api_samples__sample_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Sample */
-    get: operations["get_sample_api_samples__sample_id__get"];
-    /** Update Sample */
-    put: operations["update_sample_api_samples__sample_id__put"];
-    post?: never;
-    /** Delete Sample */
-    delete: operations["delete_sample_api_samples__sample_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Experiment Templates */
+        get: operations["list_experiment_templates_api_samples__sample_id__experiments_get"];
+        put?: never;
+        /** Create Experiment Template */
+        post: operations["create_experiment_template_api_samples__sample_id__experiments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List Experiment Templates */
-    get: operations["list_experiment_templates_api_samples__sample_id__experiments_get"];
-    put?: never;
-    /** Create Experiment Template */
-    post: operations["create_experiment_template_api_samples__sample_id__experiments_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments/{template_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Experiment Template */
+        get: operations["get_experiment_template_api_samples__sample_id__experiments__template_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Experiment Template */
+        delete: operations["delete_experiment_template_api_samples__sample_id__experiments__template_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Experiment Template */
-    get: operations["get_experiment_template_api_samples__sample_id__experiments__template_id__get"];
-    put?: never;
-    post?: never;
-    /** Delete Experiment Template */
-    delete: operations["delete_experiment_template_api_samples__sample_id__experiments__template_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments/{lineage_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments/{lineage_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Experiment Template */
+        put: operations["update_experiment_template_api_samples__sample_id__experiments__lineage_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /** Update Experiment Template */
-    put: operations["update_experiment_template_api_samples__sample_id__experiments__lineage_id__put"];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments/{lineage_id}/history": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments/{lineage_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Experiment Template History */
+        get: operations["get_experiment_template_history_api_samples__sample_id__experiments__lineage_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Experiment Template History */
-    get: operations["get_experiment_template_history_api_samples__sample_id__experiments__lineage_id__history_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments/{template_id}/pdf": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments/{template_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pdf Template */
+        get: operations["get_pdf_template_api_samples__sample_id__experiments__template_id__pdf_get"];
+        put?: never;
+        post?: never;
+        /** Delete Pdf Template */
+        delete: operations["delete_pdf_template_api_samples__sample_id__experiments__template_id__pdf_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Pdf Template */
-    get: operations["get_pdf_template_api_samples__sample_id__experiments__template_id__pdf_get"];
-    put?: never;
-    post?: never;
-    /** Delete Pdf Template */
-    delete: operations["delete_pdf_template_api_samples__sample_id__experiments__template_id__pdf_delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/samples/{sample_id}/experiments/{lineage_id}/pdf": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/samples/{sample_id}/experiments/{lineage_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upsert Pdf Template */
+        put: operations["upsert_pdf_template_api_samples__sample_id__experiments__lineage_id__pdf_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /** Upsert Pdf Template */
-    put: operations["upsert_pdf_template_api_samples__sample_id__experiments__lineage_id__pdf_put"];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/experiments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/experiments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Experiments */
+        get: operations["list_experiments_api_experiments_get"];
+        put?: never;
+        /** Create Experiment */
+        post: operations["create_experiment_api_experiments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List Experiments */
-    get: operations["list_experiments_api_experiments_get"];
-    put?: never;
-    /** Create Experiment */
-    post: operations["create_experiment_api_experiments_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/experiments/{exp_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/experiments/{exp_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Experiment */
+        get: operations["get_experiment_api_experiments__exp_id__get"];
+        /** Update Experiment */
+        put: operations["update_experiment_api_experiments__exp_id__put"];
+        post?: never;
+        /** Delete Experiment */
+        delete: operations["delete_experiment_api_experiments__exp_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get Experiment */
-    get: operations["get_experiment_api_experiments__exp_id__get"];
-    /** Update Experiment */
-    put: operations["update_experiment_api_experiments__exp_id__put"];
-    post?: never;
-    /** Delete Experiment */
-    delete: operations["delete_experiment_api_experiments__exp_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/experiments/{exp_id}/calculate": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/experiments/{exp_id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculate Experiment */
+        post: operations["calculate_experiment_api_experiments__exp_id__calculate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Calculate Experiment */
-    post: operations["calculate_experiment_api_experiments__exp_id__calculate_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/experiments/{exp_id}/report/generate": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/experiments/{exp_id}/report/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Report */
+        post: operations["generate_report_api_experiments__exp_id__report_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Generate Report */
-    post: operations["generate_report_api_experiments__exp_id__report_generate_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/experiments/{exp_id}/report/download": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/experiments/{exp_id}/report/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Report */
+        get: operations["download_report_api_experiments__exp_id__report_download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Download Report */
-    get: operations["download_report_api_experiments__exp_id__report_download_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** Calculation */
-    Calculation: {
-      /** Formula */
-      formula: string;
-      /** Result */
-      result?: unknown;
+    schemas: {
+        /** Calculation */
+        Calculation: {
+            /** Formula */
+            formula: string;
+            /** Result */
+            result?: unknown;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExperimentCreate
+         * @example {
+         *       "exp_id": "7b1e39a5-86e2-433f-a194-397061316cb6",
+         *       "lineage_id": "dd949e81-22ea-46b0-aa04-c0c80d22a9a2",
+         *       "sample_id": "a1b2c3d4-0002-0002-0002-000000000002"
+         *     }
+         */
+        ExperimentCreate: {
+            /**
+             * Exp Id
+             * Format: uuid
+             */
+            exp_id: string;
+            /**
+             * Sample Id
+             * Format: uuid
+             */
+            sample_id: string;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+        };
+        /** ExperimentDetail */
+        ExperimentDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Sample Id
+             * Format: uuid
+             */
+            sample_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+            /** Report Status */
+            report_status?: string | null;
+            /** Report R2 Key */
+            report_r2_key?: string | null;
+            /** Report Generated At */
+            report_generated_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExperimentSummary */
+        ExperimentSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Sample Id
+             * Format: uuid
+             */
+            sample_id: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+            /** Report Status */
+            report_status?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * ExperimentTemplateCreate
+         * @example {
+         *       "calculations": {
+         *         "ash_mass": {
+         *           "formula": "values['mass_after_ash'] - values['crucible_mass']"
+         *         },
+         *         "ash_pct": {
+         *           "formula": "round(1000 * ash_mass / values['sample_mass']) / 10"
+         *         },
+         *         "fixed_carbon_pct": {
+         *           "formula": "round(10 * (100 - moisture_pct - volatile_pct - ash_pct)) / 10"
+         *         },
+         *         "moisture_loss": {
+         *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
+         *         },
+         *         "moisture_pct": {
+         *           "formula": "round(1000 * moisture_loss / values['sample_mass']) / 10"
+         *         },
+         *         "volatile_loss": {
+         *           "formula": "values['mass_after_moisture'] - values['mass_after_volatile']"
+         *         },
+         *         "volatile_pct": {
+         *           "formula": "round(1000 * volatile_loss / values['sample_mass']) / 10"
+         *         }
+         *       },
+         *       "clientForm": {
+         *         "name": "Client Intake",
+         *         "questions": []
+         *       },
+         *       "description": "Determine moisture, ash, volatile matter, and fixed carbon content",
+         *       "labForm": {
+         *         "description": "Record masses at each stage of the proximate analysis procedure.",
+         *         "name": "Proximate Analysis Form",
+         *         "questions": [
+         *           {
+         *             "config": {
+         *               "default": 20,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "crucible_mass",
+         *             "label": "Crucible mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 1,
+         *               "max": 10,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "sample_mass",
+         *             "label": "Sample mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.8,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_moisture",
+         *             "label": "Mass after moisture drying at 105°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.5,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_volatile",
+         *             "label": "Mass after volatile matter removal at 900°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.1,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_ash",
+         *             "label": "Mass after ashing at 750°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           }
+         *         ]
+         *       },
+         *       "name": "Proximate Analysis"
+         *     }
+         */
+        ExperimentTemplateCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            clientForm: components["schemas"]["FormDoc"];
+            labForm: components["schemas"]["FormDoc"];
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["Calculation"];
+            };
+        };
+        /** ExperimentTemplateDetail */
+        ExperimentTemplateDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Version */
+            version: number;
+            /** Is Current */
+            is_current: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** ExperimentTemplateHistoryResponse */
+        ExperimentTemplateHistoryResponse: {
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Versions */
+            versions: components["schemas"]["ExperimentTemplateSummary"][];
+        };
+        /** ExperimentTemplateSummary */
+        ExperimentTemplateSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Version */
+            version: number;
+            /** Is Current */
+            is_current: boolean;
+        };
+        /**
+         * ExperimentTemplateUpdate
+         * @example {
+         *       "calculations": {
+         *         "ash_mass": {
+         *           "formula": "values['mass_after_ash'] - values['crucible_mass']"
+         *         },
+         *         "ash_pct": {
+         *           "formula": "round(1000 * ash_mass / values['sample_mass']) / 10"
+         *         },
+         *         "fixed_carbon_pct": {
+         *           "formula": "round(10 * (100 - moisture_pct - volatile_pct - ash_pct)) / 10"
+         *         },
+         *         "moisture_loss": {
+         *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
+         *         },
+         *         "moisture_pct": {
+         *           "formula": "round(1000 * moisture_loss / values['sample_mass']) / 10"
+         *         },
+         *         "volatile_loss": {
+         *           "formula": "values['mass_after_moisture'] - values['mass_after_volatile']"
+         *         },
+         *         "volatile_pct": {
+         *           "formula": "round(1000 * volatile_loss / values['sample_mass']) / 10"
+         *         }
+         *       },
+         *       "clientForm": {
+         *         "name": "Client Intake",
+         *         "questions": []
+         *       },
+         *       "description": "Determine moisture, ash, volatile matter, and fixed carbon content",
+         *       "labForm": {
+         *         "description": "Record masses at each stage of the proximate analysis procedure.",
+         *         "name": "Proximate Analysis Form",
+         *         "questions": [
+         *           {
+         *             "config": {
+         *               "default": 20,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "crucible_mass",
+         *             "label": "Crucible mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 1,
+         *               "max": 10,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "sample_mass",
+         *             "label": "Sample mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.8,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_moisture",
+         *             "label": "Mass after moisture drying at 105°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.5,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_volatile",
+         *             "label": "Mass after volatile matter removal at 900°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 20.1,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "mass_after_ash",
+         *             "label": "Mass after ashing at 750°C (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           }
+         *         ]
+         *       },
+         *       "name": "Proximate Analysis"
+         *     }
+         */
+        ExperimentTemplateUpdate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            clientForm: components["schemas"]["FormDoc"];
+            labForm: components["schemas"]["FormDoc"];
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["Calculation"];
+            };
+        };
+        /** ExperimentTemplatesResponse */
+        ExperimentTemplatesResponse: {
+            /**
+             * Sample Id
+             * Format: uuid
+             */
+            sample_id: string;
+            /** Experiments */
+            experiments: components["schemas"]["ExperimentTemplateSummary"][];
+        };
+        /**
+         * ExperimentUpdate
+         * @example {
+         *       "calculations": {
+         *         "moisture_loss": {
+         *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
+         *         }
+         *       },
+         *       "clientForm": {
+         *         "name": "Client Intake",
+         *         "questions": []
+         *       },
+         *       "labForm": {
+         *         "name": "Proximate Analysis Form",
+         *         "questions": [
+         *           {
+         *             "config": {
+         *               "default": 20,
+         *               "max": 200,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "crucible_mass",
+         *             "label": "Crucible mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           },
+         *           {
+         *             "config": {
+         *               "default": 1,
+         *               "max": 10,
+         *               "min": 0,
+         *               "step": 0.001
+         *             },
+         *             "id": "sample_mass",
+         *             "label": "Sample mass (g)",
+         *             "required": true,
+         *             "type": "number"
+         *           }
+         *         ]
+         *       },
+         *       "values": {
+         *         "crucible_mass": 21.354,
+         *         "mass_after_ash": 21.501,
+         *         "mass_after_moisture": 22.247,
+         *         "mass_after_volatile": 21.891,
+         *         "sample_mass": 1.001
+         *       }
+         *     }
+         */
+        ExperimentUpdate: {
+            clientForm: components["schemas"]["FormDoc"];
+            labForm: components["schemas"]["FormDoc"];
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["Calculation"];
+            };
+            /** Values */
+            values?: {
+                [key: string]: unknown;
+            };
+        };
+        /** ExperimentsListResponse */
+        ExperimentsListResponse: {
+            /** Experiments */
+            experiments: components["schemas"]["ExperimentSummary"][];
+        };
+        /** FormDoc */
+        FormDoc: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Questions */
+            questions: components["schemas"]["FormQuestion"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** FormQuestion */
+        FormQuestion: {
+            /** Id */
+            id: string;
+            /** Type */
+            type: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** PdfTemplateBody */
+        PdfTemplateBody: {
+            /** Components */
+            components: unknown[];
+        };
+        /** PdfTemplateResponse */
+        PdfTemplateResponse: {
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
+            /** Is Current */
+            is_current: boolean;
+            /** Components */
+            components: unknown[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ReportDownloadResponse */
+        ReportDownloadResponse: {
+            /** Url */
+            url: string;
+            /** Expires In */
+            expires_in: number;
+        };
+        /** ReportStatusResponse */
+        ReportStatusResponse: {
+            /** Status */
+            status: string;
+        };
+        /**
+         * SampleCreate
+         * @example {
+         *       "description": "Raw coal samples for proximate and calorific analysis",
+         *       "name": "Coal"
+         *     }
+         */
+        SampleCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** SampleSummary */
+        SampleSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+        };
+        /**
+         * SampleUpdate
+         * @example {
+         *       "description": "Raw coal samples for proximate and calorific analysis",
+         *       "name": "Coal"
+         *     }
+         */
+        SampleUpdate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** SamplesListResponse */
+        SamplesListResponse: {
+            /** Samples */
+            samples: components["schemas"]["SampleSummary"][];
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
     };
-    /**
-     * ExperimentCreate
-     * @example {
-     *       "exp_id": "7b1e39a5-86e2-433f-a194-397061316cb6",
-     *       "lineage_id": "dd949e81-22ea-46b0-aa04-c0c80d22a9a2",
-     *       "sample_id": "a1b2c3d4-0002-0002-0002-000000000002"
-     *     }
-     */
-    ExperimentCreate: {
-      /**
-       * Exp Id
-       * Format: uuid
-       */
-      exp_id: string;
-      /**
-       * Sample Id
-       * Format: uuid
-       */
-      sample_id: string;
-      /**
-       * Lineage Id
-       * Format: uuid
-       */
-      lineage_id: string;
-    };
-    /** ExperimentDetail */
-    ExperimentDetail: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /**
-       * Sample Id
-       * Format: uuid
-       */
-      sample_id: string;
-      /**
-       * Template Id
-       * Format: uuid
-       */
-      template_id: string;
-      /** Report Status */
-      report_status?: string | null;
-      /** Report R2 Key */
-      report_r2_key?: string | null;
-      /** Report Generated At */
-      report_generated_at?: string | null;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-    } & {
-      [key: string]: unknown;
-    };
-    /** ExperimentSummary */
-    ExperimentSummary: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /**
-       * Sample Id
-       * Format: uuid
-       */
-      sample_id: string;
-      /**
-       * Template Id
-       * Format: uuid
-       */
-      template_id: string;
-      /** Report Status */
-      report_status?: string | null;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-    };
-    /**
-     * ExperimentTemplateCreate
-     * @example {
-     *       "calculations": {
-     *         "ash_mass": {
-     *           "formula": "values['mass_after_ash'] - values['crucible_mass']"
-     *         },
-     *         "ash_pct": {
-     *           "formula": "round(1000 * ash_mass / values['sample_mass']) / 10"
-     *         },
-     *         "fixed_carbon_pct": {
-     *           "formula": "round(10 * (100 - moisture_pct - volatile_pct - ash_pct)) / 10"
-     *         },
-     *         "moisture_loss": {
-     *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
-     *         },
-     *         "moisture_pct": {
-     *           "formula": "round(1000 * moisture_loss / values['sample_mass']) / 10"
-     *         },
-     *         "volatile_loss": {
-     *           "formula": "values['mass_after_moisture'] - values['mass_after_volatile']"
-     *         },
-     *         "volatile_pct": {
-     *           "formula": "round(1000 * volatile_loss / values['sample_mass']) / 10"
-     *         }
-     *       },
-     *       "clientForm": {
-     *         "questions": [],
-     *         "title": "Client Intake"
-     *       },
-     *       "description": "Determine moisture, ash, volatile matter, and fixed carbon content",
-     *       "labForm": {
-     *         "description": "Record masses at each stage of the proximate analysis procedure.",
-     *         "questions": [
-     *           {
-     *             "config": {
-     *               "default": 20,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "crucible_mass",
-     *             "label": "Crucible mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 1,
-     *               "max": 10,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "sample_mass",
-     *             "label": "Sample mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.8,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_moisture",
-     *             "label": "Mass after moisture drying at 105°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.5,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_volatile",
-     *             "label": "Mass after volatile matter removal at 900°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.1,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_ash",
-     *             "label": "Mass after ashing at 750°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           }
-     *         ],
-     *         "title": "Proximate Analysis Form"
-     *       },
-     *       "title": "Proximate Analysis"
-     *     }
-     */
-    ExperimentTemplateCreate: {
-      /** Title */
-      title: string;
-      /** Description */
-      description?: string | null;
-      clientForm: components["schemas"]["FormDoc"];
-      labForm: components["schemas"]["FormDoc"];
-      /** Calculations */
-      calculations: {
-        [key: string]: components["schemas"]["Calculation"];
-      };
-    };
-    /** ExperimentTemplateDetail */
-    ExperimentTemplateDetail: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /**
-       * Lineage Id
-       * Format: uuid
-       */
-      lineage_id: string;
-      /** Name */
-      name: string;
-      /** Version */
-      version: number;
-      /** Is Current */
-      is_current: boolean;
-    } & {
-      [key: string]: unknown;
-    };
-    /** ExperimentTemplateHistoryResponse */
-    ExperimentTemplateHistoryResponse: {
-      /**
-       * Lineage Id
-       * Format: uuid
-       */
-      lineage_id: string;
-      /** Versions */
-      versions: components["schemas"]["ExperimentTemplateSummary"][];
-    };
-    /** ExperimentTemplateSummary */
-    ExperimentTemplateSummary: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /**
-       * Lineage Id
-       * Format: uuid
-       */
-      lineage_id: string;
-      /** Name */
-      name: string;
-      /** Description */
-      description?: string | null;
-      /** Version */
-      version: number;
-      /** Is Current */
-      is_current: boolean;
-    };
-    /**
-     * ExperimentTemplateUpdate
-     * @example {
-     *       "calculations": {
-     *         "ash_mass": {
-     *           "formula": "values['mass_after_ash'] - values['crucible_mass']"
-     *         },
-     *         "ash_pct": {
-     *           "formula": "round(1000 * ash_mass / values['sample_mass']) / 10"
-     *         },
-     *         "fixed_carbon_pct": {
-     *           "formula": "round(10 * (100 - moisture_pct - volatile_pct - ash_pct)) / 10"
-     *         },
-     *         "moisture_loss": {
-     *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
-     *         },
-     *         "moisture_pct": {
-     *           "formula": "round(1000 * moisture_loss / values['sample_mass']) / 10"
-     *         },
-     *         "volatile_loss": {
-     *           "formula": "values['mass_after_moisture'] - values['mass_after_volatile']"
-     *         },
-     *         "volatile_pct": {
-     *           "formula": "round(1000 * volatile_loss / values['sample_mass']) / 10"
-     *         }
-     *       },
-     *       "clientForm": {
-     *         "questions": [],
-     *         "title": "Client Intake"
-     *       },
-     *       "description": "Determine moisture, ash, volatile matter, and fixed carbon content",
-     *       "labForm": {
-     *         "description": "Record masses at each stage of the proximate analysis procedure.",
-     *         "questions": [
-     *           {
-     *             "config": {
-     *               "default": 20,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "crucible_mass",
-     *             "label": "Crucible mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 1,
-     *               "max": 10,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "sample_mass",
-     *             "label": "Sample mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.8,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_moisture",
-     *             "label": "Mass after moisture drying at 105°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.5,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_volatile",
-     *             "label": "Mass after volatile matter removal at 900°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 20.1,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "mass_after_ash",
-     *             "label": "Mass after ashing at 750°C (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           }
-     *         ],
-     *         "title": "Proximate Analysis Form"
-     *       },
-     *       "title": "Proximate Analysis"
-     *     }
-     */
-    ExperimentTemplateUpdate: {
-      /** Title */
-      title: string;
-      /** Description */
-      description?: string | null;
-      clientForm: components["schemas"]["FormDoc"];
-      labForm: components["schemas"]["FormDoc"];
-      /** Calculations */
-      calculations: {
-        [key: string]: components["schemas"]["Calculation"];
-      };
-    };
-    /** ExperimentTemplatesResponse */
-    ExperimentTemplatesResponse: {
-      /**
-       * Sample Id
-       * Format: uuid
-       */
-      sample_id: string;
-      /** Experiments */
-      experiments: components["schemas"]["ExperimentTemplateSummary"][];
-    };
-    /**
-     * ExperimentUpdate
-     * @example {
-     *       "calculations": {
-     *         "moisture_loss": {
-     *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
-     *         }
-     *       },
-     *       "clientForm": {
-     *         "questions": [],
-     *         "title": "Client Intake"
-     *       },
-     *       "labForm": {
-     *         "questions": [
-     *           {
-     *             "config": {
-     *               "default": 20,
-     *               "max": 200,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "crucible_mass",
-     *             "label": "Crucible mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           },
-     *           {
-     *             "config": {
-     *               "default": 1,
-     *               "max": 10,
-     *               "min": 0,
-     *               "step": 0.001
-     *             },
-     *             "id": "sample_mass",
-     *             "label": "Sample mass (g)",
-     *             "required": true,
-     *             "type": "number"
-     *           }
-     *         ],
-     *         "title": "Proximate Analysis Form"
-     *       },
-     *       "values": {
-     *         "crucible_mass": 21.354,
-     *         "mass_after_ash": 21.501,
-     *         "mass_after_moisture": 22.247,
-     *         "mass_after_volatile": 21.891,
-     *         "sample_mass": 1.001
-     *       }
-     *     }
-     */
-    ExperimentUpdate: {
-      clientForm: components["schemas"]["FormDoc"];
-      labForm: components["schemas"]["FormDoc"];
-      /** Calculations */
-      calculations: {
-        [key: string]: components["schemas"]["Calculation"];
-      };
-      /** Values */
-      values?: {
-        [key: string]: unknown;
-      };
-    };
-    /** ExperimentsListResponse */
-    ExperimentsListResponse: {
-      /** Experiments */
-      experiments: components["schemas"]["ExperimentSummary"][];
-    };
-    /** FormDoc */
-    FormDoc: {
-      /** Title */
-      title: string;
-      /** Description */
-      description?: string | null;
-      /** Questions */
-      questions: components["schemas"]["FormQuestion"][];
-    };
-    /** FormQuestion */
-    FormQuestion: {
-      /** Id */
-      id: string;
-      /** Type */
-      type: string;
-      /** Label */
-      label: string;
-      /** Description */
-      description?: string | null;
-      /**
-       * Required
-       * @default false
-       */
-      required: boolean;
-    } & {
-      [key: string]: unknown;
-    };
-    /** HTTPValidationError */
-    HTTPValidationError: {
-      /** Detail */
-      detail?: components["schemas"]["ValidationError"][];
-    };
-    /** PdfTemplateBody */
-    PdfTemplateBody: {
-      /** Components */
-      components: unknown[];
-    };
-    /** PdfTemplateResponse */
-    PdfTemplateResponse: {
-      /**
-       * Template Id
-       * Format: uuid
-       */
-      template_id: string;
-      /** Is Current */
-      is_current: boolean;
-      /** Components */
-      components: unknown[];
-      /**
-       * Updated At
-       * Format: date-time
-       */
-      updated_at: string;
-    };
-    /** ReportDownloadResponse */
-    ReportDownloadResponse: {
-      /** Url */
-      url: string;
-      /** Expires In */
-      expires_in: number;
-    };
-    /** ReportStatusResponse */
-    ReportStatusResponse: {
-      /** Status */
-      status: string;
-    };
-    /**
-     * SampleCreate
-     * @example {
-     *       "description": "Raw coal samples for proximate and calorific analysis",
-     *       "name": "Coal"
-     *     }
-     */
-    SampleCreate: {
-      /** Name */
-      name: string;
-      /** Description */
-      description?: string | null;
-    };
-    /** SampleSummary */
-    SampleSummary: {
-      /**
-       * Id
-       * Format: uuid
-       */
-      id: string;
-      /** Name */
-      name: string;
-      /** Description */
-      description?: string | null;
-    };
-    /**
-     * SampleUpdate
-     * @example {
-     *       "description": "Raw coal samples for proximate and calorific analysis",
-     *       "name": "Coal"
-     *     }
-     */
-    SampleUpdate: {
-      /** Name */
-      name: string;
-      /** Description */
-      description?: string | null;
-    };
-    /** SamplesListResponse */
-    SamplesListResponse: {
-      /** Samples */
-      samples: components["schemas"]["SampleSummary"][];
-    };
-    /** ValidationError */
-    ValidationError: {
-      /** Location */
-      loc: (string | number)[];
-      /** Message */
-      msg: string;
-      /** Error Type */
-      type: string;
-      /** Input */
-      input?: unknown;
-      /** Context */
-      ctx?: Record<string, never>;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  list_samples_api_samples_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    list_samples_api_samples_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SamplesListResponse"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    create_sample_api_samples_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SamplesListResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SampleCreate"];
+            };
         };
-      };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SampleSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-  };
-  create_sample_api_samples_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_sample_api_samples__sample_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SampleSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SampleCreate"];
-      };
+    update_sample_api_samples__sample_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SampleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SampleSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    delete_sample_api_samples__sample_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SampleSummary"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  get_sample_api_samples__sample_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-      };
-      cookie?: never;
+    list_experiment_templates_api_samples__sample_id__experiments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplatesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    create_experiment_template_api_samples__sample_id__experiments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SampleSummary"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentTemplateCreate"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  update_sample_api_samples__sample_id__put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-      };
-      cookie?: never;
+    get_experiment_template_api_samples__sample_id__experiments__template_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SampleUpdate"];
-      };
+    delete_experiment_template_api_samples__sample_id__experiments__template_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    update_experiment_template_api_samples__sample_id__experiments__lineage_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                lineage_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SampleSummary"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentTemplateUpdate"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  delete_sample_api_samples__sample_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-      };
-      cookie?: never;
+    get_experiment_template_history_api_samples__sample_id__experiments__lineage_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplateHistoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
+    get_pdf_template_api_samples__sample_id__experiments__template_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                template_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfTemplateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  list_experiment_templates_api_samples__sample_id__experiments_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-      };
-      cookie?: never;
+    delete_pdf_template_api_samples__sample_id__experiments__template_id__pdf_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    upsert_pdf_template_api_samples__sample_id__experiments__lineage_id__pdf_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                lineage_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ExperimentTemplatesResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PdfTemplateBody"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfTemplateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  create_experiment_template_api_samples__sample_id__experiments_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-      };
-      cookie?: never;
+    list_experiments_api_experiments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentsListResponse"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ExperimentTemplateCreate"];
-      };
+    create_experiment_api_experiments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    get_experiment_api_experiments__exp_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ExperimentTemplateDetail"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  get_experiment_template_api_samples__sample_id__experiments__template_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        template_id: string;
-      };
-      cookie?: never;
+    update_experiment_api_experiments__exp_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    delete_experiment_api_experiments__exp_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["ExperimentTemplateDetail"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  delete_experiment_template_api_samples__sample_id__experiments__template_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        template_id: string;
-      };
-      cookie?: never;
+    calculate_experiment_api_experiments__exp_id__calculate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
+    generate_report_api_experiments__exp_id__report_generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
         };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  update_experiment_template_api_samples__sample_id__experiments__lineage_id__put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        lineage_id: string;
-      };
-      cookie?: never;
+    download_report_api_experiments__exp_id__report_download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDownloadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ExperimentTemplateUpdate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentTemplateDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_experiment_template_history_api_samples__sample_id__experiments__lineage_id__history_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        lineage_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentTemplateHistoryResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_pdf_template_api_samples__sample_id__experiments__template_id__pdf_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        template_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PdfTemplateResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  delete_pdf_template_api_samples__sample_id__experiments__template_id__pdf_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        template_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  upsert_pdf_template_api_samples__sample_id__experiments__lineage_id__pdf_put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        sample_id: string;
-        lineage_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["PdfTemplateBody"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["PdfTemplateResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  list_experiments_api_experiments_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentsListResponse"];
-        };
-      };
-    };
-  };
-  create_experiment_api_experiments_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ExperimentCreate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_experiment_api_experiments__exp_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  update_experiment_api_experiments__exp_id__put: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["ExperimentUpdate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  delete_experiment_api_experiments__exp_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  calculate_experiment_api_experiments__exp_id__calculate_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExperimentDetail"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  generate_report_api_experiments__exp_id__report_generate_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      202: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ReportStatusResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  download_report_api_experiments__exp_id__report_download_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        exp_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ReportDownloadResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
 }

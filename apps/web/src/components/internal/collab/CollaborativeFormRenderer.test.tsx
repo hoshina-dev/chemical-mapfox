@@ -8,7 +8,7 @@ import { render, screen } from "../../../../test/render";
 import { CollaborativeFormRenderer } from "./CollaborativeFormRenderer";
 
 const doc: FormDoc = {
-  title: "Lab form",
+  name: "Lab form",
   questions: [
     { id: "ph", type: "number", label: "pH", required: false },
     { id: "note", type: "string", label: "Note", required: false },

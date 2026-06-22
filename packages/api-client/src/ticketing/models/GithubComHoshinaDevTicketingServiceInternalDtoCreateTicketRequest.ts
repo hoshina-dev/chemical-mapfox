@@ -43,9 +43,9 @@ export interface GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketReque
  * Check if a given object implements the GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketRequest interface.
  */
 export function instanceOfGithubComHoshinaDevTicketingServiceInternalDtoCreateTicketRequest(value: object): value is GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketRequest {
-    if (!('experimentTemplateId' in value) || value['experimentTemplateId'] === undefined) return false;
-    if (!('organizationId' in value) || value['organizationId'] === undefined) return false;
-    if (!('userId' in value) || value['userId'] === undefined) return false;
+    if ((!('experimentTemplateId' in value) && !('experiment_template_id' in value)) || (value['experimentTemplateId'] === undefined && value['experiment_template_id'] === undefined)) return false;
+    if ((!('organizationId' in value) && !('organization_id' in value)) || (value['organizationId'] === undefined && value['organization_id'] === undefined)) return false;
+    if ((!('userId' in value) && !('user_id' in value)) || (value['userId'] === undefined && value['user_id'] === undefined)) return false;
     return true;
 }
 

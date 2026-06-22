@@ -54,8 +54,8 @@ export function emptyDraft(): FormDraft {
   return {
     title: "Untitled Form",
     description: "",
-    clientForm: { title: "Client form", description: "", questions: [] },
-    labForm: { title: "Lab form", description: "", questions: [] },
+    clientForm: { name: "Client form", description: "", questions: [] },
+    labForm: { name: "Lab form", description: "", questions: [] },
     calculations: [],
   };
 }

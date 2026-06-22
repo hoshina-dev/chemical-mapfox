@@ -31,11 +31,20 @@ export interface TemplateSummary {
   description?: string;
 }
 
+/** Raw clientForm/labForm/calculations JSON from experiment-manager. */
+export interface TemplateWireSnapshot {
+  clientForm: FormDocSnapshot;
+  labForm: FormDocSnapshot;
+  calculations: Record<string, CalculationSnapshot | string>;
+}
+
 export interface LoadedTemplate {
   id: string;
   lineageId: string;
   meta: { title: string; description?: string };
   template: ExperimentTemplate;
+  /** Verbatim API snapshot — use for experiment PUT to pass drift validation. */
+  wireSnapshot: TemplateWireSnapshot;
   valid: boolean;
 }
 
@@ -67,9 +76,21 @@ function readFormDoc(
   kind: "client" | "lab",
 ): FormDocSnapshot {
   if (kind === "client") {
-    return detail.clientForm ?? { title: "", questions: [] };
+    return detail.clientForm ?? { name: "", questions: [] };
   }
-  return detail.labForm ?? { title: "", questions: [] };
+  return detail.labForm ?? { name: "", questions: [] };
+}
+
+export function extractWireSnapshot(detail: {
+  clientForm?: FormDocSnapshot | null;
+  labForm?: FormDocSnapshot | null;
+  calculations?: Record<string, CalculationWire> | null;
+}): TemplateWireSnapshot {
+  return {
+    clientForm: readFormDoc(detail, "client"),
+    labForm: readFormDoc(detail, "lab"),
+    calculations: detail.calculations ?? {},
+  };
 }
 
 export function normalizeCalculations(
@@ -113,10 +134,11 @@ export function mapCalculationsToApi(
 export function templateDetailToLoaded(
   detail: ExperimentTemplateDetail,
 ): LoadedTemplate {
+  const wireSnapshot = extractWireSnapshot(detail);
   const candidate = stripNullFields({
-    clientForm: readFormDoc(detail, "client"),
-    labForm: readFormDoc(detail, "lab"),
-    calculations: normalizeCalculations(detail.calculations),
+    clientForm: wireSnapshot.clientForm,
+    labForm: wireSnapshot.labForm,
+    calculations: normalizeCalculations(wireSnapshot.calculations),
   });
   const parsed = ExperimentTemplateSchema.safeParse(candidate);
   const meta = {
@@ -129,6 +151,7 @@ export function templateDetailToLoaded(
     lineageId: detail.lineage_id,
     meta,
     template: parsed.success ? parsed.data : (candidate as ExperimentTemplate),
+    wireSnapshot,
     valid: parsed.success,
   };
 }
@@ -142,6 +165,8 @@ export interface ExperimentState {
   reportGeneratedAt: string | null;
   createdAt: string;
   template: ExperimentTemplate;
+  /** Verbatim API snapshot — use for experiment PUT to pass drift validation. */
+  wireSnapshot: TemplateWireSnapshot;
   /** Whether the embedded forms parsed cleanly against the form schema. */
   valid: boolean;
   values: Record<string, AnswerValue>;
@@ -150,10 +175,11 @@ export interface ExperimentState {
 export function experimentDetailToState(
   detail: ExperimentDetail,
 ): ExperimentState {
+  const wireSnapshot = extractWireSnapshot(detail);
   const candidate = stripNullFields({
-    clientForm: readFormDoc(detail, "client"),
-    labForm: readFormDoc(detail, "lab"),
-    calculations: normalizeCalculations(detail.calculations),
+    clientForm: wireSnapshot.clientForm,
+    labForm: wireSnapshot.labForm,
+    calculations: normalizeCalculations(wireSnapshot.calculations),
   });
   const parsed = ExperimentTemplateSchema.safeParse(candidate);
   return {
@@ -164,6 +190,7 @@ export function experimentDetailToState(
     reportGeneratedAt: detail.report_generated_at ?? null,
     createdAt: detail.created_at,
     template: parsed.success ? parsed.data : (candidate as ExperimentTemplate),
+    wireSnapshot,
     valid: parsed.success,
     values: (detail.values ?? {}) as Record<string, AnswerValue>,
   };
@@ -196,7 +223,7 @@ function normalizeFormDocForApi(doc: FormDoc): FormDocSnapshot {
   });
 
   return {
-    title: doc.title,
+    name: doc.name,
     description: doc.description ?? "",
     questions,
   } as FormDocSnapshot;
@@ -207,7 +234,7 @@ export function templateToCreate(
   template: ExperimentTemplate,
 ): ExperimentTemplateCreate {
   return {
-    title: meta.title,
+    name: meta.title,
     description: meta.description ?? null,
     clientForm: normalizeFormDocForApi(template.clientForm),
     labForm: normalizeFormDocForApi(template.labForm),
@@ -223,18 +250,18 @@ export function templateToUpdate(
 }
 
 /**
- * Build the experiment-manager PUT body that seeds a freshly created context
- * with the template's forms/calculations plus the client's intake answers.
- * Mirrors the template snapshot the backend expects (see `ExperimentUpdate`).
+ * Build the experiment-manager PUT body. Resend the verbatim wire snapshot from
+ * GET (forms + calculations) plus the edited values — the backend validates
+ * that forms match the template and only applies `values`.
  */
 export function templateToExperimentUpdate(
-  template: ExperimentTemplate,
+  snapshot: TemplateWireSnapshot,
   values: Record<string, AnswerValue>,
 ): ExperimentUpdate {
   return {
-    clientForm: normalizeFormDocForApi(template.clientForm),
-    labForm: normalizeFormDocForApi(template.labForm),
-    calculations: mapCalculationsToApi(template.calculations),
+    clientForm: snapshot.clientForm,
+    labForm: snapshot.labForm,
+    calculations: snapshot.calculations as Record<string, CalculationSnapshot>,
     values,
   };
 }

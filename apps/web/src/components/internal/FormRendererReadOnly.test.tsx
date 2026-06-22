@@ -7,7 +7,7 @@ import { render, screen } from "../../../test/render";
 // A field that carries a configured default — the case where the read-only
 // view used to fabricate a value the technician never sees.
 const doc = {
-  title: "Lab form",
+  name: "Lab form",
   questions: [
     {
       id: "ph",

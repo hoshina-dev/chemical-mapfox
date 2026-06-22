@@ -47,7 +47,7 @@ export interface AddMemberRequest {
  * Check if a given object implements the AddMemberRequest interface.
  */
 export function instanceOfAddMemberRequest(value: object): value is AddMemberRequest {
-    if (!('userId' in value) || value['userId'] === undefined) return false;
+    if ((!('userId' in value) && !('user_id' in value)) || (value['userId'] === undefined && value['user_id'] === undefined)) return false;
     return true;
 }
 
