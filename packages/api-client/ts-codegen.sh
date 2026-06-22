@@ -19,6 +19,9 @@ check_server() {
 CUSTAPI_DOC="${CUSTAPI_DOC_URL:-http://custapi.mapfox.hoshina.san/swagger/doc.json}"
 EXPERIMENT_MANAGER_DOC="${EXPERIMENT_MANAGER_DOC_URL:-http://experiment-manager.mapfox.hoshina.san/openapi.json}"
 TICKETING_DOC="${TICKETING_DOC_URL:-http://ticketing-service.mapfox.hoshina.san/docs/doc.json}"
+POSTPROCESS_SCRIPT="$(pwd)/scripts/postprocess-openapi-typescript-fetch.mjs"
+
+export TS_POST_PROCESS_FILE="node $POSTPROCESS_SCRIPT"
 
 rm -rf src/custapi src/ticketing src/experiment-manager.d.ts
 

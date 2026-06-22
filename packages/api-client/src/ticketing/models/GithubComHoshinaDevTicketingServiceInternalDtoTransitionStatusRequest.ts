@@ -37,7 +37,8 @@ export interface GithubComHoshinaDevTicketingServiceInternalDtoTransitionStatusR
  * Check if a given object implements the GithubComHoshinaDevTicketingServiceInternalDtoTransitionStatusRequest interface.
  */
 export function instanceOfGithubComHoshinaDevTicketingServiceInternalDtoTransitionStatusRequest(value: object): value is GithubComHoshinaDevTicketingServiceInternalDtoTransitionStatusRequest {
-    if (!('status' in value) || value['status'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('status' in value) || record['status'] === undefined) return false;
     return true;
 }
 

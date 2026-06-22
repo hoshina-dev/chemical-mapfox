@@ -73,9 +73,10 @@ export interface CreateUserRequest {
  * Check if a given object implements the CreateUserRequest interface.
  */
 export function instanceOfCreateUserRequest(value: object): value is CreateUserRequest {
-    if (!('email' in value) || value['email'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('password' in value) || value['password'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('email' in value) || record['email'] === undefined) return false;
+    if (!('name' in value) || record['name'] === undefined) return false;
+    if (!('password' in value) || record['password'] === undefined) return false;
     return true;
 }
 

@@ -31,7 +31,8 @@ export interface GithubComHoshinaDevTicketingServiceInternalDtoAddExperimentTemp
  * Check if a given object implements the GithubComHoshinaDevTicketingServiceInternalDtoAddExperimentTemplateRequest interface.
  */
 export function instanceOfGithubComHoshinaDevTicketingServiceInternalDtoAddExperimentTemplateRequest(value: object): value is GithubComHoshinaDevTicketingServiceInternalDtoAddExperimentTemplateRequest {
-    if ((!('experimentTemplateId' in value) && !('experiment_template_id' in value)) || (value['experimentTemplateId'] === undefined && value['experiment_template_id'] === undefined)) return false;
+    const record = value as Record<string, unknown>;
+    if ((!('experimentTemplateId' in value) && !('experiment_template_id' in value)) || (record['experimentTemplateId'] === undefined && record['experiment_template_id'] === undefined)) return false;
     return true;
 }
 

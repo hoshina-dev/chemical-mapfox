@@ -61,9 +61,10 @@ export interface CreateOrganizationRequest {
  * Check if a given object implements the CreateOrganizationRequest interface.
  */
 export function instanceOfCreateOrganizationRequest(value: object): value is CreateOrganizationRequest {
-    if (!('lat' in value) || value['lat'] === undefined) return false;
-    if (!('lng' in value) || value['lng'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('lat' in value) || record['lat'] === undefined) return false;
+    if (!('lng' in value) || record['lng'] === undefined) return false;
+    if (!('name' in value) || record['name'] === undefined) return false;
     return true;
 }
 

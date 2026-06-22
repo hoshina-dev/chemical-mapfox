@@ -79,13 +79,14 @@ export interface OrganizationResponse {
  * Check if a given object implements the OrganizationResponse interface.
  */
 export function instanceOfOrganizationResponse(value: object): value is OrganizationResponse {
-    if ((!('createdAt' in value) && !('created_at' in value)) || (value['createdAt'] === undefined && value['created_at'] === undefined)) return false;
-    if (!('id' in value) || value['id'] === undefined) return false;
-    if ((!('imageUrls' in value) && !('image_urls' in value)) || (value['imageUrls'] === undefined && value['image_urls'] === undefined)) return false;
-    if (!('lat' in value) || value['lat'] === undefined) return false;
-    if (!('lng' in value) || value['lng'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if ((!('updatedAt' in value) && !('updated_at' in value)) || (value['updatedAt'] === undefined && value['updated_at'] === undefined)) return false;
+    const record = value as Record<string, unknown>;
+    if ((!('createdAt' in value) && !('created_at' in value)) || (record['createdAt'] === undefined && record['created_at'] === undefined)) return false;
+    if (!('id' in value) || record['id'] === undefined) return false;
+    if ((!('imageUrls' in value) && !('image_urls' in value)) || (record['imageUrls'] === undefined && record['image_urls'] === undefined)) return false;
+    if (!('lat' in value) || record['lat'] === undefined) return false;
+    if (!('lng' in value) || record['lng'] === undefined) return false;
+    if (!('name' in value) || record['name'] === undefined) return false;
+    if ((!('updatedAt' in value) && !('updated_at' in value)) || (record['updatedAt'] === undefined && record['updated_at'] === undefined)) return false;
     return true;
 }
 

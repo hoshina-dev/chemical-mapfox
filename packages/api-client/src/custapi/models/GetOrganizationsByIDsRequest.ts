@@ -31,7 +31,8 @@ export interface GetOrganizationsByIDsRequest {
  * Check if a given object implements the GetOrganizationsByIDsRequest interface.
  */
 export function instanceOfGetOrganizationsByIDsRequest(value: object): value is GetOrganizationsByIDsRequest {
-    if (!('ids' in value) || value['ids'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('ids' in value) || record['ids'] === undefined) return false;
     return true;
 }
 

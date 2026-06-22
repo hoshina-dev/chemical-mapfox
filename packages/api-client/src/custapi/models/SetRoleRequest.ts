@@ -41,7 +41,8 @@ export interface SetRoleRequest {
  * Check if a given object implements the SetRoleRequest interface.
  */
 export function instanceOfSetRoleRequest(value: object): value is SetRoleRequest {
-    if (!('role' in value) || value['role'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('role' in value) || record['role'] === undefined) return false;
     return true;
 }
 

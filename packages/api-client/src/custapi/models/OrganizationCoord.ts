@@ -43,9 +43,10 @@ export interface OrganizationCoord {
  * Check if a given object implements the OrganizationCoord interface.
  */
 export function instanceOfOrganizationCoord(value: object): value is OrganizationCoord {
-    if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('lat' in value) || value['lat'] === undefined) return false;
-    if (!('lng' in value) || value['lng'] === undefined) return false;
+    const record = value as Record<string, unknown>;
+    if (!('id' in value) || record['id'] === undefined) return false;
+    if (!('lat' in value) || record['lat'] === undefined) return false;
+    if (!('lng' in value) || record['lng'] === undefined) return false;
     return true;
 }
 
