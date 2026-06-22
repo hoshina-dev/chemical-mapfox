@@ -20,6 +20,15 @@ export interface SessionUser {
   role?: CustApiRole;
 }
 
+export function isAdmin(role?: CustApiRole): boolean {
+  return role === "admin";
+}
+
+/** Human-readable label for a role, e.g. for nav/profile badges. */
+export function roleLabel(role?: CustApiRole): string {
+  return role === "admin" ? "Lab Staff" : "Client";
+}
+
 export const LoginFormSchema = z.object({
   email: z.email({ message: "Please enter a valid email." }).trim(),
   password: z.string().min(1, { message: "Password is required." }),

@@ -11,13 +11,13 @@ import {
   Title,
 } from "@mantine/core";
 
-import { requireSession } from "@/lib/auth/dal";
+import { requireAdmin } from "@/lib/auth/dal";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  await requireSession("admin");
+  await requireAdmin();
 
   let users: UserResponse[] = [];
   let organizations: OrganizationResponse[] = [];

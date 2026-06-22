@@ -26,14 +26,13 @@ export function OrganizationSelect({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let active = true;
     const q = debounced.trim();
+    if (q.length < 2) return; // too short to search; display is gated below
 
-    if (q.length < 2) {
-      setData([]);
-      return;
-    }
-
+    let active = true;
+    // Imperative in-flight flag for the async search — there is no
+    // render-derivable equivalent, so setting it here is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     searchOrganizations(q)
       .then((options) => {
@@ -48,12 +47,15 @@ export function OrganizationSelect({
     };
   }, [debounced]);
 
+  // Show no options until the query is long enough to have been searched.
+  const options = debounced.trim().length < 2 ? [] : data;
+
   return (
     <Select
       label="Organization"
       placeholder="Search organizations..."
       searchable
-      data={data}
+      data={options}
       value={value}
       onChange={onChange}
       searchValue={search}

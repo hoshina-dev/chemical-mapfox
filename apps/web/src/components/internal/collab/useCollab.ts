@@ -45,10 +45,9 @@ export function useCollab(
   const [locks, setLocks] = useState<LockMap>({});
   const [connected, setConnected] = useState(false);
 
-  // One stable connection id per mount (tab/device).
-  const connectionIdRef = useRef<string>("");
-  if (!connectionIdRef.current) connectionIdRef.current = crypto.randomUUID();
-  const connectionId = connectionIdRef.current;
+  // One stable connection id per mount (tab/device). Lazy state init runs the
+  // generator once per mount — a stable value without reading a ref in render.
+  const [connectionId] = useState(() => crypto.randomUUID());
 
   const base = `/internal/experiment/${contextId}/collab`;
 
