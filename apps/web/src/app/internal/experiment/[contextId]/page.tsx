@@ -20,6 +20,7 @@ import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
 import { FinalizingActions } from "@/components/internal/FinalizingActions";
+import { ReportPanel } from "@/components/experiment/ReportPanel";
 import { StartExperimentButton } from "@/components/internal/StartExperimentButton";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
@@ -27,6 +28,8 @@ import { requireSession, toSessionUser } from "@/lib/auth/dal";
 import {
   experimentCheckinPath,
   experimentListingPath,
+  experimentReportDownloadPath,
+  experimentReportViewPath,
   experimentRawPath,
 } from "@/lib/experiment-manager/routes";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
@@ -63,6 +66,9 @@ export default async function ExperimentWorkspacePage({
         calc.result !== null &&
         calc.result !== "",
     );
+  const reportReady =
+    state?.reportStatus?.toLowerCase() === "success" ||
+    state?.reportStatus?.toLowerCase() === "succeeded";
 
   const stages = [
     { label: "Created", at: ticket?.createdAt ?? null },
@@ -158,6 +164,14 @@ export default async function ExperimentWorkspacePage({
                   calculationsReady={calculationsReady}
                   initialReportStatus={state.reportStatus}
                   reportGeneratedAt={state.reportGeneratedAt}
+                />
+              )}
+
+              {status === "CLOSED" && reportReady && (
+                <ReportPanel
+                  generatedAt={state?.reportGeneratedAt ?? null}
+                  viewHref={experimentReportViewPath(contextId)}
+                  downloadHref={experimentReportDownloadPath(contextId)}
                 />
               )}
 

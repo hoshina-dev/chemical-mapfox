@@ -7,5 +7,5 @@ export async function GET(
   { params }: { params: Promise<{ contextId: string }> },
 ) {
   const { contextId } = await params;
-  return reportPdfResponse(request, contextId, "admin");
+  return reportPdfResponse(request, contextId, "ticket-owner");
 }

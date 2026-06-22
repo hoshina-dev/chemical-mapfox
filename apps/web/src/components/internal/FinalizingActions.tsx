@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Group,
+  Modal,
   Stack,
   Text,
   Title,
@@ -15,6 +16,7 @@ import { useEffect, useState, useTransition } from "react";
 
 import {
   calculateExperimentAction,
+  closeTicketAction,
   generateReportAction,
   getReportStatusAction,
 } from "@/app/actions/experiment";
@@ -92,6 +94,9 @@ export function FinalizingActions({
   const [reportStatus, setReportStatus] = useState(initialReportStatus);
   const [genPending, startGen] = useTransition();
   const [genError, setGenError] = useState<string | null>(null);
+  const [closePending, startClose] = useTransition();
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
 
   const inFlight = isInFlight(reportStatus);
   // Report generation depends on calculations: allowed once they've been run
@@ -99,6 +104,8 @@ export function FinalizingActions({
   // just succeeded before the server-rendered `calculationsReady` catches up.
   const calcSatisfied =
     !hasCalculations || calculationsReady || calcDoneThisSession;
+  const reportIsReady = isReady(reportStatus);
+  const canClose = calcSatisfied && reportIsReady && !inFlight;
   const meta = statusMeta(reportStatus);
 
   // Poll for completion while a report job is in flight. A self-rescheduling
@@ -149,6 +156,7 @@ export function FinalizingActions({
   const onGenerate = () =>
     startGen(async () => {
       setGenError(null);
+      setCloseError(null);
       const res = await generateReportAction(contextId);
       if (!res.success) {
         setGenError(res.error);
@@ -157,124 +165,173 @@ export function FinalizingActions({
       setReportStatus(res.data.status);
     });
 
+  const onClose = () => {
+    startClose(async () => {
+      setCloseError(null);
+      const res = await closeTicketAction(contextId);
+      if (!res.success) {
+        setCloseError(res.error);
+        return;
+      }
+      setCloseModalOpen(false);
+      router.refresh();
+    });
+  };
+
   const generateLabel =
     isReady(reportStatus) || isFailed(reportStatus)
       ? "Regenerate report"
       : "Generate report";
 
   return (
-    <Card withBorder radius="md" padding="lg">
-      <Stack gap="md">
-        <Group justify="space-between" align="center">
-          <Title order={4}>Finalize experiment</Title>
+    <Card withBorder radius="md" padding="md">
+      <Stack gap="sm">
+        <Group justify="space-between" align="center" gap="sm">
+          <Title order={4}>Finalize</Title>
           <Badge color={meta.color} variant="light" radius="sm">
-            {meta.label}
+            Report: {meta.label}
           </Badge>
         </Group>
-        <Text size="sm" c="dimmed">
-          {hasCalculations
-            ? "Run the calculations, then generate the PDF report. The report uses the calculated results, so calculate first."
-            : "Generate the PDF report for this experiment."}
+
+        <Group gap="sm" wrap="wrap">
+          {hasCalculations && (
+            <Button
+              variant="light"
+              onClick={onCalculate}
+              loading={calcPending}
+              disabled={inFlight || closePending}
+              size="sm"
+            >
+              {calculationsReady || calcDoneThisSession ? "Recalculate" : "Calculate"}
+            </Button>
+          )}
+          <Button
+            onClick={onGenerate}
+            loading={genPending || inFlight}
+            disabled={!calcSatisfied || inFlight || closePending}
+            size="sm"
+          >
+            {generateLabel}
+          </Button>
+          {reportIsReady && (
+            <>
+              <Button
+                component="a"
+                href={experimentReportViewPath(contextId)}
+                target="_blank"
+                rel="noreferrer"
+                variant="light"
+                size="sm"
+              >
+                View report
+              </Button>
+              <Button
+                component="a"
+                href={experimentReportDownloadPath(contextId)}
+                variant="subtle"
+                size="sm"
+                download
+              >
+                Download
+              </Button>
+            </>
+          )}
+          <Button
+            color="green"
+            onClick={() => setCloseModalOpen(true)}
+            loading={closePending}
+            disabled={!canClose || closePending}
+            size="sm"
+          >
+            Close ticket
+          </Button>
+        </Group>
+
+        <Text size="xs" c="dimmed">
+          {canClose
+            ? "Ready to close. Closing locks further calculation and report generation."
+            : "Run calculations and generate the report before closing this ticket."}
         </Text>
 
-        {hasCalculations && (
-          <Stack gap={6}>
-            <Group gap="sm">
-              <Button
-                variant="light"
-                onClick={onCalculate}
-                loading={calcPending}
-                disabled={inFlight}
-              >
-                {calculationsReady || calcDoneThisSession
-                  ? "Recalculate"
-                  : "Calculate"}
-              </Button>
-              {(calculationsReady || calcDoneThisSession) && (
-                <Text size="sm" c="teal">
-                  Calculations are up to date.
-                </Text>
-              )}
-            </Group>
-            {calcError && (
-              <Alert
-                color="red"
-                variant="light"
-                title="Calculation failed"
-                style={{ whiteSpace: "pre-line" }}
-              >
-                {calcError}
-              </Alert>
-            )}
-          </Stack>
+        {reportIsReady && (
+          <Text size="xs" c="teal">
+            Report ready
+            {reportGeneratedAt ? (
+              <>
+                {" "}
+                since <LocalDateTime iso={reportGeneratedAt} />
+              </>
+            ) : null}
+            .
+          </Text>
         )}
 
-        <Stack gap={6}>
-          <Group gap="sm">
+        {calcError && (
+          <Alert
+            color="red"
+            variant="light"
+            title="Calculation failed"
+            style={{ whiteSpace: "pre-line" }}
+          >
+            {calcError}
+          </Alert>
+        )}
+        {!calcSatisfied && (
+          <Text size="xs" c="dimmed">
+            Run the calculations first to enable report generation.
+          </Text>
+        )}
+        {isFailed(reportStatus) && (
+          <Text size="sm" c="red">
+            Report generation failed. You can try again.
+          </Text>
+        )}
+        {genError && (
+          <Alert
+            color="red"
+            variant="light"
+            title="Could not generate report"
+            style={{ whiteSpace: "pre-line" }}
+          >
+            {genError}
+          </Alert>
+        )}
+        {closeError && (
+          <Alert
+            color="red"
+            variant="light"
+            title="Could not close ticket"
+            style={{ whiteSpace: "pre-line" }}
+          >
+            {closeError}
+          </Alert>
+        )}
+      </Stack>
+      <Modal
+        opened={closeModalOpen}
+        onClose={() => setCloseModalOpen(false)}
+        title="Close ticket?"
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            This will mark the ticket as closed. Calculations and report
+            generation will no longer be available after closing.
+          </Text>
+          <Group justify="flex-end" gap="sm">
             <Button
-              onClick={onGenerate}
-              loading={genPending || inFlight}
-              disabled={!calcSatisfied || inFlight}
+              variant="subtle"
+              onClick={() => setCloseModalOpen(false)}
+              disabled={closePending}
             >
-              {generateLabel}
+              Cancel
+            </Button>
+            <Button color="green" onClick={onClose} loading={closePending}>
+              Close ticket
             </Button>
           </Group>
-          {!calcSatisfied && (
-            <Text size="xs" c="dimmed">
-              Run the calculations first to enable report generation.
-            </Text>
-          )}
-          {isReady(reportStatus) && (
-            <Alert color="teal" variant="light" title="Report is ready">
-              <Stack gap="sm">
-                <Text size="sm">
-                  {reportGeneratedAt ? (
-                    <>
-                      Generated <LocalDateTime iso={reportGeneratedAt} />.{" "}
-                    </>
-                  ) : null}
-                  Open the PDF in your browser to review it before saving a copy.
-                </Text>
-                <Group gap="sm">
-                  <Button
-                    component="a"
-                    href={experimentReportViewPath(contextId)}
-                    target="_blank"
-                    rel="noreferrer"
-                    size="sm"
-                  >
-                    View report
-                  </Button>
-                  <Button
-                    component="a"
-                    href={experimentReportDownloadPath(contextId)}
-                    variant="light"
-                    size="sm"
-                    download
-                  >
-                    Download PDF
-                  </Button>
-                </Group>
-              </Stack>
-            </Alert>
-          )}
-          {isFailed(reportStatus) && (
-            <Text size="sm" c="red">
-              Report generation failed. You can try again.
-            </Text>
-          )}
-          {genError && (
-            <Alert
-              color="red"
-              variant="light"
-              title="Could not generate report"
-              style={{ whiteSpace: "pre-line" }}
-            >
-              {genError}
-            </Alert>
-          )}
         </Stack>
-      </Stack>
+      </Modal>
     </Card>
   );
 }

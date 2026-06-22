@@ -10,6 +10,14 @@ export function myExperimentDetailPath(contextId: string) {
   return `${BASE}/listing/${contextId}`;
 }
 
+export function myExperimentReportViewPath(contextId: string) {
+  return `${BASE}/listing/${contextId}/report`;
+}
+
+export function myExperimentReportDownloadPath(contextId: string) {
+  return `${BASE}/listing/${contextId}/report?download=1`;
+}
+
 /** Catalogue of requestable specimens/templates. */
 export function requestCatalogPath() {
   return `${BASE}/request/listing`;

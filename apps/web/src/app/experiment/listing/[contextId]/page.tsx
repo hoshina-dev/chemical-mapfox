@@ -19,10 +19,15 @@ import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import { ReportPanel } from "@/components/experiment/ReportPanel";
 import { SampleLabel } from "@/components/experiment/SampleLabel";
 import { requireSession } from "@/lib/auth/dal";
 import { experimentCheckinPath } from "@/lib/experiment-manager/routes";
-import { myExperimentsPath } from "@/lib/experiment/routes";
+import {
+  myExperimentReportDownloadPath,
+  myExperimentReportViewPath,
+  myExperimentsPath,
+} from "@/lib/experiment/routes";
 import { getRequestOrigin } from "@/lib/http/origin";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
 import { statusMeta } from "@/lib/ticketing/tickets";
@@ -62,6 +67,9 @@ export default async function MyExperimentDetailPage({
     { label: "Closed", at: ticket?.closedAt ?? null },
   ];
   const reachedCount = stages.filter((s) => s.at).length;
+  const reportReady =
+    state?.reportStatus?.toLowerCase() === "success" ||
+    state?.reportStatus?.toLowerCase() === "succeeded";
 
   return (
     <Container size="xl" py="xl">
@@ -121,6 +129,14 @@ export default async function MyExperimentDetailPage({
 
           <GridCol span={{ base: 12, md: 4 }}>
             <Stack gap="lg">
+              {reportReady && (
+                <ReportPanel
+                  generatedAt={state?.reportGeneratedAt ?? null}
+                  viewHref={myExperimentReportViewPath(contextId)}
+                  downloadHref={myExperimentReportDownloadPath(contextId)}
+                />
+              )}
+
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="md">
                   Lifecycle

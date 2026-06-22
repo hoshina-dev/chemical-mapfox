@@ -14,9 +14,27 @@ import {
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
   experimentCheckinPath,
+  experimentListingPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
 import { ticketsApi } from "@/lib/ticketing/client";
+
+function reportReady(status: string | null | undefined): boolean {
+  const normalized = status?.toLowerCase();
+  return normalized === "success" || normalized === "succeeded";
+}
+
+function calculationsReady(exp: Awaited<ReturnType<typeof getExperiment>>): boolean {
+  const calculations = exp.calculations ?? {};
+  return Object.values(calculations).every((calc) => {
+    if (typeof calc === "string") return false;
+    return (
+      calc.result !== undefined &&
+      calc.result !== null &&
+      calc.result !== ""
+    );
+  });
+}
 
 async function errorText(error: unknown, fallback: string): Promise<string> {
   if (
@@ -242,6 +260,58 @@ export async function getReportDownloadUrlAction(
     return {
       success: false,
       error: errorMessage(error, "The report isn't ready to download yet."),
+    };
+  }
+}
+
+/**
+ * Close a finalized ticket. The normal FINALIZING → CLOSED transition does not
+ * require a close reason, but the lab must have completed calculations and
+ * generated the PDF report first.
+ */
+export async function closeTicketAction(
+  contextId: string,
+): Promise<ActionResult<{ status: string }>> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "You aren't allowed to close this ticket." };
+  }
+
+  let exp: Awaited<ReturnType<typeof getExperiment>>;
+  try {
+    exp = await getExperiment(contextId);
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not verify this experiment is ready to close."),
+    };
+  }
+
+  if (!calculationsReady(exp)) {
+    return {
+      success: false,
+      error: "Run calculations before closing this ticket.",
+    };
+  }
+
+  if (!reportReady(exp.report_status)) {
+    return {
+      success: false,
+      error: "Generate the PDF report before closing this ticket.",
+    };
+  }
+
+  try {
+    const ticket = await ticketsApi.apiV1TicketsIdStatusPatch(contextId, {
+      status: "CLOSED",
+    });
+    revalidatePath(experimentWorkspacePath(contextId));
+    revalidatePath(experimentListingPath());
+    return { success: true, data: { status: ticket.status ?? "CLOSED" } };
+  } catch (error) {
+    return {
+      success: false,
+      error: await errorText(error, "Could not close this ticket."),
     };
   }
 }
