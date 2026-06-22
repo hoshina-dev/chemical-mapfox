@@ -12,6 +12,7 @@ import {
   Paper,
   Stack,
   Text,
+  Textarea,
   TextInput,
   Title,
   Tooltip,
@@ -48,36 +49,47 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
           </Text>
         )}
         {calcs.map((_, i) => (
-          <Group key={i} gap="xs" wrap="nowrap" align="flex-end">
+          <Group key={i} gap="xs" wrap="nowrap" align="flex-start">
             <TextInput
               label={i === 0 ? "Name" : undefined}
               placeholder="totalCost"
               style={{ flex: 1 }}
               {...form.getInputProps(`calculations.${i}.name`)}
             />
-            <TextInput
+            <Textarea
               label={i === 0 ? "Formula" : undefined}
               placeholder="mean(values['reading_a'])"
+              autosize
+              minRows={1}
+              maxRows={8}
               style={{ flex: 2 }}
+              styles={{
+                input: {
+                  fontFamily: "var(--mantine-font-family-monospace)",
+                  fontSize: "var(--mantine-font-size-sm)",
+                },
+              }}
               {...form.getInputProps(`calculations.${i}.formula`)}
             />
-            <Tooltip label="Open code editor">
+            <Group gap={4} wrap="nowrap" mt={i === 0 ? 25 : 0}>
+              <Tooltip label="Open code editor">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={() => setActiveIndex(i)}
+                  aria-label="Open code editor"
+                >
+                  ⤢
+                </ActionIcon>
+              </Tooltip>
               <ActionIcon
+                color="red"
                 variant="subtle"
-                onClick={() => setActiveIndex(i)}
-                aria-label="Open code editor"
+                onClick={() => form.removeListItem("calculations", i)}
+                aria-label="Remove calculation"
               >
-                ⤢
+                ✕
               </ActionIcon>
-            </Tooltip>
-            <ActionIcon
-              color="red"
-              variant="subtle"
-              onClick={() => form.removeListItem("calculations", i)}
-              aria-label="Remove calculation"
-            >
-              ✕
-            </ActionIcon>
+            </Group>
           </Group>
         ))}
         <Group>
@@ -140,7 +152,9 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
                 </List.Item>
               </List>
               <Text size="xs" c="dimmed" mt={6}>
-                Dunder (<Code>__</Code>) access is rejected by the backend.
+                You can write multiple lines: the final line is used as the
+                result, or assign it to a <Code>result</Code> variable. Dunder (
+                <Code>__</Code>) access is rejected by the backend.
               </Text>
             </div>
 
