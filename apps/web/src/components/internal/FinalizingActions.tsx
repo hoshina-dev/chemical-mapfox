@@ -16,26 +16,45 @@ import { useEffect, useState, useTransition } from "react";
 import {
   calculateExperimentAction,
   generateReportAction,
-  getReportDownloadUrlAction,
   getReportStatusAction,
 } from "@/app/actions/experiment";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import {
+  experimentReportDownloadPath,
+  experimentReportViewPath,
+} from "@/lib/experiment-manager/routes";
 
 /** While in one of these the report worker is still running — poll, don't act. */
 function isInFlight(status: string | null): boolean {
-  return status === "pending" || status === "processing";
+  const normalized = normalizeStatus(status);
+  return normalized === "pending" || normalized === "processing";
+}
+
+function normalizeStatus(status: string | null): string | null {
+  return status?.toLowerCase() ?? null;
+}
+
+function isReady(status: string | null): boolean {
+  const normalized = normalizeStatus(status);
+  return normalized === "success" || normalized === "succeeded";
+}
+
+function isFailed(status: string | null): boolean {
+  return normalizeStatus(status) === "failed";
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   pending: { label: "Queued", color: "blue" },
   processing: { label: "Generating…", color: "blue" },
+  success: { label: "Ready", color: "teal" },
   succeeded: { label: "Ready", color: "teal" },
   failed: { label: "Failed", color: "red" },
 };
 
 function statusMeta(status: string | null) {
-  if (!status) return { label: "Not generated", color: "gray" };
-  return STATUS_META[status] ?? { label: status, color: "gray" };
+  const normalized = normalizeStatus(status);
+  if (!normalized) return { label: "Not generated", color: "gray" };
+  return STATUS_META[normalized] ?? { label: status ?? normalized, color: "gray" };
 }
 
 const POLL_INTERVAL_MS = 3000;
@@ -54,8 +73,8 @@ export interface FinalizingActionsProps {
  * Lab-staff actions for the FINALIZING stage: run calculations, then generate
  * the PDF report. The two are independent actions, but report generation is
  * gated on calculations having run (when the template has any). Both are
- * re-runnable. Generation is async, so we poll the report status — only while a
- * job is actually in flight — and surface a download once it succeeds.
+ * re-runnable. Generation is async, so we poll the report status only while a
+ * job is actually in flight and surface view/download actions once it succeeds.
  */
 export function FinalizingActions({
   contextId,
@@ -73,9 +92,6 @@ export function FinalizingActions({
   const [reportStatus, setReportStatus] = useState(initialReportStatus);
   const [genPending, startGen] = useTransition();
   const [genError, setGenError] = useState<string | null>(null);
-
-  const [downloadPending, startDownload] = useTransition();
-  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const inFlight = isInFlight(reportStatus);
   // Report generation depends on calculations: allowed once they've been run
@@ -141,19 +157,8 @@ export function FinalizingActions({
       setReportStatus(res.data.status);
     });
 
-  const onDownload = () =>
-    startDownload(async () => {
-      setDownloadError(null);
-      const res = await getReportDownloadUrlAction(contextId);
-      if (!res.success) {
-        setDownloadError(res.error);
-        return;
-      }
-      window.open(res.data.url, "_blank", "noopener,noreferrer");
-    });
-
   const generateLabel =
-    reportStatus === "succeeded" || reportStatus === "failed"
+    isReady(reportStatus) || isFailed(reportStatus)
       ? "Regenerate report"
       : "Generate report";
 
@@ -213,27 +218,47 @@ export function FinalizingActions({
             >
               {generateLabel}
             </Button>
-            {reportStatus === "succeeded" && (
-              <Button
-                variant="light"
-                onClick={onDownload}
-                loading={downloadPending}
-              >
-                Download report
-              </Button>
-            )}
           </Group>
           {!calcSatisfied && (
             <Text size="xs" c="dimmed">
               Run the calculations first to enable report generation.
             </Text>
           )}
-          {reportStatus === "succeeded" && reportGeneratedAt && (
-            <Text size="xs" c="dimmed">
-              Generated <LocalDateTime iso={reportGeneratedAt} />.
-            </Text>
+          {isReady(reportStatus) && (
+            <Alert color="teal" variant="light" title="Report is ready">
+              <Stack gap="sm">
+                <Text size="sm">
+                  {reportGeneratedAt ? (
+                    <>
+                      Generated <LocalDateTime iso={reportGeneratedAt} />.{" "}
+                    </>
+                  ) : null}
+                  Open the PDF in your browser to review it before saving a copy.
+                </Text>
+                <Group gap="sm">
+                  <Button
+                    component="a"
+                    href={experimentReportViewPath(contextId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    size="sm"
+                  >
+                    View report
+                  </Button>
+                  <Button
+                    component="a"
+                    href={experimentReportDownloadPath(contextId)}
+                    variant="light"
+                    size="sm"
+                    download
+                  >
+                    Download PDF
+                  </Button>
+                </Group>
+              </Stack>
+            </Alert>
           )}
-          {reportStatus === "failed" && (
+          {isFailed(reportStatus) && (
             <Text size="sm" c="red">
               Report generation failed. You can try again.
             </Text>
@@ -246,16 +271,6 @@ export function FinalizingActions({
               style={{ whiteSpace: "pre-line" }}
             >
               {genError}
-            </Alert>
-          )}
-          {downloadError && (
-            <Alert
-              color="red"
-              variant="light"
-              title="Could not download report"
-              style={{ whiteSpace: "pre-line" }}
-            >
-              {downloadError}
             </Alert>
           )}
         </Stack>

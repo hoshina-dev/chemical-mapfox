@@ -14,6 +14,14 @@ export function experimentRawPath(contextId: string) {
   return `${BASE}/${contextId}/raw`;
 }
 
+export function experimentReportViewPath(contextId: string) {
+  return `${BASE}/${contextId}/report`;
+}
+
+export function experimentReportDownloadPath(contextId: string) {
+  return `${BASE}/${contextId}/report?download=1`;
+}
+
 /**
  * Sample check-in page (the target of the QR label printed by the requester).
  * Lab staff open it to confirm a shipped sample has arrived, transitioning the
