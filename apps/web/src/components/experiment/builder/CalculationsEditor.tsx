@@ -1,18 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import {
   ActionIcon,
   Button,
+  Code,
+  Divider,
+  Drawer,
   Group,
+  Input,
+  List,
   Paper,
   Stack,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
 
 import type { FormDraft } from "@/lib/builder";
+
+import { CompactFormulaEditor } from "./CompactFormulaEditor";
+import { MonacoFormulaEditor } from "./MonacoFormulaEditor";
 
 interface CalculationsEditorProps {
   form: UseFormReturnType<FormDraft>;
@@ -20,6 +30,9 @@ interface CalculationsEditorProps {
 
 export function CalculationsEditor({ form }: CalculationsEditorProps) {
   const calcs = form.values.calculations;
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const activeCalc = activeIndex === null ? null : calcs[activeIndex];
 
   return (
     <Paper withBorder p="md" radius="md">
@@ -36,28 +49,46 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
             No calculations yet.
           </Text>
         )}
-        {calcs.map((_, i) => (
-          <Group key={i} gap="xs" wrap="nowrap" align="flex-end">
+        {calcs.map((calc, i) => (
+          <Group key={i} gap="xs" wrap="nowrap" align="flex-start">
             <TextInput
               label={i === 0 ? "Name" : undefined}
               placeholder="totalCost"
               style={{ flex: 1 }}
               {...form.getInputProps(`calculations.${i}.name`)}
             />
-            <TextInput
+            <Input.Wrapper
               label={i === 0 ? "Formula" : undefined}
-              placeholder="mean(values['reading_a'])"
               style={{ flex: 2 }}
-              {...form.getInputProps(`calculations.${i}.formula`)}
-            />
-            <ActionIcon
-              color="red"
-              variant="subtle"
-              onClick={() => form.removeListItem("calculations", i)}
-              aria-label="Remove calculation"
             >
-              ✕
-            </ActionIcon>
+              <CompactFormulaEditor
+                value={calc.formula}
+                onChange={(value) =>
+                  form.setFieldValue(`calculations.${i}.formula`, value)
+                }
+                onExpand={() => setActiveIndex(i)}
+                placeholder="mean(values['reading_a'])"
+              />
+            </Input.Wrapper>
+            <Group gap={4} wrap="nowrap" mt={i === 0 ? 25 : 0}>
+              <Tooltip label="Open code editor">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={() => setActiveIndex(i)}
+                  aria-label="Open code editor"
+                >
+                  ⤢
+                </ActionIcon>
+              </Tooltip>
+              <ActionIcon
+                color="red"
+                variant="subtle"
+                onClick={() => form.removeListItem("calculations", i)}
+                aria-label="Remove calculation"
+              >
+                ✕
+              </ActionIcon>
+            </Group>
           </Group>
         ))}
         <Group>
@@ -72,6 +103,66 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
           </Button>
         </Group>
       </Stack>
+
+      <Drawer
+        opened={activeIndex !== null}
+        onClose={() => setActiveIndex(null)}
+        position="right"
+        size="lg"
+        title={
+          <Text fw={600}>
+            Edit formula{activeCalc?.name ? `: ${activeCalc.name}` : ""}
+          </Text>
+        }
+      >
+        {activeIndex !== null && activeCalc && (
+          <Stack gap="sm">
+            <MonacoFormulaEditor
+              value={activeCalc.formula}
+              onChange={(value) =>
+                form.setFieldValue(`calculations.${activeIndex}.formula`, value)
+              }
+            />
+
+            <Divider />
+
+            <div>
+              <Text size="sm" fw={600}>
+                Available in formulas
+              </Text>
+              <List size="xs" spacing={2} mt={4}>
+                <List.Item>
+                  <Code>values[&apos;question_id&apos;]</Code> — answers from the
+                  client/lab forms
+                </List.Item>
+                <List.Item>
+                  Other calculation names (defined above) can be referenced
+                  directly
+                </List.Item>
+                <List.Item>
+                  <Code>math</Code> module (e.g. <Code>math.sqrt</Code>,{" "}
+                  <Code>math.pi</Code>)
+                </List.Item>
+                <List.Item>
+                  Builtins: <Code>round</Code>, <Code>abs</Code>,{" "}
+                  <Code>min</Code>, <Code>max</Code>, <Code>sum</Code>,{" "}
+                  <Code>len</Code>, <Code>zip</Code>, <Code>mean</Code>,{" "}
+                  <Code>median</Code>, <Code>stdev</Code>
+                </List.Item>
+              </List>
+              <Text size="xs" c="dimmed" mt={6}>
+                You can write multiple lines: the final line is used as the
+                result, or assign it to a <Code>result</Code> variable. Dunder (
+                <Code>__</Code>) access is rejected by the backend.
+              </Text>
+            </div>
+
+            <Group justify="flex-end">
+              <Button onClick={() => setActiveIndex(null)}>Done</Button>
+            </Group>
+          </Stack>
+        )}
+      </Drawer>
     </Paper>
   );
 }
