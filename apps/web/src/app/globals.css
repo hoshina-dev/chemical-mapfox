@@ -6,3 +6,39 @@ body {
 body {
   margin: 0;
 }
+
+.formula-code textarea {
+  outline: none;
+}
+
+.formula-code .token.keyword,
+.formula-code .token.boolean,
+.formula-code .token.builtin {
+  color: #6f42c1;
+}
+
+.formula-code .token.string,
+.formula-code .token.triple-quoted-string {
+  color: #1a7f37;
+}
+
+.formula-code .token.number {
+  color: #b35900;
+}
+
+.formula-code .token.comment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.formula-code .token.function {
+  color: #0550ae;
+}
+
+.formula-code .token.operator {
+  color: #344054;
+}
+
+.formula-code .token.punctuation {
+  color: #57606a;
+}

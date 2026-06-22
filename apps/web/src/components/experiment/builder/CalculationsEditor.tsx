@@ -8,11 +8,11 @@ import {
   Divider,
   Drawer,
   Group,
+  Input,
   List,
   Paper,
   Stack,
   Text,
-  Textarea,
   TextInput,
   Title,
   Tooltip,
@@ -21,6 +21,7 @@ import type { UseFormReturnType } from "@mantine/form";
 
 import type { FormDraft } from "@/lib/builder";
 
+import { CompactFormulaEditor } from "./CompactFormulaEditor";
 import { MonacoFormulaEditor } from "./MonacoFormulaEditor";
 
 interface CalculationsEditorProps {
@@ -48,7 +49,7 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
             No calculations yet.
           </Text>
         )}
-        {calcs.map((_, i) => (
+        {calcs.map((calc, i) => (
           <Group key={i} gap="xs" wrap="nowrap" align="flex-start">
             <TextInput
               label={i === 0 ? "Name" : undefined}
@@ -56,21 +57,19 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
               style={{ flex: 1 }}
               {...form.getInputProps(`calculations.${i}.name`)}
             />
-            <Textarea
+            <Input.Wrapper
               label={i === 0 ? "Formula" : undefined}
-              placeholder="mean(values['reading_a'])"
-              autosize
-              minRows={1}
-              maxRows={8}
               style={{ flex: 2 }}
-              styles={{
-                input: {
-                  fontFamily: "var(--mantine-font-family-monospace)",
-                  fontSize: "var(--mantine-font-size-sm)",
-                },
-              }}
-              {...form.getInputProps(`calculations.${i}.formula`)}
-            />
+            >
+              <CompactFormulaEditor
+                value={calc.formula}
+                onChange={(value) =>
+                  form.setFieldValue(`calculations.${i}.formula`, value)
+                }
+                onExpand={() => setActiveIndex(i)}
+                placeholder="mean(values['reading_a'])"
+              />
+            </Input.Wrapper>
             <Group gap={4} wrap="nowrap" mt={i === 0 ? 25 : 0}>
               <Tooltip label="Open code editor">
                 <ActionIcon
