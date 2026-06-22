@@ -6,6 +6,7 @@ import type { TicketingTicketResponse } from "@repo/api-client";
  */
 export interface ExperimentTicket {
   contextId: string;
+  name: string | null;
   status: string;
   templateId: string | null;
   organizationId: string | null;
@@ -24,6 +25,7 @@ export function toExperimentTicket(
 ): ExperimentTicket {
   return {
     contextId: ticket.id ?? "",
+    name: ticket.name?.trim() || null,
     status: ticket.status ?? "unknown",
     templateId: ticket.experimentTemplate?.experimentTemplateId ?? null,
     organizationId: ticket.organizationId ?? null,

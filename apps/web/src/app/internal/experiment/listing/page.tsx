@@ -44,10 +44,9 @@ export default async function ExperimentListingPage() {
         )}
 
         {degraded && !loadError && (
-          <Alert color="yellow" variant="light" title="Some details unavailable">
-            Experiment titles or requester details could not be loaded
-            (Experiment Manager or the user service may be unreachable). The list
-            below is complete; some cells may be blank.
+          <Alert color="yellow" variant="light" title="Some requester details unavailable">
+            Requester details could not be loaded from the user service. The
+            list below is complete; some requester cells may show raw user IDs.
           </Alert>
         )}
 

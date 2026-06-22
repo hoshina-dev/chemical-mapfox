@@ -92,6 +92,7 @@ export async function requestExperimentAction(
   try {
     const ticket = await ticketsApi.apiV1TicketsPost({
       experimentTemplateId: input.templateId,
+      name: resolved.template.meta.title,
       organizationId,
       userId: session.userId,
     });

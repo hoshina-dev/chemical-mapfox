@@ -107,46 +107,14 @@ export async function loadRequestTemplate(
   return null;
 }
 
-interface TemplateInfo {
-  sampleType: string;
-  title: string;
-}
+/** One of the client's own experiments, sourced directly from ticketing. */
+export type MyExperiment = ExperimentTicket;
 
 /**
- * Index of every template keyed by both version id and lineage id (a ticket may
- * reference either), mapping to its specimen + title. One samples sweep.
+ * Every experiment the given user has requested, newest first. Ticketing owns
+ * the display name so this listing does not fan out to Experiment Manager.
  */
-async function loadTemplateInfoIndex(): Promise<Map<string, TemplateInfo>> {
-  const { samples } = await listSamples();
-  const index = new Map<string, TemplateInfo>();
-  await Promise.all(
-    samples.map(async (sample) => {
-      const { experiments } = await listExperimentTemplates(sample.id);
-      for (const tpl of experiments) {
-        const info: TemplateInfo = { sampleType: sample.name, title: tpl.name };
-        index.set(tpl.id, info);
-        index.set(tpl.lineage_id, info);
-      }
-    }),
-  );
-  return index;
-}
-
-/** One of the client's own experiments, enriched with its title/specimen. */
-export interface MyExperiment extends ExperimentTicket {
-  sampleType: string | null;
-  experimentTitle: string | null;
-}
-
-/**
- * Every experiment the given user has requested, newest first, enriched with
- * the template title + specimen. The ticket fetch is required; the title/
- * specimen join is best-effort so the list still renders if EM is unreachable.
- */
-export async function listMyExperiments(userId: string): Promise<{
-  experiments: MyExperiment[];
-  enrichmentDegraded: boolean;
-}> {
+export async function listMyExperiments(userId: string): Promise<MyExperiment[]> {
   const rows = await ticketsApi.apiV1TicketsGet(
     userId,
     undefined,
@@ -154,25 +122,5 @@ export async function listMyExperiments(userId: string): Promise<{
     "updated_at",
     "desc",
   );
-  const base = rows.map(toExperimentTicket);
-
-  let templateIndex: Map<string, TemplateInfo> | null = null;
-  try {
-    templateIndex = await loadTemplateInfoIndex();
-  } catch {
-    templateIndex = null;
-  }
-
-  const experiments: MyExperiment[] = base.map((ticket) => {
-    const info = ticket.templateId
-      ? (templateIndex?.get(ticket.templateId) ?? null)
-      : null;
-    return {
-      ...ticket,
-      sampleType: info?.sampleType ?? null,
-      experimentTitle: info?.title ?? null,
-    };
-  });
-
-  return { experiments, enrichmentDegraded: templateIndex === null };
+  return rows.map(toExperimentTicket);
 }

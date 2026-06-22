@@ -98,7 +98,7 @@ export function MyExperimentsBoard({
     const q = query.trim().toLowerCase();
     if (!q) return experiments;
     return experiments.filter((exp) =>
-      [exp.experimentTitle, exp.sampleType, exp.contextId].some((v) =>
+      [exp.name, exp.contextId].some((v) =>
         v?.toLowerCase().includes(q),
       ),
     );
@@ -138,7 +138,7 @@ export function MyExperimentsBoard({
     <Stack gap="md">
       <Group justify="space-between" align="flex-end" wrap="wrap">
         <TextInput
-          placeholder="Search experiment, specimen, or context ID…"
+          placeholder="Search experiment or context ID…"
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           w={340}
@@ -214,14 +214,9 @@ function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
     >
       <Stack gap="xs">
         <Text size="sm" fw={500} lineClamp={2}>
-          {experiment.experimentTitle ?? "Untitled experiment"}
+          {experiment.name ?? "Untitled experiment"}
         </Text>
         <Group gap="xs">
-          {experiment.sampleType && (
-            <Badge size="xs" variant="light" color="grape" radius="sm">
-              {experiment.sampleType}
-            </Badge>
-          )}
           <Badge size="xs" variant="light" color={meta.color} radius="sm">
             {meta.label}
           </Badge>

@@ -12,6 +12,7 @@ Name | Type
 `experimentStartedAt` | string
 `experimentTemplate` | [GithubComHoshinaDevTicketingServiceInternalDtoTicketExperimentTemplateResponse](GithubComHoshinaDevTicketingServiceInternalDtoTicketExperimentTemplateResponse.md)
 `id` | string
+`name` | string
 `organizationId` | string
 `resultsSubmittedAt` | string
 `sampleReceivedAt` | string
@@ -32,6 +33,7 @@ const example = {
   "experimentStartedAt": null,
   "experimentTemplate": null,
   "id": null,
+  "name": null,
   "organizationId": null,
   "resultsSubmittedAt": null,
   "sampleReceivedAt": null,

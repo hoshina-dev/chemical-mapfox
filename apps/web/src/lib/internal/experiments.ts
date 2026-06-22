@@ -21,9 +21,10 @@ export interface Requester {
   avatarUrl: string | null;
 }
 
-/** A ticket joined with the experiment title/sample type and its requester. */
+/** A ticket joined with its requester for the staff listing. */
 export interface EnrichedTicket extends ExperimentTicket {
   sampleType: string | null;
+  /** Display title sourced from ticketing-service. */
   experimentTitle: string | null;
   requester: Requester | null;
 }
@@ -80,9 +81,9 @@ async function loadRequesterIndex(): Promise<Map<string, Requester>> {
 }
 
 /**
- * All experiment tickets for the staff listing, joined with template/sample and
- * requester info. The ticket fetch is required; the joins are best-effort so
- * the listing still renders (with blanks) if EM or custapi is unreachable.
+ * All experiment tickets for the staff listing. Ticketing owns display names,
+ * matching the client listing; requester info is a single best-effort custapi
+ * lookup for staff context.
  */
 export async function listExperimentsForStaff(): Promise<{
   tickets: EnrichedTicket[];
@@ -97,33 +98,28 @@ export async function listExperimentsForStaff(): Promise<{
   );
   const base = rows.map(toExperimentTicket);
 
-  const [tplResult, userResult] = await Promise.allSettled([
-    loadTemplateIndex(),
-    loadRequesterIndex(),
-  ]);
-  const templateIndex =
-    tplResult.status === "fulfilled" ? tplResult.value : null;
-  const requesterIndex =
-    userResult.status === "fulfilled" ? userResult.value : null;
+  let requesterIndex: Map<string, Requester> | null = null;
+  try {
+    requesterIndex = await loadRequesterIndex();
+  } catch {
+    requesterIndex = null;
+  }
 
   const tickets: EnrichedTicket[] = base.map((ticket) => {
-    const info = ticket.templateId
-      ? (templateIndex?.get(ticket.templateId) ?? null)
-      : null;
     const requester = ticket.userId
       ? (requesterIndex?.get(ticket.userId) ?? null)
       : null;
     return {
       ...ticket,
-      sampleType: info?.sampleType ?? null,
-      experimentTitle: info?.title ?? null,
+      sampleType: null,
+      experimentTitle: ticket.name,
       requester,
     };
   });
 
   return {
     tickets,
-    enrichmentDegraded: templateIndex === null || requesterIndex === null,
+    enrichmentDegraded: requesterIndex === null,
   };
 }
 
@@ -147,10 +143,10 @@ async function loadRequester(userId: string): Promise<Requester | null> {
 
 /**
  * Everything the (non-realtime) experiment workspace needs: the ticket, the
- * requester, the resolved title/sample type, and the current experiment state
- * (forms + entered values). Each source is best-effort and reported via
- * `errors`, so the page degrades gracefully when a backend is unreachable or
- * the experiment context hasn't been created yet.
+ * requester, the display title/sample type, and the current experiment state
+ * (forms + entered values). Ticketing owns display names. Each source is
+ * best-effort and reported via `errors`, so the page degrades gracefully when a
+ * backend is unreachable or the experiment context hasn't been created yet.
  */
 export async function getExperimentWorkspace(
   contextId: string,
@@ -202,7 +198,7 @@ export async function getExperimentWorkspace(
     ticket,
     requester,
     sampleType: info?.sampleType ?? null,
-    experimentTitle: info?.title ?? null,
+    experimentTitle: ticket?.name ?? info?.title ?? null,
     state,
     errors,
   };

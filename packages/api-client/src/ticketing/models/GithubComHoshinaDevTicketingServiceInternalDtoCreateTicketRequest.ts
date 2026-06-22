@@ -30,6 +30,12 @@ export interface GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketReque
      * @type {string}
      * @memberof GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketRequest
      */
+    name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketRequest
+     */
     organizationId: string;
     /**
      * 
@@ -60,6 +66,7 @@ export function GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketReques
     return {
         
         'experimentTemplateId': json['experiment_template_id'],
+        'name': json['name'] == null ? undefined : json['name'],
         'organizationId': json['organization_id'],
         'userId': json['user_id'],
     };
@@ -77,6 +84,7 @@ export function GithubComHoshinaDevTicketingServiceInternalDtoCreateTicketReques
     return {
         
         'experiment_template_id': value['experimentTemplateId'],
+        'name': value['name'],
         'organization_id': value['organizationId'],
         'user_id': value['userId'],
     };

@@ -27,8 +27,8 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 
 - Lists every experiment the **current user** requested, presented like a
   Linear board (cards grouped into lifecycle lanes). Sourced from the
-  **ticketing-service** (`listMyExperiments(userId)`), enriched best-effort with
-  the template title + specimen from **experiment-manager**.
+  **ticketing-service** (`listMyExperiments(userId)`), including the card title
+  from the ticket `name`.
 - Each card links to its read-only detail page.
 - Page: `apps/web/src/app/experiment/listing/page.tsx` →
   `components/experiment/MyExperimentsBoard.tsx`.
@@ -71,15 +71,15 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 
 ### `/internal/experiment/listing` ✅
 
-- Sortable list of all experiments from **ticketing-service**, joined with the
-  experiment title + sample type (experiment-manager) and the requester's
-  email/avatar (custapi).
-- Columns: experiment (title + sample type), requester, status, created,
-  updated, and a copyable context id. Searchable (context id / experiment /
-  requester), filterable by status, every column sortable.
+- Sortable list of all experiments from **ticketing-service**, using the ticket
+  `name` as the experiment title and joined with the requester's email/avatar
+  (custapi).
+- Columns: experiment title, requester, status, created, updated, and a
+  copyable context id. Searchable (context id / experiment / requester),
+  filterable by status, every column sortable.
 - Click a row to open `/internal/experiment/{expcontext:id}`.
 - Implemented: `apps/web/src/app/internal/experiment/listing/page.tsx` →
-  `lib/internal/experiments.ts` (the ticketing+EM+custapi join, best-effort) +
+  `lib/internal/experiments.ts` (the ticketing+custapi join, best-effort) +
   `components/internal/ExperimentListingTable.tsx` (client search/sort/filter).
   Ticketing client: `apps/web/src/lib/ticketing/`.
 

@@ -13,13 +13,10 @@ export default async function MyExperimentsPage() {
   const session = await requireSession();
 
   let experiments: MyExperiment[] | null = null;
-  let degraded = false;
   let loadError: string | null = null;
 
   try {
-    const result = await listMyExperiments(session.userId);
-    experiments = result.experiments;
-    degraded = result.enrichmentDegraded;
+    experiments = await listMyExperiments(session.userId);
   } catch (error) {
     loadError =
       error instanceof Error ? error.message : "Failed to load experiments.";
@@ -51,14 +48,6 @@ export default async function MyExperimentsPage() {
         {loadError && (
           <Alert color="red" variant="light" title="Could not load your experiments">
             {loadError}
-          </Alert>
-        )}
-
-        {degraded && !loadError && (
-          <Alert color="yellow" variant="light" title="Some details unavailable">
-            Experiment titles or specimen types could not be loaded (Experiment
-            Manager may be unreachable). Your experiments are all listed; some
-            labels may be blank.
           </Alert>
         )}
 

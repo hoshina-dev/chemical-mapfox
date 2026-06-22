@@ -68,6 +68,12 @@ export interface GithubComHoshinaDevTicketingServiceInternalDtoTicketResponse {
      * @type {string}
      * @memberof GithubComHoshinaDevTicketingServiceInternalDtoTicketResponse
      */
+    name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GithubComHoshinaDevTicketingServiceInternalDtoTicketResponse
+     */
     organizationId?: string;
     /**
      * 
@@ -124,6 +130,7 @@ export function GithubComHoshinaDevTicketingServiceInternalDtoTicketResponseFrom
         'experimentStartedAt': json['experiment_started_at'] == null ? undefined : json['experiment_started_at'],
         'experimentTemplate': json['experiment_template'] == null ? undefined : GithubComHoshinaDevTicketingServiceInternalDtoTicketExperimentTemplateResponseFromJSON(json['experiment_template']),
         'id': json['id'] == null ? undefined : json['id'],
+        'name': json['name'] == null ? undefined : json['name'],
         'organizationId': json['organization_id'] == null ? undefined : json['organization_id'],
         'resultsSubmittedAt': json['results_submitted_at'] == null ? undefined : json['results_submitted_at'],
         'sampleReceivedAt': json['sample_received_at'] == null ? undefined : json['sample_received_at'],
@@ -150,6 +157,7 @@ export function GithubComHoshinaDevTicketingServiceInternalDtoTicketResponseToJS
         'experiment_started_at': value['experimentStartedAt'],
         'experiment_template': GithubComHoshinaDevTicketingServiceInternalDtoTicketExperimentTemplateResponseToJSON(value['experimentTemplate']),
         'id': value['id'],
+        'name': value['name'],
         'organization_id': value['organizationId'],
         'results_submitted_at': value['resultsSubmittedAt'],
         'sample_received_at': value['sampleReceivedAt'],
