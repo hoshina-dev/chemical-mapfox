@@ -16,10 +16,18 @@ import {
   Tabs,
   Text,
   Textarea,
+  TextInput,
   Tooltip,
 } from "@mantine/core";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 
 import {
   getExperimentPreviewContextAction,
@@ -41,16 +49,77 @@ import type {
 // ── Constants ──────────────────────────────────────────────────────────────
 const PAGE_W = 612;
 const PAGE_H = 792;
+const MIN_SIZE = 10;
+const GRID = 5;
+const SNAP_THRESH = 5;
+const HISTORY_LIMIT = 100;
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 3;
+
+// 8 resize handles, positioned as fractions of the component box.
+const HANDLES: Array<{ dir: string; x: number; y: number; cursor: string }> = [
+  { dir: "nw", x: 0, y: 0, cursor: "nwse-resize" },
+  { dir: "n", x: 0.5, y: 0, cursor: "ns-resize" },
+  { dir: "ne", x: 1, y: 0, cursor: "nesw-resize" },
+  { dir: "e", x: 1, y: 0.5, cursor: "ew-resize" },
+  { dir: "se", x: 1, y: 1, cursor: "nwse-resize" },
+  { dir: "s", x: 0.5, y: 1, cursor: "ns-resize" },
+  { dir: "sw", x: 0, y: 1, cursor: "nesw-resize" },
+  { dir: "w", x: 0, y: 0.5, cursor: "ew-resize" },
+];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function interpolate(text: string, ctx: Record<string, unknown>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, k) =>
-    k in ctx ? String(ctx[k]) : `{{${k}}}`,
-  );
+const VAR_RE = /\{\{(\w+)\}\}/g;
+
+/** Render text with `{{var}}` resolution, highlighting unknown placeholders. */
+function renderText(
+  content: string,
+  ctx: Record<string, unknown>,
+  known: Set<string>,
+): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  let last = 0;
+  let i = 0;
+  const re = new RegExp(VAR_RE.source, "g");
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(content))) {
+    if (m.index > last) nodes.push(content.slice(last, m.index));
+    const key = m[1]!;
+    if (key in ctx) {
+      nodes.push(String(ctx[key]));
+    } else if (known.has(key)) {
+      nodes.push(m[0]);
+    } else {
+      nodes.push(
+        <span
+          key={`u${i}`}
+          style={{
+            background: "#fff3bf",
+            color: "#e8590c",
+            borderRadius: 2,
+          }}
+        >
+          {m[0]}
+        </span>,
+      );
+    }
+    last = m.index + m[0].length;
+    i++;
+  }
+  if (last < content.length) nodes.push(content.slice(last));
+  return nodes;
 }
 
 function cssTop(rect: Rect): number {
   return PAGE_H - rect[1] - rect[3];
+}
+
+function snapToGrid(v: number): number {
+  return Math.round(v / GRID) * GRID;
+}
+
+function clampZoom(z: number): number {
+  return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round(z * 100) / 100));
 }
 
 function splitPages(comps: PdfComp[]): PdfComp[][] {
@@ -111,6 +180,36 @@ function newPageBreak(): PageBreakComp {
   return { id: `pb_${Date.now()}`, type: "pagebreak" };
 }
 
+/** Deep-ish clone of a non-pagebreak component with a fresh id + small offset. */
+function cloneComp(comp: TextComp | ShapeComp): TextComp | ShapeComp {
+  const prefix = comp.type === "text" ? "text" : "shape";
+  const offset: Rect = [
+    Math.min(comp.rect[0] + 10, PAGE_W - comp.rect[2]),
+    Math.max(comp.rect[1] - 10, 0),
+    comp.rect[2],
+    comp.rect[3],
+  ];
+  if (comp.type === "text") {
+    return {
+      ...comp,
+      id: `${prefix}_${Date.now()}`,
+      rect: offset,
+      style: { ...comp.style },
+    };
+  }
+  return { ...comp, id: `${prefix}_${Date.now()}`, rect: offset };
+}
+
+/** Remove editor-only fields so the saved payload matches the backend schema. */
+function stripEditorFields(comps: PdfComp[]): PdfComp[] {
+  return comps.map((c) => {
+    if (c.type === "pagebreak" || c.locked === undefined) return c;
+    const copy = { ...c };
+    delete copy.locked;
+    return copy;
+  });
+}
+
 function shapeToSvg(comp: ShapeComp): string {
   const [, , w, h] = comp.rect;
   const c = /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(comp.color)
@@ -134,6 +233,106 @@ function shapeToSvg(comp: ShapeComp): string {
   return `<svg width="${w}" height="${h}" style="display:block;overflow:visible">${inner}</svg>`;
 }
 
+/** Snap a moving box to the grid and to other components' edges/centers. */
+function computeSnap(
+  comps: PdfComp[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  pageIdx: number,
+  selfId: string,
+  gridOn: boolean,
+): { x: number; y: number; guideX: number[]; guideY: number[] } {
+  const { start, end } = getPageRange(comps, pageIdx);
+  const gx: number[] = [PAGE_W / 2];
+  const gy: number[] = [PAGE_H / 2];
+  for (let i = start; i < end; i++) {
+    const o = comps[i]!;
+    if (o.type === "pagebreak" || o.id === selfId) continue;
+    gx.push(o.rect[0], o.rect[0] + o.rect[2] / 2, o.rect[0] + o.rect[2]);
+    const ot = cssTop(o.rect);
+    gy.push(ot, ot + o.rect[3] / 2, ot + o.rect[3]);
+  }
+
+  const pick = (moving: number[], guides: number[]) => {
+    let bestDelta: number | null = null;
+    let bestAbs = SNAP_THRESH + 1;
+    let line: number | null = null;
+    for (const m of moving) {
+      for (const g of guides) {
+        const d = g - m;
+        if (Math.abs(d) < bestAbs) {
+          bestAbs = Math.abs(d);
+          bestDelta = d;
+          line = g;
+        }
+      }
+    }
+    return bestAbs <= SNAP_THRESH ? { delta: bestDelta!, line: line! } : null;
+  };
+
+  const guideX: number[] = [];
+  const guideY: number[] = [];
+
+  const sx = pick([x, x + w / 2, x + w], gx);
+  if (sx) {
+    x += sx.delta;
+    guideX.push(sx.line);
+  } else if (gridOn) {
+    x = snapToGrid(x);
+  }
+
+  const sy = pick([y, y + h / 2, y + h], gy);
+  if (sy) {
+    y += sy.delta;
+    guideY.push(sy.line);
+  } else if (gridOn) {
+    y = snapToGrid(y);
+  }
+
+  return { x, y, guideX, guideY };
+}
+
+/** Reorder a component within its own page (between page breaks). */
+function reorderComp(
+  comps: PdfComp[],
+  id: string,
+  mode: "front" | "back" | "forward" | "backward",
+): PdfComp[] {
+  const chunks: PdfComp[][] = [];
+  const seps: PageBreakComp[] = [];
+  let cur: PdfComp[] = [];
+  for (const c of comps) {
+    if (c.type === "pagebreak") {
+      chunks.push(cur);
+      seps.push(c);
+      cur = [];
+    } else cur.push(c);
+  }
+  chunks.push(cur);
+
+  for (const chunk of chunks) {
+    const i = chunk.findIndex((c) => c.id === id);
+    if (i < 0) continue;
+    const [item] = chunk.splice(i, 1);
+    let t: number;
+    if (mode === "back") t = 0;
+    else if (mode === "front") t = chunk.length;
+    else if (mode === "backward") t = Math.max(0, i - 1);
+    else t = Math.min(chunk.length, i + 1);
+    chunk.splice(t, 0, item!);
+    break;
+  }
+
+  const result: PdfComp[] = [];
+  for (let k = 0; k < chunks.length; k++) {
+    result.push(...chunks[k]!);
+    if (k < seps.length) result.push(seps[k]!);
+  }
+  return result;
+}
+
 // ── Props ──────────────────────────────────────────────────────────────────
 interface PdfEditorProps {
   sampleId: string;
@@ -151,7 +350,8 @@ type Action =
   | { type: "ADD_COMP"; comp: PdfComp; insertAt: number }
   | { type: "UPDATE_COMP"; id: string; patch: Partial<PdfComp> }
   | { type: "DELETE_COMP"; id: string }
-  | { type: "MOVE_RECT"; id: string; x: number; y: number };
+  | { type: "MOVE_RECT"; id: string; x: number; y: number }
+  | { type: "SET_RECT"; id: string; rect: Rect };
 
 function compsReducer(state: PdfComp[], action: Action): PdfComp[] {
   switch (action.type) {
@@ -174,6 +374,72 @@ function compsReducer(state: PdfComp[], action: Action): PdfComp[] {
         const rect: Rect = [action.x, action.y, c.rect[2], c.rect[3]];
         return { ...c, rect };
       });
+    case "SET_RECT":
+      return state.map((c) => {
+        if (c.id !== action.id || c.type === "pagebreak") return c;
+        return { ...c, rect: action.rect };
+      });
+    default:
+      return state;
+  }
+}
+
+// ── History reducer (undo/redo) ────────────────────────────────────────────
+interface HistoryState {
+  past: PdfComp[][];
+  present: PdfComp[];
+  future: PdfComp[][];
+}
+
+type HistoryAction =
+  | { type: "COMMIT"; action: Action }
+  | { type: "BEGIN" }
+  | { type: "LIVE"; action: Action }
+  | { type: "UNDO" }
+  | { type: "REDO" };
+
+function pushPast(past: PdfComp[][], present: PdfComp[]): PdfComp[][] {
+  const next = [...past, present];
+  if (next.length > HISTORY_LIMIT) next.shift();
+  return next;
+}
+
+function historyReducer(
+  state: HistoryState,
+  ha: HistoryAction,
+): HistoryState {
+  switch (ha.type) {
+    case "COMMIT": {
+      const present = compsReducer(state.present, ha.action);
+      if (present === state.present) return state;
+      return { past: pushPast(state.past, state.present), present, future: [] };
+    }
+    case "BEGIN":
+      return {
+        past: pushPast(state.past, state.present),
+        present: state.present,
+        future: [],
+      };
+    case "LIVE":
+      return { ...state, present: compsReducer(state.present, ha.action) };
+    case "UNDO": {
+      if (state.past.length === 0) return state;
+      const prev = state.past[state.past.length - 1]!;
+      return {
+        past: state.past.slice(0, -1),
+        present: prev,
+        future: [state.present, ...state.future],
+      };
+    }
+    case "REDO": {
+      if (state.future.length === 0) return state;
+      const next = state.future[0]!;
+      return {
+        past: pushPast(state.past, state.present),
+        present: next,
+        future: state.future.slice(1),
+      };
+    }
     default:
       return state;
   }
@@ -190,7 +456,19 @@ export function PdfEditor({
   experiments,
 }: PdfEditorProps) {
   const router = useRouter();
-  const [comps, dispatch] = useReducer(compsReducer, initialComponents);
+  const [hist, hd] = useReducer(historyReducer, undefined, () => ({
+    past: [],
+    present: initialComponents,
+    future: [],
+  }));
+  const comps = hist.present;
+  const canUndo = hist.past.length > 0;
+  const canRedo = hist.future.length > 0;
+
+  const commit = useCallback((action: Action) => hd({ type: "COMMIT", action }), []);
+  const undo = useCallback(() => hd({ type: "UNDO" }), []);
+  const redo = useCallback(() => hd({ type: "REDO" }), []);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState(0);
   const [previewMode, setPreviewMode] = useState<PreviewMode>("raw");
@@ -203,6 +481,14 @@ export function PdfEditor({
     text: string;
     ok: boolean;
   } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [snap, setSnap] = useState(true);
+  const [guides, setGuides] = useState<{
+    page: number;
+    x: number[];
+    y: number[];
+  } | null>(null);
+  const [varSearch, setVarSearch] = useState("");
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -210,7 +496,63 @@ export function PdfEditor({
     pageIdx: number;
     offsetX: number;
     offsetY: number;
+    committed: boolean;
   } | null>(null);
+  const resizeRef = useRef<{
+    id: string;
+    pageIdx: number;
+    dir: string;
+    startX: number;
+    startY: number;
+    startCss: { left: number; top: number; w: number; h: number };
+    committed: boolean;
+  } | null>(null);
+
+  // Refs so the pointer effect can subscribe once without going stale.
+  // Kept in sync via an effect (updating refs during render is disallowed).
+  const compsRef = useRef(comps);
+  const zoomRef = useRef(zoom);
+  const snapRef = useRef(snap);
+  const selectedIdRef = useRef(selectedId);
+
+  // Inspector content textarea, for inserting variables at the cursor.
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const contentSelRef = useRef<{ start: number; end: number }>({
+    start: 0,
+    end: 0,
+  });
+
+  // Dirty tracking (compares against the last saved snapshot, editor-only
+  // fields stripped so lock toggles don't count as changes).
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    JSON.stringify(stripEditorFields(initialComponents)),
+  );
+  const dirty = JSON.stringify(stripEditorFields(comps)) !== savedSnapshot;
+  const dirtyRef = useRef(dirty);
+
+  useEffect(() => {
+    compsRef.current = comps;
+    zoomRef.current = zoom;
+    snapRef.current = snap;
+    selectedIdRef.current = selectedId;
+    dirtyRef.current = dirty;
+  });
+
+  const knownVars = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of variableGroups) for (const v of g.variables) set.add(v.id);
+    return set;
+  }, [variableGroups]);
+
+  const pageOf = useMemo(() => {
+    const m = new Map<string, number>();
+    let p = 0;
+    for (const c of comps) {
+      if (c.type === "pagebreak") p++;
+      else m.set(c.id, p);
+    }
+    return m;
+  }, [comps]);
 
   const onExperimentSelect = useCallback(async (expId: string | null) => {
     setSelectedExpId(expId);
@@ -222,55 +564,158 @@ export function PdfEditor({
     setEditorContext(result.success ? result.data : {});
   }, []);
 
-  // ── Drag handlers ────────────────────────────────────────────────────────
+  // ── Drag / resize start ──────────────────────────────────────────────────
   const startDrag = useCallback(
     (e: React.MouseEvent, id: string, pageIdx: number) => {
       e.preventDefault();
       e.stopPropagation();
-      const comp = comps.find((c) => c.id === id);
-      if (!comp || comp.type === "pagebreak") return;
+      const comp = compsRef.current.find((c) => c.id === id);
+      if (!comp || comp.type === "pagebreak" || comp.locked) return;
 
       const pageEl = canvasRef.current?.querySelector<HTMLElement>(
         `[data-page="${pageIdx}"]`,
       );
       if (!pageEl) return;
       const rect = pageEl.getBoundingClientRect();
+      const z = zoomRef.current;
       dragRef.current = {
         id,
         pageIdx,
-        offsetX: e.clientX - rect.left - comp.rect[0],
-        offsetY: e.clientY - rect.top - cssTop(comp.rect),
+        offsetX: (e.clientX - rect.left) / z - comp.rect[0],
+        offsetY: (e.clientY - rect.top) / z - cssTop(comp.rect),
+        committed: false,
       };
       setActivePage(pageIdx);
       setSelectedId(id);
     },
-    [comps],
+    [],
   );
 
+  const startResize = useCallback(
+    (e: React.MouseEvent, id: string, pageIdx: number, dir: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const comp = compsRef.current.find((c) => c.id === id);
+      if (!comp || comp.type === "pagebreak" || comp.locked) return;
+      resizeRef.current = {
+        id,
+        pageIdx,
+        dir,
+        startX: e.clientX,
+        startY: e.clientY,
+        startCss: {
+          left: comp.rect[0],
+          top: cssTop(comp.rect),
+          w: comp.rect[2],
+          h: comp.rect[3],
+        },
+        committed: false,
+      };
+      setSelectedId(id);
+    },
+    [],
+  );
+
+  // ── Global pointer handlers (drag + resize), subscribed once ──────────────
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
+      const resize = resizeRef.current;
+      if (resize) {
+        const comp = compsRef.current.find((c) => c.id === resize.id);
+        if (!comp || comp.type === "pagebreak") return;
+        const z = zoomRef.current;
+        const dx = (e.clientX - resize.startX) / z;
+        const dy = (e.clientY - resize.startY) / z;
+        let { left, top, w, h } = resize.startCss;
+        const right = left + w;
+        const bottom = top + h;
+        if (resize.dir.includes("e")) w = w + dx;
+        if (resize.dir.includes("s")) h = h + dy;
+        if (resize.dir.includes("w")) {
+          left = left + dx;
+          w = w - dx;
+        }
+        if (resize.dir.includes("n")) {
+          top = top + dy;
+          h = h - dy;
+        }
+        if (w < MIN_SIZE) {
+          if (resize.dir.includes("w")) left = right - MIN_SIZE;
+          w = MIN_SIZE;
+        }
+        if (h < MIN_SIZE) {
+          if (resize.dir.includes("n")) top = bottom - MIN_SIZE;
+          h = MIN_SIZE;
+        }
+        if (snapRef.current) {
+          left = snapToGrid(left);
+          top = snapToGrid(top);
+          w = snapToGrid(w);
+          h = snapToGrid(h);
+        }
+        left = Math.max(0, Math.min(left, PAGE_W - w));
+        top = Math.max(0, Math.min(top, PAGE_H - h));
+        const rect: Rect = [
+          Math.round(left),
+          Math.round(PAGE_H - top - h),
+          Math.round(w),
+          Math.round(h),
+        ];
+        if (!resize.committed) {
+          hd({ type: "BEGIN" });
+          resize.committed = true;
+        }
+        hd({ type: "LIVE", action: { type: "SET_RECT", id: resize.id, rect } });
+        return;
+      }
+
       const drag = dragRef.current;
       if (!drag) return;
-      const comp = comps.find((c) => c.id === drag.id);
+      const comp = compsRef.current.find((c) => c.id === drag.id);
       if (!comp || comp.type === "pagebreak") return;
       const pageEl = canvasRef.current?.querySelector<HTMLElement>(
         `[data-page="${drag.pageIdx}"]`,
       );
       if (!pageEl) return;
       const rect = pageEl.getBoundingClientRect();
-      const cssX = Math.max(
+      const z = zoomRef.current;
+      const w = comp.rect[2];
+      const h = comp.rect[3];
+      let cssX = Math.max(
         0,
-        Math.min(e.clientX - rect.left - drag.offsetX, PAGE_W - comp.rect[2]),
+        Math.min((e.clientX - rect.left) / z - drag.offsetX, PAGE_W - w),
       );
-      const cssY = Math.max(
+      let cssY = Math.max(
         0,
-        Math.min(e.clientY - rect.top - drag.offsetY, PAGE_H - comp.rect[3]),
+        Math.min((e.clientY - rect.top) / z - drag.offsetY, PAGE_H - h),
       );
-      const y = Math.round(PAGE_H - cssY - comp.rect[3]);
-      dispatch({ type: "MOVE_RECT", id: drag.id, x: Math.round(cssX), y });
+      const snapped = computeSnap(
+        compsRef.current,
+        cssX,
+        cssY,
+        w,
+        h,
+        drag.pageIdx,
+        drag.id,
+        snapRef.current,
+      );
+      cssX = snapped.x;
+      cssY = snapped.y;
+      setGuides({ page: drag.pageIdx, x: snapped.guideX, y: snapped.guideY });
+      if (!drag.committed) {
+        hd({ type: "BEGIN" });
+        drag.committed = true;
+      }
+      const y = Math.round(PAGE_H - cssY - h);
+      hd({
+        type: "LIVE",
+        action: { type: "MOVE_RECT", id: drag.id, x: Math.round(cssX), y },
+      });
     };
     const onUp = () => {
       dragRef.current = null;
+      resizeRef.current = null;
+      setGuides(null);
     };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
@@ -278,42 +723,73 @@ export function PdfEditor({
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     };
-  }, [comps]);
+  }, []);
 
-  // ── Add / delete ─────────────────────────────────────────────────────────
+  // ── Add / delete / duplicate ─────────────────────────────────────────────
   const addText = () => {
     const { end } = getPageRange(comps, activePage);
     const comp = newTextComp();
-    dispatch({ type: "ADD_COMP", comp, insertAt: end });
+    commit({ type: "ADD_COMP", comp, insertAt: end });
     setSelectedId(comp.id);
   };
 
   const addShape = () => {
     const { end } = getPageRange(comps, activePage);
     const comp = newShapeComp();
-    dispatch({ type: "ADD_COMP", comp, insertAt: end });
+    commit({ type: "ADD_COMP", comp, insertAt: end });
     setSelectedId(comp.id);
   };
 
   const addPageBreak = () => {
     const { end } = getPageRange(comps, activePage);
-    dispatch({ type: "ADD_COMP", comp: newPageBreak(), insertAt: end });
+    commit({ type: "ADD_COMP", comp: newPageBreak(), insertAt: end });
   };
 
-  const deleteSelected = () => {
-    if (!selectedId) return;
-    dispatch({ type: "DELETE_COMP", id: selectedId });
+  const deleteSelected = useCallback(() => {
+    const id = selectedIdRef.current;
+    if (!id) return;
+    commit({ type: "DELETE_COMP", id });
     setSelectedId(null);
-  };
+  }, [commit]);
+
+  const duplicateSelected = useCallback(() => {
+    const id = selectedIdRef.current;
+    if (!id) return;
+    const idx = compsRef.current.findIndex((c) => c.id === id);
+    const comp = compsRef.current[idx];
+    if (!comp || comp.type === "pagebreak") return;
+    const clone = cloneComp(comp);
+    commit({ type: "ADD_COMP", comp: clone, insertAt: idx + 1 });
+    setSelectedId(clone.id);
+  }, [commit]);
+
+  const nudge = useCallback(
+    (key: string, step: number) => {
+      const id = selectedIdRef.current;
+      if (!id) return;
+      const comp = compsRef.current.find((c) => c.id === id);
+      if (!comp || comp.type === "pagebreak") return;
+      let [x, y] = comp.rect;
+      if (key === "ArrowLeft") x -= step;
+      else if (key === "ArrowRight") x += step;
+      else if (key === "ArrowUp") y += step;
+      else if (key === "ArrowDown") y -= step;
+      x = Math.max(0, Math.min(x, PAGE_W - comp.rect[2]));
+      y = Math.max(0, Math.min(y, PAGE_H - comp.rect[3]));
+      commit({ type: "MOVE_RECT", id, x, y });
+    },
+    [commit],
+  );
 
   // ── Save ─────────────────────────────────────────────────────────────────
-  const save = async () => {
+  const save = useCallback(async () => {
     setSaving(true);
     setSaveMsg(null);
+    const payload = stripEditorFields(compsRef.current);
     const result = await savePdfTemplateAction(
       sampleId,
       lineageId,
-      comps,
+      payload,
       templateId,
     );
     setSaving(false);
@@ -321,6 +797,7 @@ export function PdfEditor({
       setSaveMsg({ text: result.error, ok: false });
       return;
     }
+    setSavedSnapshot(JSON.stringify(payload));
     setSaveMsg({ text: "Saved", ok: true });
     if (result.data.templateId !== templateId) {
       router.push(
@@ -332,20 +809,88 @@ export function PdfEditor({
       router.refresh();
     }
     setTimeout(() => setSaveMsg(null), 2500);
-  };
+  }, [sampleId, lineageId, templateId, router]);
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const tag = (t?.tagName ?? "").toLowerCase();
+      const typing =
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        Boolean(t?.isContentEditable);
+      const meta = e.metaKey || e.ctrlKey;
+      const key = e.key.toLowerCase();
+
+      if (meta && key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (meta && key === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      if (meta && key === "s") {
+        e.preventDefault();
+        void save();
+        return;
+      }
+      if (meta && key === "d") {
+        e.preventDefault();
+        duplicateSelected();
+        return;
+      }
+
+      if (typing) return;
+
+      if (e.key === "Escape") {
+        setSelectedId(null);
+        return;
+      }
+      if (!selectedIdRef.current) return;
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        deleteSelected();
+        return;
+      }
+      if (e.key.startsWith("Arrow")) {
+        e.preventDefault();
+        nudge(e.key, e.shiftKey ? 10 : 1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo, save, duplicateSelected, deleteSelected, nudge]);
+
+  // ── Warn on unload when there are unsaved changes ────────────────────────
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 
   // ── Canvas scroll → active page ──────────────────────────────────────────
   const onScroll = () => {
     const container = canvasRef.current;
     if (!container) return;
-    const top = container.scrollTop;
-    const bottom = top + container.clientHeight;
+    const cr = container.getBoundingClientRect();
     let bestPage = activePage,
       bestVisible = 0;
     container.querySelectorAll<HTMLElement>("[data-page]").forEach((el) => {
-      const pt = el.offsetTop,
-        pb = pt + el.offsetHeight;
-      const visible = Math.max(0, Math.min(pb, bottom) - Math.max(pt, top));
+      const r = el.getBoundingClientRect();
+      const visible = Math.max(
+        0,
+        Math.min(r.bottom, cr.bottom) - Math.max(r.top, cr.top),
+      );
       if (visible > bestVisible) {
         bestVisible = visible;
         bestPage = parseInt(el.dataset.page!);
@@ -354,12 +899,22 @@ export function PdfEditor({
     if (bestPage !== activePage) setActivePage(bestPage);
   };
 
+  const scrollToComp = (id: string) => {
+    const p = pageOf.get(id);
+    if (p == null) return;
+    setActivePage(p);
+    setSelectedId(id);
+    canvasRef.current
+      ?.querySelector<HTMLElement>(`[data-page="${p}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const selectedComp = selectedId
     ? (comps.find((c) => c.id === selectedId) ?? null)
     : null;
   const pages = splitPages(comps);
 
-  // ── Copy variable to clipboard ────────────────────────────────────────────
+  // ── Variables: copy or insert into selected text component ────────────────
   const [copiedVar, setCopiedVar] = useState<string | null>(null);
   const copyVar = (varId: string) => {
     navigator.clipboard.writeText(`{{${varId}}}`).then(() => {
@@ -367,6 +922,45 @@ export function PdfEditor({
       setTimeout(() => setCopiedVar(null), 1500);
     });
   };
+
+  const insertVar = (varId: string) => {
+    const comp = selectedComp;
+    if (!comp || comp.type !== "text") return false;
+    const token = `{{${varId}}}`;
+    const { start, end } = contentSelRef.current;
+    const content = comp.content;
+    const next = content.slice(0, start) + token + content.slice(end);
+    commit({ type: "UPDATE_COMP", id: comp.id, patch: { content: next } });
+    const caret = start + token.length;
+    contentSelRef.current = { start: caret, end: caret };
+    requestAnimationFrame(() => {
+      const el = contentRef.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(caret, caret);
+      }
+    });
+    return true;
+  };
+
+  const onVarClick = (varId: string) => {
+    if (!insertVar(varId)) copyVar(varId);
+  };
+
+  const filteredGroups = useMemo(() => {
+    const q = varSearch.trim().toLowerCase();
+    if (!q) return variableGroups;
+    return variableGroups
+      .map((g) => ({
+        ...g,
+        variables: g.variables.filter(
+          (v) =>
+            v.label.toLowerCase().includes(q) ||
+            v.id.toLowerCase().includes(q),
+        ),
+      }))
+      .filter((g) => g.variables.length > 0);
+  }, [variableGroups, varSearch]);
 
   return (
     <div
@@ -399,6 +993,14 @@ export function PdfEditor({
           </Button>
           <Button
             size="xs"
+            variant="default"
+            onClick={duplicateSelected}
+            disabled={!selectedComp || selectedComp.type === "pagebreak"}
+          >
+            Duplicate
+          </Button>
+          <Button
+            size="xs"
             color="red"
             variant="light"
             onClick={deleteSelected}
@@ -406,7 +1008,80 @@ export function PdfEditor({
           >
             Delete
           </Button>
+
+          <Group gap={2} wrap="nowrap">
+            <Tooltip label="Undo (Ctrl/Cmd+Z)" withArrow>
+              <ActionIcon
+                variant="default"
+                size="md"
+                onClick={undo}
+                disabled={!canUndo}
+                aria-label="Undo"
+              >
+                ↶
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Redo (Ctrl/Cmd+Shift+Z)" withArrow>
+              <ActionIcon
+                variant="default"
+                size="md"
+                onClick={redo}
+                disabled={!canRedo}
+                aria-label="Redo"
+              >
+                ↷
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+
+          <Group gap={2} wrap="nowrap">
+            <Tooltip label="Zoom out" withArrow>
+              <ActionIcon
+                variant="default"
+                size="md"
+                onClick={() => setZoom((z) => clampZoom(z - 0.1))}
+                aria-label="Zoom out"
+              >
+                −
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Reset zoom" withArrow>
+              <Button
+                size="xs"
+                variant="default"
+                w={52}
+                px={4}
+                onClick={() => setZoom(1)}
+              >
+                {Math.round(zoom * 100)}%
+              </Button>
+            </Tooltip>
+            <Tooltip label="Zoom in" withArrow>
+              <ActionIcon
+                variant="default"
+                size="md"
+                onClick={() => setZoom((z) => clampZoom(z + 0.1))}
+                aria-label="Zoom in"
+              >
+                +
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+
+          <Checkbox
+            size="xs"
+            label="Snap"
+            checked={snap}
+            onChange={(e) => setSnap(e.target.checked)}
+          />
+
           <div style={{ flex: 1 }} />
+
+          {dirty && (
+            <Badge color="yellow" variant="light">
+              Unsaved changes
+            </Badge>
+          )}
 
           {/* Preview mode */}
           <Select
@@ -481,9 +1156,22 @@ export function PdfEditor({
                   Variables
                 </Text>
                 <Text size="xs" c="dimmed" mb={6}>
-                  Click to copy <code>{"{{name}}"}</code>
+                  Click to insert into a selected text box, else copy{" "}
+                  <code>{"{{name}}"}</code>
                 </Text>
-                {variableGroups.map((group) => (
+                <TextInput
+                  size="xs"
+                  placeholder="Search variables…"
+                  value={varSearch}
+                  onChange={(e) => setVarSearch(e.currentTarget.value)}
+                  mb={6}
+                />
+                {filteredGroups.length === 0 && (
+                  <Text size="xs" c="dimmed">
+                    No matches
+                  </Text>
+                )}
+                {filteredGroups.map((group) => (
                   <div key={group.name} style={{ marginBottom: 8 }}>
                     <Text size="xs" fw={500} c="dimmed" mb={2}>
                       {group.name}
@@ -497,7 +1185,7 @@ export function PdfEditor({
                           withArrow
                         >
                           <Box
-                            onClick={() => copyVar(v.id)}
+                            onClick={() => onVarClick(v.id)}
                             style={{
                               cursor: "pointer",
                               padding: "2px 6px",
@@ -546,7 +1234,7 @@ export function PdfEditor({
                     ) : (
                       <Box
                         key={c.id}
-                        onClick={() => setSelectedId(c.id)}
+                        onClick={() => scrollToComp(c.id)}
                         style={{
                           cursor: "pointer",
                           padding: "2px 6px",
@@ -557,6 +1245,7 @@ export function PdfEditor({
                               ? "var(--mantine-color-blue-1)"
                               : "var(--mantine-color-default-hover)",
                           display: "flex",
+                          alignItems: "center",
                           gap: 4,
                         }}
                       >
@@ -565,19 +1254,46 @@ export function PdfEditor({
                           c="blue"
                           style={{ fontFamily: "monospace" }}
                         >
-                          {c.type}
+                          {c.type === "shape" ? c.shape_type : "text"}
                         </Text>
                         <Text
                           size="xs"
                           c="dimmed"
                           style={{
+                            flex: 1,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {c.id.slice(0, 12)}
+                          {c.type === "text" && c.content
+                            ? c.content.slice(0, 14)
+                            : c.id.slice(0, 12)}
                         </Text>
+                        <Badge size="xs" variant="light" color="gray">
+                          p{(pageOf.get(c.id) ?? 0) + 1}
+                        </Badge>
+                        <Tooltip
+                          label={c.locked ? "Unlock" : "Lock"}
+                          withArrow
+                        >
+                          <ActionIcon
+                            size="xs"
+                            variant={c.locked ? "filled" : "subtle"}
+                            color={c.locked ? "orange" : "gray"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commit({
+                                type: "UPDATE_COMP",
+                                id: c.id,
+                                patch: { locked: !c.locked },
+                              });
+                            }}
+                            aria-label={c.locked ? "Unlock" : "Lock"}
+                          >
+                            {c.locked ? "L" : "·"}
+                          </ActionIcon>
+                        </Tooltip>
                       </Box>
                     ),
                   )}
@@ -604,7 +1320,7 @@ export function PdfEditor({
           }}
         >
           {pages.map((pageComps, pageIdx) => (
-            <div key={pageIdx}>
+            <div key={pageIdx} style={{ marginBottom: 24 }}>
               {pages.length > 1 && (
                 <Text
                   size="xs"
@@ -618,95 +1334,166 @@ export function PdfEditor({
                 </Text>
               )}
               <div
-                data-page={pageIdx}
-                onClick={(e) => e.stopPropagation()}
                 style={{
                   position: "relative",
-                  width: PAGE_W,
-                  height: PAGE_H,
-                  background: "#fff",
-                  boxShadow: "0 4px 20px rgba(0,0,0,.4)",
-                  outline:
-                    pageIdx === activePage ? "2px solid #beffb6" : undefined,
-                  outlineOffset: pageIdx === activePage ? 3 : undefined,
-                  marginBottom: 24,
+                  width: PAGE_W * zoom,
+                  height: PAGE_H * zoom,
                   flexShrink: 0,
                 }}
               >
-                {/* Page number footer */}
                 <div
+                  data-page={pageIdx}
+                  onClick={(e) => e.stopPropagation()}
                   style={{
                     position: "absolute",
-                    bottom: 30,
+                    top: 0,
                     left: 0,
-                    right: 0,
-                    textAlign: "center",
-                    fontSize: 10,
-                    fontFamily: "Helvetica, Arial, sans-serif",
-                    color: "#000",
-                    pointerEvents: "none",
-                    userSelect: "none",
+                    width: PAGE_W,
+                    height: PAGE_H,
+                    background: "#fff",
+                    boxShadow: "0 4px 20px rgba(0,0,0,.4)",
+                    outline:
+                      pageIdx === activePage ? "2px solid #beffb6" : undefined,
+                    outlineOffset: pageIdx === activePage ? 3 : undefined,
+                    transform: `scale(${zoom})`,
+                    transformOrigin: "top left",
                   }}
                 >
-                  Page {pageIdx + 1} of {pages.length}
+                  {/* Page number footer */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 30,
+                      left: 0,
+                      right: 0,
+                      textAlign: "center",
+                      fontSize: 10,
+                      fontFamily: "Helvetica, Arial, sans-serif",
+                      color: "#000",
+                      pointerEvents: "none",
+                      userSelect: "none",
+                    }}
+                  >
+                    Page {pageIdx + 1} of {pages.length}
+                  </div>
+
+                  {/* Alignment guides */}
+                  {guides?.page === pageIdx &&
+                    guides.x.map((gx, i) => (
+                      <div
+                        key={`gx${i}`}
+                        style={{
+                          position: "absolute",
+                          left: gx,
+                          top: 0,
+                          bottom: 0,
+                          width: 1,
+                          background: "#ff4da6",
+                          pointerEvents: "none",
+                          zIndex: 10,
+                        }}
+                      />
+                    ))}
+                  {guides?.page === pageIdx &&
+                    guides.y.map((gy, i) => (
+                      <div
+                        key={`gy${i}`}
+                        style={{
+                          position: "absolute",
+                          top: gy,
+                          left: 0,
+                          right: 0,
+                          height: 1,
+                          background: "#ff4da6",
+                          pointerEvents: "none",
+                          zIndex: 10,
+                        }}
+                      />
+                    ))}
+
+                  {pageComps.map((comp) => {
+                    if (comp.type === "pagebreak") return null;
+                    const isSelected = comp.id === selectedId;
+                    const [rx, , rw, rh] = comp.rect;
+                    const top = cssTop(comp.rect);
+                    const handleSize = 8 / zoom;
+
+                    return (
+                      <div
+                        key={comp.id}
+                        onMouseDown={(e) => startDrag(e, comp.id, pageIdx)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedId(comp.id);
+                        }}
+                        style={{
+                          position: "absolute",
+                          left: rx,
+                          top,
+                          width: rw,
+                          height: rh,
+                          cursor: comp.locked ? "default" : "move",
+                          overflow: "visible",
+                          outline: isSelected
+                            ? "2px solid #2196F3"
+                            : "1px dashed #ccc",
+                          boxShadow: isSelected
+                            ? "0 0 0 3px rgba(33,150,243,.2)"
+                            : undefined,
+                        }}
+                      >
+                        {comp.type === "shape" ? (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: shapeToSvg(comp),
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              fontFamily: comp.style.font,
+                              fontSize: comp.style.size,
+                              fontWeight: comp.style.bold ? "bold" : "normal",
+                              fontStyle: comp.style.italic
+                                ? "italic"
+                                : "normal",
+                              textAlign: comp.style.align,
+                              color: comp.style.color,
+                              whiteSpace: "pre-wrap",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          >
+                            {renderText(comp.content, editorContext, knownVars)}
+                          </div>
+                        )}
+
+                        {isSelected &&
+                          !comp.locked &&
+                          HANDLES.map((hh) => (
+                            <div
+                              key={hh.dir}
+                              onMouseDown={(e) =>
+                                startResize(e, comp.id, pageIdx, hh.dir)
+                              }
+                              style={{
+                                position: "absolute",
+                                left: `${hh.x * 100}%`,
+                                top: `${hh.y * 100}%`,
+                                width: handleSize,
+                                height: handleSize,
+                                transform: "translate(-50%, -50%)",
+                                background: "#2196F3",
+                                border: `${1 / zoom}px solid #fff`,
+                                cursor: hh.cursor,
+                                zIndex: 11,
+                              }}
+                            />
+                          ))}
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {pageComps.map((comp) => {
-                  if (comp.type === "pagebreak") return null;
-                  const isSelected = comp.id === selectedId;
-                  const [rx, , rw, rh] = comp.rect;
-                  const top = cssTop(comp.rect);
-
-                  return (
-                    <div
-                      key={comp.id}
-                      onMouseDown={(e) => startDrag(e, comp.id, pageIdx)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedId(comp.id);
-                      }}
-                      style={{
-                        position: "absolute",
-                        left: rx,
-                        top,
-                        width: rw,
-                        height: rh,
-                        cursor: "move",
-                        overflow: "visible",
-                        outline: isSelected
-                          ? "2px solid #2196F3"
-                          : "1px dashed #ccc",
-                        boxShadow: isSelected
-                          ? "0 0 0 3px rgba(33,150,243,.2)"
-                          : undefined,
-                      }}
-                    >
-                      {comp.type === "shape" ? (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: shapeToSvg(comp),
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            fontFamily: comp.style.font,
-                            fontSize: comp.style.size,
-                            fontWeight: comp.style.bold ? "bold" : "normal",
-                            fontStyle: comp.style.italic ? "italic" : "normal",
-                            textAlign: comp.style.align,
-                            color: comp.style.color,
-                            whiteSpace: "pre-wrap",
-                            width: "100%",
-                            height: "100%",
-                          }}
-                        >
-                          {interpolate(comp.content, editorContext)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             </div>
           ))}
@@ -753,9 +1540,21 @@ export function PdfEditor({
             <Tabs.Panel value="inspector" style={{ flex: 1, overflow: "auto" }}>
               <InspectorPanel
                 comp={selectedComp}
+                knownVars={knownVars}
+                contentRef={contentRef}
+                onContentSelect={(start, end) => {
+                  contentSelRef.current = { start, end };
+                }}
+                onReorder={(mode) => {
+                  if (selectedId)
+                    commit({
+                      type: "SET_COMPS",
+                      comps: reorderComp(comps, selectedId, mode),
+                    });
+                }}
                 onChange={(patch) => {
                   if (selectedId)
-                    dispatch({ type: "UPDATE_COMP", id: selectedId, patch });
+                    commit({ type: "UPDATE_COMP", id: selectedId, patch });
                 }}
               />
             </Tabs.Panel>
@@ -766,12 +1565,12 @@ export function PdfEditor({
                 activePage={activePage}
                 onSwap={(i, j) => {
                   const next = swapPages(comps, i, j);
-                  dispatch({ type: "SET_COMPS", comps: next });
+                  commit({ type: "SET_COMPS", comps: next });
                   setActivePage(j);
                 }}
                 onDelete={(idx) => {
                   const next = deletePage(comps, idx);
-                  dispatch({ type: "SET_COMPS", comps: next });
+                  commit({ type: "SET_COMPS", comps: next });
                   if (
                     activePage >=
                     next.filter((c) => c.type !== "pagebreak").length
@@ -845,10 +1644,21 @@ function deletePage(comps: PdfComp[], idx: number): PdfComp[] {
 // ── Inspector panel ────────────────────────────────────────────────────────
 interface InspectorPanelProps {
   comp: PdfComp | null;
+  knownVars: Set<string>;
+  contentRef: React.RefObject<HTMLTextAreaElement | null>;
+  onContentSelect: (start: number, end: number) => void;
+  onReorder: (mode: "front" | "back" | "forward" | "backward") => void;
   onChange: (patch: Partial<PdfComp>) => void;
 }
 
-function InspectorPanel({ comp, onChange }: InspectorPanelProps) {
+function InspectorPanel({
+  comp,
+  knownVars,
+  contentRef,
+  onContentSelect,
+  onReorder,
+  onChange,
+}: InspectorPanelProps) {
   if (!comp || comp.type === "pagebreak") {
     return (
       <Text size="xs" c="dimmed" p="sm">
@@ -863,11 +1673,48 @@ function InspectorPanel({ comp, onChange }: InspectorPanelProps) {
     onChange({ rect } as Partial<PdfComp>);
   };
 
+  const unknownVars =
+    comp.type === "text"
+      ? Array.from(
+          new Set(
+            Array.from(comp.content.matchAll(new RegExp(VAR_RE.source, "g")))
+              .map((m) => m[1]!)
+              .filter((k) => !knownVars.has(k)),
+          ),
+        )
+      : [];
+
   return (
     <Stack gap="xs" p="sm">
       <Text size="xs" c="dimmed" style={{ fontFamily: "monospace" }}>
         {comp.id}
       </Text>
+
+      <Text size="xs" fw={600}>
+        Order
+      </Text>
+      <Group gap={4} wrap="nowrap">
+        <Button size="xs" variant="default" onClick={() => onReorder("back")}>
+          To back
+        </Button>
+        <Button
+          size="xs"
+          variant="default"
+          onClick={() => onReorder("backward")}
+        >
+          Back
+        </Button>
+        <Button
+          size="xs"
+          variant="default"
+          onClick={() => onReorder("forward")}
+        >
+          Fwd
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onReorder("front")}>
+          To front
+        </Button>
+      </Group>
 
       <Text size="xs" fw={600}>
         Position
@@ -893,7 +1740,7 @@ function InspectorPanel({ comp, onChange }: InspectorPanelProps) {
           size="xs"
           label="W"
           value={comp.rect[2]}
-          min={10}
+          min={MIN_SIZE}
           onChange={(v) => patchRect(2, Number(v))}
           w={80}
         />
@@ -901,7 +1748,7 @@ function InspectorPanel({ comp, onChange }: InspectorPanelProps) {
           size="xs"
           label="H"
           value={comp.rect[3]}
-          min={10}
+          min={MIN_SIZE}
           onChange={(v) => patchRect(3, Number(v))}
           w={80}
         />
@@ -913,16 +1760,45 @@ function InspectorPanel({ comp, onChange }: InspectorPanelProps) {
             Content
           </Text>
           <Textarea
+            ref={contentRef}
             size="xs"
             value={comp.content}
             placeholder="Text (supports {{variables}})"
             autosize
             minRows={2}
             maxRows={5}
-            onChange={(e) =>
-              onChange({ content: e.target.value } as Partial<PdfComp>)
+            onChange={(e) => {
+              onChange({ content: e.target.value } as Partial<PdfComp>);
+              onContentSelect(
+                e.currentTarget.selectionStart,
+                e.currentTarget.selectionEnd,
+              );
+            }}
+            onSelect={(e) =>
+              onContentSelect(
+                e.currentTarget.selectionStart,
+                e.currentTarget.selectionEnd,
+              )
+            }
+            onClick={(e) =>
+              onContentSelect(
+                e.currentTarget.selectionStart,
+                e.currentTarget.selectionEnd,
+              )
+            }
+            onKeyUp={(e) =>
+              onContentSelect(
+                e.currentTarget.selectionStart,
+                e.currentTarget.selectionEnd,
+              )
             }
           />
+          {unknownVars.length > 0 && (
+            <Text size="xs" c="orange">
+              Unknown variable{unknownVars.length > 1 ? "s" : ""}:{" "}
+              {unknownVars.map((u) => `{{${u}}}`).join(", ")}
+            </Text>
+          )}
 
           <Text size="xs" fw={600} mt="xs">
             Style

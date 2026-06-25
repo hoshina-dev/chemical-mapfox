@@ -15,6 +15,8 @@ export interface TextComp {
   content: string;
   rect: Rect;
   style: TextStyle;
+  /** Editor-only: prevents drag/resize. Stripped before saving. */
+  locked?: boolean;
 }
 
 export interface ShapeComp {
@@ -25,6 +27,8 @@ export interface ShapeComp {
   color: string;
   stroke_width: number;
   fill: boolean;
+  /** Editor-only: prevents drag/resize. Stripped before saving. */
+  locked?: boolean;
 }
 
 export interface PageBreakComp {
