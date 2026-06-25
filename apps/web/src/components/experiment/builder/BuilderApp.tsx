@@ -24,7 +24,11 @@ import {
   updateTemplateAction,
 } from "@/app/actions/experiment-manager";
 import { type FormDraft, fromDraft } from "@/lib/builder";
-import { onboardingPath, templateBuilderPath } from "@/lib/experiment-manager/routes";
+import {
+  onboardingPath,
+  templateBuilderPath,
+  templatePdfPath,
+} from "@/lib/experiment-manager/routes";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { textProps } from "./fieldProps";
@@ -195,6 +199,15 @@ export function BuilderApp({
         <Button onClick={save} loading={isPending}>
           {mode === "create" ? "Create template" : "Save changes"}
         </Button>
+        {mode === "edit" && templateId && (
+          <Button
+            variant="light"
+            component={Link}
+            href={templatePdfPath({ sampleId, templateId })}
+          >
+            Design PDF report
+          </Button>
+        )}
         {mode === "edit" && templateId && (
           <Button
             color="red"

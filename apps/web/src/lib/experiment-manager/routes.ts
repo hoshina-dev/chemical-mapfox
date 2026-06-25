@@ -48,3 +48,8 @@ export function newTemplatePath(sampleId?: string) {
 export function templateBuilderPath(ref: TemplateRef) {
   return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}`;
 }
+
+/** PDF report-layout designer for a template version. */
+export function templatePdfPath(ref: TemplateRef) {
+  return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}/pdf`;
+}

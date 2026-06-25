@@ -79,6 +79,8 @@ export type ExperimentCreate = Em["ExperimentCreate"];
 export type ExperimentUpdate = Em["ExperimentUpdate"];
 export type ReportStatusResponse = Em["ReportStatusResponse"];
 export type ReportDownloadResponse = Em["ReportDownloadResponse"];
+export type PdfTemplateBody = Em["PdfTemplateBody"];
+export type PdfTemplateResponse = Em["PdfTemplateResponse"];
 
 /**
  * Fields merged from the experiment template JSONB. OpenAPI types the detail
@@ -217,4 +219,40 @@ export async function deleteExperimentTemplate(
   return emFetch<void>(`/api/samples/${sampleId}/experiments/${templateId}`, {
     method: "DELETE",
   });
+}
+
+// --- PDF report templates (the layout for a template's generated report) ---
+
+/**
+ * The PDF layout attached to a template's current version. `components` is the
+ * ordered array authored against `docs/pdf-report-engine.md`. 404 until a
+ * layout has been saved for the lineage.
+ */
+export async function getPdfTemplate(sampleId: string, templateId: string) {
+  return emFetch<PdfTemplateResponse>(
+    `/api/samples/${sampleId}/experiments/${templateId}/pdf`,
+  );
+}
+
+/**
+ * Create or replace the PDF layout for a template lineage. Addressed by
+ * `lineageId` (not a specific version) — the backend attaches it to the current
+ * version and returns the version it landed on via `template_id`.
+ */
+export async function upsertPdfTemplate(
+  sampleId: string,
+  lineageId: string,
+  components: unknown[],
+) {
+  return emFetch<PdfTemplateResponse>(
+    `/api/samples/${sampleId}/experiments/${lineageId}/pdf`,
+    { method: "PUT", body: JSON.stringify({ components }) },
+  );
+}
+
+export async function deletePdfTemplate(sampleId: string, templateId: string) {
+  return emFetch<void>(
+    `/api/samples/${sampleId}/experiments/${templateId}/pdf`,
+    { method: "DELETE" },
+  );
 }
