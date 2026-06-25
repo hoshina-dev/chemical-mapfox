@@ -30,11 +30,23 @@ import {
 } from "react";
 
 import {
+  calculateExperimentAction,
+  generateReportAction,
+  getReportDownloadUrlAction,
+  getReportStatusAction,
+} from "@/app/actions/experiment";
+import {
   getExperimentPreviewContextAction,
   type PdfPreviewExperiment,
   savePdfTemplateAction,
 } from "@/app/actions/pdf";
 import { templatePdfPath } from "@/lib/experiment-manager/routes";
+
+const CLIPBOARD_MARKER = "__pdf_editor_clipboard__";
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 import type {
   PageBreakComp,
@@ -180,26 +192,6 @@ function newPageBreak(): PageBreakComp {
   return { id: `pb_${Date.now()}`, type: "pagebreak" };
 }
 
-/** Deep-ish clone of a non-pagebreak component with a fresh id + small offset. */
-function cloneComp(comp: TextComp | ShapeComp): TextComp | ShapeComp {
-  const prefix = comp.type === "text" ? "text" : "shape";
-  const offset: Rect = [
-    Math.min(comp.rect[0] + 10, PAGE_W - comp.rect[2]),
-    Math.max(comp.rect[1] - 10, 0),
-    comp.rect[2],
-    comp.rect[3],
-  ];
-  if (comp.type === "text") {
-    return {
-      ...comp,
-      id: `${prefix}_${Date.now()}`,
-      rect: offset,
-      style: { ...comp.style },
-    };
-  }
-  return { ...comp, id: `${prefix}_${Date.now()}`, rect: offset };
-}
-
 /** Remove editor-only fields so the saved payload matches the backend schema. */
 function stripEditorFields(comps: PdfComp[]): PdfComp[] {
   return comps.map((c) => {
@@ -333,6 +325,103 @@ function reorderComp(
   return result;
 }
 
+type AlignMode =
+  | "left"
+  | "hcenter"
+  | "right"
+  | "top"
+  | "vmiddle"
+  | "bottom";
+
+/** Align the given components (page-relative coords) to a shared edge/center. */
+function alignRects(
+  comps: PdfComp[],
+  ids: string[],
+  mode: AlignMode,
+): Record<string, Rect> {
+  const sel = comps.filter(
+    (c): c is TextComp | ShapeComp =>
+      c.type !== "pagebreak" && ids.includes(c.id),
+  );
+  if (sel.length < 2) return {};
+  const lefts = sel.map((c) => c.rect[0]);
+  const rights = sel.map((c) => c.rect[0] + c.rect[2]);
+  const bottoms = sel.map((c) => c.rect[1]);
+  const tops = sel.map((c) => c.rect[1] + c.rect[3]);
+  const minL = Math.min(...lefts);
+  const maxR = Math.max(...rights);
+  const minB = Math.min(...bottoms);
+  const maxT = Math.max(...tops);
+  const cx = (minL + maxR) / 2;
+  const cy = (minB + maxT) / 2;
+
+  const out: Record<string, Rect> = {};
+  for (const c of sel) {
+    const [x, y, w, h] = c.rect;
+    let nx = x;
+    let ny = y;
+    if (mode === "left") nx = minL;
+    else if (mode === "right") nx = maxR - w;
+    else if (mode === "hcenter") nx = Math.round(cx - w / 2);
+    else if (mode === "bottom") ny = minB;
+    else if (mode === "top") ny = maxT - h;
+    else if (mode === "vmiddle") ny = Math.round(cy - h / 2);
+    out[c.id] = [Math.round(nx), Math.round(ny), w, h];
+  }
+  return out;
+}
+
+/** Evenly distribute the gaps between components along one axis. */
+function distributeRects(
+  comps: PdfComp[],
+  ids: string[],
+  axis: "x" | "y",
+): Record<string, Rect> {
+  const sel = comps.filter(
+    (c): c is TextComp | ShapeComp =>
+      c.type !== "pagebreak" && ids.includes(c.id),
+  );
+  if (sel.length < 3) return {};
+  const dim = axis === "x" ? 2 : 0; // width or (pdf-y) for size along axis
+  const pos = axis === "x" ? 0 : 1;
+  const sorted = [...sel].sort((a, b) => a.rect[pos] - b.rect[pos]);
+  const first = sorted[0]!;
+  const last = sorted[sorted.length - 1]!;
+  const start = first.rect[pos];
+  const end = last.rect[pos] + last.rect[dim];
+  const totalSize = sorted.reduce((sum, c) => sum + c.rect[dim], 0);
+  const gap = (end - start - totalSize) / (sorted.length - 1);
+
+  const out: Record<string, Rect> = {};
+  let cursor = start;
+  for (const c of sorted) {
+    const rect: Rect = [...c.rect] as Rect;
+    rect[pos] = Math.round(cursor);
+    out[c.id] = rect;
+    cursor += c.rect[dim] + gap;
+  }
+  return out;
+}
+
+/** Clone components for pasting: fresh ids + a small offset, clamped to page. */
+function clonesForPaste(comps: Array<TextComp | ShapeComp>): Array<
+  TextComp | ShapeComp
+> {
+  const stamp = Date.now();
+  return comps.map((c, i) => {
+    const rect: Rect = [
+      Math.min(c.rect[0] + 10, PAGE_W - c.rect[2]),
+      Math.max(c.rect[1] - 10, 0),
+      c.rect[2],
+      c.rect[3],
+    ];
+    const id = `${c.type}_${stamp}_${i}`;
+    return c.type === "text"
+      ? { ...c, id, rect, style: { ...c.style } }
+      : { ...c, id, rect };
+  });
+}
+
 // ── Props ──────────────────────────────────────────────────────────────────
 interface PdfEditorProps {
   sampleId: string;
@@ -348,10 +437,13 @@ interface PdfEditorProps {
 type Action =
   | { type: "SET_COMPS"; comps: PdfComp[] }
   | { type: "ADD_COMP"; comp: PdfComp; insertAt: number }
+  | { type: "ADD_COMPS"; comps: PdfComp[]; insertAt: number }
   | { type: "UPDATE_COMP"; id: string; patch: Partial<PdfComp> }
   | { type: "DELETE_COMP"; id: string }
+  | { type: "DELETE_MANY"; ids: string[] }
   | { type: "MOVE_RECT"; id: string; x: number; y: number }
-  | { type: "SET_RECT"; id: string; rect: Rect };
+  | { type: "SET_RECT"; id: string; rect: Rect }
+  | { type: "SET_RECTS"; rects: Record<string, Rect> };
 
 function compsReducer(state: PdfComp[], action: Action): PdfComp[] {
   switch (action.type) {
@@ -362,12 +454,21 @@ function compsReducer(state: PdfComp[], action: Action): PdfComp[] {
       next.splice(action.insertAt, 0, action.comp);
       return next;
     }
+    case "ADD_COMPS": {
+      const next = [...state];
+      next.splice(action.insertAt, 0, ...action.comps);
+      return next;
+    }
     case "UPDATE_COMP":
       return state.map((c) =>
         c.id === action.id ? ({ ...c, ...action.patch } as PdfComp) : c,
       );
     case "DELETE_COMP":
       return state.filter((c) => c.id !== action.id);
+    case "DELETE_MANY": {
+      const drop = new Set(action.ids);
+      return state.filter((c) => !drop.has(c.id));
+    }
     case "MOVE_RECT":
       return state.map((c) => {
         if (c.id !== action.id || c.type === "pagebreak") return c;
@@ -378,6 +479,12 @@ function compsReducer(state: PdfComp[], action: Action): PdfComp[] {
       return state.map((c) => {
         if (c.id !== action.id || c.type === "pagebreak") return c;
         return { ...c, rect: action.rect };
+      });
+    case "SET_RECTS":
+      return state.map((c) => {
+        if (c.type === "pagebreak") return c;
+        const rect = action.rects[c.id];
+        return rect ? { ...c, rect } : c;
       });
     default:
       return state;
@@ -470,6 +577,7 @@ export function PdfEditor({
   const redo = useCallback(() => hd({ type: "REDO" }), []);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activePage, setActivePage] = useState(0);
   const [previewMode, setPreviewMode] = useState<PreviewMode>("raw");
   const [selectedExpId, setSelectedExpId] = useState<string | null>(null);
@@ -489,6 +597,17 @@ export function PdfEditor({
     y: number[];
   } | null>(null);
   const [varSearch, setVarSearch] = useState("");
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfMsg, setPdfMsg] = useState<{ text: string; ok: boolean } | null>(
+    null,
+  );
+  const [marquee, setMarquee] = useState<{
+    page: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -497,7 +616,25 @@ export function PdfEditor({
     offsetX: number;
     offsetY: number;
     committed: boolean;
+    group?: {
+      bases: Array<{ id: string; left: number; top: number; w: number; h: number }>;
+      box: { left: number; top: number; w: number; h: number };
+      startX: number;
+      startY: number;
+    };
   } | null>(null);
+  const marqueeRef = useRef<{
+    pageIdx: number;
+    startX: number;
+    startY: number;
+  } | null>(null);
+  const marqueeRectRef = useRef<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  const clipboardRef = useRef<Array<TextComp | ShapeComp>>([]);
   const resizeRef = useRef<{
     id: string;
     pageIdx: number;
@@ -514,6 +651,8 @@ export function PdfEditor({
   const zoomRef = useRef(zoom);
   const snapRef = useRef(snap);
   const selectedIdRef = useRef(selectedId);
+  const selectedIdsRef = useRef(selectedIds);
+  const activePageRef = useRef(activePage);
 
   // Inspector content textarea, for inserting variables at the cursor.
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
@@ -535,8 +674,30 @@ export function PdfEditor({
     zoomRef.current = zoom;
     snapRef.current = snap;
     selectedIdRef.current = selectedId;
+    selectedIdsRef.current = selectedIds;
+    activePageRef.current = activePage;
     dirtyRef.current = dirty;
   });
+
+  // ── Selection helpers ────────────────────────────────────────────────────
+  const selectOnly = useCallback((id: string) => {
+    setSelectedId(id);
+    setSelectedIds([id]);
+  }, []);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const has = prev.includes(id);
+      const next = has ? prev.filter((x) => x !== id) : [...prev, id];
+      setSelectedId(has ? (next[next.length - 1] ?? null) : id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedId(null);
+    setSelectedIds([]);
+  }, []);
 
   const knownVars = useMemo(() => {
     const set = new Set<string>();
@@ -570,14 +731,75 @@ export function PdfEditor({
       e.preventDefault();
       e.stopPropagation();
       const comp = compsRef.current.find((c) => c.id === id);
-      if (!comp || comp.type === "pagebreak" || comp.locked) return;
+      if (!comp || comp.type === "pagebreak") return;
 
+      // Shift/Cmd-click toggles membership without starting a drag.
+      if (e.shiftKey || e.metaKey || e.ctrlKey) {
+        toggleSelect(id);
+        return;
+      }
+
+      const selected = selectedIdsRef.current;
+      const isGroup = selected.includes(id) && selected.length > 1;
       const pageEl = canvasRef.current?.querySelector<HTMLElement>(
         `[data-page="${pageIdx}"]`,
       );
       if (!pageEl) return;
       const rect = pageEl.getBoundingClientRect();
       const z = zoomRef.current;
+
+      if (isGroup) {
+        const onPage = new Set<string>();
+        const { start, end } = getPageRange(compsRef.current, pageIdx);
+        for (let i = start; i < end; i++) {
+          const o = compsRef.current[i];
+          if (o && o.type !== "pagebreak") onPage.add(o.id);
+        }
+        const bases = compsRef.current
+          .filter(
+            (c): c is TextComp | ShapeComp =>
+              c.type !== "pagebreak" &&
+              selected.includes(c.id) &&
+              !c.locked &&
+              onPage.has(c.id),
+          )
+          .map((c) => ({
+            id: c.id,
+            left: c.rect[0],
+            top: cssTop(c.rect),
+            w: c.rect[2],
+            h: c.rect[3],
+          }));
+        if (bases.length > 0) {
+          const minL = Math.min(...bases.map((b) => b.left));
+          const minT = Math.min(...bases.map((b) => b.top));
+          const maxR = Math.max(...bases.map((b) => b.left + b.w));
+          const maxB = Math.max(...bases.map((b) => b.top + b.h));
+          dragRef.current = {
+            id,
+            pageIdx,
+            offsetX: 0,
+            offsetY: 0,
+            committed: false,
+            group: {
+              bases,
+              box: { left: minL, top: minT, w: maxR - minL, h: maxB - minT },
+              startX: e.clientX,
+              startY: e.clientY,
+            },
+          };
+        }
+        setActivePage(pageIdx);
+        return;
+      }
+
+      if (comp.locked) {
+        selectOnly(id);
+        setActivePage(pageIdx);
+        return;
+      }
+
+      selectOnly(id);
       dragRef.current = {
         id,
         pageIdx,
@@ -586,9 +808,8 @@ export function PdfEditor({
         committed: false,
       };
       setActivePage(pageIdx);
-      setSelectedId(id);
     },
-    [],
+    [toggleSelect, selectOnly],
   );
 
   const startResize = useCallback(
@@ -611,12 +832,32 @@ export function PdfEditor({
         },
         committed: false,
       };
-      setSelectedId(id);
+      selectOnly(id);
+    },
+    [selectOnly],
+  );
+
+  // Marquee (rubber-band) selection starting on empty page background.
+  const startMarquee = useCallback(
+    (e: React.MouseEvent, pageIdx: number) => {
+      if (e.shiftKey || e.metaKey || e.ctrlKey) return;
+      const pageEl = canvasRef.current?.querySelector<HTMLElement>(
+        `[data-page="${pageIdx}"]`,
+      );
+      if (!pageEl) return;
+      const rect = pageEl.getBoundingClientRect();
+      const z = zoomRef.current;
+      marqueeRef.current = {
+        pageIdx,
+        startX: (e.clientX - rect.left) / z,
+        startY: (e.clientY - rect.top) / z,
+      };
+      setActivePage(pageIdx);
     },
     [],
   );
 
-  // ── Global pointer handlers (drag + resize), subscribed once ──────────────
+  // ── Global pointer handlers (drag + resize + marquee), subscribed once ────
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       const resize = resizeRef.current;
@@ -669,8 +910,59 @@ export function PdfEditor({
         return;
       }
 
+      const mq = marqueeRef.current;
+      if (mq) {
+        const pageEl = canvasRef.current?.querySelector<HTMLElement>(
+          `[data-page="${mq.pageIdx}"]`,
+        );
+        if (!pageEl) return;
+        const r = pageEl.getBoundingClientRect();
+        const z = zoomRef.current;
+        const curX = (e.clientX - r.left) / z;
+        const curY = (e.clientY - r.top) / z;
+        const x = Math.max(0, Math.min(mq.startX, curX));
+        const y = Math.max(0, Math.min(mq.startY, curY));
+        const w = Math.min(PAGE_W, Math.max(mq.startX, curX)) - x;
+        const h = Math.min(PAGE_H, Math.max(mq.startY, curY)) - y;
+        marqueeRectRef.current = { x, y, w, h };
+        setMarquee({ page: mq.pageIdx, x, y, w, h });
+        return;
+      }
+
       const drag = dragRef.current;
       if (!drag) return;
+      const z = zoomRef.current;
+
+      // Group drag: move all selected (draggable) components by one delta.
+      if (drag.group) {
+        const g = drag.group;
+        let dx = (e.clientX - g.startX) / z;
+        let dy = (e.clientY - g.startY) / z;
+        dx = Math.max(-g.box.left, Math.min(dx, PAGE_W - (g.box.left + g.box.w)));
+        dy = Math.max(-g.box.top, Math.min(dy, PAGE_H - (g.box.top + g.box.h)));
+        if (snapRef.current) {
+          dx = snapToGrid(dx);
+          dy = snapToGrid(dy);
+        }
+        const rects: Record<string, Rect> = {};
+        for (const b of g.bases) {
+          const left = b.left + dx;
+          const top = b.top + dy;
+          rects[b.id] = [
+            Math.round(left),
+            Math.round(PAGE_H - top - b.h),
+            b.w,
+            b.h,
+          ];
+        }
+        if (!drag.committed) {
+          hd({ type: "BEGIN" });
+          drag.committed = true;
+        }
+        hd({ type: "LIVE", action: { type: "SET_RECTS", rects } });
+        return;
+      }
+
       const comp = compsRef.current.find((c) => c.id === drag.id);
       if (!comp || comp.type === "pagebreak") return;
       const pageEl = canvasRef.current?.querySelector<HTMLElement>(
@@ -678,7 +970,6 @@ export function PdfEditor({
       );
       if (!pageEl) return;
       const rect = pageEl.getBoundingClientRect();
-      const z = zoomRef.current;
       const w = comp.rect[2];
       const h = comp.rect[3];
       let cssX = Math.max(
@@ -713,6 +1004,38 @@ export function PdfEditor({
       });
     };
     const onUp = () => {
+      // Finalize a marquee selection by selecting intersecting components.
+      const mq = marqueeRef.current;
+      if (mq) {
+        marqueeRef.current = null;
+        const m = marqueeRectRef.current;
+        marqueeRectRef.current = null;
+        setMarquee(null);
+        if (m && m.w > 2 && m.h > 2) {
+          const { start, end } = getPageRange(compsRef.current, mq.pageIdx);
+          const hits: string[] = [];
+          for (let i = start; i < end; i++) {
+            const c = compsRef.current[i];
+            if (!c || c.type === "pagebreak") continue;
+            const left = c.rect[0];
+            const topc = cssTop(c.rect);
+            const right = left + c.rect[2];
+            const bottom = topc + c.rect[3];
+            const overlap =
+              left < m.x + m.w &&
+              right > m.x &&
+              topc < m.y + m.h &&
+              bottom > m.y;
+            if (overlap) hits.push(c.id);
+          }
+          setSelectedIds(hits);
+          setSelectedId(hits[hits.length - 1] ?? null);
+        } else {
+          // A plain click on empty page area clears the selection.
+          setSelectedId(null);
+          setSelectedIds([]);
+        }
+      }
       dragRef.current = null;
       resizeRef.current = null;
       setGuides(null);
@@ -730,14 +1053,14 @@ export function PdfEditor({
     const { end } = getPageRange(comps, activePage);
     const comp = newTextComp();
     commit({ type: "ADD_COMP", comp, insertAt: end });
-    setSelectedId(comp.id);
+    selectOnly(comp.id);
   };
 
   const addShape = () => {
     const { end } = getPageRange(comps, activePage);
     const comp = newShapeComp();
     commit({ type: "ADD_COMP", comp, insertAt: end });
-    setSelectedId(comp.id);
+    selectOnly(comp.id);
   };
 
   const addPageBreak = () => {
@@ -746,40 +1069,119 @@ export function PdfEditor({
   };
 
   const deleteSelected = useCallback(() => {
-    const id = selectedIdRef.current;
-    if (!id) return;
-    commit({ type: "DELETE_COMP", id });
-    setSelectedId(null);
-  }, [commit]);
+    const ids = selectedIdsRef.current;
+    if (ids.length === 0) return;
+    commit({ type: "DELETE_MANY", ids });
+    clearSelection();
+  }, [commit, clearSelection]);
 
   const duplicateSelected = useCallback(() => {
-    const id = selectedIdRef.current;
-    if (!id) return;
-    const idx = compsRef.current.findIndex((c) => c.id === id);
-    const comp = compsRef.current[idx];
-    if (!comp || comp.type === "pagebreak") return;
-    const clone = cloneComp(comp);
-    commit({ type: "ADD_COMP", comp: clone, insertAt: idx + 1 });
-    setSelectedId(clone.id);
+    const ids = selectedIdsRef.current;
+    const sel = compsRef.current.filter(
+      (c): c is TextComp | ShapeComp =>
+        c.type !== "pagebreak" && ids.includes(c.id),
+    );
+    if (sel.length === 0) return;
+    const lastIdx = Math.max(
+      ...sel.map((c) => compsRef.current.findIndex((x) => x.id === c.id)),
+    );
+    const clones = clonesForPaste(sel);
+    commit({ type: "ADD_COMPS", comps: clones, insertAt: lastIdx + 1 });
+    setSelectedIds(clones.map((c) => c.id));
+    setSelectedId(clones[clones.length - 1]?.id ?? null);
   }, [commit]);
 
   const nudge = useCallback(
     (key: string, step: number) => {
-      const id = selectedIdRef.current;
-      if (!id) return;
-      const comp = compsRef.current.find((c) => c.id === id);
-      if (!comp || comp.type === "pagebreak") return;
-      let [x, y] = comp.rect;
-      if (key === "ArrowLeft") x -= step;
-      else if (key === "ArrowRight") x += step;
-      else if (key === "ArrowUp") y += step;
-      else if (key === "ArrowDown") y -= step;
-      x = Math.max(0, Math.min(x, PAGE_W - comp.rect[2]));
-      y = Math.max(0, Math.min(y, PAGE_H - comp.rect[3]));
-      commit({ type: "MOVE_RECT", id, x, y });
+      const ids = selectedIdsRef.current;
+      if (ids.length === 0) return;
+      let dx = 0;
+      let dy = 0;
+      if (key === "ArrowLeft") dx = -step;
+      else if (key === "ArrowRight") dx = step;
+      else if (key === "ArrowUp") dy = step;
+      else if (key === "ArrowDown") dy = -step;
+      const rects: Record<string, Rect> = {};
+      for (const c of compsRef.current) {
+        if (c.type === "pagebreak" || !ids.includes(c.id)) continue;
+        const x = Math.max(0, Math.min(c.rect[0] + dx, PAGE_W - c.rect[2]));
+        const y = Math.max(0, Math.min(c.rect[1] + dy, PAGE_H - c.rect[3]));
+        rects[c.id] = [x, y, c.rect[2], c.rect[3]];
+      }
+      commit({ type: "SET_RECTS", rects });
     },
     [commit],
   );
+
+  const alignSelected = useCallback(
+    (mode: AlignMode) => {
+      const rects = alignRects(compsRef.current, selectedIdsRef.current, mode);
+      if (Object.keys(rects).length) commit({ type: "SET_RECTS", rects });
+    },
+    [commit],
+  );
+
+  const distributeSelected = useCallback(
+    (axis: "x" | "y") => {
+      const rects = distributeRects(
+        compsRef.current,
+        selectedIdsRef.current,
+        axis,
+      );
+      if (Object.keys(rects).length) commit({ type: "SET_RECTS", rects });
+    },
+    [commit],
+  );
+
+  // ── Clipboard (copy/paste/cut, also across templates via the OS clipboard) ─
+  const copySelection = useCallback(async () => {
+    const ids = selectedIdsRef.current;
+    const sel = compsRef.current.filter(
+      (c): c is TextComp | ShapeComp =>
+        c.type !== "pagebreak" && ids.includes(c.id),
+    );
+    if (sel.length === 0) return;
+    clipboardRef.current = sel;
+    try {
+      await navigator.clipboard.writeText(
+        JSON.stringify({ [CLIPBOARD_MARKER]: true, comps: sel }),
+      );
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) — the in-memory
+      // fallback still enables same-session paste.
+    }
+  }, []);
+
+  const paste = useCallback(async () => {
+    let items: Array<TextComp | ShapeComp> = clipboardRef.current;
+    try {
+      const text = await navigator.clipboard.readText();
+      const parsed = JSON.parse(text) as {
+        [CLIPBOARD_MARKER]?: boolean;
+        comps?: Array<TextComp | ShapeComp>;
+      };
+      if (parsed?.[CLIPBOARD_MARKER] && Array.isArray(parsed.comps)) {
+        items = parsed.comps;
+      }
+    } catch {
+      // Not JSON / no permission — fall back to the in-memory clipboard.
+    }
+    if (!items || items.length === 0) return;
+    const clones = clonesForPaste(items);
+    const { end } = getPageRange(compsRef.current, activePageRef.current);
+    commit({ type: "ADD_COMPS", comps: clones, insertAt: end });
+    setSelectedIds(clones.map((c) => c.id));
+    setSelectedId(clones[clones.length - 1]?.id ?? null);
+  }, [commit]);
+
+  const cutSelection = useCallback(async () => {
+    await copySelection();
+    const ids = selectedIdsRef.current;
+    if (ids.length) {
+      commit({ type: "DELETE_MANY", ids });
+      clearSelection();
+    }
+  }, [copySelection, commit, clearSelection]);
 
   // ── Save ─────────────────────────────────────────────────────────────────
   const save = useCallback(async () => {
@@ -810,6 +1212,63 @@ export function PdfEditor({
     }
     setTimeout(() => setSaveMsg(null), 2500);
   }, [sampleId, lineageId, templateId, router]);
+
+  // ── Real PDF preview (render the saved layout for a chosen experiment) ─────
+  const openRealPdf = useCallback(async () => {
+    const expId = selectedExpId;
+    if (!expId) return;
+    setPdfBusy(true);
+    setPdfMsg(null);
+    // The render engine works off the saved template, so persist first.
+    const payload = stripEditorFields(compsRef.current);
+    const saved = await savePdfTemplateAction(
+      sampleId,
+      lineageId,
+      payload,
+      templateId,
+    );
+    if (!saved.success) {
+      setPdfMsg({ text: saved.error, ok: false });
+      setPdfBusy(false);
+      return;
+    }
+    setSavedSnapshot(JSON.stringify(payload));
+    await calculateExperimentAction(expId);
+    await generateReportAction(expId);
+    let url: string | null = null;
+    for (let i = 0; i < 30; i++) {
+      await sleep(2000);
+      const st = await getReportStatusAction(expId);
+      if (!st.success) continue;
+      const s = (st.data.status ?? "").toLowerCase();
+      if (s.includes("fail") || s.includes("error")) {
+        setPdfMsg({ text: "Report generation failed", ok: false });
+        setPdfBusy(false);
+        return;
+      }
+      const done =
+        Boolean(st.data.generatedAt) ||
+        s.includes("succ") ||
+        s.includes("complete") ||
+        s.includes("ready") ||
+        s.includes("done");
+      if (done) {
+        const dl = await getReportDownloadUrlAction(expId);
+        if (dl.success) {
+          url = dl.data.url;
+          break;
+        }
+      }
+    }
+    setPdfBusy(false);
+    if (url) {
+      window.open(url, "_blank", "noopener");
+      setPdfMsg({ text: "Opened PDF", ok: true });
+      setTimeout(() => setPdfMsg(null), 2500);
+    } else {
+      setPdfMsg({ text: "Timed out waiting for the PDF", ok: false });
+    }
+  }, [selectedExpId, sampleId, lineageId, templateId]);
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────
   useEffect(() => {
@@ -848,11 +1307,36 @@ export function PdfEditor({
 
       if (typing) return;
 
-      if (e.key === "Escape") {
-        setSelectedId(null);
+      if (meta && key === "c") {
+        e.preventDefault();
+        void copySelection();
         return;
       }
-      if (!selectedIdRef.current) return;
+      if (meta && key === "x") {
+        e.preventDefault();
+        void cutSelection();
+        return;
+      }
+      if (meta && key === "v") {
+        e.preventDefault();
+        void paste();
+        return;
+      }
+      if (meta && key === "a") {
+        e.preventDefault();
+        const ids = compsRef.current
+          .filter((c) => c.type !== "pagebreak")
+          .map((c) => c.id);
+        setSelectedIds(ids);
+        setSelectedId(ids[ids.length - 1] ?? null);
+        return;
+      }
+
+      if (e.key === "Escape") {
+        clearSelection();
+        return;
+      }
+      if (selectedIdsRef.current.length === 0) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         deleteSelected();
@@ -865,7 +1349,18 @@ export function PdfEditor({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [undo, redo, save, duplicateSelected, deleteSelected, nudge]);
+  }, [
+    undo,
+    redo,
+    save,
+    duplicateSelected,
+    deleteSelected,
+    nudge,
+    copySelection,
+    cutSelection,
+    paste,
+    clearSelection,
+  ]);
 
   // ── Warn on unload when there are unsaved changes ────────────────────────
   useEffect(() => {
@@ -903,7 +1398,7 @@ export function PdfEditor({
     const p = pageOf.get(id);
     if (p == null) return;
     setActivePage(p);
-    setSelectedId(id);
+    selectOnly(id);
     canvasRef.current
       ?.querySelector<HTMLElement>(`[data-page="${p}"]`)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -912,6 +1407,8 @@ export function PdfEditor({
   const selectedComp = selectedId
     ? (comps.find((c) => c.id === selectedId) ?? null)
     : null;
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const multiSelected = selectedIds.length > 1;
   const pages = splitPages(comps);
 
   // ── Variables: copy or insert into selected text component ────────────────
@@ -994,8 +1491,19 @@ export function PdfEditor({
           <Button
             size="xs"
             variant="default"
+            onClick={() => void copySelection()}
+            disabled={selectedIds.length === 0}
+          >
+            Copy
+          </Button>
+          <Button size="xs" variant="default" onClick={() => void paste()}>
+            Paste
+          </Button>
+          <Button
+            size="xs"
+            variant="default"
             onClick={duplicateSelected}
-            disabled={!selectedComp || selectedComp.type === "pagebreak"}
+            disabled={selectedIds.length === 0}
           >
             Duplicate
           </Button>
@@ -1004,9 +1512,9 @@ export function PdfEditor({
             color="red"
             variant="light"
             onClick={deleteSelected}
-            disabled={!selectedId}
+            disabled={selectedIds.length === 0}
           >
-            Delete
+            Delete{selectedIds.length > 1 ? ` (${selectedIds.length})` : ""}
           </Button>
 
           <Group gap={2} wrap="nowrap">
@@ -1121,6 +1629,27 @@ export function PdfEditor({
               disabled={experiments.length === 0}
             />
           )}
+          {previewMode === "experiment" && (
+            <Tooltip
+              label="Save, render, and open the real generated PDF for this experiment"
+              withArrow
+            >
+              <Button
+                size="xs"
+                variant="default"
+                loading={pdfBusy}
+                disabled={!selectedExpId}
+                onClick={() => void openRealPdf()}
+              >
+                Open real PDF
+              </Button>
+            </Tooltip>
+          )}
+          {pdfMsg && (
+            <Badge color={pdfMsg.ok ? "green" : "red"} variant="light">
+              {pdfMsg.text}
+            </Badge>
+          )}
 
           <Button size="xs" loading={saving} onClick={save}>
             Save
@@ -1234,16 +1763,21 @@ export function PdfEditor({
                     ) : (
                       <Box
                         key={c.id}
-                        onClick={() => scrollToComp(c.id)}
+                        onClick={(e) => {
+                          if (e.shiftKey || e.metaKey || e.ctrlKey)
+                            toggleSelect(c.id);
+                          else scrollToComp(c.id);
+                        }}
                         style={{
                           cursor: "pointer",
                           padding: "2px 6px",
                           borderRadius: 4,
                           fontSize: 11,
-                          background:
-                            c.id === selectedId
-                              ? "var(--mantine-color-blue-1)"
-                              : "var(--mantine-color-default-hover)",
+                          background: selectedSet.has(c.id)
+                            ? c.id === selectedId
+                              ? "var(--mantine-color-blue-2)"
+                              : "var(--mantine-color-blue-1)"
+                            : "var(--mantine-color-default-hover)",
                           display: "flex",
                           alignItems: "center",
                           gap: 4,
@@ -1307,7 +1841,7 @@ export function PdfEditor({
         <div
           ref={canvasRef}
           onScroll={onScroll}
-          onClick={() => setSelectedId(null)}
+          onClick={clearSelection}
           style={{
             flex: 1,
             overflow: "auto",
@@ -1344,6 +1878,7 @@ export function PdfEditor({
                 <div
                   data-page={pageIdx}
                   onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => startMarquee(e, pageIdx)}
                   style={{
                     position: "absolute",
                     top: 0,
@@ -1411,9 +1946,28 @@ export function PdfEditor({
                       />
                     ))}
 
+                  {/* Marquee selection rectangle */}
+                  {marquee?.page === pageIdx && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: marquee.x,
+                        top: marquee.y,
+                        width: marquee.w,
+                        height: marquee.h,
+                        background: "rgba(33,150,243,.12)",
+                        border: "1px solid #2196F3",
+                        pointerEvents: "none",
+                        zIndex: 12,
+                      }}
+                    />
+                  )}
+
                   {pageComps.map((comp) => {
                     if (comp.type === "pagebreak") return null;
-                    const isSelected = comp.id === selectedId;
+                    const isSelected = selectedSet.has(comp.id);
+                    const isPrimary =
+                      comp.id === selectedId && selectedIds.length === 1;
                     const [rx, , rw, rh] = comp.rect;
                     const top = cssTop(comp.rect);
                     const handleSize = 8 / zoom;
@@ -1424,7 +1978,9 @@ export function PdfEditor({
                         onMouseDown={(e) => startDrag(e, comp.id, pageIdx)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedId(comp.id);
+                          if (e.shiftKey || e.metaKey || e.ctrlKey)
+                            toggleSelect(comp.id);
+                          else selectOnly(comp.id);
                         }}
                         style={{
                           position: "absolute",
@@ -1468,7 +2024,7 @@ export function PdfEditor({
                           </div>
                         )}
 
-                        {isSelected &&
+                        {isPrimary &&
                           !comp.locked &&
                           HANDLES.map((hh) => (
                             <div
@@ -1538,25 +2094,33 @@ export function PdfEditor({
             </Tabs.List>
 
             <Tabs.Panel value="inspector" style={{ flex: 1, overflow: "auto" }}>
-              <InspectorPanel
-                comp={selectedComp}
-                knownVars={knownVars}
-                contentRef={contentRef}
-                onContentSelect={(start, end) => {
-                  contentSelRef.current = { start, end };
-                }}
-                onReorder={(mode) => {
-                  if (selectedId)
-                    commit({
-                      type: "SET_COMPS",
-                      comps: reorderComp(comps, selectedId, mode),
-                    });
-                }}
-                onChange={(patch) => {
-                  if (selectedId)
-                    commit({ type: "UPDATE_COMP", id: selectedId, patch });
-                }}
-              />
+              {multiSelected ? (
+                <GroupPanel
+                  count={selectedIds.length}
+                  onAlign={alignSelected}
+                  onDistribute={distributeSelected}
+                />
+              ) : (
+                <InspectorPanel
+                  comp={selectedComp}
+                  knownVars={knownVars}
+                  contentRef={contentRef}
+                  onContentSelect={(start, end) => {
+                    contentSelRef.current = { start, end };
+                  }}
+                  onReorder={(mode) => {
+                    if (selectedId)
+                      commit({
+                        type: "SET_COMPS",
+                        comps: reorderComp(comps, selectedId, mode),
+                      });
+                  }}
+                  onChange={(patch) => {
+                    if (selectedId)
+                      commit({ type: "UPDATE_COMP", id: selectedId, patch });
+                  }}
+                />
+              )}
             </Tabs.Panel>
 
             <Tabs.Panel value="pages" style={{ flex: 1, overflow: "auto" }}>
@@ -1639,6 +2203,67 @@ function deletePage(comps: PdfComp[], idx: number): PdfComp[] {
     if (k < seps.length) result.push(seps[k]!);
   }
   return result;
+}
+
+// ── Group panel (multi-select align / distribute) ──────────────────────────
+interface GroupPanelProps {
+  count: number;
+  onAlign: (mode: AlignMode) => void;
+  onDistribute: (axis: "x" | "y") => void;
+}
+
+function GroupPanel({ count, onAlign, onDistribute }: GroupPanelProps) {
+  return (
+    <Stack gap="xs" p="sm">
+      <Text size="xs" fw={600}>
+        {count} components selected
+      </Text>
+      <Text size="xs" c="dimmed">
+        Shift-click to add/remove. Drag to move together.
+      </Text>
+
+      <Text size="xs" fw={600} mt="xs">
+        Align
+      </Text>
+      <Group gap={4} wrap="wrap">
+        <Button size="xs" variant="default" onClick={() => onAlign("left")}>
+          Left
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onAlign("hcenter")}>
+          Center
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onAlign("right")}>
+          Right
+        </Button>
+      </Group>
+      <Group gap={4} wrap="wrap">
+        <Button size="xs" variant="default" onClick={() => onAlign("top")}>
+          Top
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onAlign("vmiddle")}>
+          Middle
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onAlign("bottom")}>
+          Bottom
+        </Button>
+      </Group>
+
+      <Text size="xs" fw={600} mt="xs">
+        Distribute
+      </Text>
+      <Text size="xs" c="dimmed">
+        Needs 3+ selected
+      </Text>
+      <Group gap={4} wrap="wrap">
+        <Button size="xs" variant="default" onClick={() => onDistribute("x")}>
+          Horizontally
+        </Button>
+        <Button size="xs" variant="default" onClick={() => onDistribute("y")}>
+          Vertically
+        </Button>
+      </Group>
+    </Stack>
+  );
 }
 
 // ── Inspector panel ────────────────────────────────────────────────────────
