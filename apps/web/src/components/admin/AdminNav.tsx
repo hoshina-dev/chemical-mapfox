@@ -7,17 +7,25 @@ import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/LogoutButton";
 import { roleLabel } from "@/lib/auth/definitions";
 import type { CustApiRole } from "@/lib/auth/definitions";
+import { onboardingPath } from "@/lib/experiment-manager/routes";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Experiments" },
-  { href: "/internal/experiment/onboarding", label: "Onboarding" },
+  { href: onboardingPath(), label: "Onboarding" },
   { href: "/internal/docs", label: "Docs" },
   { href: "/admin/users", label: "Users" },
 ];
 
 function isActive(pathname: string, href: string): boolean {
+  // "Experiments" also owns the workspace/raw/checkin routes under
+  // /internal/experiment/* (just not the onboarding subtree, which has its
+  // own tab).
   if (href === "/admin") {
-    return pathname === "/admin" || pathname.startsWith("/admin/experiment");
+    return (
+      pathname === "/admin" ||
+      (pathname.startsWith("/internal/experiment") &&
+        !pathname.startsWith("/internal/experiment/onboarding"))
+    );
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -49,14 +57,12 @@ export function AdminNav({
         style={{ maxWidth: 1280, margin: "0 auto" }}
       >
         <Group gap={20} wrap="nowrap">
+          {/* Intentionally not a link for now — see chat for context. */}
           <Box
-            component={Link}
-            href="/admin"
             style={{
               display: "flex",
               alignItems: "center",
               gap: 7,
-              textDecoration: "none",
               flexShrink: 0,
             }}
           >

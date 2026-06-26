@@ -1,16 +1,15 @@
 import type { OrganizationResponse, UserResponse } from "@repo/api-client";
 import {
-  Badge,
   Card,
   Container,
   Group,
   SimpleGrid,
   Stack,
-  Table,
   Text,
   Title,
 } from "@mantine/core";
 
+import { AdminUsersTable } from "@/components/admin/AdminUsersTable";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
 
 export const dynamic = "force-dynamic";
@@ -62,31 +61,7 @@ export default async function AdminUsersPage() {
               No users found.
             </Text>
           ) : (
-            <Table highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th>Role</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {users.map((user) => (
-                  <Table.Tr key={user.id}>
-                    <Table.Td>{user.name}</Table.Td>
-                    <Table.Td>{user.email}</Table.Td>
-                    <Table.Td>
-                      <Badge
-                        variant="light"
-                        color={user.role === "admin" ? "grape" : "blue"}
-                      >
-                        {user.role}
-                      </Badge>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
+            <AdminUsersTable users={users} />
           )}
         </Card>
 
