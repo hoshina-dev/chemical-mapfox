@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import classes from "@/components/admin/staffListing.module.css";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import { StatusChip } from "@/components/ticketing/StatusChip";
+import { StatusIcon, statusIconKind } from "@/components/ticketing/StatusIcon";
 import { UserAvatar } from "@/components/UserAvatar";
 import {
   experimentRawPath,
@@ -28,18 +30,6 @@ const DONE_STATUSES = [
   "cancelled",
   "canceled",
 ];
-
-const DEFAULT_COLORS = { bg: "#f1f3f5", fg: "#495057", dot: "#adb5bd" };
-
-const COLOR_PALETTE: Record<string, { bg: string; fg: string; dot: string }> = {
-  blue: { bg: "#e7f5ff", fg: "#1864ab", dot: "#339af0" },
-  gray: DEFAULT_COLORS,
-  cyan: { bg: "#e3fafc", fg: "#0b7285", dot: "#22b8cf" },
-  yellow: { bg: "#fff4e6", fg: "#c04a00", dot: "#fd7e14" },
-  teal: { bg: "#f3fbe8", fg: "#2b6b10", dot: "#74c214" },
-  green: { bg: "#ebfbee", fg: "#1a6b2a", dot: "#40c057" },
-  red: { bg: "#fff5f5", fg: "#c92a2a", dot: "#fa5252" },
-};
 
 const GROUP_FILTERS: {
   group: Group;
@@ -77,10 +67,6 @@ const GROUP_FILTERS: {
     bg: "#ebfbee",
   },
 ];
-
-function colorsFor(mantineColor: string): { bg: string; fg: string; dot: string } {
-  return COLOR_PALETTE[mantineColor] ?? DEFAULT_COLORS;
-}
 
 function sortKey(ticket: EnrichedTicket, field: SortField): string {
   switch (field) {
@@ -239,6 +225,7 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                 className={`${classes.statusPill}${statusFilter === opt.value ? ` ${classes.statusPillActive}` : ""}`}
                 onClick={() => selectStatus(opt.value)}
               >
+                <StatusIcon kind={statusIconKind(opt.value)} size={11} />
                 {opt.label}
               </button>
             ))}
@@ -269,46 +256,31 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
             </thead>
             <tbody>
               {visible.map((ticket) => {
-                const meta = statusMeta(ticket.status);
-                const colors = colorsFor(meta.color);
-
                 return (
                   <tr
                     key={ticket.contextId}
                     className={classes.row}
                     onClick={() => router.push(experimentWorkspacePath(ticket.contextId))}
                   >
-                    <td style={{ padding: 0, position: "relative" }}>
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: 3,
-                          background: colors.dot,
-                        }}
-                      />
-                      <div style={{ padding: "12px 14px 12px 20px" }}>
-                        <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
-                          {ticket.experimentTitle ?? "Untitled experiment"}
-                        </div>
-                        {ticket.sampleType && (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              padding: "1px 7px",
-                              borderRadius: 3,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              background: "#f1f3f5",
-                              color: "#495057",
-                            }}
-                          >
-                            {ticket.sampleType}
-                          </span>
-                        )}
+                    <td style={{ padding: "12px 14px 12px 20px" }}>
+                      <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
+                        {ticket.experimentTitle ?? "Untitled experiment"}
                       </div>
+                      {ticket.sampleType && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            padding: "1px 7px",
+                            borderRadius: 3,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            background: "#f1f3f5",
+                            color: "#495057",
+                          }}
+                        >
+                          {ticket.sampleType}
+                        </span>
+                      )}
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       {ticket.requester ? (
@@ -334,32 +306,7 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                       )}
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5,
-                          padding: "3px 9px 3px 7px",
-                          borderRadius: 20,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          textTransform: "uppercase",
-                          letterSpacing: ".04em",
-                          whiteSpace: "nowrap",
-                          background: colors.bg,
-                          color: colors.fg,
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: 5,
-                            height: 5,
-                            borderRadius: "50%",
-                            background: colors.dot,
-                          }}
-                        />
-                        {meta.label}
-                      </span>
+                      <StatusChip status={ticket.status} variant="pill" size="xs" />
                     </td>
                     <td style={{ padding: "12px 14px", fontSize: 13 }}>
                       <LocalDateTime iso={ticket.createdAt} />

@@ -32,8 +32,8 @@ import {
   experimentReportViewPath,
   experimentRawPath,
 } from "@/lib/experiment-manager/routes";
+import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,6 @@ export default async function ExperimentWorkspacePage({
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const status = ticket?.status ?? null;
-  const meta = ticket ? statusMeta(ticket.status) : null;
   // Editing/collaboration is only allowed once the experiment has started.
   // Earlier stages (REQUESTED, PENDING) and later ones (FINALIZING, CLOSED)
   // render the lab form read-only.
@@ -103,10 +102,8 @@ export default async function ExperimentWorkspacePage({
             </Group>
             <CopyableId value={contextId} href={experimentRawPath(contextId)} />
           </Stack>
-          {meta && (
-            <Badge color={meta.color} variant="light" size="lg" radius="sm">
-              {meta.label}
-            </Badge>
+          {ticket && (
+            <StatusChip status={ticket.status} variant="badge" size="lg" />
           )}
         </Group>
 

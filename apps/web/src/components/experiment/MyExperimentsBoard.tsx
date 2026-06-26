@@ -13,14 +13,11 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { StatusChip } from "@/components/ticketing/StatusChip";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import type { MyExperiment } from "@/lib/experiment/data";
-import {
-  myExperimentDetailPath,
-  requestCatalogPath,
-} from "@/lib/experiment/routes";
-import { statusMeta } from "@/lib/ticketing/tickets";
+import { myExperimentDetailPath, requestCatalogPath } from "@/lib/experiment/routes";
 
 interface Lane {
   key: string;
@@ -202,7 +199,6 @@ export function MyExperimentsBoard({
 }
 
 function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
-  const meta = statusMeta(experiment.status);
   return (
     <Card
       component={Link}
@@ -217,9 +213,7 @@ function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
           {experiment.name ?? "Untitled experiment"}
         </Text>
         <Group gap="xs">
-          <Badge size="xs" variant="light" color={meta.color} radius="sm">
-            {meta.label}
-          </Badge>
+          <StatusChip status={experiment.status} variant="badge" size="xs" />
         </Group>
         <Text size="xs" c="dimmed">
           Updated <LocalDateTime iso={experiment.updatedAt} />

@@ -21,8 +21,8 @@ import {
   experimentListingPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
+import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,6 @@ export default async function SampleCheckInPage({
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const status = ticket?.status ?? null;
-  const meta = status ? statusMeta(status) : null;
   const isRequested = status === "REQUESTED";
   // PENDING or any later stage means the sample was already checked in.
   const alreadyReceived = status != null && status !== "REQUESTED";
@@ -64,11 +63,7 @@ export default async function SampleCheckInPage({
             <Text c="dimmed">{ws.experimentTitle ?? "Experiment"}</Text>
             <CopyableId value={contextId} href={experimentWorkspacePath(contextId)} />
           </Stack>
-          {meta && (
-            <Badge color={meta.color} variant="light" size="lg" radius="sm">
-              {meta.label}
-            </Badge>
-          )}
+          {status && <StatusChip status={status} variant="badge" size="lg" />}
         </Group>
 
         {ws.errors.ticket && (
