@@ -1,5 +1,6 @@
 import { AdminNav } from "@/components/admin/AdminNav";
 import { requireAdmin } from "@/lib/auth/dal";
+import { listUserOrganizations } from "@/lib/auth/organizations";
 
 // Server-side authorization backstop for everything under /internal/*.
 // The middleware (proxy.ts) is the first gate; this ensures the admin check
@@ -11,9 +12,15 @@ export default async function InternalLayout({
   children: React.ReactNode;
 }>) {
   const session = await requireAdmin();
+  const organizations = await listUserOrganizations(session.userId);
   return (
     <>
-      <AdminNav name={session.name} role={session.role} />
+      <AdminNav
+        name={session.name}
+        email={session.email}
+        role={session.role}
+        organizations={organizations}
+      />
       {children}
     </>
   );

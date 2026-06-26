@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge, Box, Group, Text } from "@mantine/core";
+import { Box, Group, Text } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { LogoutButton } from "@/components/LogoutButton";
-import { roleLabel } from "@/lib/auth/definitions";
+import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
+import type { UserOrganization } from "@/lib/auth/organizations";
 import { onboardingPath } from "@/lib/experiment-manager/routes";
 
 const NAV_ITEMS = [
@@ -32,10 +32,14 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AdminNav({
   name,
+  email,
   role,
+  organizations,
 }: {
   name: string;
+  email?: string;
   role?: CustApiRole;
+  organizations: UserOrganization[];
 }) {
   const pathname = usePathname();
 
@@ -112,15 +116,13 @@ export function AdminNav({
             })}
           </Group>
         </Group>
-        <Group gap="sm" wrap="nowrap">
-          <Text size="sm" c="gray.4">
-            {name}
-          </Text>
-          <Badge variant="light" color={role === "admin" ? "grape" : "blue"}>
-            {roleLabel(role)}
-          </Badge>
-          <LogoutButton />
-        </Group>
+        <UserMenu
+          name={name}
+          email={email}
+          role={role}
+          organizations={organizations}
+          variant="dark"
+        />
       </Group>
     </Box>
   );

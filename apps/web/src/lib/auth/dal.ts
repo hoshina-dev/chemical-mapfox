@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { appRoleForSession } from "./appRole";
+import { myExperimentsPath } from "../experiment/routes";
+import { experimentListingPath } from "../experiment-manager/routes";
 import { SESSION_COOKIE } from "./constants";
 import type { SessionPayload, SessionUser } from "./definitions";
 import { decrypt } from "./session";
@@ -41,7 +43,7 @@ export async function requireSession(): Promise<SessionPayload> {
 export async function requireAdmin(): Promise<SessionPayload> {
   const session = await requireSession();
   if (session.role !== "admin") {
-    redirect("/dashboard");
+    redirect(myExperimentsPath());
   }
   return session;
 }
@@ -49,12 +51,13 @@ export async function requireAdmin(): Promise<SessionPayload> {
 /**
  * Backstop for the client-facing experiment flow (`/experiment/*`). Lab staff
  * (app-role `technician`) have their own `/internal/*` workspace and must not
- * see or act in the client request flow, so they're sent back to the dashboard.
+ * see or act in the client request flow, so they're sent to the staff
+ * Experiments listing instead.
  */
 export async function requireClient(): Promise<SessionPayload> {
   const session = await requireSession();
   if (appRoleForSession(session) === "technician") {
-    redirect("/dashboard");
+    redirect(experimentListingPath());
   }
   return session;
 }

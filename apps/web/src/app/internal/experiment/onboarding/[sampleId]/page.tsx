@@ -54,7 +54,6 @@ export default async function SampleOnboardingPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Internal", href: "/dashboard" },
             { label: "Onboarding", href: onboardingPath() },
             { label: data?.sampleName ?? sampleId },
           ]}

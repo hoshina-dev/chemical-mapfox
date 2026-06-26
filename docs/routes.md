@@ -156,8 +156,17 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 ## Other implemented routes
 
 - `/` ✅ — landing / login (`apps/web/src/app/page.tsx`)
-- `/dashboard` ✅ — post-login dashboard; surfaces technician tools for admins
-  (`apps/web/src/app/dashboard/page.tsx`)
+
+There is **no separate hub/dashboard page**. After login each role is sent
+straight to its primary workspace and navigates from there using the nav chrome
+(`AdminNav` / `ClientNav`):
+
+- lab staff (mapfox admins) → `/admin` (the staff **Experiments** listing)
+- everyone else → `/experiment/listing` (their **My experiments** board)
+
+The single source of truth for this is `landingPathForRole()`
+(`apps/web/src/lib/auth/appRole.ts`), used by the login/register actions,
+the `/` redirect, and the middleware (`proxy.ts`).
 
 ---
 

@@ -64,7 +64,7 @@ export default async function OnboardingPage() {
     <Container size="xl" py="xl">
       <Stack gap="lg">
         <Breadcrumbs
-          items={[{ label: "Internal", href: "/dashboard" }, { label: "Onboarding" }]}
+          items={[{ label: "Onboarding" }]}
         />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>

@@ -21,10 +21,7 @@ export default async function RequestCatalogPage() {
     <Container size="xl" py="xl">
       <Stack gap="lg">
         <Breadcrumbs
-          items={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Request an experiment" },
-          ]}
+          items={[{ label: "Request an experiment" }]}
         />
         <Stack gap={4}>
           <Title order={2}>Request an experiment</Title>

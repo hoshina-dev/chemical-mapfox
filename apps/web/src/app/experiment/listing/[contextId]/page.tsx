@@ -76,7 +76,6 @@ export default async function MyExperimentDetailPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Dashboard", href: "/dashboard" },
             { label: "My experiments", href: myExperimentsPath() },
             { label: ws.experimentTitle ?? contextId },
           ]}

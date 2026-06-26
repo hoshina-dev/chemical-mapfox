@@ -46,7 +46,6 @@ export default async function SampleCheckInPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Internal", href: "/dashboard" },
             { label: "Experiments", href: experimentListingPath() },
             { label: "Sample check-in" },
           ]}

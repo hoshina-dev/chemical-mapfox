@@ -4,6 +4,9 @@ import { Anchor, Box, Container, Group, Text } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { UserMenu } from "@/components/UserMenu";
+import type { CustApiRole } from "@/lib/auth/definitions";
+import type { UserOrganization } from "@/lib/auth/organizations";
 import {
   myExperimentsPath,
   requestCatalogPath,
@@ -26,7 +29,17 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith("/experiment/request");
 }
 
-export function ClientNav() {
+export function ClientNav({
+  name,
+  email,
+  role,
+  organizations,
+}: {
+  name: string;
+  email?: string;
+  role?: CustApiRole;
+  organizations: UserOrganization[];
+}) {
   const pathname = usePathname();
 
   return (
@@ -45,7 +58,7 @@ export function ClientNav() {
           <Group gap="lg" wrap="nowrap">
             <Anchor
               component={Link}
-              href="/dashboard"
+              href={myExperimentsPath()}
               underline="never"
               c="dark"
             >
@@ -86,9 +99,12 @@ export function ClientNav() {
               })}
             </Group>
           </Group>
-          <Anchor component={Link} href="/dashboard" size="sm" c="dimmed">
-            ← Back to app
-          </Anchor>
+          <UserMenu
+            name={name}
+            email={email}
+            role={role}
+            organizations={organizations}
+          />
         </Group>
       </Container>
     </Box>

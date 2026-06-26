@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { landingPathForRole } from "@/lib/auth/appRole";
 import { SESSION_COOKIE, SESSION_DURATION_MS } from "@/lib/auth/constants";
 import { sessionCookieOptions } from "@/lib/auth/cookieOptions";
 import { decryptSession } from "@/lib/auth/sessionCrypto";
@@ -11,16 +12,20 @@ export default async function proxy(req: NextRequest) {
   const isAuthPage = pathname === "/";
 
   if (isAuthPage && payload?.userId) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(
+      new URL(landingPathForRole(payload.role), req.url),
+    );
   }
 
   if (!isAuthPage && !payload?.userId) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // /internal/* is admin-only.
+  // /internal/* is admin-only; send non-admins to their own landing page.
   if (pathname.startsWith("/internal") && payload?.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(
+      new URL(landingPathForRole(payload?.role), req.url),
+    );
   }
 
   // The client experiment flow (/experiment/*) is client-only; lab staff
@@ -28,7 +33,9 @@ export default async function proxy(req: NextRequest) {
   const isClientFlow =
     pathname === "/experiment" || pathname.startsWith("/experiment/");
   if (isClientFlow && payload?.role === "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(
+      new URL(landingPathForRole(payload.role), req.url),
+    );
   }
 
   if (payload?.userId && session) {

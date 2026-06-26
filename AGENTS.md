@@ -25,7 +25,7 @@ component from a server component.
   (`LinkButton`, `LinkAnchor`) which keep `component={Link}` on the client side.
   Server Components pass only serializable props (`href`, strings, …).
 - Or extract the interactive piece into its own `"use client"` component (e.g.
-  `components/dashboard/TechnicianTools.tsx`).
+  `components/admin/AdminNav.tsx`).
 - Or wrap with Next's `<Link>` directly (`<Link href><Card …/></Link>`) when a
   plain anchor wrapper is acceptable.
 

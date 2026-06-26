@@ -11,6 +11,7 @@ import {
   type LoginFormState,
   type RegisterFormState,
 } from "@/lib/auth/definitions";
+import { landingPathForRole } from "@/lib/auth/appRole";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
 
@@ -76,7 +77,7 @@ export async function login(
     organizationId: await resolvePrimaryOrganizationId(user.id),
   });
 
-  redirect(user.role === "admin" ? "/admin" : "/dashboard");
+  redirect(landingPathForRole(user.role as CustApiRole));
 }
 
 export async function register(
@@ -129,7 +130,7 @@ export async function register(
     organizationId,
   });
 
-  redirect("/dashboard");
+  redirect(landingPathForRole(created.role as CustApiRole));
 }
 
 export async function logout(): Promise<void> {

@@ -26,10 +26,7 @@ export default async function MyExperimentsPage() {
     <Container size="xl" py="xl">
       <Stack gap="lg">
         <Breadcrumbs
-          items={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "My experiments" },
-          ]}
+          items={[{ label: "My experiments" }]}
         />
 
         <Group justify="space-between" align="flex-start" wrap="wrap">
