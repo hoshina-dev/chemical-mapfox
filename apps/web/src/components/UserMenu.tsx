@@ -13,6 +13,7 @@ import { useTransition } from "react";
 
 import { logout } from "@/app/actions/auth";
 import { UserAvatar } from "@/components/UserAvatar";
+import classes from "@/components/nav/nav.module.css";
 import type { UserOrganization } from "@/lib/auth/organizations";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import { roleLabel } from "@/lib/auth/definitions";
@@ -43,13 +44,7 @@ export function UserMenu({
       <Menu.Target>
         <UnstyledButton
           aria-label="User menu"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "4px 8px",
-            borderRadius: "var(--mantine-radius-sm)",
-          }}
+          className={`${classes.userMenuTrigger} ${dark ? classes.userMenuTriggerDark : classes.userMenuTriggerLight}`}
         >
           <UserAvatar
             name={name}

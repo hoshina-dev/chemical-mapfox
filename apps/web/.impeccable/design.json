@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-26T00:00:00.000Z",
+  "title": "Design System: ChemFox",
+  "extensions": {
+    "colorMeta": {
+      "staff-nav": {
+        "role": "primary",
+        "displayName": "Staff Charcoal",
+        "canonical": "oklch(18% 0.01 260)",
+        "tonalRamp": ["#0a0b0e", "#111318", "#1c2128", "#2a2f3a", "#3d4451", "#545b68", "#868e96", "#adb5bd", "#ced4da", "#f1f3f5"]
+      },
+      "accent-green": {
+        "role": "primary",
+        "displayName": "Lab Green",
+        "canonical": "oklch(58% 0.15 145)",
+        "tonalRamp": ["#0d2818", "#1a4d2e", "#2f9e44", "#40c057", "#51cf66", "#69db7c", "#8ce99a", "#b2f2bb", "#d3f9d8", "#ebfbee"]
+      },
+      "client-active": {
+        "role": "secondary",
+        "displayName": "Client Blue",
+        "canonical": "oklch(55% 0.18 255)",
+        "tonalRamp": ["#0b2d4d", "#1864ab", "#228be6", "#339af0", "#4dabf7", "#74c0fc", "#a5d8ff", "#d0ebff", "#e7f5ff", "#f4faff"]
+      },
+      "body": {
+        "role": "neutral",
+        "displayName": "Body White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["#212529", "#495057", "#868e96", "#adb5bd", "#ced4da", "#dee2e6", "#e9ecef", "#f1f3f5", "#f8f9fa", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles — max one per view." },
+      "headline": { "displayName": "Headline", "purpose": "Section headers, kanban lanes, stat banners." },
+      "title": { "displayName": "Title", "purpose": "Card titles, table headers, experiment names." },
+      "body": { "displayName": "Body", "purpose": "Default UI copy at 14px." },
+      "label": { "displayName": "Label", "purpose": "Badges, timestamps, metadata." },
+      "mono": { "displayName": "Mono", "purpose": "Context IDs, JSON, formulas." }
+    },
+    "shadows": [
+      { "name": "hover-lift", "value": "0 6px 24px rgba(0,0,0,0.1)", "purpose": "Bold-card hover only — never at rest." },
+      { "name": "auth-panel", "value": "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)", "purpose": "Mantine shadow-sm on auth Paper." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "ease", "purpose": "Bold-card transitions — 0.15–0.18s on box-shadow, border-color, transform." },
+      { "name": "arrow-nudge", "value": "transform 0.15s ease", "purpose": "Bold-card arrow translateX(3px) on hover." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "36em" },
+      { "name": "sm", "value": "48em" },
+      { "name": "md", "value": "62em" },
+      { "name": "lg", "value": "75em" },
+      { "name": "xl", "value": "88em" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Staff Nav Tab",
+      "kind": "nav",
+      "refersTo": "nav-staff-active",
+      "description": "Active tab in the dark admin top bar.",
+      "html": "<nav class=\"ds-nav-staff\"><a class=\"ds-nav-staff-link ds-nav-staff-link--active\" href=\"#\">Experiments</a></nav>",
+      "css": ".ds-nav-staff { background: #111318; height: 54px; display: flex; align-items: center; padding: 0 24px; } .ds-nav-staff-link { display: flex; align-items: center; height: 54px; padding: 0 14px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.45); text-decoration: none; border-bottom: 2px solid transparent; } .ds-nav-staff-link--active { color: #fff; border-bottom-color: #2f9e44; } .ds-nav-staff-link:hover { color: #fff; }"
+    },
+    {
+      "name": "Client Nav Pill",
+      "kind": "nav",
+      "refersTo": "nav-client-active",
+      "description": "Active navigation item in the light client header.",
+      "html": "<header class=\"ds-nav-client\"><a class=\"ds-nav-client-link ds-nav-client-link--active\" href=\"#\">My experiments</a></header>",
+      "css": ".ds-nav-client { background: #fff; border-bottom: 1px solid #dee2e6; height: 56px; display: flex; align-items: center; padding: 0 16px; } .ds-nav-client-link { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 500; color: #868e96; text-decoration: none; } .ds-nav-client-link--active { color: #228be6; background: #e7f5ff; } .ds-nav-client-link:hover { color: #228be6; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Staff primary action — lab green fill.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Check in sample</button>",
+      "css": ".ds-btn-primary { background: #2f9e44; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s ease; } .ds-btn-primary:hover { background: #28913d; } .ds-btn-primary:focus-visible { outline: 2px solid #2f9e44; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Lifecycle status label — light variant.",
+      "html": "<span class=\"ds-status-badge ds-status-badge--progress\">In progress</span>",
+      "css": ".ds-status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; line-height: 1.4; } .ds-status-badge--progress { background: #fff4e6; color: #c04a00; }"
+    },
+    {
+      "name": "Experiment Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Kanban experiment card — flat at rest, bordered.",
+      "html": "<a class=\"ds-exp-card\" href=\"#\"><div class=\"ds-exp-card-title\">Polycarbonate tensile test</div><span class=\"ds-status-badge ds-status-badge--requested\">Requested</span><div class=\"ds-exp-card-meta\">Updated 2026-06-20 14:32</div></a>",
+      "css": ".ds-exp-card { display: block; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; text-decoration: none; color: inherit; transition: border-color 0.15s ease; } .ds-exp-card:hover { border-color: #ced4da; } .ds-exp-card-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #212529; } .ds-exp-card-meta { font-size: 12px; color: #868e96; margin-top: 8px; } .ds-status-badge--requested { background: #e7f5ff; color: #1864ab; }"
+    },
+    {
+      "name": "Bold Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Catalog/onboarding pick card with top accent bar and hover lift.",
+      "html": "<a class=\"ds-bold-card\" href=\"#\"><div class=\"ds-bold-card-title\">PET bottle resin</div><span class=\"ds-bold-card-arrow\">→</span></a>",
+      "css": ".ds-bold-card { position: relative; display: block; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; text-decoration: none; overflow: hidden; transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s; } .ds-bold-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #2f9e44, #51cf66); opacity: 0.25; transition: opacity 0.18s; } .ds-bold-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); border-color: #b2f2bb; transform: translateY(-2px); } .ds-bold-card:hover::before { opacity: 1; } .ds-bold-card-title { font-size: 14px; font-weight: 600; color: #212529; } .ds-bold-card-arrow { display: inline-block; transition: transform 0.15s; margin-left: 8px; } .ds-bold-card:hover .ds-bold-card-arrow { transform: translateX(3px); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "card-default",
+      "description": "Standard Mantine-style search/filter field.",
+      "html": "<input class=\"ds-input\" type=\"search\" placeholder=\"Search experiment or context ID…\" aria-label=\"Search experiments\" />",
+      "css": ".ds-input { width: 100%; max-width: 340px; padding: 8px 12px; font-size: 14px; border: 1px solid #dee2e6; border-radius: 4px; background: #fff; color: #212529; } .ds-input::placeholder { color: #868e96; } .ds-input:focus { outline: none; border-color: #228be6; box-shadow: 0 0 0 2px rgba(34,139,230,0.15); }"
+    },
+    {
+      "name": "Admin Group Banner",
+      "kind": "custom",
+      "description": "Clickable stat tile for filtering experiment groups.",
+      "html": "<button class=\"ds-group-banner ds-group-banner--active\" type=\"button\"><span class=\"ds-group-banner-count\">12</span><span class=\"ds-group-banner-label\">Active</span><span class=\"ds-group-banner-sub\">In progress · Finalizing</span></button>",
+      "css": ".ds-group-banner { display: flex; flex-direction: column; align-items: flex-start; padding: 16px 20px; border: none; border-radius: 8px; background: #1864ab; color: #fff; cursor: pointer; text-align: left; min-width: 140px; transition: opacity 0.15s ease; } .ds-group-banner:hover { opacity: 0.92; } .ds-group-banner-count { font-size: 1.75rem; font-weight: 700; line-height: 1; } .ds-group-banner-label { font-size: 14px; font-weight: 600; margin-top: 4px; } .ds-group-banner-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Status Board",
+    "overview": "ChemFox is a workflow instrument, not a brochure. Visual hierarchy follows experiment lifecycle: where a sample is, who owns it, and what happens next should read faster than any decorative chrome. The system builds on Mantine 9 defaults for forms, inputs, and density, then layers two deliberate registers — a light client shell (blue active states, white body) and a dark staff shell (charcoal nav, green accent) — that still feel like one product.",
+    "keyCharacteristics": [
+      "Status color is semantic and reserved — lifecycle hues never double as brand decoration.",
+      "Staff brand green appears on admin nav, bold cards, and primary lab actions.",
+      "Client surfaces use Mantine blue for navigation active states.",
+      "Cards and tables carry data; borders and muted fills separate groups.",
+      "Custom bold-card CSS extends Mantine for catalog hover affordances — use sparingly."
+    ],
+    "rules": [
+      { "name": "The Status-Color Rule", "body": "Lifecycle colors communicate ticket state only. Never use status yellow or red as marketing accent.", "section": "colors" },
+      { "name": "The Two-Shell Rule", "body": "Client routes use light header + blue active nav. Staff routes use dark header + green active underline.", "section": "colors" },
+      { "name": "The System-Font Rule", "body": "Do not introduce a second geometric sans for personality.", "section": "typography" },
+      { "name": "The No Ghost-Card Rule", "body": "Never pair a 1px border with a wide soft shadow on the same resting element.", "section": "elevation" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only as a response to hover or isolated auth containment.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do lead every list and board view with status — badge, lane, or banner before secondary metadata.",
+      "Do use Mantine spacing scale and components before inventing custom layout primitives.",
+      "Do keep staff green for brand moments and primary lab actions; keep lifecycle colors for ticket state.",
+      "Do use bold-card / bold-row hover language consistently when building catalog or admin list affordances.",
+      "Do provide prefers-reduced-motion alternatives when adding custom transitions beyond Mantine defaults."
+    ],
+    "donts": [
+      "Don't use consumer / playful UI — rounded blobs, mascot illustrations, gamification, celebration confetti, or fun empty states that undermine lab credibility.",
+      "Don't use generic SaaS marketing patterns — cream hero backgrounds, gradient text, eyebrow kickers on every section, identical icon-card grids.",
+      "Don't use legacy enterprise gray — tiny muted text, modal-heavy flows, tables that bury status.",
+      "Don't use dark neon / cyberpunk tool aesthetic — decorative glow, high-chroma accents everywhere, glassmorphism as default.",
+      "Don't use border-left or border-right greater than 1px as a colored stripe on cards or alerts.",
+      "Don't nest cards inside cards — use spacing and muted lane backgrounds to group instead.",
+      "Don't apply bold-card hover lift to dense data tables or form fields."
+    ]
+  }
+}

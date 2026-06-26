@@ -5,7 +5,7 @@ import { listUserOrganizations } from "@/lib/auth/organizations";
 // Server-side authorization backstop for everything under /internal/*.
 // The middleware (proxy.ts) is the first gate; this ensures the admin check
 // also runs in the render path, where it cannot be bypassed. Renders the same
-// nav as /admin/* so the whole admin-facing area shares one chrome.
+// nav as /admin/users so the whole admin-facing area shares one chrome.
 export default async function InternalLayout({
   children,
 }: Readonly<{

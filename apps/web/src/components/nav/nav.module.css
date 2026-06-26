@@ -1,0 +1,189 @@
+.shell {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1280px;
+  margin: 0 auto;
+  flex-wrap: nowrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--chemfox-accent-green, #2f9e44);
+  outline-offset: 2px;
+}
+
+.brandIcon {
+  color: var(--chemfox-accent-green, #2f9e44);
+}
+
+.brandLabel {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.navGroup {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* Staff (dark) shell */
+.staffShell {
+  composes: shell;
+  background: var(--chemfox-staff-nav, #111318);
+}
+
+.staffInner {
+  composes: inner;
+  height: 54px;
+  padding: 0 24px;
+}
+
+.staffBrandLabel {
+  composes: brandLabel;
+  color: #fff;
+}
+
+.staffLink {
+  display: flex;
+  align-items: center;
+  height: 54px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.staffLink:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.staffLink:focus-visible {
+  outline: 2px solid var(--chemfox-accent-green, #2f9e44);
+  outline-offset: -2px;
+}
+
+.staffLinkActive {
+  color: #fff;
+  border-bottom-color: var(--chemfox-accent-green, #2f9e44);
+}
+
+/* Client (light) shell */
+.clientShell {
+  composes: shell;
+  background: var(--mantine-color-body);
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.clientInner {
+  composes: inner;
+  height: 56px;
+  padding: 0 16px;
+}
+
+@media (min-width: 48em) {
+  .clientInner {
+    padding: 0 24px;
+  }
+}
+
+.clientBrandLabel {
+  composes: brandLabel;
+  color: var(--mantine-color-text);
+}
+
+.clientLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--mantine-radius-sm);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--mantine-color-dimmed);
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.clientLink:hover {
+  color: var(--mantine-color-blue-filled);
+}
+
+.clientLink:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-filled);
+  outline-offset: 2px;
+}
+
+.clientLinkActive {
+  color: var(--mantine-color-blue-filled);
+  background-color: var(--mantine-color-blue-light);
+}
+
+.clientNavItems {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.leftCluster {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.userMenuTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.userMenuTriggerLight:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-filled);
+  outline-offset: 2px;
+}
+
+.userMenuTriggerDark:focus-visible {
+  outline: 2px solid var(--chemfox-accent-green, #2f9e44);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staffLink,
+  .clientLink {
+    transition: none;
+  }
+}

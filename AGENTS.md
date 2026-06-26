@@ -80,6 +80,19 @@ that should be removed once each is fixed) are tracked in
 [`docs/experiment-manager-issues.md`](docs/experiment-manager-issues.md). Check
 it before adding new client-side patches for backend quirks.
 
+## Design context (Impeccable)
+
+UI design work for the web app is governed by Impeccable context files under
+`apps/web/`:
+
+- [`apps/web/PRODUCT.md`](apps/web/PRODUCT.md) — register (`product`), users,
+  brand personality, anti-references, strategic design principles.
+- [`apps/web/DESIGN.md`](apps/web/DESIGN.md) — visual tokens, typography,
+  components, elevation, do's/don'ts (Mantine 9 + ChemFox staff/client shells).
+
+Run Impeccable commands scoped to the web app, e.g.
+`node .agents/skills/impeccable/scripts/context.mjs --target apps/web`.
+
 ## Before you finish
 
 Run from the repo root: `pnpm check-types` and `pnpm lint` (Turborepo pipelines

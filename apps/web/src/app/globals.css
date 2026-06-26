@@ -7,6 +7,12 @@ body {
   margin: 0;
 }
 
+:root {
+  --chemfox-staff-nav: #111318;
+  --chemfox-accent-green: #2f9e44;
+  --chemfox-nav-max-width: 1280px;
+}
+
 .formula-code textarea {
   outline: none;
 }
