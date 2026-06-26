@@ -7,7 +7,6 @@ import {
   Code,
   Drawer,
   Group,
-  Paper,
   Stack,
   Text,
   TextInput,
@@ -31,6 +30,7 @@ import {
 } from "@/lib/experiment-manager/routes";
 
 import { CalculationsEditor } from "./CalculationsEditor";
+import { CollapsiblePanel } from "./CollapsiblePanel";
 import { textProps } from "./fieldProps";
 import { SectionEditor } from "./SectionEditor";
 import { TemplatePreview } from "./TemplatePreview";
@@ -159,25 +159,25 @@ export function BuilderApp({
         </Alert>
       )}
 
-      <Paper withBorder p="md" radius="md">
-        <Stack gap="sm">
-          <Title order={3}>Metadata</Title>
-          {sampleName && (
-            <Text size="sm">
-              This template is associated with sample{" "}
-              <Text span fw={600}>
-                {sampleName}
-              </Text>
-              .
+      <CollapsiblePanel
+        title="Metadata"
+        subtitle="Basic info about this template. The ID is auto-assigned and read-only."
+      >
+        {sampleName && (
+          <Text size="sm">
+            This template is associated with sample{" "}
+            <Text span fw={600}>
+              {sampleName}
             </Text>
-          )}
-          {mode === "edit" && templateId && (
-            <TextInput label="Template ID" value={templateId} disabled />
-          )}
-          <TextInput label="Name" required {...textProps(form, "title")} />
-          <TextInput label="Description" {...textProps(form, "description")} />
-        </Stack>
-      </Paper>
+            .
+          </Text>
+        )}
+        {mode === "edit" && templateId && (
+          <TextInput label="Template ID" value={templateId} disabled />
+        )}
+        <TextInput label="Name" required {...textProps(form, "title")} />
+        <TextInput label="Description" {...textProps(form, "description")} />
+      </CollapsiblePanel>
 
       <SectionEditor form={form} path="clientForm" />
       <SectionEditor form={form} path="labForm" />
@@ -196,7 +196,7 @@ export function BuilderApp({
         <Button variant="default" onClick={() => setPreviewOpen(true)}>
           Live preview
         </Button>
-        <Button onClick={save} loading={isPending}>
+        <Button onClick={save} loading={isPending} color="green">
           {mode === "create" ? "Create template" : "Save changes"}
         </Button>
         {mode === "edit" && templateId && (

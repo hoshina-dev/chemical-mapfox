@@ -1,20 +1,8 @@
-import {
-  Alert,
-  Container,
-  Group,
-  Stack,
-  Table,
-  TableTbody,
-  TableTd,
-  TableTh,
-  TableThead,
-  TableTr,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Alert, Container, Group, Stack, Text, Title } from "@mantine/core";
 
+import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemplatesTable";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
-import { LinkAnchor, LinkButton } from "@/components/links";
+import { LinkButton } from "@/components/links";
 import {
   getSample,
   listExperimentTemplates,
@@ -23,11 +11,7 @@ import {
   type TemplateSummary,
   toTemplateSummary,
 } from "@/lib/experiment-manager/mappers";
-import {
-  newTemplatePath,
-  onboardingPath,
-  templateBuilderPath,
-} from "@/lib/experiment-manager/routes";
+import { newTemplatePath, onboardingPath } from "@/lib/experiment-manager/routes";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +67,9 @@ export default async function SampleOnboardingPage({
                 "Experiment templates for this sample."}
             </Text>
           </Stack>
-          <LinkButton href={newTemplatePath(sampleId)}>New template</LinkButton>
+          <LinkButton href={newTemplatePath(sampleId)} color="green">
+            New template
+          </LinkButton>
         </Group>
 
         {loadError && (
@@ -103,40 +89,7 @@ export default async function SampleOnboardingPage({
         )}
 
         {data && data.templates.length > 0 && (
-          <Table highlightOnHover verticalSpacing="sm">
-            <TableThead>
-              <TableTr>
-                <TableTh>Template</TableTh>
-                <TableTh>Description</TableTh>
-                <TableTh />
-              </TableTr>
-            </TableThead>
-            <TableTbody>
-              {data.templates.map((tpl) => (
-                <TableTr key={tpl.templateId}>
-                  <TableTd>
-                    <LinkAnchor href={templateBuilderPath(tpl)} fw={500}>
-                      {tpl.title}
-                    </LinkAnchor>
-                  </TableTd>
-                  <TableTd>
-                    <Text size="sm" c="dimmed">
-                      {tpl.description ?? "—"}
-                    </Text>
-                  </TableTd>
-                  <TableTd align="right">
-                    <LinkButton
-                      href={templateBuilderPath(tpl)}
-                      size="xs"
-                      variant="light"
-                    >
-                      Edit
-                    </LinkButton>
-                  </TableTd>
-                </TableTr>
-              ))}
-            </TableTbody>
-          </Table>
+          <SampleTemplatesTable templates={data.templates} />
         )}
       </Stack>
     </Container>

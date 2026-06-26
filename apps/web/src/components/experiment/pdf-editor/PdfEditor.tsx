@@ -40,7 +40,10 @@ import {
   type PdfPreviewExperiment,
   savePdfTemplateAction,
 } from "@/app/actions/pdf";
-import { templatePdfPath } from "@/lib/experiment-manager/routes";
+import {
+  templateBuilderPath,
+  templatePdfPath,
+} from "@/lib/experiment-manager/routes";
 
 const CLIPBOARD_MARKER = "__pdf_editor_clipboard__";
 
@@ -1476,6 +1479,15 @@ export function PdfEditor({
         style={{ borderLeft: "none", borderRight: "none", borderTop: "none" }}
       >
         <Group gap="sm" wrap="nowrap">
+          <Button
+            size="xs"
+            variant="default"
+            onClick={() =>
+              router.push(templateBuilderPath({ sampleId, templateId }))
+            }
+          >
+            ← Back
+          </Button>
           <Text fw={600} size="sm">
             PDF Template
           </Text>

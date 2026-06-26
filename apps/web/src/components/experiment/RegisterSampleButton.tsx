@@ -46,7 +46,9 @@ export function RegisterSampleButton() {
 
   return (
     <>
-      <Button onClick={open}>Register sample</Button>
+      <Button onClick={open} color="green">
+        Register sample
+      </Button>
       <Modal
         opened={opened}
         onClose={close}
@@ -82,7 +84,12 @@ export function RegisterSampleButton() {
             <Button variant="default" onClick={close}>
               Cancel
             </Button>
-            <Button onClick={submit} loading={isPending} disabled={!name.trim()}>
+            <Button
+              onClick={submit}
+              loading={isPending}
+              disabled={!name.trim()}
+              color="green"
+            >
               Create
             </Button>
           </Group>
