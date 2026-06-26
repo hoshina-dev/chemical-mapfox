@@ -1,8 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import classes from "@/components/admin/staffListing.module.css";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -27,8 +29,6 @@ const DONE_STATUSES = [
   "canceled",
 ];
 
-// Badge palette keyed by the Mantine color name statusMeta() already returns,
-// so a new status only needs an entry in STATUS_META to pick up a look here.
 const DEFAULT_COLORS = { bg: "#f1f3f5", fg: "#495057", dot: "#adb5bd" };
 
 const COLOR_PALETTE: Record<string, { bg: string; fg: string; dot: string }> = {
@@ -40,6 +40,43 @@ const COLOR_PALETTE: Record<string, { bg: string; fg: string; dot: string }> = {
   green: { bg: "#ebfbee", fg: "#1a6b2a", dot: "#40c057" },
   red: { bg: "#fff5f5", fg: "#c92a2a", dot: "#fa5252" },
 };
+
+const GROUP_FILTERS: {
+  group: Group;
+  label: string;
+  hint: string;
+  accent: string;
+  bg: string;
+}[] = [
+  {
+    group: "all",
+    label: "All",
+    hint: "Every experiment ticket",
+    accent: "#343a40",
+    bg: "#f8f9fa",
+  },
+  {
+    group: "active",
+    label: "Active",
+    hint: "In progress · Finalizing",
+    accent: "#1864ab",
+    bg: "#e7f5ff",
+  },
+  {
+    group: "pending",
+    label: "Pending",
+    hint: "Requested · Sample received",
+    accent: "#c04a00",
+    bg: "#fff4e6",
+  },
+  {
+    group: "done",
+    label: "Closed",
+    hint: "Completed · Cancelled",
+    accent: "#1a6b2a",
+    bg: "#ebfbee",
+  },
+];
 
 function colorsFor(mantineColor: string): { bg: string; fg: string; dot: string } {
   return COLOR_PALETTE[mantineColor] ?? DEFAULT_COLORS;
@@ -74,23 +111,6 @@ const SORTABLE: { field: SortField; label: string }[] = [
   { field: "status", label: "Status" },
   { field: "createdAt", label: "Created" },
   { field: "updatedAt", label: "Updated" },
-];
-
-const BANNERS: { group: Group; label: string; sub: string; bg: string }[] = [
-  { group: "all", label: "Total", sub: "All experiments", bg: "#1c2128" },
-  { group: "active", label: "Active", sub: "In progress · Finalizing", bg: "#1864ab" },
-  {
-    group: "pending",
-    label: "Pending",
-    sub: "Requested · Open · Sample received",
-    bg: "#c94a00",
-  },
-  {
-    group: "done",
-    label: "Closed",
-    sub: "Results submitted · Closed · Cancelled",
-    bg: "#1a6b2a",
-  },
 ];
 
 export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] }) {
@@ -131,7 +151,9 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
         (v) => v?.toLowerCase().includes(q),
       );
     });
-    const sorted = [...filtered].sort((a, b) => sortKey(a, sortField).localeCompare(sortKey(b, sortField)));
+    const sorted = [...filtered].sort((a, b) =>
+      sortKey(a, sortField).localeCompare(sortKey(b, sortField)),
+    );
     return sortDir === "asc" ? sorted : sorted.reverse();
   }, [tickets, query, statusFilter, activeGroup, sortField, sortDir]);
 
@@ -155,310 +177,221 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
   }
 
   return (
-    <div>
-      {/* Stats banner */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-        }}
-      >
-        {BANNERS.map((b) => {
-          const active = statusFilter === null && activeGroup === b.group;
+    <div className={classes.page}>
+      <header className={classes.header}>
+        <h1 className={classes.title}>Experiments</h1>
+        <p className={classes.subtitle}>
+          Every experiment ticket from the ticketing service. Filter by lifecycle group,
+          search, sort, and open a row to work the experiment.
+        </p>
+      </header>
+
+      <div className={classes.groupFilters} role="group" aria-label="Filter by lifecycle group">
+        {GROUP_FILTERS.map((filter) => {
+          const active = statusFilter === null && activeGroup === filter.group;
+          const filterStyle = active
+            ? ({
+                "--filter-accent": filter.accent,
+                "--filter-bg": filter.bg,
+              } as CSSProperties)
+            : undefined;
+
           return (
             <button
-              key={b.group}
+              key={filter.group}
               type="button"
-              onClick={() => selectGroup(b.group)}
-              style={{
-                padding: "28px 32px",
-                cursor: "pointer",
-                border: "none",
-                textAlign: "left",
-                background: b.bg,
-                boxShadow: active ? "inset 0 -3px 0 rgba(255,255,255,.5)" : "none",
-              }}
+              className={`${classes.groupFilter}${active ? ` ${classes.groupFilterActive}` : ""}`}
+              style={filterStyle}
+              aria-pressed={active}
+              onClick={() => selectGroup(filter.group)}
             >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: ".1em",
-                  color: "rgba(255,255,255,.55)",
-                  marginBottom: 2,
-                }}
-              >
-                {b.label}
+              <span className={classes.groupFilterLabel}>{filter.label}</span>
+              <div className={classes.groupFilterRow}>
+                <span className={classes.groupFilterCount}>{counts[filter.group]}</span>
               </div>
-              <div
-                style={{
-                  fontSize: 56,
-                  fontWeight: 900,
-                  color: "#fff",
-                  lineHeight: 1,
-                  letterSpacing: "-3px",
-                  marginBottom: 6,
-                }}
-              >
-                {counts[b.group]}
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)" }}>{b.sub}</div>
+              <span className={classes.groupFilterHint}>{filter.hint}</span>
             </button>
           );
         })}
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 24px 56px" }}>
-        <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-.5px", marginBottom: 3 }}>
-            Experiments
-          </h1>
-          <p style={{ fontSize: "13.5px", color: "#868e96" }}>
-            Every experiment ticket from the ticketing service. Search, sort by any column, and
-            open one to start working.
-          </p>
+      <div className={classes.panel}>
+        <div className={classes.toolbar}>
+          <input
+            className={classes.search}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search experiments, requesters…"
+            aria-label="Search experiments"
+          />
+          <div className={classes.statusPills}>
+            <button
+              type="button"
+              className={`${classes.statusPill}${statusFilter === null && activeGroup === "all" ? ` ${classes.statusPillActive}` : ""}`}
+              onClick={() => selectStatus(null)}
+            >
+              All statuses
+            </button>
+            {statusOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`${classes.statusPill}${statusFilter === opt.value ? ` ${classes.statusPillActive}` : ""}`}
+                onClick={() => selectStatus(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <span className={classes.resultCount}>
+            {visible.length} of {tickets.length} experiment{tickets.length === 1 ? "" : "s"}
+          </span>
         </div>
 
-        <div
-          style={{
-            background: "#fff",
-            border: "1px solid #dee2e6",
-            borderRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)",
-            overflow: "hidden",
-          }}
-        >
-          {/* Controls */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "13px 16px",
-              borderBottom: "1px solid #e9ecef",
-              flexWrap: "wrap",
-            }}
-          >
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search experiments, requesters…"
-              aria-label="Search experiments"
-              style={{
-                flex: 1,
-                minWidth: 200,
-                maxWidth: 340,
-                height: 34,
-                padding: "0 10px",
-                border: "1px solid #dee2e6",
-                borderRadius: 5,
-                fontSize: "13.5px",
-                outline: "none",
-              }}
-            />
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-              <button
-                type="button"
-                onClick={() => selectStatus(null)}
-                style={pillStyle(statusFilter === null)}
-              >
-                All
-              </button>
-              {statusOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => selectStatus(opt.value)}
-                  style={pillStyle(statusFilter === opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-            <div style={{ marginLeft: "auto", fontSize: "12.5px", color: "#868e96", whiteSpace: "nowrap" }}>
-              {visible.length} of {tickets.length} experiment{tickets.length === 1 ? "" : "s"}
-            </div>
-          </div>
+        <div className={classes.tableWrap}>
+          <table className={classes.table}>
+            <thead className={classes.thead}>
+              <tr>
+                {SORTABLE.map(({ field, label }) => (
+                  <th
+                    key={field}
+                    onClick={() => toggleSort(field)}
+                    className={`${classes.th}${sortField === field ? ` ${classes.thSorted}` : ""}`}
+                  >
+                    {label}{" "}
+                    <span aria-hidden style={{ opacity: sortField === field ? 1 : 0.4, fontSize: 10 }}>
+                      {sortField === field ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                    </span>
+                  </th>
+                ))}
+                <th className={classes.th}>Context ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((ticket) => {
+                const meta = statusMeta(ticket.status);
+                const colors = colorsFor(meta.color);
 
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: "#f8f9fa" }}>
-                  {SORTABLE.map(({ field, label }) => (
-                    <th
-                      key={field}
-                      onClick={() => toggleSort(field)}
-                      style={thStyle(sortField === field)}
-                    >
-                      {label}{" "}
-                      <i style={{ opacity: sortField === field ? 1 : 0.4, fontSize: 10, fontStyle: "normal" }}>
-                        {sortField === field ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
-                      </i>
-                    </th>
-                  ))}
-                  <th style={thStyle(false)}>Context ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((ticket) => {
-                  const meta = statusMeta(ticket.status);
-                  const colors = colorsFor(meta.color);
-
-                  return (
-                    <tr
-                      key={ticket.contextId}
-                      onClick={() => router.push(experimentWorkspacePath(ticket.contextId))}
-                      style={{ borderBottom: "1px solid #e9ecef", cursor: "pointer" }}
-                    >
-                      <td style={{ padding: 0, position: "relative" }}>
-                        <div
+                return (
+                  <tr
+                    key={ticket.contextId}
+                    className={classes.row}
+                    onClick={() => router.push(experimentWorkspacePath(ticket.contextId))}
+                  >
+                    <td style={{ padding: 0, position: "relative" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: 3,
+                          background: colors.dot,
+                        }}
+                      />
+                      <div style={{ padding: "12px 14px 12px 20px" }}>
+                        <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
+                          {ticket.experimentTitle ?? "Untitled experiment"}
+                        </div>
+                        {ticket.sampleType && (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              padding: "1px 7px",
+                              borderRadius: 3,
+                              fontSize: 11,
+                              fontWeight: 500,
+                              background: "#f1f3f5",
+                              color: "#495057",
+                            }}
+                          >
+                            {ticket.sampleType}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      {ticket.requester ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                          <UserAvatar
+                            name={ticket.requester.name}
+                            email={ticket.requester.email}
+                            avatarUrl={ticket.requester.avatarUrl}
+                            size={30}
+                            radius="xl"
+                          />
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 500 }}>
+                              {ticket.requester.name ?? ticket.requester.email ?? "—"}
+                            </div>
+                            <div style={{ fontSize: "11.5px", color: "#868e96" }}>
+                              {ticket.requester.email}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 13, color: "#868e96" }}>{ticket.userId ?? "—"}</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "3px 9px 3px 7px",
+                          borderRadius: 20,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: ".04em",
+                          whiteSpace: "nowrap",
+                          background: colors.bg,
+                          color: colors.fg,
+                        }}
+                      >
+                        <span
                           style={{
-                            position: "absolute",
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 3,
+                            width: 5,
+                            height: 5,
+                            borderRadius: "50%",
                             background: colors.dot,
                           }}
                         />
-                        <div style={{ padding: "12px 14px 12px 20px" }}>
-                          <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
-                            {ticket.experimentTitle ?? "Untitled experiment"}
-                          </div>
-                          {ticket.sampleType && (
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                padding: "1px 7px",
-                                borderRadius: 3,
-                                fontSize: 11,
-                                fontWeight: 500,
-                                background: "#f1f3f5",
-                                color: "#495057",
-                              }}
-                            >
-                              {ticket.sampleType}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: "12px 14px" }}>
-                        {ticket.requester ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                            <UserAvatar
-                              name={ticket.requester.name}
-                              email={ticket.requester.email}
-                              avatarUrl={ticket.requester.avatarUrl}
-                              size={30}
-                              radius="xl"
-                            />
-                            <div>
-                              <div style={{ fontSize: 13, fontWeight: 500 }}>
-                                {ticket.requester.name ?? ticket.requester.email ?? "—"}
-                              </div>
-                              <div style={{ fontSize: "11.5px", color: "#868e96" }}>
-                                {ticket.requester.email}
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 13, color: "#868e96" }}>{ticket.userId ?? "—"}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: "12px 14px" }}>
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 5,
-                            padding: "3px 9px 3px 7px",
-                            borderRadius: 20,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            letterSpacing: ".04em",
-                            whiteSpace: "nowrap",
-                            background: colors.bg,
-                            color: colors.fg,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: "50%",
-                              background: colors.dot,
-                            }}
-                          />
-                          {meta.label}
-                        </span>
-                      </td>
-                      <td style={{ padding: "12px 14px", fontSize: 13 }}>
-                        <LocalDateTime iso={ticket.createdAt} />
-                      </td>
-                      <td style={{ padding: "12px 14px", fontSize: 13 }}>
-                        <LocalDateTime iso={ticket.updatedAt} />
-                      </td>
-                      <td style={{ padding: "12px 14px" }} onClick={(e) => e.stopPropagation()}>
-                        <CopyableId
-                          value={ticket.contextId}
-                          size="xs"
-                          href={experimentRawPath(ticket.contextId)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {visible.length === 0 && (
-            <div style={{ padding: "64px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#495057", marginBottom: 4 }}>
-                No experiments found
-              </div>
-              <div style={{ fontSize: 13, color: "#868e96" }}>
-                {tickets.length === 0 ? "No experiments yet." : "Try adjusting your search or filter."}
-              </div>
-            </div>
-          )}
+                        {meta.label}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: 13 }}>
+                      <LocalDateTime iso={ticket.createdAt} />
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: 13 }}>
+                      <LocalDateTime iso={ticket.updatedAt} />
+                    </td>
+                    <td style={{ padding: "12px 14px" }} onClick={(e) => e.stopPropagation()}>
+                      <CopyableId
+                        value={ticket.contextId}
+                        size="xs"
+                        href={experimentRawPath(ticket.contextId)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+
+        {visible.length === 0 && (
+          <div className={classes.empty}>
+            <div className={classes.emptyTitle}>No experiments found</div>
+            <div className={classes.emptyHint}>
+              {tickets.length === 0
+                ? "No experiments yet."
+                : "Try adjusting your search or filter."}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-function pillStyle(active: boolean): React.CSSProperties {
-  return {
-    height: 30,
-    padding: "0 12px",
-    border: "1px solid",
-    borderColor: active ? "#111318" : "#dee2e6",
-    borderRadius: 20,
-    fontSize: "12.5px",
-    fontWeight: 500,
-    color: active ? "#fff" : "#495057",
-    background: active ? "#111318" : "#fff",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  };
-}
-
-function thStyle(sorted: boolean): React.CSSProperties {
-  return {
-    padding: "9px 14px",
-    textAlign: "left",
-    fontSize: 11,
-    fontWeight: 700,
-    textTransform: "uppercase",
-    letterSpacing: ".08em",
-    color: sorted ? "#212529" : "#868e96",
-    borderBottom: "1px solid #dee2e6",
-    whiteSpace: "nowrap",
-    cursor: "pointer",
-    userSelect: "none",
-  };
 }

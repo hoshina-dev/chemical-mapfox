@@ -53,10 +53,11 @@ export function AdminNav({
       <div className={classes.staffInner}>
         <div className={classes.leftCluster}>
           <Link href={LISTING_PATH} className={classes.brand}>
-            <ChemFoxIcon className={classes.brandIcon} />
+            <ChemFoxIcon size={18} className={classes.brandIcon} />
             <span className={classes.staffBrandLabel}>ChemFox</span>
           </Link>
-          <div className={classes.navGroup}>
+          <div className={classes.staffBrandDivider} aria-hidden />
+          <div className={classes.staffNavTrack} role="navigation" aria-label="Staff sections">
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
               return (

@@ -53,7 +53,12 @@ export function UserMenu({
             size={32}
             radius="xl"
           />
-          <Text size="sm" c={dark ? "gray.4" : "dimmed"} fw={500}>
+          <Text
+            size="sm"
+            c={dark ? "gray.4" : "dimmed"}
+            fw={500}
+            className={classes.userMenuName}
+          >
             {name}
           </Text>
           <Badge variant="light" color={role === "admin" ? "grape" : "blue"}>

@@ -49,10 +49,11 @@ export function ClientNav({
       <div className={classes.clientInner}>
         <div className={classes.leftCluster}>
           <Link href={myExperimentsPath()} className={classes.brand}>
-            <ChemFoxIcon className={classes.brandIcon} />
+            <ChemFoxIcon size={18} className={classes.brandIcon} />
             <span className={classes.clientBrandLabel}>ChemFox</span>
           </Link>
-          <nav className={classes.clientNavItems} aria-label="Client">
+          <div className={classes.clientBrandDivider} aria-hidden />
+          <nav className={classes.clientNavTrack} aria-label="Client">
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
               return (

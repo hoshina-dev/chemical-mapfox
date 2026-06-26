@@ -17,11 +17,13 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   flex-shrink: 0;
   text-decoration: none;
   color: inherit;
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 4px 6px 4px 4px;
+  margin: 0 -4px;
 }
 
 .brand:focus-visible {
@@ -31,19 +33,27 @@
 
 .brandIcon {
   color: var(--chemfox-accent-green, #2f9e44);
+  flex-shrink: 0;
 }
 
 .brandLabel {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-.navGroup {
+.brandDivider {
+  width: 1px;
+  height: 24px;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.leftCluster {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 12px;
   flex-wrap: nowrap;
   min-width: 0;
 }
@@ -52,12 +62,20 @@
 .staffShell {
   composes: shell;
   background: var(--chemfox-staff-nav, #111318);
+  border-bottom: 1px solid #252830;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .staffInner {
   composes: inner;
-  height: 54px;
-  padding: 0 24px;
+  height: 56px;
+  padding: 0 20px;
+}
+
+@media (min-width: 48em) {
+  .staffInner {
+    padding: 0 24px;
+  }
 }
 
 .staffBrandLabel {
@@ -65,33 +83,63 @@
   color: #fff;
 }
 
-.staffLink {
+.staffBrandDivider {
+  composes: brandDivider;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.staffNavTrack {
   display: flex;
   align-items: center;
-  height: 54px;
-  padding: 0 14px;
-  font-size: 14px;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: min(100%, 520px);
+}
+
+.staffNavTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.staffLink {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 6px;
   white-space: nowrap;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .staffLink:hover {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .staffLink:focus-visible {
   outline: 2px solid var(--chemfox-accent-green, #2f9e44);
-  outline-offset: -2px;
+  outline-offset: 1px;
 }
 
 .staffLinkActive {
-  color: #fff;
-  border-bottom-color: var(--chemfox-accent-green, #2f9e44);
+  color: #d3f9d8;
+  background: rgba(47, 158, 68, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(81, 207, 102, 0.35);
+}
+
+.staffLinkActive:hover {
+  color: #ebfbee;
+  background: rgba(47, 158, 68, 0.28);
 }
 
 /* Client (light) shell */
@@ -99,6 +147,7 @@
   composes: shell;
   background: var(--mantine-color-body);
   border-bottom: 1px solid var(--mantine-color-default-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .clientInner {
@@ -118,19 +167,36 @@
   color: var(--mantine-color-text);
 }
 
+.clientBrandDivider {
+  composes: brandDivider;
+  background: var(--mantine-color-default-border);
+}
+
+.clientNavTrack {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--mantine-color-gray-0);
+  border: 1px solid var(--mantine-color-default-border);
+}
+
 .clientLink {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: var(--mantine-radius-sm);
-  font-size: var(--mantine-font-size-sm);
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   color: var(--mantine-color-dimmed);
   text-decoration: none;
   transition:
     color 0.15s ease,
-    background-color 0.15s ease;
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .clientLink:hover {
@@ -139,28 +205,13 @@
 
 .clientLink:focus-visible {
   outline: 2px solid var(--mantine-color-blue-filled);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 .clientLinkActive {
   color: var(--mantine-color-blue-filled);
-  background-color: var(--mantine-color-blue-light);
-}
-
-.clientNavItems {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
-.leftCluster {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: nowrap;
-  min-width: 0;
+  background: var(--mantine-color-body);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .userMenuTrigger {
@@ -169,6 +220,17 @@
   gap: 8px;
   padding: 4px 8px;
   border-radius: var(--mantine-radius-sm);
+  flex-shrink: 0;
+}
+
+.userMenuName {
+  display: none;
+}
+
+@media (min-width: 48em) {
+  .userMenuName {
+    display: block;
+  }
 }
 
 .userMenuTriggerLight:focus-visible {
