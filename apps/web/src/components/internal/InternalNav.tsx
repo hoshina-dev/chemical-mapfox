@@ -4,19 +4,25 @@ import { Anchor, Box, Container, Group, Text } from "@mantine/core";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { experimentListingPath } from "@/lib/experiment-manager/routes";
+
+const EXPERIMENTS_HREF = experimentListingPath();
+
 const NAV_ITEMS = [
-  { href: "/internal/experiment/listing", label: "Experiments" },
+  { href: EXPERIMENTS_HREF, label: "Experiments" },
   { href: "/internal/experiment/onboarding", label: "Onboarding" },
   { href: "/internal/docs", label: "Docs" },
 ];
 
 function isActive(pathname: string, href: string): boolean {
-  // "Experiments" owns the whole experiment section except onboarding, so the
-  // workspace route (/internal/experiment/{id}) highlights it too.
-  if (href === "/internal/experiment/listing") {
+  // "Experiments" owns the whole experiment workspace section except
+  // onboarding, so the workspace route (/internal/experiment/{id}) highlights
+  // it too even though its own href now points at /admin.
+  if (href === EXPERIMENTS_HREF) {
     return (
-      pathname.startsWith("/internal/experiment") &&
-      !pathname.startsWith("/internal/experiment/onboarding")
+      pathname === EXPERIMENTS_HREF ||
+      (pathname.startsWith("/internal/experiment") &&
+        !pathname.startsWith("/internal/experiment/onboarding"))
     );
   }
   return pathname === href || pathname.startsWith(`${href}/`);

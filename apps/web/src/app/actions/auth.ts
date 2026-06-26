@@ -76,7 +76,7 @@ export async function login(
     organizationId: await resolvePrimaryOrganizationId(user.id),
   });
 
-  redirect("/dashboard");
+  redirect(user.role === "admin" ? "/admin" : "/dashboard");
 }
 
 export async function register(

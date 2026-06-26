@@ -3,9 +3,11 @@
 import { Card, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
 
+import { experimentListingPath } from "@/lib/experiment-manager/routes";
+
 const TECHNICIAN_TOOLS = [
   {
-    href: "/internal/experiment/listing",
+    href: experimentListingPath(),
     title: "Experiments",
     description:
       "Browse every experiment ticket, search by context ID, and open one to work on.",

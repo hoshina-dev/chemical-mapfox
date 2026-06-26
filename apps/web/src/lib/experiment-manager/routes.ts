@@ -2,8 +2,13 @@ import type { TemplateRef } from "./mappers";
 
 const BASE = "/internal/experiment";
 
+/**
+ * Canonical experiment listing for lab staff. Used to live at
+ * `/internal/experiment/listing`; that route now permanently redirects here
+ * (see `next.config.js`) so old links/bookmarks keep working.
+ */
 export function experimentListingPath() {
-  return `${BASE}/listing`;
+  return "/admin";
 }
 
 export function experimentWorkspacePath(contextId: string) {
