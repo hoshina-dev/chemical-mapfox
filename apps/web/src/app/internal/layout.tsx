@@ -18,6 +18,7 @@ export default async function InternalLayout({
       <AdminNav
         name={session.name}
         email={session.email}
+        avatarUrl={session.avatarUrl}
         role={session.role}
         organizations={organizations}
       />

@@ -14,6 +14,7 @@ export default async function ExperimentLayout({
       <ClientNav
         name={session.name}
         email={session.email}
+        avatarUrl={session.avatarUrl}
         role={session.role}
         organizations={organizations}
       />

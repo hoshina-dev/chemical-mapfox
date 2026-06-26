@@ -12,6 +12,7 @@ import {
 import { useTransition } from "react";
 
 import { logout } from "@/app/actions/auth";
+import { UserAvatar } from "@/components/UserAvatar";
 import type { UserOrganization } from "@/lib/auth/organizations";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import { roleLabel } from "@/lib/auth/definitions";
@@ -19,6 +20,7 @@ import { roleLabel } from "@/lib/auth/definitions";
 export interface UserMenuProps {
   name: string;
   email?: string;
+  avatarUrl?: string;
   role?: CustApiRole;
   organizations: UserOrganization[];
   /** "dark" tunes the trigger colors for the dark admin nav. */
@@ -28,6 +30,7 @@ export interface UserMenuProps {
 export function UserMenu({
   name,
   email,
+  avatarUrl,
   role,
   organizations,
   variant = "light",
@@ -48,6 +51,13 @@ export function UserMenu({
             borderRadius: "var(--mantine-radius-sm)",
           }}
         >
+          <UserAvatar
+            name={name}
+            email={email}
+            avatarUrl={avatarUrl}
+            size={32}
+            radius="xl"
+          />
           <Text size="sm" c={dark ? "gray.4" : "dimmed"} fw={500}>
             {name}
           </Text>
@@ -59,14 +69,25 @@ export function UserMenu({
 
       <Menu.Dropdown>
         <Box px="sm" py="xs">
-          <Text size="sm" fw={600} truncate>
-            {name}
-          </Text>
-          {email && (
-            <Text size="xs" c="dimmed" truncate>
-              {email}
-            </Text>
-          )}
+          <Group gap="sm" wrap="nowrap">
+            <UserAvatar
+              name={name}
+              email={email}
+              avatarUrl={avatarUrl}
+              size={40}
+              radius="xl"
+            />
+            <Stack gap={0} style={{ minWidth: 0 }}>
+              <Text size="sm" fw={600} truncate>
+                {name}
+              </Text>
+              {email && (
+                <Text size="xs" c="dimmed" truncate>
+                  {email}
+                </Text>
+              )}
+            </Stack>
+          </Group>
         </Box>
 
         <Menu.Divider />

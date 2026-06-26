@@ -14,6 +14,7 @@ export default async function AdminLayout({
       <AdminNav
         name={session.name}
         email={session.email}
+        avatarUrl={session.avatarUrl}
         role={session.role}
         organizations={organizations}
       />

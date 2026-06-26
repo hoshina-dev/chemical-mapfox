@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   experimentRawPath,
   experimentWorkspacePath,
@@ -42,31 +43,6 @@ const COLOR_PALETTE: Record<string, { bg: string; fg: string; dot: string }> = {
 
 function colorsFor(mantineColor: string): { bg: string; fg: string; dot: string } {
   return COLOR_PALETTE[mantineColor] ?? DEFAULT_COLORS;
-}
-
-const AVATAR_PALETTE = [
-  { bg: "#e7f5ff", fg: "#1971c2" },
-  { bg: "#f8f0fc", fg: "#9c36b5" },
-  { bg: "#ebfbee", fg: "#2b8a3e" },
-  { bg: "#fff4e6", fg: "#c2580c" },
-  { bg: "#fff0f6", fg: "#a61e4d" },
-];
-
-function hashIndex(value: string, length: number): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash * 31 + value.charCodeAt(i)) % length;
-  }
-  return Math.abs(hash);
-}
-
-function avatarFor(value: string): { bg: string; fg: string } {
-  return AVATAR_PALETTE[hashIndex(value, AVATAR_PALETTE.length)] ?? AVATAR_PALETTE[0]!;
-}
-
-function initials(requester: { name: string | null; email: string | null }): string {
-  const source = requester.name ?? requester.email ?? "";
-  return source.slice(0, 2).toUpperCase();
 }
 
 function sortKey(ticket: EnrichedTicket, field: SortField): string {
@@ -329,9 +305,6 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                 {visible.map((ticket) => {
                   const meta = statusMeta(ticket.status);
                   const colors = colorsFor(meta.color);
-                  const avatar = ticket.requester
-                    ? avatarFor(ticket.requester.email ?? ticket.requester.name ?? "")
-                    : avatarFor("");
 
                   return (
                     <tr
@@ -374,23 +347,13 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                       <td style={{ padding: "12px 14px" }}>
                         {ticket.requester ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                            <div
-                              style={{
-                                width: 30,
-                                height: 30,
-                                borderRadius: "50%",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                flexShrink: 0,
-                                background: avatar.bg,
-                                color: avatar.fg,
-                              }}
-                            >
-                              {initials(ticket.requester)}
-                            </div>
+                            <UserAvatar
+                              name={ticket.requester.name}
+                              email={ticket.requester.email}
+                              avatarUrl={ticket.requester.avatarUrl}
+                              size={30}
+                              radius="xl"
+                            />
                             <div>
                               <div style={{ fontSize: 13, fontWeight: 500 }}>
                                 {ticket.requester.name ?? ticket.requester.email ?? "—"}

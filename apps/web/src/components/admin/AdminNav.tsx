@@ -33,11 +33,13 @@ function isActive(pathname: string, href: string): boolean {
 export function AdminNav({
   name,
   email,
+  avatarUrl,
   role,
   organizations,
 }: {
   name: string;
   email?: string;
+  avatarUrl?: string;
   role?: CustApiRole;
   organizations: UserOrganization[];
 }) {
@@ -119,6 +121,7 @@ export function AdminNav({
         <UserMenu
           name={name}
           email={email}
+          avatarUrl={avatarUrl}
           role={role}
           organizations={organizations}
           variant="dark"
