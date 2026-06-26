@@ -35,12 +35,14 @@ export function ClientNav({
   avatarUrl,
   role,
   organizations,
+  organizationPortalUrl,
 }: {
   name: string;
   email?: string;
   avatarUrl?: string;
   role?: CustApiRole;
   organizations: UserOrganization[];
+  organizationPortalUrl: string;
 }) {
   const pathname = usePathname();
 
@@ -75,6 +77,7 @@ export function ClientNav({
           avatarUrl={avatarUrl}
           role={role}
           organizations={organizations}
+          organizationPortalUrl={organizationPortalUrl}
         />
       </div>
     </header>

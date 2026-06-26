@@ -39,12 +39,14 @@ export function AdminNav({
   avatarUrl,
   role,
   organizations,
+  organizationPortalUrl,
 }: {
   name: string;
   email?: string;
   avatarUrl?: string;
   role?: CustApiRole;
   organizations: UserOrganization[];
+  organizationPortalUrl: string;
 }) {
   const pathname = usePathname();
 
@@ -79,6 +81,7 @@ export function AdminNav({
           avatarUrl={avatarUrl}
           role={role}
           organizations={organizations}
+          organizationPortalUrl={organizationPortalUrl}
           variant="dark"
         />
       </div>

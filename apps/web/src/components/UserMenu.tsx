@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Anchor,
   Badge,
   Box,
   Group,
@@ -17,6 +18,7 @@ import classes from "@/components/nav/nav.module.css";
 import type { UserOrganization } from "@/lib/auth/organizations";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import { roleLabel } from "@/lib/auth/definitions";
+import { organizationPageUrl } from "@/lib/organizationPortal/url";
 
 export interface UserMenuProps {
   name: string;
@@ -24,6 +26,7 @@ export interface UserMenuProps {
   avatarUrl?: string;
   role?: CustApiRole;
   organizations: UserOrganization[];
+  organizationPortalUrl: string;
   /** "dark" tunes the trigger colors for the dark admin nav. */
   variant?: "light" | "dark";
 }
@@ -34,6 +37,7 @@ export function UserMenu({
   avatarUrl,
   role,
   organizations,
+  organizationPortalUrl,
   variant = "light",
 }: UserMenuProps) {
   const [pending, startTransition] = useTransition();
@@ -91,28 +95,64 @@ export function UserMenu({
         </Box>
 
         <Menu.Divider />
-        <Menu.Label>Organizations</Menu.Label>
         {organizations.length === 0 ? (
-          <Box px="sm" pb="xs">
-            <Text size="xs" c="dimmed">
-              No organizations yet.
-            </Text>
-          </Box>
+          <>
+            <Menu.Label>Organizations</Menu.Label>
+            <Box px="sm" pb="xs">
+              <Text size="xs" c="dimmed">
+                No organizations yet.
+              </Text>
+            </Box>
+          </>
         ) : (
-          <Stack gap={2} px="sm" pb="xs">
-            {organizations.map((org) => (
-              <Group key={org.id} justify="space-between" wrap="nowrap" gap="xs">
-                <Text size="sm" truncate>
-                  {org.name}
-                </Text>
-                {org.role && (
-                  <Badge size="xs" variant="light" color="gray">
-                    {org.role}
-                  </Badge>
-                )}
-              </Group>
-            ))}
-          </Stack>
+          <Box pb="xs">
+            <Group wrap="nowrap" align="center" gap="xs" px="sm" py={6}>
+              <Text size="xs" fw={500} c="dimmed">
+                Organizations
+              </Text>
+              {organizations.length === 1 && organizations[0]?.role && (
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color="gray"
+                  style={{ flexShrink: 0 }}
+                >
+                  {organizations[0]?.role}
+                </Badge>
+              )}
+            </Group>
+            <Stack gap={6} px="sm">
+              {organizations.map((org) => (
+                <Group
+                  key={org.id}
+                  justify="space-between"
+                  align="flex-start"
+                  wrap="nowrap"
+                  gap="xs"
+                >
+                  <Anchor
+                    href={organizationPageUrl(organizationPortalUrl, org.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="sm"
+                    style={{ flex: 1, minWidth: 0 }}
+                  >
+                    {org.name}
+                  </Anchor>
+                  {organizations.length > 1 && org.role && (
+                    <Badge
+                      size="xs"
+                      variant="light"
+                      color="gray"
+                      style={{ flexShrink: 0 }}
+                    >
+                      {org.role}
+                    </Badge>
+                  )}
+                </Group>
+              ))}
+            </Stack>
+          </Box>
         )}
 
         <Menu.Divider />

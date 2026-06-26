@@ -1,6 +1,7 @@
 import { AdminNav } from "@/components/admin/AdminNav";
 import { requireAdmin } from "@/lib/auth/dal";
 import { listUserOrganizations } from "@/lib/auth/organizations";
+import { getOrganizationPortalUrl } from "@/lib/organizationPortal/config";
 
 // Server-side authorization backstop for everything under /internal/*.
 // The middleware (proxy.ts) is the first gate; this ensures the admin check
@@ -21,6 +22,7 @@ export default async function InternalLayout({
         avatarUrl={session.avatarUrl}
         role={session.role}
         organizations={organizations}
+        organizationPortalUrl={getOrganizationPortalUrl()}
       />
       {children}
     </>
