@@ -1,7 +1,7 @@
 import { setWorldConstructor, World } from "@cucumber/cucumber";
 import type { BrowserContext, Page } from "playwright";
 
-import { BASE_URL } from "./config.js";
+import { runtime } from "./runtime.js";
 
 /**
  * Per-scenario world. Holds the Playwright browser context + page; the shared
@@ -11,7 +11,9 @@ export class ChemFoxWorld extends World {
   context!: BrowserContext;
   page!: Page;
 
-  readonly baseUrl = BASE_URL;
+  get baseUrl(): string {
+    return runtime.baseUrl;
+  }
 
   /** Navigate to an app-relative path (e.g. "/experiment/listing"). */
   async goto(pathname: string): Promise<void> {

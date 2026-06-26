@@ -1,30 +1,26 @@
 import { type ChildProcess, spawn } from "node:child_process";
 
-import {
-  BASE_URL,
-  JWT_SECRET,
-  REPO_ROOT,
-  STUB_PORT,
-  WEB_BOOT_TIMEOUT_MS,
-  WEB_PORT,
-} from "./config.js";
+import { JWT_SECRET, REPO_ROOT, WEB_BOOT_TIMEOUT_MS } from "./config.js";
+import { runtime } from "./runtime.js";
 
 let child: ChildProcess | null = null;
 
 function childEnv(): NodeJS.ProcessEnv {
-  const stubBase = `http://127.0.0.1:${STUB_PORT}`;
+  const stubBase = `http://127.0.0.1:${runtime.stubPort}`;
   return {
     ...process.env,
     // Point every backend the BFF calls at the in-process stub.
     CUSTAPI_URL: `${stubBase}/api/v1`,
     TICKETING_URL: stubBase,
     EXPERIMENT_MANAGER_URL: stubBase,
-    // Unused by the auth flow, but set so nothing reads a real instance.
-    REDIS_URL: "redis://127.0.0.1:6399",
+    // Collaborative editing needs a real Redis; honour an externally provided
+    // REDIS_URL (e.g. the docker-compose redis service) and otherwise point at
+    // a dummy that the auth/most flows never touch.
+    REDIS_URL: process.env.REDIS_URL ?? "redis://127.0.0.1:6399",
     JWT_SECRET,
     SESSION_COOKIE_SECURE: "false",
     NODE_ENV: "development",
-    PORT: String(WEB_PORT),
+    PORT: String(runtime.webPort),
     NODE_OPTIONS: "--max-old-space-size=8192",
   };
 }
@@ -37,9 +33,7 @@ async function waitForReady(timeoutMs: number): Promise<void> {
       throw new Error(`web server exited early with code ${child.exitCode}`);
     }
     try {
-      const res = await fetch(`${BASE_URL}/`, { redirect: "manual" });
-      // Any HTTP response (200, 3xx redirect, even 500) means it's listening
-      // and has compiled the route — good enough to start driving it.
+      const res = await fetch(`${runtime.baseUrl}/`, { redirect: "manual" });
       if (res.status > 0) return;
     } catch (err) {
       lastError = err;
@@ -47,14 +41,14 @@ async function waitForReady(timeoutMs: number): Promise<void> {
     await new Promise((r) => setTimeout(r, 1000));
   }
   throw new Error(
-    `web server not ready at ${BASE_URL} within ${timeoutMs}ms: ${String(lastError)}`,
+    `web server not ready at ${runtime.baseUrl} within ${timeoutMs}ms: ${String(lastError)}`,
   );
 }
 
 export async function startWebServer(): Promise<void> {
   child = spawn(
     "pnpm",
-    ["--filter", "web", "exec", "next", "dev", "--port", String(WEB_PORT)],
+    ["--filter", "web", "exec", "next", "dev", "--port", String(runtime.webPort)],
     {
       cwd: REPO_ROOT,
       env: childEnv(),
@@ -79,7 +73,6 @@ export async function startWebServer(): Promise<void> {
 
 function killGroup(pid: number, signal: NodeJS.Signals): void {
   try {
-    // Negative pid targets the whole process group (next dev + its workers).
     process.kill(-pid, signal);
   } catch {
     try {
@@ -110,7 +103,6 @@ export function stopWebServer(): Promise<void> {
     setTimeout(() => {
       if (!settled) killGroup(pid, "SIGKILL");
     }, 5000);
-    // Hard cap so a stubborn server can't block the runner from exiting.
     setTimeout(done, 8000);
   });
 }

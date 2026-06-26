@@ -31,7 +31,7 @@ mock them. Instead the harness:
 
 ## Running
 
-From the repo root (or this folder):
+### Locally
 
 ```bash
 pnpm --filter @repo/e2e test          # headless
@@ -43,9 +43,25 @@ a `pretest` hook). The managed `next dev` boot + on-demand route compilation
 makes the first scenario take a few seconds; the whole auth suite runs in well
 under a minute.
 
+Web + stub ports are **picked dynamically** by default, so multiple suites can
+run in parallel (e.g. one git worktree per feature) without colliding. Set
+`E2E_WEB_PORT` / `E2E_STUB_PORT` to pin them.
+
 **Don't run a separate `pnpm dev` for `apps/web` at the same time** — two dev
 servers sharing the same `.next` cache can corrupt each other. The harness
 manages its own server.
+
+### Self-contained, in a container
+
+```bash
+pnpm --filter @repo/e2e test:docker
+# == docker compose -f docker-compose.e2e.yml run --build --rm e2e
+```
+
+This builds the monorepo into a Playwright image (browsers preinstalled) and
+runs the **whole suite** — every feature + every auto-loaded stub module — with
+no host dependencies. Redis (for collaborative editing) is provided as a compose
+service; everything else is stubbed in-process.
 
 ### Useful environment overrides
 
@@ -62,35 +78,58 @@ manages its own server.
 
 ```
 e2e/
+├── Dockerfile                       # Playwright-based self-contained runner
+├── Dockerfile.dockerignore
 ├── cucumber.mjs                     # Cucumber profile (TS via `node --import tsx`)
 ├── features/
-│   ├── auth/                        # *.feature — Gherkin specs
+│   ├── auth/                        # *.feature — Gherkin specs (one dir per area)
 │   │   ├── login.feature
 │   │   ├── register.feature
 │   │   ├── logout.feature
 │   │   └── access-control.feature
 │   ├── step_definitions/
 │   │   ├── auth.steps.ts
-│   │   └── navigation.steps.ts
+│   │   └── navigation.steps.ts      # shared: visit, page/error assertions
 │   └── support/
-│       ├── config.ts                # ports, URLs, timeouts
+│       ├── config.ts                # static env-derived settings
+│       ├── runtime.ts               # resolved ports + base URL (per run)
+│       ├── ports.ts                 # free-port picker (parallel-safe)
 │       ├── fixtures.ts              # in-memory users/orgs + wire serializers
-│       ├── stub-server.ts           # custapi/ticketing/EM stub
 │       ├── web-server.ts            # spawns + tears down `next dev`
 │       ├── world.ts                 # Playwright-backed Cucumber World
-│       └── hooks.ts                 # Before/After/BeforeAll/AfterAll
+│       ├── hooks.ts                 # Before/After/BeforeAll/AfterAll
+│       └── stub/                    # the backend stub
+│           ├── server.ts            # HTTP server; auto-loads modules/*
+│           ├── registry.ts          # registerStub / reset / dispatch
+│           ├── types.ts             # StubModule / StubContext
+│           └── modules/
+│               └── custapi.ts       # users + organizations
 └── README.md
 ```
 
 ## Adding a new feature area
 
-1. Write `features/<area>/<name>.feature` in Gherkin.
-2. Reuse the shared steps (`I visit …`, `I should be on the … page`, `the
-   following users exist:` …) and add area-specific steps under
-   `features/step_definitions/`.
-3. If the flow touches a backend the stub doesn't cover yet (e.g. ticketing
-   ticket creation, experiment-manager samples/templates), extend
-   `stub-server.ts` + `fixtures.ts` with the needed endpoints and seed helpers.
+The harness is built so a new feature is **purely additive** — you never edit a
+shared file, which keeps parallel branches conflict-free:
+
+1. **Feature spec** — write `features/<area>/<name>.feature` in Gherkin.
+2. **Steps** — add `features/step_definitions/<area>.steps.ts`. Reuse the shared
+   steps in `navigation.steps.ts` (`I visit …`, `I should be on the … page`,
+   `I should see the error …`) and the auth steps (`the following users exist:`,
+   `I am signed in as …`).
+3. **Backend stub** — if the flow hits a backend endpoint not yet modelled, drop
+   a new file `features/support/stub/modules/<area>.ts` that calls
+   `registerStub({ name, reset, handle })`. The stub server **auto-loads every
+   file** in `modules/`, so no central registration is needed. Keep per-feature
+   in-memory state inside the module and clear it in `reset()`.
+4. **Fixtures** — extend `fixtures.ts` only for shared entities (users/orgs);
+   feature-specific entities (tickets, samples, templates, experiments) should
+   live in the feature's own stub module.
+
+> The stub strips the shared `/api/v1` prefix, so `ctx.path` for a custapi call
+> to `/api/v1/users/email/x` is `["users","email","x"]`, and for a ticketing
+> call to `/api/v1/tickets` is `["tickets"]`. Anything no module handles returns
+> a benign `[]` (GET) / `{}` so best-effort listing calls never crash a page.
 
 ## TypeScript
 

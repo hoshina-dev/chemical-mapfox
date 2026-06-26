@@ -7,9 +7,18 @@ import {
 } from "@cucumber/cucumber";
 import { type Browser, chromium } from "playwright";
 
-import { HEADLESS, MANAGED_WEB_SERVER, STUB_PORT } from "./config.js";
+import {
+  BASE_URL_OVERRIDE,
+  HEADLESS,
+  MANAGED_WEB_SERVER,
+  STUB_PORT_OVERRIDE,
+  WEB_PORT_OVERRIDE,
+} from "./config.js";
 import { resetDb } from "./fixtures.js";
-import { startStubServer, stopStubServer } from "./stub-server.js";
+import { getFreePort } from "./ports.js";
+import { setRuntime } from "./runtime.js";
+import { resetStubs } from "./stub/registry.js";
+import { startStubServer, stopStubServer } from "./stub/server.js";
 import { startWebServer, stopWebServer } from "./web-server.js";
 import type { ChemFoxWorld } from "./world.js";
 
@@ -19,7 +28,12 @@ setDefaultTimeout(60_000);
 let browser: Browser;
 
 BeforeAll(async function () {
-  await startStubServer(STUB_PORT);
+  const stubPort = STUB_PORT_OVERRIDE ?? (await getFreePort());
+  const webPort = WEB_PORT_OVERRIDE ?? (await getFreePort());
+  const baseUrl = BASE_URL_OVERRIDE ?? `http://localhost:${webPort}`;
+  setRuntime({ webPort, stubPort, baseUrl });
+
+  await startStubServer(stubPort);
   if (MANAGED_WEB_SERVER) {
     await startWebServer();
   }
@@ -36,6 +50,7 @@ AfterAll(async function () {
 
 Before(async function (this: ChemFoxWorld) {
   resetDb();
+  resetStubs();
   this.context = await browser.newContext();
   this.page = await this.context.newPage();
 });
