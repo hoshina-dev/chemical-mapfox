@@ -1,0 +1,20 @@
+{
+  "name": "@repo/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CucumberJS + Playwright acceptance tests for chemical-mapfox",
+  "scripts": {
+    "test": "node --import tsx ./node_modules/@cucumber/cucumber/bin/cucumber.js",
+    "test:headed": "HEADLESS=false node --import tsx ./node_modules/@cucumber/cucumber/bin/cucumber.js",
+    "pretest": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.3.0",
+    "@types/node": "^24.13.2",
+    "bcryptjs": "^3.0.3",
+    "playwright": "^1.50.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}
