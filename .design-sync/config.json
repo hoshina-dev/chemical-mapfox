@@ -37,6 +37,7 @@
     "BuilderApp": null,
     "ExperimentStateView": null,
     "FormRendererReadOnly": null,
-    "MantineProvider": null
+    "MantineProvider": null,
+    "PdfEditor": null
   }
 }
