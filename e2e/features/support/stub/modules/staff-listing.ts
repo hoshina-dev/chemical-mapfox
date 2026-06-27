@@ -92,12 +92,13 @@ function handle(ctx: StubContext): boolean {
   // ---- ticketing-service: tickets ---------------------------------------
   if (path[0] === "tickets" && method === "GET") {
     if (path.length === 1) {
+      if (tickets.length === 0) return false; // not this feature's scenario
       return ctx.json(200, tickets.map(ticketWire));
     }
     if (path[1]) {
       const id = decodeURIComponent(path[1]);
       const ticket = tickets.find((t) => t.id === id);
-      if (!ticket) return ctx.json(404, { error: "ticket not found" });
+      if (!ticket) return false; // not this feature's ticket
       return ctx.json(200, ticketWire(ticket));
     }
   }
@@ -110,9 +111,7 @@ function handle(ctx: StubContext): boolean {
     method === "GET"
   ) {
     const id = decodeURIComponent(path[2]);
-    if (!experiments.has(id)) {
-      return ctx.json(404, { detail: "experiment not found" });
-    }
+    if (!experiments.has(id)) return false; // not this feature's context
     return ctx.json(200, experiments.get(id));
   }
 

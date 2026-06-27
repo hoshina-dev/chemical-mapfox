@@ -37,9 +37,19 @@ interface PdfBuilderState {
   upsertCount: number;
   /** The components array of the most recent save (for assertions). */
   lastSavedComponents: unknown[] | null;
+  /**
+   * Set once the editor page has fetched this template — only then do we claim
+   * the shared `GET /tickets` list (the preview dropdown), so we don't shadow
+   * the staff-listing feature's own ticket list in unrelated scenarios.
+   */
+  active: boolean;
 }
 
-const state: PdfBuilderState = { upsertCount: 0, lastSavedComponents: null };
+const state: PdfBuilderState = {
+  upsertCount: 0,
+  lastSavedComponents: null,
+  active: false,
+};
 
 /** Read the module-local state from step definitions (same Node process). */
 export function pdfBuilderState(): PdfBuilderState {
@@ -49,6 +59,7 @@ export function pdfBuilderState(): PdfBuilderState {
 function reset(): void {
   state.upsertCount = 0;
   state.lastSavedComponents = null;
+  state.active = false;
 }
 
 // The PDF layout already saved for the template. One text element referencing a
@@ -96,9 +107,11 @@ async function handle(ctx: StubContext): Promise<boolean> {
       const isPdf = path[5] === "pdf";
 
       if (!isPdf && method === "GET" && path.length === 5) {
+        state.active = true; // the editor page is loading this template
         return ctx.json(200, templateDetail());
       }
       if (isPdf && method === "GET") {
+        state.active = true;
         return ctx.json(200, {
           template_id: TEMPLATE_ID,
           components: savedComponents,
@@ -135,6 +148,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
   // ticketing list (the shared `/api/v1` prefix is stripped → ["tickets"]).
   // The editor keeps only tickets whose template matches this lineage.
   if (path[0] === "tickets" && method === "GET" && path.length === 1) {
+    if (!state.active) return false; // not the PDF editor's scenario
     return ctx.json(200, [
       {
         id: CONTEXT_ID,

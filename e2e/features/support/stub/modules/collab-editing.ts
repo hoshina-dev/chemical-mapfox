@@ -163,6 +163,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
   // The workspace loads a template index best-effort; answer cleanly so it
   // doesn't fall through to the array fallback (which would throw on `.samples`).
   if (method === "GET" && path[0] === "api" && path[1] === "samples" && path.length === 2) {
+    if (experiments.size === 0) return false; // not this feature's scenario
     return ctx.json(200, { samples: [] });
   }
 

@@ -202,6 +202,7 @@ async function handleExperimentManager(ctx: StubContext): Promise<boolean> {
 
   // GET /api/samples
   if (method === "GET" && path[1] === "samples" && path.length === 2) {
+    if (samples.length === 0) return false; // not this feature's scenario
     return ctx.json(200, { samples });
   }
 
@@ -213,6 +214,7 @@ async function handleExperimentManager(ctx: StubContext): Promise<boolean> {
     path[3] === "experiments" &&
     path.length === 4
   ) {
+    if (samples.length === 0) return false; // not this feature's scenario
     const sampleId = decodeURIComponent(path[2]);
     return ctx.json(200, {
       sample_id: sampleId,
@@ -233,7 +235,7 @@ async function handleExperimentManager(ctx: StubContext): Promise<boolean> {
   ) {
     const templateId = decodeURIComponent(path[4]);
     const tpl = templates.find((t) => t.id === templateId);
-    if (!tpl) return ctx.json(404, { detail: "template not found" });
+    if (!tpl) return false; // not this feature's template
     return ctx.json(200, templateDetail(tpl));
   }
 
@@ -269,6 +271,7 @@ async function handleExperimentManager(ctx: StubContext): Promise<boolean> {
     path.length === 3
   ) {
     const id = decodeURIComponent(path[2]);
+    if (!experiments.has(id)) return false; // only update contexts we created
     const body = (await ctx.readBody()) as {
       clientForm?: FormDocWire;
       labForm?: FormDocWire;
@@ -308,7 +311,7 @@ async function handleExperimentManager(ctx: StubContext): Promise<boolean> {
   ) {
     const id = decodeURIComponent(path[2]);
     const exp = experiments.get(id);
-    if (!exp) return ctx.json(404, { detail: "experiment not found" });
+    if (!exp) return false; // not this feature's context
     return ctx.json(200, experimentDetail(exp));
   }
 

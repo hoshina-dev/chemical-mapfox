@@ -82,7 +82,7 @@ When(
 );
 
 Then(
-  "I should see the experiment {string}",
+  "I should see the experiment {string} in the catalogue",
   async function (this: ChemFoxWorld, templateTitle: string) {
     await this.page
       .getByText(templateTitle, { exact: false })

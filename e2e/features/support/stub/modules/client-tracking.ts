@@ -77,6 +77,7 @@ function handle(ctx: StubContext): boolean {
     // GET /api/v1/tickets — list, optionally filtered by user_id, newest first
     // (the BFF requests sort_by=updated_at&sort_dir=desc).
     if (path.length === 1) {
+      if (tickets.length === 0) return false; // not this feature's scenario
       const userId = url.searchParams.get("user_id");
       const rows = (userId
         ? tickets.filter((t) => t.userId === userId)
@@ -87,22 +88,27 @@ function handle(ctx: StubContext): boolean {
     // GET /api/v1/tickets/{id} — single ticket.
     if (path.length === 2) {
       const ticket = tickets.find((t) => t.id === decodeURIComponent(path[1]));
-      if (!ticket) return ctx.json(404, { error: "ticket not found" });
+      if (!ticket) return false; // not this feature's ticket
       return ctx.json(200, ticketWire(ticket));
     }
   }
 
   // ---- experiment-manager: getExperiment --------------------------------
-  // GET /api/experiments/{id}. No experiment context is created for these
-  // tickets, so 404 — the detail page treats that as the expected "not created
-  // yet" state and renders without experiment details.
+  // GET /api/experiments/{id}. No experiment context is created for THIS
+  // feature's tickets, so 404 (the detail page treats that as the expected
+  // "not created yet" state). For any other id, fall through so the owning
+  // feature's module can answer.
   if (
     method === "GET" &&
     path[0] === "api" &&
     path[1] === "experiments" &&
     path.length === 3
   ) {
-    return ctx.json(404, { detail: "experiment context not found" });
+    const id = decodeURIComponent(path[2]);
+    if (tickets.some((t) => t.id === id)) {
+      return ctx.json(404, { detail: "experiment context not found" });
+    }
+    return false;
   }
 
   return false;

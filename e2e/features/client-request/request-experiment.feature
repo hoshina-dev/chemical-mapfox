@@ -15,7 +15,7 @@ Feature: Request an experiment
     Then I should be on the "request catalog" page
     And I should see the specimen "Coal"
     When I expand the "Coal" specimen
-    Then I should see the experiment "Proximate analysis"
+    Then I should see the experiment "Proximate analysis" in the catalogue
 
   Scenario: A client requests an experiment by filling in the intake form
     Given I am signed in as "client@example.com" with password "password123"
