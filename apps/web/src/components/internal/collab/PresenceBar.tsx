@@ -2,11 +2,8 @@
 
 import { Avatar, Group, Text, Tooltip } from "@mantine/core";
 
+import { UserAvatar } from "@/components/UserAvatar";
 import type { PresenceEntry } from "@/lib/collab/events";
-
-function initials(name: string): string {
-  return name.trim().slice(0, 2).toUpperCase() || "?";
-}
 
 /** Avatars of the staff currently in edit mode; hover shows the full name. */
 export function PresenceBar({ editors }: { editors: PresenceEntry[] }) {
@@ -26,17 +23,16 @@ export function PresenceBar({ editors }: { editors: PresenceEntry[] }) {
       <Avatar.Group>
         {editors.map((editor) => (
           <Tooltip key={editor.userId} label={editor.name} withArrow>
-            <Avatar
-              src={editor.avatarUrl ?? undefined}
+            <UserAvatar
+              name={editor.name}
+              avatarUrl={editor.avatarUrl}
               alt={editor.name}
               color={editor.color}
               radius="xl"
               style={{
                 border: `2px solid var(--mantine-color-${editor.color}-6)`,
               }}
-            >
-              {initials(editor.name)}
-            </Avatar>
+            />
           </Tooltip>
         ))}
       </Avatar.Group>

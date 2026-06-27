@@ -36,3 +36,13 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Impeccable — per-machine hook consent and local prefs (project config is under apps/web/.impeccable/)
+.impeccable/config.local.json
+**/.impeccable/config.local.json
+
+# Impeccable skill scripts — installed locally, not versioned with the app
+.agents/skills/impeccable/
+
+# Codex harness hook wiring — local IDE/harness config
+.codex/hooks.json

@@ -83,7 +83,7 @@ describe("CollaborativeFormRenderer", () => {
     expect(input).toBeDisabled();
     expect(input).toHaveDisplayValue("7");
     // owner's avatar initials are shown next to the locked field
-    expect(screen.getByText("AL")).toBeInTheDocument();
+    expect(screen.getByText("AS")).toBeInTheDocument();
   });
 
   it("ignores a lock whose owner is no longer present (no stuck lock)", () => {

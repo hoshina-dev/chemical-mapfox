@@ -5,11 +5,15 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        // Superseded by /admin (the bold experiment listing); kept as a
-        // permanent redirect so old links/bookmarks keep working.
-        source: "/internal/experiment/listing",
-        destination: "/admin",
+        // Legacy hub URL; staff listing lives under /internal/experiment/listing.
+        source: "/admin",
+        destination: "/internal/experiment/listing",
         permanent: true,
+      },
+      {
+        source: "/experiment",
+        destination: "/experiment/listing",
+        permanent: false,
       },
     ];
   },

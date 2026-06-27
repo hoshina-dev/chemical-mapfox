@@ -8,8 +8,9 @@
 
 # testing
 /coverage
-# Vitest browser-mode failure screenshots
+# Vitest browser-mode failure screenshots and attachments
 __screenshots__/
+.vitest-attachments/
 
 # next.js
 /.next/

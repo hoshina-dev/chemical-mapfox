@@ -1,4 +1,4 @@
-import { Alert, Container } from "@mantine/core";
+import { Alert } from "@mantine/core";
 
 import { AdminExperimentsView } from "@/components/admin/AdminExperimentsView";
 import {
@@ -8,7 +8,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function StaffExperimentsListingPage() {
   let tickets: EnrichedTicket[] | null = null;
   let degraded = false;
   let loadError: string | null = null;
@@ -24,23 +24,23 @@ export default async function AdminPage() {
 
   if (loadError) {
     return (
-      <Container size="lg" py="xl">
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
         <Alert color="red" variant="light" title="Could not reach Ticketing Service">
           {loadError}
         </Alert>
-      </Container>
+      </div>
     );
   }
 
   return (
     <>
       {degraded && (
-        <Container size="lg" pt="md">
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "16px 24px 0" }}>
           <Alert color="yellow" variant="light" title="Some requester details unavailable">
             Requester details could not be loaded from the user service. The list below is
             complete; some requester cells may show raw user IDs.
           </Alert>
-        </Container>
+        </div>
       )}
       <AdminExperimentsView tickets={tickets ?? []} />
     </>
