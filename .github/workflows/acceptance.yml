@@ -1,0 +1,98 @@
+name: Acceptance
+
+# Runs the CucumberJS + Playwright acceptance suite. Each business feature runs
+# as its own parallel job (a matrix entry), so a failure points straight at the
+# feature that broke and the slowest feature doesn't gate the others.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - test/acceptance-cucumber-playwright
+  workflow_dispatch:
+
+concurrency:
+  group: acceptance-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: AC · ${{ matrix.feature }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        feature:
+          - auth
+          - client-request
+          - client-tracking
+          - collab-editing
+          - docs
+          - finalization
+          - lifecycle
+          - pdf-builder
+          - staff-listing
+          - template-authoring
+          - admin-users
+
+    # Collaborative editing needs a real Redis; the other features ignore it.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      CI: "true"
+      HEADLESS: "true"
+      REDIS_URL: redis://localhost:6379
+      # Scope this job's run to a single feature directory (see e2e/cucumber.mjs).
+      E2E_PATHS: features/${{ matrix.feature }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium (+ system deps)
+        run: pnpm --filter @repo/e2e exec playwright install --with-deps chromium
+
+      - name: Run acceptance tests (${{ matrix.feature }})
+        working-directory: e2e
+        run: pnpm test:ci
+
+  # Single aggregate check so branch protection can require "Acceptance passed"
+  # instead of every individual matrix leg.
+  acceptance-passed:
+    name: Acceptance passed
+    needs: acceptance
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify every feature job succeeded
+        run: |
+          if [ "${{ needs.acceptance.result }}" != "success" ]; then
+            echo "One or more acceptance feature jobs failed (${{ needs.acceptance.result }})."
+            exit 1
+          fi
+          echo "All acceptance feature jobs passed."

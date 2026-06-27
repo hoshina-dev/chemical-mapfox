@@ -10,8 +10,14 @@
  * loaded by the stub server at runtime, NOT globbed here, so they self-register
  * exactly once.
  */
+// CI runs one feature per job (parallel matrix); `E2E_PATHS` (comma-separated
+// feature globs/dirs) scopes the run. Unset → the whole suite, as locally.
+const paths = process.env.E2E_PATHS
+  ? process.env.E2E_PATHS.split(",").map((p) => p.trim()).filter(Boolean)
+  : ["features/**/*.feature"];
+
 export default {
-  paths: ["features/**/*.feature"],
+  paths,
   import: [
     "features/support/world.ts",
     "features/support/hooks.ts",

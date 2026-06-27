@@ -8,6 +8,7 @@
     "test": "node --import tsx ./node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:headed": "HEADLESS=false node --import tsx ./node_modules/@cucumber/cucumber/bin/cucumber.js",
     "test:docker": "docker compose -f ../docker-compose.e2e.yml run --build --rm e2e",
+    "test:ci": "node --import tsx ./node_modules/@cucumber/cucumber/bin/cucumber.js",
     "pretest": "playwright install chromium"
   },
   "devDependencies": {
