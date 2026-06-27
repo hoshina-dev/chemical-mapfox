@@ -8,7 +8,7 @@ import type { ChemFoxWorld } from "../support/world.js";
 const PAGES: Record<string, string> = {
   login: "/",
   "my experiments": "/experiment/listing",
-  "staff experiments": "/admin",
+  "staff experiments": "/internal/experiment/listing",
   "request catalog": "/experiment/request/listing",
 };
 

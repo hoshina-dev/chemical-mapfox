@@ -15,7 +15,7 @@ Feature: Staff experiment listing
       | ctx-bravo   | Benzene NMR   | experimenting | beck@example.com   | 2025-01-03T09:00:00Z | 2025-01-04T09:00:00Z |
       | ctx-charlie | Caffeine HPLC | closed        | client@example.com | 2025-01-05T09:00:00Z | 2025-01-06T09:00:00Z |
     And I am signed in as "admin@example.com" with password "password123"
-    And I visit "/admin"
+    And I visit "/internal/experiment/listing"
 
   Scenario: Admin sees every experiment with requester emails joined from custapi
     Then I should see 3 experiments in the listing
