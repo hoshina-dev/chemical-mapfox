@@ -1,0 +1,26 @@
+# Self-contained acceptance-test stack.
+#
+#   docker compose -f docker-compose.e2e.yml run --build --rm e2e
+#
+# Builds the monorepo into a Playwright image and runs the full CucumberJS suite
+# (every feature + auto-loaded stub module). Redis is provided for the
+# collaborative-editing feature; everything else is stubbed in-process.
+services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  e2e:
+    build:
+      context: .
+      dockerfile: e2e/Dockerfile
+    environment:
+      HEADLESS: "true"
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
