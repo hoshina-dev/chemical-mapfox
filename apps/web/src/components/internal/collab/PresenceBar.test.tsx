@@ -20,14 +20,14 @@ describe("PresenceBar", () => {
   it("renders an avatar (with initials) for each active editor", () => {
     render(<PresenceBar editors={editors} />);
     expect(screen.getByText("Editing now:")).toBeInTheDocument();
-    expect(screen.getByText("AL")).toBeInTheDocument();
-    expect(screen.getByText("BO")).toBeInTheDocument();
+    expect(screen.getByText("AS")).toBeInTheDocument();
+    expect(screen.getByText("BJ")).toBeInTheDocument();
   });
 
   it("reveals the full name on hover", async () => {
     const user = userEvent.setup();
     render(<PresenceBar editors={editors} />);
-    await user.hover(screen.getByText("AL"));
+    await user.hover(screen.getByText("AS"));
     expect(await screen.findByText("Alice Smith")).toBeInTheDocument();
   });
 });

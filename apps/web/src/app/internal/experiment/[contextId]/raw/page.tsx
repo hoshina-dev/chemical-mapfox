@@ -65,7 +65,6 @@ export default async function ExperimentRawPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Internal", href: "/dashboard" },
             { label: "Experiments", href: experimentListingPath() },
             { label: contextId, href: experimentWorkspacePath(contextId) },
             { label: "Raw JSON" },

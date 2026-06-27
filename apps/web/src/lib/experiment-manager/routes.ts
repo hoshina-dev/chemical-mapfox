@@ -2,6 +2,10 @@ import type { TemplateRef } from "./mappers";
 
 const BASE = "/internal/experiment";
 
+/**
+ * Canonical experiment listing for lab staff — the default landing page for
+ * admin (technician) sessions after sign-in.
+ */
 export function experimentListingPath() {
   return `${BASE}/listing`;
 }

@@ -28,9 +28,9 @@ import {
   myExperimentReportViewPath,
   myExperimentsPath,
 } from "@/lib/experiment/routes";
+import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getRequestOrigin } from "@/lib/http/origin";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +50,6 @@ export default async function MyExperimentDetailPage({
     notFound();
   }
 
-  const meta = ticket ? statusMeta(ticket.status) : null;
-
-  // While the request is still awaiting its sample, offer a printable QR label
-  // the requester attaches to the shipping box; lab staff scan it to check in.
   const showSampleLabel = ticket?.status === "REQUESTED";
   const checkinUrl = showSampleLabel
     ? `${await getRequestOrigin()}${experimentCheckinPath(contextId)}`
@@ -76,7 +72,6 @@ export default async function MyExperimentDetailPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Dashboard", href: "/dashboard" },
             { label: "My experiments", href: myExperimentsPath() },
             { label: ws.experimentTitle ?? contextId },
           ]}
@@ -94,10 +89,8 @@ export default async function MyExperimentDetailPage({
             </Group>
             <CopyableId value={contextId} />
           </Stack>
-          {meta && (
-            <Badge color={meta.color} variant="light" size="lg" radius="sm">
-              {meta.label}
-            </Badge>
+          {ticket && (
+            <StatusChip status={ticket.status} variant="badge" size="lg" />
           )}
         </Group>
 

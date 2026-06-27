@@ -25,7 +25,7 @@ component from a server component.
   (`LinkButton`, `LinkAnchor`) which keep `component={Link}` on the client side.
   Server Components pass only serializable props (`href`, strings, …).
 - Or extract the interactive piece into its own `"use client"` component (e.g.
-  `components/dashboard/TechnicianTools.tsx`).
+  `components/admin/AdminNav.tsx`).
 - Or wrap with Next's `<Link>` directly (`<Link href><Card …/></Link>`) when a
   plain anchor wrapper is acceptable.
 
@@ -79,6 +79,19 @@ Open issues in the `experiment-manager` backend (with the frontend workarounds
 that should be removed once each is fixed) are tracked in
 [`docs/experiment-manager-issues.md`](docs/experiment-manager-issues.md). Check
 it before adding new client-side patches for backend quirks.
+
+## Design context (Impeccable)
+
+UI design work for the web app is governed by Impeccable context files under
+`apps/web/`:
+
+- [`apps/web/PRODUCT.md`](apps/web/PRODUCT.md) — register (`product`), users,
+  brand personality, anti-references, strategic design principles.
+- [`apps/web/DESIGN.md`](apps/web/DESIGN.md) — visual tokens, typography,
+  components, elevation, do's/don'ts (Mantine 9 + ChemFox staff/client shells).
+
+Run Impeccable commands scoped to the web app, e.g.
+`node .agents/skills/impeccable/scripts/context.mjs --target apps/web`.
 
 ## Before you finish
 

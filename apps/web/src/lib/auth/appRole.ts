@@ -1,3 +1,5 @@
+import { myExperimentsPath } from "../experiment/routes";
+import { experimentListingPath } from "../experiment-manager/routes";
 import type { CustApiRole, SessionPayload } from "./definitions";
 
 /**
@@ -12,4 +14,14 @@ export function appRoleForCustApiRole(role: CustApiRole | undefined): AppRole {
 
 export function appRoleForSession(session: SessionPayload): AppRole {
   return appRoleForCustApiRole(session.role);
+}
+
+/**
+ * Post-login landing page for a role. There is no separate hub/dashboard page;
+ * each role lands directly on its primary workspace and uses the nav from
+ * there. Lab staff (mapfox admins) land on the staff Experiments listing;
+ * everyone else lands on their own "My experiments" board.
+ */
+export function landingPathForRole(role: CustApiRole | undefined): string {
+  return role === "admin" ? experimentListingPath() : myExperimentsPath();
 }

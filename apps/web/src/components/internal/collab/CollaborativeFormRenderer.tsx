@@ -1,16 +1,13 @@
 "use client";
 
-import { Avatar, Box, Stack, Text, Title, Tooltip } from "@mantine/core";
+import { Box, Stack, Text, Title, Tooltip } from "@mantine/core";
 import type { AnswerValue, FormAnswers, FormDoc } from "@repo/forms";
 import { QuestionField, RepeatableGroupField } from "@repo/forms";
 
+import { UserAvatar } from "@/components/UserAvatar";
 import type { LockMap, PresenceEntry } from "@/lib/collab/events";
 
 import readable from "../readableFields.module.css";
-
-function initials(name: string): string {
-  return name.trim().slice(0, 2).toUpperCase() || "?";
-}
 
 export interface CollaborativeFormRendererProps {
   doc: FormDoc;
@@ -112,9 +109,9 @@ export function CollaborativeFormRenderer({
                 edge, with a ring so it reads cleanly over the border. */}
             {editor && (
               <Tooltip label={editor.name} withArrow position="left">
-                <Avatar
-                  src={editor.avatarUrl ?? undefined}
-                  alt={editor.name}
+                <UserAvatar
+                  name={editor.name}
+                  avatarUrl={editor.avatarUrl}
                   color={color}
                   size="sm"
                   radius="xl"
@@ -127,9 +124,7 @@ export function CollaborativeFormRenderer({
                     boxShadow: "0 0 0 2px var(--mantine-color-body)",
                     zIndex: 2,
                   }}
-                >
-                  {initials(editor.name)}
-                </Avatar>
+                />
               </Tooltip>
             )}
 

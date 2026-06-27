@@ -28,7 +28,6 @@ export default async function RequestExperimentPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Dashboard", href: "/dashboard" },
             { label: "Request an experiment", href: requestCatalogPath() },
             { label: loaded.template.meta.title },
           ]}

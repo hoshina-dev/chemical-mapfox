@@ -10,22 +10,93 @@ import {
   Group,
   Input,
   List,
-  Paper,
   Stack,
   Text,
   TextInput,
-  Title,
   Tooltip,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
 
 import type { FormDraft } from "@/lib/builder";
 
+import { CollapsiblePanel } from "./CollapsiblePanel";
 import { CompactFormulaEditor } from "./CompactFormulaEditor";
 import { MonacoFormulaEditor } from "./MonacoFormulaEditor";
 
 interface CalculationsEditorProps {
   form: UseFormReturnType<FormDraft>;
+}
+
+interface CalcRowProps {
+  isFirst: boolean;
+  formula: string;
+  onFormulaChange: (value: string) => void;
+  onExpand: () => void;
+  nameProps: ReturnType<UseFormReturnType<FormDraft>["getInputProps"]>;
+  onDelete: () => void;
+}
+
+function CalcRow({
+  isFirst,
+  formula,
+  onFormulaChange,
+  onExpand,
+  nameProps,
+  onDelete,
+}: CalcRowProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  return (
+    <Group gap="xs" wrap="nowrap" align="flex-start">
+      <TextInput
+        label={isFirst ? "Name" : undefined}
+        placeholder="totalCost"
+        style={{ flex: 1 }}
+        {...nameProps}
+      />
+      <Input.Wrapper label={isFirst ? "Formula" : undefined} style={{ flex: 2 }}>
+        <CompactFormulaEditor
+          value={formula}
+          onChange={onFormulaChange}
+          onExpand={onExpand}
+          placeholder="mean(values['reading_a'])"
+        />
+      </Input.Wrapper>
+      <Group gap={4} wrap="nowrap" mt={isFirst ? 25 : 0}>
+        <Tooltip label="Open code editor">
+          <ActionIcon variant="subtle" onClick={onExpand} aria-label="Open code editor">
+            ⤢
+          </ActionIcon>
+        </Tooltip>
+        {confirmDelete ? (
+          <Group gap={4} wrap="nowrap">
+            <Text size="xs" c="red" fw={600}>
+              Delete?
+            </Text>
+            <Button size="compact-xs" color="red" onClick={onDelete}>
+              Yes
+            </Button>
+            <Button
+              size="compact-xs"
+              variant="default"
+              onClick={() => setConfirmDelete(false)}
+            >
+              No
+            </Button>
+          </Group>
+        ) : (
+          <ActionIcon
+            color="red"
+            variant="subtle"
+            onClick={() => setConfirmDelete(true)}
+            aria-label="Remove calculation"
+          >
+            ✕
+          </ActionIcon>
+        )}
+      </Group>
+    </Group>
+  );
 }
 
 export function CalculationsEditor({ form }: CalculationsEditorProps) {
@@ -35,61 +106,29 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
   const activeCalc = activeIndex === null ? null : calcs[activeIndex];
 
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap="sm">
-        <div>
-          <Title order={3}>Calculations</Title>
-          <Text size="sm" c="dimmed">
-            Each calculation is a Python formula string evaluated by the
-            backend; results are display-only here.
-          </Text>
-        </div>
+    <CollapsiblePanel
+      title="Calculations"
+      subtitle="Each calculation is a Python formula string evaluated by the backend; results are display-only here."
+      badge={`${calcs.length} formula${calcs.length === 1 ? "" : "s"}`}
+    >
+      <Stack gap="sm" style={{ width: "100%" }}>
         {calcs.length === 0 && (
           <Text size="sm" c="dimmed">
             No calculations yet.
           </Text>
         )}
         {calcs.map((calc, i) => (
-          <Group key={i} gap="xs" wrap="nowrap" align="flex-start">
-            <TextInput
-              label={i === 0 ? "Name" : undefined}
-              placeholder="totalCost"
-              style={{ flex: 1 }}
-              {...form.getInputProps(`calculations.${i}.name`)}
-            />
-            <Input.Wrapper
-              label={i === 0 ? "Formula" : undefined}
-              style={{ flex: 2 }}
-            >
-              <CompactFormulaEditor
-                value={calc.formula}
-                onChange={(value) =>
-                  form.setFieldValue(`calculations.${i}.formula`, value)
-                }
-                onExpand={() => setActiveIndex(i)}
-                placeholder="mean(values['reading_a'])"
-              />
-            </Input.Wrapper>
-            <Group gap={4} wrap="nowrap" mt={i === 0 ? 25 : 0}>
-              <Tooltip label="Open code editor">
-                <ActionIcon
-                  variant="subtle"
-                  onClick={() => setActiveIndex(i)}
-                  aria-label="Open code editor"
-                >
-                  ⤢
-                </ActionIcon>
-              </Tooltip>
-              <ActionIcon
-                color="red"
-                variant="subtle"
-                onClick={() => form.removeListItem("calculations", i)}
-                aria-label="Remove calculation"
-              >
-                ✕
-              </ActionIcon>
-            </Group>
-          </Group>
+          <CalcRow
+            key={i}
+            isFirst={i === 0}
+            formula={calc.formula}
+            onFormulaChange={(value) =>
+              form.setFieldValue(`calculations.${i}.formula`, value)
+            }
+            onExpand={() => setActiveIndex(i)}
+            nameProps={form.getInputProps(`calculations.${i}.name`)}
+            onDelete={() => form.removeListItem("calculations", i)}
+          />
         ))}
         <Group>
           <Button
@@ -163,6 +202,6 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
           </Stack>
         )}
       </Drawer>
-    </Paper>
+    </CollapsiblePanel>
   );
 }

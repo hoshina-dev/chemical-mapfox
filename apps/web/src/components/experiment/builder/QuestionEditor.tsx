@@ -40,8 +40,6 @@ interface QuestionEditorProps {
   onMoveDown: () => void;
   onRemove: () => void;
   nested?: boolean;
-  /** Start expanded — used to open a just-added question for editing. */
-  defaultExpanded?: boolean;
 }
 
 export function QuestionEditor({
@@ -54,11 +52,11 @@ export function QuestionEditor({
   onMoveDown,
   onRemove,
   nested = false,
-  defaultExpanded = false,
 }: QuestionEditorProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  // Track which child question was just added, so it opens expanded.
-  const [lastAddedChild, setLastAddedChild] = useState<number | null>(null);
+  // Questions default to expanded — matches the design (every question opens
+  // expanded; the toggle is for collapsing ones you're not editing).
+  const [expanded, setExpanded] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleTypeChange = (next: QuestionType) => {
     const base = {
@@ -79,7 +77,7 @@ export function QuestionEditor({
   const summary = question.label?.trim() || question.id?.trim() || "Untitled question";
 
   return (
-    <Paper withBorder p="md" radius="md">
+    <Paper withBorder p="md" radius="md" style={{ width: "100%" }}>
       <Group justify="space-between" wrap="nowrap" gap="sm">
         <UnstyledButton
           onClick={() => setExpanded((v) => !v)}
@@ -123,19 +121,37 @@ export function QuestionEditor({
           >
             ↓
           </ActionIcon>
-          <ActionIcon
-            variant="subtle"
-            color="red"
-            onClick={onRemove}
-            aria-label="Remove question"
-          >
-            ✕
-          </ActionIcon>
+          {confirmDelete ? (
+            <Group gap={4} wrap="nowrap">
+              <Text size="xs" c="red" fw={600}>
+                Delete?
+              </Text>
+              <Button size="compact-xs" color="red" onClick={onRemove}>
+                Yes
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="default"
+                onClick={() => setConfirmDelete(false)}
+              >
+                No
+              </Button>
+            </Group>
+          ) : (
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              onClick={() => setConfirmDelete(true)}
+              aria-label="Remove question"
+            >
+              ✕
+            </ActionIcon>
+          )}
         </Group>
       </Group>
 
-      <Collapse expanded={expanded}>
-        <Stack gap="sm" pt="md">
+      <Collapse expanded={expanded} style={{ width: "100%" }}>
+        <Stack gap="sm" pt="md" style={{ width: "100%" }}>
           <Group gap="sm" grow>
             <TextInput
               label="ID"
@@ -168,13 +184,7 @@ export function QuestionEditor({
             {...checkboxProps(form, `${path}.required`)}
           />
 
-          <TypeSpecificFields
-            form={form}
-            path={path}
-            question={question}
-            lastAddedChild={lastAddedChild}
-            onAddChild={setLastAddedChild}
-          />
+          <TypeSpecificFields form={form} path={path} question={question} />
         </Stack>
       </Collapse>
     </Paper>
@@ -185,17 +195,12 @@ interface TypeSpecificFieldsProps {
   form: UseFormReturnType<FormDraft>;
   path: string;
   question: Question;
-  /** Index of the most recently added child (repeatable-group) to auto-expand. */
-  lastAddedChild?: number | null;
-  onAddChild?: (index: number) => void;
 }
 
 function TypeSpecificFields({
   form,
   path,
   question,
-  lastAddedChild,
-  onAddChild,
 }: TypeSpecificFieldsProps) {
   switch (question.type) {
     case "string":
@@ -548,7 +553,6 @@ function TypeSpecificFields({
               <QuestionEditor
                 key={j}
                 nested
-                defaultExpanded={j === lastAddedChild}
                 form={form}
                 path={`${childrenPath}.${j}`}
                 question={child}
@@ -567,10 +571,9 @@ function TypeSpecificFields({
           <Button
             size="xs"
             variant="light"
-            onClick={() => {
-              onAddChild?.(children.length);
-              form.insertListItem(childrenPath, makeNestedQuestion("number"));
-            }}
+            onClick={() =>
+              form.insertListItem(childrenPath, makeNestedQuestion("number"))
+            }
           >
             Add child question
           </Button>

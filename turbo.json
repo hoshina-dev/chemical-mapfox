@@ -9,7 +9,8 @@
     "EXPERIMENT_MANAGER_URL",
     "TICKETING_URL",
     "REDIS_URL",
-    "APP_ORIGIN"
+    "APP_ORIGIN",
+    "ORGANIZATION_PORTAL_URL"
   ],
   "tasks": {
     "build": {

@@ -64,7 +64,7 @@ export default async function OnboardingPage() {
     <Container size="xl" py="xl">
       <Stack gap="lg">
         <Breadcrumbs
-          items={[{ label: "Internal", href: "/dashboard" }, { label: "Onboarding" }]}
+          items={[{ label: "Onboarding" }]}
         />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>
@@ -99,7 +99,7 @@ export default async function OnboardingPage() {
                 href={sampleOnboardingPath(sample.id)}
                 style={{ textDecoration: "none", color: "inherit", display: "block" }}
               >
-                <Card withBorder radius="md" padding="lg" h="100%">
+                <Card withBorder radius="md" padding="lg" h="100%" className="bold-card">
                   <Stack gap="xs" h="100%">
                     <Group
                       justify="space-between"
@@ -115,8 +115,8 @@ export default async function OnboardingPage() {
                     <Text size="sm" c="dimmed" lineClamp={2}>
                       {sample.description ?? "No description"}
                     </Text>
-                    <Text size="sm" c="blue" mt="auto">
-                      Manage templates →
+                    <Text size="sm" c="green.8" fw={600} mt="auto">
+                      Manage templates <span className="bold-card-arrow">→</span>
                     </Text>
                   </Stack>
                 </Card>

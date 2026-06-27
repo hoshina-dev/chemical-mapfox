@@ -1,6 +1,5 @@
 import {
   Alert,
-  Avatar,
   Badge,
   Card,
   Container,
@@ -18,6 +17,7 @@ import type { ReactNode } from "react";
 
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
+import { UserAvatar } from "@/components/UserAvatar";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
 import { FinalizingActions } from "@/components/internal/FinalizingActions";
 import { ReportPanel } from "@/components/experiment/ReportPanel";
@@ -32,8 +32,8 @@ import {
   experimentReportViewPath,
   experimentRawPath,
 } from "@/lib/experiment-manager/routes";
+import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { statusMeta } from "@/lib/ticketing/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,6 @@ export default async function ExperimentWorkspacePage({
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const status = ticket?.status ?? null;
-  const meta = ticket ? statusMeta(ticket.status) : null;
   // Editing/collaboration is only allowed once the experiment has started.
   // Earlier stages (REQUESTED, PENDING) and later ones (FINALIZING, CLOSED)
   // render the lab form read-only.
@@ -84,7 +83,6 @@ export default async function ExperimentWorkspacePage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Internal", href: "/dashboard" },
             { label: "Experiments", href: experimentListingPath() },
             { label: ws.experimentTitle ?? contextId },
           ]}
@@ -104,10 +102,8 @@ export default async function ExperimentWorkspacePage({
             </Group>
             <CopyableId value={contextId} href={experimentRawPath(contextId)} />
           </Stack>
-          {meta && (
-            <Badge color={meta.color} variant="light" size="lg" radius="sm">
-              {meta.label}
-            </Badge>
+          {ticket && (
+            <StatusChip status={ticket.status} variant="badge" size="lg" />
           )}
         </Group>
 
@@ -209,15 +205,12 @@ export default async function ExperimentWorkspacePage({
                 </Text>
                 {requester ? (
                   <Group gap="sm" wrap="nowrap">
-                    <Avatar
-                      src={requester.avatarUrl}
-                      alt={requester.name ?? ""}
+                    <UserAvatar
+                      name={requester.name}
+                      email={requester.email}
+                      avatarUrl={requester.avatarUrl}
                       radius="xl"
-                    >
-                      {(requester.name ?? requester.email ?? "?")
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </Avatar>
+                    />
                     <Stack gap={0} style={{ minWidth: 0 }}>
                       {requester.name && (
                         <Text size="sm" fw={500}>
