@@ -140,6 +140,7 @@ const STAGES: Stage[] = [
 const NODE_R = 30;
 const RING_C = 2 * Math.PI * NODE_R; // ≈ 188.5
 const STEP_DELAY = 0.7; // seconds between each stage activating
+const STATUS_CHIP_PAD_X = 12; // horizontal inset each side of the status pill
 
 /**
  * Animated request → results lifecycle pipeline. A glowing comet travels an
@@ -285,9 +286,9 @@ export function WorkflowDiagram() {
             {/* status pill */}
             <g transform={`translate(0, ${NODE_R + 52})`}>
               <rect
-                x={-(stage.status.length * 5.4 + 16) / 2}
+                x={-(stage.status.length * 5.4 + STATUS_CHIP_PAD_X * 2) / 2}
                 y="0"
-                width={stage.status.length * 5.4 + 16}
+                width={stage.status.length * 5.4 + STATUS_CHIP_PAD_X * 2}
                 height="16"
                 rx="8"
                 fill="currentColor"
