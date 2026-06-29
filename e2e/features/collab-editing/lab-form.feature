@@ -5,10 +5,8 @@ Feature: Collaborative lab-form editing
   EXPERIMENTING. Edits autosave to experiment-manager; earlier stages render the
   form read-only behind a "Start experiment" gate.
 
-  # NOTE: these scenarios need a REAL Redis. Locally:
-  #   docker compose -f docker-compose.dev.yml up -d        # Redis on :6379
-  #   REDIS_URL=redis://localhost:6379 pnpm --filter @repo/e2e test
-  # In the container runner (test:docker) Redis is provided by docker-compose.e2e.yml.
+  # NOTE: collaborative editing uses an in-memory Redis mock (E2E_REDIS_MOCK=1)
+  # wired by the acceptance harness — no external Redis required.
 
   Background:
     Given the following users exist:

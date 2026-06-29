@@ -6,7 +6,8 @@ import type { ChemFoxWorld } from "../support/world.js";
 
 /** Friendly page name → path. */
 const PAGES: Record<string, string> = {
-  login: "/",
+  login: "/login",
+  landing: "/",
   "my experiments": "/experiment/listing",
   "staff experiments": "/internal/experiment/listing",
   "request catalog": "/experiment/request/listing",
@@ -24,7 +25,7 @@ When("I visit {string}", async function (this: ChemFoxWorld, path: string) {
 });
 
 Then("I should be on the login page", async function (this: ChemFoxWorld) {
-  await waitForPath(this, "/");
+  await waitForPath(this, "/login");
 });
 
 Then(

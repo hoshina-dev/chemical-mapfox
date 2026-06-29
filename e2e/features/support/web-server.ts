@@ -13,10 +13,11 @@ function childEnv(): NodeJS.ProcessEnv {
     CUSTAPI_URL: `${stubBase}/api/v1`,
     TICKETING_URL: stubBase,
     EXPERIMENT_MANAGER_URL: stubBase,
-    // Collaborative editing needs a real Redis; honour an externally provided
-    // REDIS_URL (e.g. the docker-compose redis service) and otherwise point at
-    // a dummy that the auth/most flows never touch.
-    REDIS_URL: process.env.REDIS_URL ?? "redis://127.0.0.1:6399",
+    // Collaborative editing uses an in-memory Redis mock in the web app — no
+    // external broker required. REDIS_URL is still set so config validation
+    // passes; honour an explicit override when provided.
+    E2E_REDIS_MOCK: process.env.E2E_REDIS_MOCK ?? "1",
+    REDIS_URL: process.env.REDIS_URL ?? "redis://mock",
     JWT_SECRET,
     SESSION_COOKIE_SECURE: "false",
     NODE_ENV: "development",

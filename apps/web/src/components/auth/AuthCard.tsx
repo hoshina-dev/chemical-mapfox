@@ -5,7 +5,9 @@ import { Container, Paper, Stack, Tabs, Text, Title } from "@mantine/core";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 
-export function AuthCard() {
+export type AuthTab = "login" | "register";
+
+export function AuthCard({ defaultTab = "login" }: { defaultTab?: AuthTab }) {
   return (
     <Container size={460} py="xl">
       <Stack gap="lg">
@@ -19,7 +21,7 @@ export function AuthCard() {
         </div>
 
         <Paper withBorder shadow="sm" radius="md" p="lg">
-          <Tabs defaultValue="login">
+          <Tabs defaultValue={defaultTab}>
             <Tabs.List grow mb="md">
               <Tabs.Tab value="login">Sign in</Tabs.Tab>
               <Tabs.Tab value="register">Register</Tabs.Tab>

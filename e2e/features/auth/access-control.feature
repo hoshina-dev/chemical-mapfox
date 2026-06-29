@@ -32,5 +32,5 @@ Feature: Access control
 
   Scenario: A signed-in user visiting the login page is redirected to their workspace
     Given I am signed in as "client@example.com" with password "password123"
-    When I visit "/"
+    When I visit "/login"
     Then I should be on the "my experiments" page

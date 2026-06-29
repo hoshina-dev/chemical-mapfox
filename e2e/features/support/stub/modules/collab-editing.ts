@@ -5,7 +5,8 @@ import type { StubContext } from "../types.js";
  * Backend stub for the **staff collaborative lab-form editing** feature.
  *
  * It models just enough of two backends for the workspace page + the realtime
- * collab layer to run end-to-end against a *real* Redis:
+ * collab layer to run end-to-end against the in-memory Redis mock
+ * (`E2E_REDIS_MOCK=1`):
  *
  *  - **ticketing-service** `GET /api/v1/tickets/{id}` — the ticket whose status
  *    decides whether the lab form is an editable collaborative editor

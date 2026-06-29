@@ -60,8 +60,8 @@ pnpm --filter @repo/e2e test:docker
 
 This builds the monorepo into a Playwright image (browsers preinstalled) and
 runs the **whole suite** — every feature + every auto-loaded stub module — with
-no host dependencies. Redis (for collaborative editing) is provided as a compose
-service; everything else is stubbed in-process.
+no host dependencies. Collaborative editing uses an in-memory Redis mock inside
+the web app; everything else is stubbed in-process.
 
 ### Useful environment overrides
 
