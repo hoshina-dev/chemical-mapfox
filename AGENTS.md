@@ -97,5 +97,6 @@ Run Impeccable commands scoped to the web app, e.g.
 
 Run from the repo root: `pnpm check-types` and `pnpm lint` (Turborepo pipelines
 every workspace). For app-facing changes, `pnpm --filter web build`. For the
-collaborative-editing layer, `pnpm --filter web test` (browser tests need a one-time
-`pnpm --filter web exec playwright install chromium`).
+collaborative-editing layer, `pnpm --filter web test:coverage` (browser tests
+need a one-time `pnpm --filter web exec playwright install chromium`; CI runs
+the same suite via `.github/workflows/ci.yml`).

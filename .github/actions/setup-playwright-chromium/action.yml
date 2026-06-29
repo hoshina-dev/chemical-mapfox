@@ -1,0 +1,39 @@
+name: Setup Playwright Chromium
+description: >
+  Restore cached Chromium browsers (shared across vitest browser tests and
+  acceptance tests) or download them once. System libraries are installed on
+  every job; browser binaries are cached under ~/.cache/ms-playwright.
+
+inputs:
+  package:
+    description: pnpm filter for the package whose playwright CLI should run
+    required: false
+    default: web
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve Playwright version
+      id: version
+      run: |
+        VERSION="$(pnpm --filter "${{ inputs.package }}" exec playwright --version | awk '{print $2}')"
+        echo "Resolved Playwright ${VERSION}"
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - name: Restore Playwright browser cache
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.version.outputs.version }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install Playwright Chromium (browsers + system deps)
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pnpm --filter "${{ inputs.package }}" exec playwright install --with-deps chromium
+      shell: bash
+
+    - name: Install Playwright system dependencies
+      if: steps.cache.outputs.cache-hit == 'true'
+      run: pnpm --filter "${{ inputs.package }}" exec playwright install-deps chromium
+      shell: bash

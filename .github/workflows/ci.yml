@@ -1,0 +1,99 @@
+name: CI
+
+# Static checks + vitest (unit + browser). Server actions and page flows stay in
+# the Acceptance workflow (Cucumber + Playwright).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Populate the shared Playwright browser cache before parallel legs that need
+  # Chromium. Acceptance jobs reuse the same cache key.
+  playwright-cache:
+    name: Warm Playwright cache
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
+
+      - name: Set up Playwright Chromium
+        uses: ./.github/actions/setup-playwright-chromium
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
+
+      - name: Lint
+        run: pnpm lint
+
+  check-types:
+    name: Typecheck
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
+
+      - name: Typecheck
+        run: pnpm check-types
+
+  vitest:
+    name: Vitest
+    needs: playwright-cache
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
+
+      - name: Set up Playwright Chromium
+        uses: ./.github/actions/setup-playwright-chromium
+
+      - name: Run unit + browser tests with coverage
+        run: pnpm --filter web test:coverage
+
+  ci-passed:
+    name: CI passed
+    needs:
+      - lint
+      - check-types
+      - vitest
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify every CI job succeeded
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.check-types.result }}" != "success" ] || \
+             [ "${{ needs.vitest.result }}" != "success" ]; then
+            echo "One or more CI jobs failed."
+            echo "  lint:         ${{ needs.lint.result }}"
+            echo "  check-types:  ${{ needs.check-types.result }}"
+            echo "  vitest:       ${{ needs.vitest.result }}"
+            exit 1
+          fi
+          echo "All CI jobs passed."

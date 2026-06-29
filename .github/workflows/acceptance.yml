@@ -20,8 +20,26 @@ permissions:
   contents: read
 
 jobs:
+  # Warm the shared Playwright browser cache once so every matrix leg restores
+  # browsers instead of downloading Chromium in parallel.
+  playwright-cache:
+    name: Warm Playwright cache
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
+
+      - name: Set up Playwright Chromium
+        uses: ./.github/actions/setup-playwright-chromium
+        with:
+          package: "@repo/e2e"
+
   acceptance:
     name: AC · ${{ matrix.feature }}
+    needs: playwright-cache
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -55,20 +73,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up monorepo
+        uses: ./.github/actions/setup-monorepo
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Playwright Chromium
+        uses: ./.github/actions/setup-playwright-chromium
         with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright Chromium (+ system deps)
-        run: pnpm --filter @repo/e2e exec playwright install --with-deps chromium
+          package: "@repo/e2e"
 
       - name: Run acceptance tests (${{ matrix.feature }})
         working-directory: e2e
