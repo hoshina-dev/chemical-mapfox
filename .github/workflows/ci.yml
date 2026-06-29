@@ -79,6 +79,7 @@ jobs:
   ci-passed:
     name: CI passed
     needs:
+      - playwright-cache
       - lint
       - check-types
       - vitest
@@ -87,13 +88,15 @@ jobs:
     steps:
       - name: Verify every CI job succeeded
         run: |
-          if [ "${{ needs.lint.result }}" != "success" ] || \
+          if [ "${{ needs.playwright-cache.result }}" != "success" ] || \
+             [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.check-types.result }}" != "success" ] || \
              [ "${{ needs.vitest.result }}" != "success" ]; then
             echo "One or more CI jobs failed."
-            echo "  lint:         ${{ needs.lint.result }}"
-            echo "  check-types:  ${{ needs.check-types.result }}"
-            echo "  vitest:       ${{ needs.vitest.result }}"
+            echo "  playwright-cache: ${{ needs.playwright-cache.result }}"
+            echo "  lint:               ${{ needs.lint.result }}"
+            echo "  check-types:        ${{ needs.check-types.result }}"
+            echo "  vitest:             ${{ needs.vitest.result }}"
             exit 1
           fi
           echo "All CI jobs passed."

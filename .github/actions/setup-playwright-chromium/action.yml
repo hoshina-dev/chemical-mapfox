@@ -16,14 +16,19 @@ runs:
     - name: Resolve Playwright version
       id: version
       run: |
-        VERSION="$(pnpm --filter "${{ inputs.package }}" exec playwright --version | awk '{print $2}')"
+        RAW="$(pnpm --filter "${{ inputs.package }}" exec playwright --version)"
+        VERSION="$(printf '%s\n' "$RAW" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+        if [ -z "$VERSION" ]; then
+          echo "Failed to parse Playwright version from: ${RAW}" >&2
+          exit 1
+        fi
         echo "Resolved Playwright ${VERSION}"
         echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: Restore Playwright browser cache
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/ms-playwright
         key: ${{ runner.os }}-playwright-${{ steps.version.outputs.version }}-chromium-${{ hashFiles('pnpm-lock.yaml') }}
