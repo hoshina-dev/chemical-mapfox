@@ -9,7 +9,11 @@ export default async function proxy(req: NextRequest) {
   const session = req.cookies.get(SESSION_COOKIE)?.value;
   const payload = await decryptSession(session);
   const { pathname } = req.nextUrl;
-  const isAuthPage = pathname === "/";
+  // The landing page ("/") is public to everyone; the auth page ("/login")
+  // is public only to signed-out visitors.
+  const isLandingPage = pathname === "/";
+  const isAuthPage = pathname === "/login";
+  const isPublicPage = isLandingPage || isAuthPage;
 
   if (isAuthPage && payload?.userId) {
     return NextResponse.redirect(
@@ -17,8 +21,8 @@ export default async function proxy(req: NextRequest) {
     );
   }
 
-  if (!isAuthPage && !payload?.userId) {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (!isPublicPage && !payload?.userId) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   // /internal/* is admin-only; send non-admins to their own landing page.

@@ -13,6 +13,10 @@ body {
   --chemfox-nav-max-width: 1280px;
 }
 
+.chemfox-landing-mark {
+  color: var(--chemfox-accent-green, #2f9e44);
+}
+
 .formula-code textarea {
   outline: none;
 }

@@ -35,7 +35,7 @@ export function toSessionUser(session: SessionPayload): SessionUser {
 export async function requireSession(): Promise<SessionPayload> {
   const session = await getSession();
   if (!session) {
-    redirect("/");
+    redirect("/login");
   }
   return session;
 }
