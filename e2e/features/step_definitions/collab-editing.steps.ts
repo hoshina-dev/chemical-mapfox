@@ -58,14 +58,14 @@ async function signInOnPage(
   email: string,
   password: string,
 ): Promise<void> {
-  await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded" });
   const form = page
     .locator("form")
     .filter({ has: page.getByRole("button", { name: "Sign in" }) });
   await form.locator('input[name="email"]').fill(email);
   await form.locator('input[name="password"]').fill(password);
   await form.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL((url) => new URL(url).pathname !== "/", {
+  await page.waitForURL((url) => new URL(url).pathname !== "/login", {
     timeout: 30_000,
   });
 }

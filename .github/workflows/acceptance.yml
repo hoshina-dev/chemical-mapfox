@@ -40,22 +40,14 @@ jobs:
           - template-authoring
           - admin-users
 
-    # Collaborative editing needs a real Redis; the other features ignore it.
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 20
+    # No external services — backends are stubbed in-process and collaborative
+    # editing uses an in-memory Redis mock inside the web app.
 
     env:
       CI: "true"
       HEADLESS: "true"
-      REDIS_URL: redis://localhost:6379
+      E2E_REDIS_MOCK: "1"
+      REDIS_URL: redis://mock
       # Scope this job's run to a single feature directory (see e2e/cucumber.mjs).
       E2E_PATHS: features/${{ matrix.feature }}
 

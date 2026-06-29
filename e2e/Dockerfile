@@ -3,8 +3,8 @@
 # Builds the whole monorepo into an image whose default command runs the
 # CucumberJS + Playwright suite. The suite is fully self-contained: it boots its
 # own Next.js dev server and an in-process backend stub, so no external services
-# are required (Redis is optional and only needed by the collaborative-editing
-# feature — provided via docker-compose.e2e.yml).
+# are required (collaborative editing uses an in-memory Redis mock via
+# E2E_REDIS_MOCK=1 — see apps/web/src/lib/redis/mock-client.ts).
 #
 # Based on the official Playwright image so the browser + system libraries match
 # the `playwright` npm version (1.61.0) with no extra setup.

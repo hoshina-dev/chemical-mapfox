@@ -3,6 +3,7 @@ import "server-only";
 import Redis from "ioredis";
 
 import { getRedisUrl } from "./config";
+import { getMockRedisClient, getMockRedisSubscriber } from "./mock-client";
 
 /**
  * Process-wide Redis connections. We keep at most two per pod:
@@ -20,6 +21,10 @@ declare global {
 
 const store = (globalThis.__chemfoxRedis ??= {});
 
+function mockRedisEnabled(): boolean {
+  return process.env.E2E_REDIS_MOCK === "1";
+}
+
 function create(): Redis {
   const redis = new Redis(getRedisUrl(), {
     maxRetriesPerRequest: null,
@@ -32,9 +37,11 @@ function create(): Redis {
 }
 
 export function getRedis(): Redis {
+  if (mockRedisEnabled()) return getMockRedisClient();
   return (store.client ??= create());
 }
 
 export function getSubscriber(): Redis {
+  if (mockRedisEnabled()) return getMockRedisSubscriber();
   return (store.subscriber ??= create());
 }
