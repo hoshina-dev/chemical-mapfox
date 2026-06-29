@@ -48,7 +48,7 @@ async function fillSignIn(
   email: string,
   password: string,
 ): Promise<void> {
-  await world.goto("/");
+  await world.goto("/login");
   const form = loginForm(world);
   await form.locator('input[name="email"]').fill(email);
   await form.locator('input[name="password"]').fill(password);
@@ -99,7 +99,7 @@ Given(
   async function (this: ChemFoxWorld, email: string, password: string) {
     await fillSignIn(this, email, password);
     // Wait until the redirect away from the login page lands somewhere.
-    await this.page.waitForURL((url) => new URL(url).pathname !== "/", {
+    await this.page.waitForURL((url) => new URL(url).pathname !== "/login", {
       timeout: 30_000,
     });
   },
@@ -116,7 +116,7 @@ When(
     password: string,
     organization: string,
   ) {
-    await this.goto("/");
+    await this.goto("/login");
     const form = registerForm(this);
     await clickUntilVisible(
       this.page.getByRole("tab", { name: "Register" }),

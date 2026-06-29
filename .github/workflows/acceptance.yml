@@ -28,6 +28,7 @@ jobs:
       matrix:
         feature:
           - auth
+          - landing
           - client-request
           - client-tracking
           - collab-editing
