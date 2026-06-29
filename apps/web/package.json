@@ -10,6 +10,7 @@
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run --project unit",
     "test:browser": "vitest run --project browser",
     "test:watch": "vitest"

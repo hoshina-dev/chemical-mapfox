@@ -13,6 +13,7 @@ function hashIndex(value: string, length: number): number {
 /** Stable Mantine color for a user, derived from name or email. */
 export function avatarColorFor(value: string): AvatarColor {
   if (!value) return AVATAR_COLORS[0];
+  /* v8 ignore next -- modulo index is always in range; fallback satisfies noUncheckedIndexedAccess */
   return AVATAR_COLORS[hashIndex(value, AVATAR_COLORS.length)] ?? AVATAR_COLORS[0];
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { avatarColorFor } from "./avatarColors";
+import { avatarColorFor, avatarColorSeed } from "./avatarColors";
 
 describe("avatarColorFor", () => {
   it("returns a stable color for the same input", () => {
@@ -14,5 +14,20 @@ describe("avatarColorFor", () => {
 
   it("falls back to blue for empty input", () => {
     expect(avatarColorFor("")).toBe("blue");
+  });
+});
+
+describe("avatarColorSeed", () => {
+  it("prefers a trimmed name over email", () => {
+    expect(
+      avatarColorSeed({ name: "  Alice  ", email: "alice@example.com" }),
+    ).toBe("Alice");
+  });
+
+  it("falls back to email and then an empty string", () => {
+    expect(avatarColorSeed({ email: "  bob@example.com  " })).toBe(
+      "bob@example.com",
+    );
+    expect(avatarColorSeed({})).toBe("");
   });
 });

@@ -26,5 +26,6 @@ export function editorColor(userId: string): EditorColor {
   }
   // Tuple index [0] is statically known (never undefined); the computed index
   // narrows to `| undefined` under noUncheckedIndexedAccess, hence the fallback.
+  /* v8 ignore next */
   return EDITOR_PALETTE[hash % EDITOR_PALETTE.length] ?? EDITOR_PALETTE[0];
 }

@@ -21,6 +21,7 @@ export function userInitials({ name, email }: UserInitialsInput): string {
 
   const trimmedEmail = email?.trim();
   if (trimmedEmail) {
+    /* v8 ignore next -- split always returns at least one element */
     const local = trimmedEmail.split("@")[0] ?? "";
     const fromLocal = initialsFromDisplayName(local.replace(/[._-]+/g, " "));
     if (fromLocal) return fromLocal;

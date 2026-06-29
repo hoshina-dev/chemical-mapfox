@@ -55,6 +55,15 @@ describe("buffer + flush", () => {
     expect(getExperiment).toHaveBeenCalledTimes(1);
   });
 
+  it("hydrates a room with no stored values without seeding the hash", async () => {
+    vi.mocked(getExperiment).mockResolvedValueOnce({
+      ...detail,
+      values: { empty: null, missing: undefined },
+    } as never);
+    await room.hydrate("ctx-empty");
+    expect(await room.readValues("ctx-empty")).toEqual({});
+  });
+
   it("applies edits and flushes the merged values to EM", async () => {
     await room.hydrate(ctx);
     await room.applyEdit(ctx, "ph", 8);
@@ -86,10 +95,90 @@ describe("buffer + flush", () => {
     expect(updateExperiment).not.toHaveBeenCalled();
   });
 
+  it("skips flush when the raw snapshot is missing", async () => {
+    await room.hydrate(ctx);
+    await room.applyEdit(ctx, "ph", 8);
+    await getRedis().del(`rawSnapshot:${ctx}`);
+    expect(await room.flushNow(ctx)).toBe(false);
+    expect(updateExperiment).not.toHaveBeenCalled();
+  });
+
   it("removes a field from the buffer when cleared to null", async () => {
     await room.hydrate(ctx);
     await room.applyEdit(ctx, "ph", null);
     expect(await room.readValues(ctx)).toEqual({});
+  });
+});
+
+describe("persistNow", () => {
+  it("persists values even when the room is not dirty", async () => {
+    await room.hydrate(ctx);
+    await room.applyEdit(ctx, "ph", 8);
+    await room.persistNow(ctx);
+    expect(updateExperiment).toHaveBeenCalledTimes(1);
+    expect(await getRedis().get(`dirty:${ctx}`)).toBeNull();
+  });
+
+  it("throws when the room has not been hydrated", async () => {
+    await expect(room.persistNow("missing-room")).rejects.toThrow(
+      "room missing-room is not hydrated",
+    );
+  });
+});
+
+describe("scheduleFlush", () => {
+  it("debounces flushes and coalesces rapid edits", async () => {
+    vi.useFakeTimers();
+    try {
+      await room.hydrate(ctx);
+      await room.applyEdit(ctx, "ph", 8);
+      room.scheduleFlush(ctx);
+      room.scheduleFlush(ctx);
+      expect(updateExperiment).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(updateExperiment).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("logs when a scheduled flush fails", async () => {
+    vi.useFakeTimers();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(updateExperiment).mockRejectedValueOnce(new Error("network down"));
+    try {
+      await room.hydrate(ctx);
+      await room.applyEdit(ctx, "ph", 8);
+      room.scheduleFlush(ctx);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(errorSpy).toHaveBeenCalledWith(
+        `[collab] flush ${ctx} failed`,
+        expect.any(Error),
+      );
+    } finally {
+      errorSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
+  it("schedules a flush even when setTimeout has no unref", async () => {
+    vi.useFakeTimers();
+    const realSetTimeout = globalThis.setTimeout;
+    vi.spyOn(globalThis, "setTimeout").mockImplementation((fn, ms) => {
+      realSetTimeout(fn, ms);
+      return {} as ReturnType<typeof setTimeout>;
+    });
+    try {
+      await room.hydrate(ctx);
+      await room.applyEdit(ctx, "ph", 8);
+      room.scheduleFlush(ctx);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(updateExperiment).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -114,11 +203,28 @@ describe("soft field locks (owned by connectionId)", () => {
     });
   });
 
+  it("treats an empty lock owner as unavailable", async () => {
+    const redis = getRedis();
+    await redis.set(`lock:${ctx}:ph`, "conn-a");
+    vi.spyOn(redis, "get").mockResolvedValueOnce(null);
+    expect(await room.acquireLock(ctx, "ph", "conn-b")).toEqual({
+      ok: false,
+      owner: "",
+    });
+  });
+
   it("release is owner-checked", async () => {
     await room.acquireLock(ctx, "ph", "conn-a");
     expect(await room.releaseLock(ctx, "ph", "conn-b")).toBe(false);
     expect(await room.readLocks(ctx)).toEqual({ ph: "conn-a" });
     expect(await room.releaseLock(ctx, "ph", "conn-a")).toBe(true);
+    expect(await room.readLocks(ctx)).toEqual({});
+  });
+
+  it("ignores lock keys whose owner lookup returns null", async () => {
+    const redis = getRedis();
+    await redis.set(`lock:${ctx}:note`, "conn-b");
+    vi.spyOn(redis, "mget").mockResolvedValueOnce([null]);
     expect(await room.readLocks(ctx)).toEqual({});
   });
 

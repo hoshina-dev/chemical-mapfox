@@ -21,6 +21,32 @@ export default defineConfig({
     ],
   },
   test: {
+    coverage: {
+      provider: "v8",
+      // Scope coverage to modules exercised by unit/browser tests. Pages, server
+      // actions, API routes, and UI shells are covered by Cucumber acceptance
+      // tests under e2e/features/.
+      include: [
+        "src/lib/userInitials.ts",
+        "src/lib/avatarColors.ts",
+        "src/lib/auth/definitions.ts",
+        "src/lib/organizationPortal/config.ts",
+        "src/lib/organizationPortal/url.ts",
+        "src/lib/collab/colors.ts",
+        "src/lib/collab/events.ts",
+        "src/lib/collab/room.ts",
+        "src/lib/experiment-manager/mappers.ts",
+        "src/components/UserMenu.tsx",
+        "src/components/internal/collab/CollaborativeFormRenderer.tsx",
+        "src/components/internal/collab/PresenceBar.tsx",
+      ],
+      thresholds: {
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+      },
+    },
     projects: [
       {
         extends: true,

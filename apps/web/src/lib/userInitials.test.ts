@@ -26,4 +26,9 @@ describe("userInitials", () => {
     expect(userInitials({})).toBe("?");
     expect(userInitials({ name: "   " })).toBe("?");
   });
+
+  it("falls back to the first email character when the local part has no letters", () => {
+    expect(userInitials({ email: "@example.com" })).toBe("?");
+    expect(userInitials({ email: "123@example.com" })).toBe("1");
+  });
 });
