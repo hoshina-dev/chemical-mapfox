@@ -25,8 +25,11 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // /internal/* is admin-only; send non-admins to their own landing page.
-  if (pathname.startsWith("/internal") && payload?.role !== "admin") {
+  // /internal/* and /admin/* are admin-only; send non-admins to their landing page.
+  if (
+    (pathname.startsWith("/internal") || pathname.startsWith("/admin")) &&
+    payload?.role !== "admin"
+  ) {
     return NextResponse.redirect(
       new URL(landingPathForRole(payload?.role), req.url),
     );

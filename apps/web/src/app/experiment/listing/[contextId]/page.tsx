@@ -44,9 +44,10 @@ export default async function MyExperimentDetailPage({
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, state } = ws;
 
-  // Ownership: a client may only view their own experiment. If the ticket
-  // loaded and belongs to someone else, hide it entirely.
-  if (ticket && ticket.userId && ticket.userId !== session.userId) {
+  // Ownership: a client may only view their own experiment. Fail closed —
+  // if the ticket did not load, has no owner, or belongs to someone else,
+  // hide it entirely (matches the pattern in lib/experiment-manager/report-route.ts).
+  if (!ticket || !ticket.userId || ticket.userId !== session.userId) {
     notFound();
   }
 

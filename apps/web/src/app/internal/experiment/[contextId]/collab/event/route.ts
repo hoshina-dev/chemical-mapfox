@@ -15,6 +15,8 @@ import {
   scheduleFlush,
   setPresence,
 } from "@/lib/collab/room";
+import { ticketsApi } from "@/lib/ticketing/client";
+import { toExperimentTicket } from "@/lib/ticketing/tickets";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -104,6 +106,26 @@ export async function POST(
       return NextResponse.json({ ok: true });
     }
     case "edit": {
+      // Writes are only permitted while the experiment is in progress.
+      let status: string | null = null;
+      try {
+        const ticket = toExperimentTicket(
+          await ticketsApi.apiV1TicketsIdGet(contextId),
+        );
+        status = ticket.status;
+      } catch (err) {
+        console.error(`[collab] edit status check ${contextId} failed`, err);
+        return NextResponse.json(
+          { error: "experiment unavailable" },
+          { status: 502 },
+        );
+      }
+      if (status !== "EXPERIMENTING") {
+        return NextResponse.json(
+          { error: "not editable in current stage" },
+          { status: 409 },
+        );
+      }
       const value = event.value as AnswerValue;
       await applyEdit(contextId, event.field, value);
       scheduleFlush(contextId);
