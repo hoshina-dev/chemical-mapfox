@@ -4,6 +4,7 @@ All URIs are relative to */api/v1*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**authVerifyPost**](UsersApi.md#authverifypost) | **POST** /auth/verify | Verify user credentials |
 | [**usersEmailEmailGet**](UsersApi.md#usersemailemailget) | **GET** /users/email/{email} | Get a user by email |
 | [**usersGet**](UsersApi.md#usersget) | **GET** /users | Get all users |
 | [**usersIdIdDelete**](UsersApi.md#usersididdelete) | **DELETE** /users/id/{id} | Delete a user |
@@ -13,6 +14,77 @@ All URIs are relative to */api/v1*
 | [**usersPost**](UsersApi.md#userspost) | **POST** /users | Create a new user |
 | [**usersSearchGet**](UsersApi.md#userssearchget) | **GET** /users/search | Search users |
 
+
+
+## authVerifyPost
+
+> UserResponse authVerifyPost(credentials)
+
+Verify user credentials
+
+Verify an email + password against the stored hash. Returns the user (without password) on success, 401 on failure. Used by the BFF for login so the password hash never leaves this service.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  UsersApi,
+} from '';
+import type { AuthVerifyPostRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new UsersApi();
+
+  const body = {
+    // VerifyCredentialsRequest | Credentials to verify
+    credentials: ...,
+  } satisfies AuthVerifyPostRequest;
+
+  try {
+    const data = await api.authVerifyPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **credentials** | [VerifyCredentialsRequest](VerifyCredentialsRequest.md) | Credentials to verify | |
+
+### Return type
+
+[**UserResponse**](UserResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **400** | Bad Request |  -  |
+| **401** | Unauthorized |  -  |
+| **422** | Unprocessable Entity |  -  |
+| **500** | Internal Server Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## usersEmailEmailGet

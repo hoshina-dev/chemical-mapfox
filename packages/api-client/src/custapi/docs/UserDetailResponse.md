@@ -12,7 +12,6 @@ Name | Type
 `email` | string
 `id` | string
 `name` | string
-`password` | string
 `phoneNumber` | string
 `researchCategories` | Array&lt;string&gt;
 `role` | [UserRole](UserRole.md)
@@ -32,7 +31,6 @@ const example = {
   "email": user@example.com,
   "id": 550e8400-e29b-41d4-a716-446655440000,
   "name": John Doe,
-  "password": $2a$10$hashedpassword,
   "phoneNumber": +1234567890,
   "researchCategories": [QuantumComputing, Qiskit, Cryogenics],
   "role": null,

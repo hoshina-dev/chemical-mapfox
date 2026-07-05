@@ -1,7 +1,6 @@
 "use server";
 
 import { CustApiResponseError, MemberRole } from "@repo/api-client";
-import { compare } from "bcryptjs";
 import { redirect } from "next/navigation";
 
 import {
@@ -56,15 +55,13 @@ export async function login(
 
   const { email, password } = parsed.data;
 
+  // Credentials are verified inside custapi (POST /auth/verify) so the bcrypt
+  // hash never crosses the service boundary. custapi returns the user on
+  // success and 401 on a bad email/password; treat any failure uniformly.
   let user;
   try {
-    user = await usersApi.usersEmailEmailGet(email);
+    user = await usersApi.authVerifyPost({ email, password });
   } catch {
-    return { message: "Invalid email or password." };
-  }
-
-  const passwordMatch = await compare(password, user.password);
-  if (!passwordMatch) {
     return { message: "Invalid email or password." };
   }
 

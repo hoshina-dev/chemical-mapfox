@@ -22,7 +22,6 @@
     "@monaco-editor/react": "^4.7.0",
     "@repo/api-client": "workspace:^",
     "@repo/forms": "workspace:*",
-    "bcryptjs": "^3.0.3",
     "ioredis": "^5.4.1",
     "jose": "^6.2.3",
     "next": "16.2.9",

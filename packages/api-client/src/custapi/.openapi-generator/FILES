@@ -20,6 +20,7 @@ docs/UserResponse.md
 docs/UserRole.md
 docs/UserWithRoleResponse.md
 docs/UsersApi.md
+docs/VerifyCredentialsRequest.md
 index.ts
 models/AddMemberRequest.ts
 models/CreateOrganizationRequest.ts
@@ -37,5 +38,6 @@ models/UserMembershipResponse.ts
 models/UserResponse.ts
 models/UserRole.ts
 models/UserWithRoleResponse.ts
+models/VerifyCredentialsRequest.ts
 models/index.ts
 runtime.ts
