@@ -1,3 +1,5 @@
+import { compareSync } from "bcryptjs";
+
 import {
   createUserFromRegistration,
   db,
@@ -20,6 +22,19 @@ import type { StubContext } from "../types.js";
 
 async function handle(ctx: StubContext): Promise<boolean> {
   const { method, path, url } = ctx;
+
+  // ---- custapi: auth ----------------------------------------------------
+  if (method === "POST" && path[0] === "auth" && path[1] === "verify") {
+    const body = (await ctx.readBody()) as {
+      email?: string;
+      password?: string;
+    };
+    const user = body.email ? findUserByEmail(body.email) : undefined;
+    if (!user || !compareSync(body.password ?? "", user.passwordHash)) {
+      return ctx.json(401, { error: "invalid email or password" });
+    }
+    return ctx.json(200, userWire(user));
+  }
 
   // ---- custapi: users ---------------------------------------------------
   if (path[0] === "users") {
