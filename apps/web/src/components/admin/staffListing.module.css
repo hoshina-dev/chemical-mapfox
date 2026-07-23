@@ -66,7 +66,7 @@
 }
 
 .groupFilter:focus-visible {
-  outline: 2px solid var(--chemfox-accent-green, #2f9e44);
+  outline: 2px solid var(--brand-accent-green, #2f9e44);
   outline-offset: 2px;
 }
 
@@ -139,7 +139,7 @@
 }
 
 .search:focus {
-  border-color: var(--chemfox-accent-green, #2f9e44);
+  border-color: var(--brand-accent-green, #2f9e44);
   box-shadow: 0 0 0 2px rgba(47, 158, 68, 0.15);
 }
 
@@ -175,14 +175,14 @@
 }
 
 .statusPill:focus-visible {
-  outline: 2px solid var(--chemfox-accent-green, #2f9e44);
+  outline: 2px solid var(--brand-accent-green, #2f9e44);
   outline-offset: 2px;
 }
 
 .statusPillActive {
-  border-color: var(--chemfox-staff-nav, #111318);
+  border-color: var(--brand-staff-nav, #111318);
   color: #fff;
-  background: var(--chemfox-staff-nav, #111318);
+  background: var(--brand-staff-nav, #111318);
 }
 
 .resultCount {

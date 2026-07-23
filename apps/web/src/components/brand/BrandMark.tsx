@@ -1,5 +1,5 @@
-/** Shared ChemFox logo mark — conical flask (lab glassware), not the old pencil glyph. */
-export function ChemFoxIcon({
+/** Shared logo mark — conical flask (lab glassware). */
+export function BrandIcon({
   size = 17,
   className,
 }: {

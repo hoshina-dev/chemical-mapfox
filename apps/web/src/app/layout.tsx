@@ -4,9 +4,12 @@ import "./globals.css";
 import { mantineHtmlProps, MantineProvider } from "@mantine/core";
 import type { Metadata } from "next";
 
+import { BRAND } from "@/lib/brand";
+import { theme } from "@/theme";
+
 export const metadata: Metadata = {
-  title: "ChemFox",
-  description: "Next.js + Mantine application.",
+  title: BRAND.name,
+  description: `${BRAND.legalName} — chemical experiment workflow.`,
 };
 
 export default function RootLayout({
@@ -51,7 +54,7 @@ export default function RootLayout({
         */}
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider theme={theme}>{children}</MantineProvider>
       </body>
     </html>
   );

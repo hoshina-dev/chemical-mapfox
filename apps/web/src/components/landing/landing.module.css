@@ -431,25 +431,25 @@
 .orbit {
   transform-box: fill-box;
   transform-origin: center;
-  animation: chemfox-orbit 32s linear infinite;
+  animation: brand-orbit 32s linear infinite;
 }
 
 .ringRev {
   transform-box: fill-box;
   transform-origin: center;
-  animation: chemfox-orbit 40s linear infinite reverse;
+  animation: brand-orbit 40s linear infinite reverse;
 }
 
 .benzene {
   transform-box: fill-box;
   transform-origin: center;
-  animation: chemfox-orbit 44s linear infinite;
+  animation: brand-orbit 44s linear infinite;
 }
 
 .node {
   transform-box: fill-box;
   transform-origin: center;
-  animation: chemfox-pulse 3.2s ease-in-out infinite;
+  animation: brand-pulse 3.2s ease-in-out infinite;
 }
 .node2 {
   animation-delay: 0.7s;
@@ -461,15 +461,15 @@
 .chromato {
   stroke-dasharray: 360;
   stroke-dashoffset: 360;
-  animation: chemfox-trace 4.5s ease-in-out infinite;
+  animation: brand-trace 4.5s ease-in-out infinite;
 }
 
 .wave {
-  animation: chemfox-slosh 5s ease-in-out infinite;
+  animation: brand-slosh 5s ease-in-out infinite;
 }
 
 .bubble {
-  animation: chemfox-bubble 4s ease-in infinite;
+  animation: brand-bubble 4s ease-in infinite;
   opacity: 0;
 }
 .bubble2 {
@@ -490,7 +490,7 @@
 }
 
 .spark {
-  animation: chemfox-float 6s ease-in-out infinite;
+  animation: brand-float 6s ease-in-out infinite;
 }
 .spark1 {
   animation-delay: 0s;
@@ -508,13 +508,13 @@
   animation-duration: 6.6s;
 }
 
-@keyframes chemfox-orbit {
+@keyframes brand-orbit {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes chemfox-pulse {
+@keyframes brand-pulse {
   0%,
   100% {
     transform: scale(1);
@@ -526,7 +526,7 @@
   }
 }
 
-@keyframes chemfox-slosh {
+@keyframes brand-slosh {
   0%,
   100% {
     transform: translateX(-6px);
@@ -536,7 +536,7 @@
   }
 }
 
-@keyframes chemfox-bubble {
+@keyframes brand-bubble {
   0% {
     transform: translateY(0) scale(0.6);
     opacity: 0;
@@ -553,7 +553,7 @@
   }
 }
 
-@keyframes chemfox-float {
+@keyframes brand-float {
   0%,
   100% {
     transform: translate(0, 0);
@@ -563,7 +563,7 @@
   }
 }
 
-@keyframes chemfox-trace {
+@keyframes brand-trace {
   0% {
     stroke-dashoffset: 360;
   }
@@ -590,12 +590,12 @@
 .flowFill {
   stroke-dasharray: 800;
   stroke-dashoffset: 800;
-  animation: chemfox-fill 5.5s ease-in-out infinite;
+  animation: brand-fill 5.5s ease-in-out infinite;
 }
 
 /* comet travelling along the track */
 .flowComet {
-  animation: chemfox-comet 5.5s ease-in-out infinite;
+  animation: brand-comet 5.5s ease-in-out infinite;
 }
 
 /* per-node ring that draws on activation */
@@ -603,7 +603,7 @@
   transform-box: fill-box;
   transform-origin: center;
   stroke-dashoffset: 188.5;
-  animation: chemfox-ring-draw 5.5s ease-in-out infinite;
+  animation: brand-ring-draw 5.5s ease-in-out infinite;
 }
 
 /* per-node pulse "ping" */
@@ -611,7 +611,7 @@
   transform-box: fill-box;
   transform-origin: center;
   opacity: 0;
-  animation: chemfox-ping 5.5s ease-out infinite;
+  animation: brand-ping 5.5s ease-out infinite;
 }
 
 .flowLabel {
@@ -644,7 +644,7 @@
   font-family: inherit;
 }
 
-@keyframes chemfox-fill {
+@keyframes brand-fill {
   0% {
     stroke-dashoffset: 800;
   }
@@ -659,7 +659,7 @@
   }
 }
 
-@keyframes chemfox-comet {
+@keyframes brand-comet {
   0% {
     transform: translateX(0);
     opacity: 0;
@@ -682,7 +682,7 @@
 }
 
 /* node delays (i * 0.7s) span 0–2.8s; the ring draws within each window */
-@keyframes chemfox-ring-draw {
+@keyframes brand-ring-draw {
   0% {
     stroke-dashoffset: 188.5;
   }
@@ -697,7 +697,7 @@
   }
 }
 
-@keyframes chemfox-ping {
+@keyframes brand-ping {
   0% {
     transform: scale(1);
     opacity: 0.65;
@@ -754,10 +754,10 @@
   stroke-width: 1.6;
   transform-box: fill-box;
   transform-origin: center;
-  animation: chemfox-dot-pulse 2s ease-in-out infinite;
+  animation: brand-dot-pulse 2s ease-in-out infinite;
 }
 
-@keyframes chemfox-dot-pulse {
+@keyframes brand-dot-pulse {
   0%,
   100% {
     transform: scale(1);

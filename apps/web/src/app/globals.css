@@ -8,13 +8,15 @@ body {
 }
 
 :root {
-  --chemfox-staff-nav: #111318;
-  --chemfox-accent-green: #2f9e44;
-  --chemfox-nav-max-width: 1280px;
+  --brand-staff-nav: #111318;
+  --brand-accent-green: #2f9e44;
+  --brand-accent-green-bright: #51cf66;
+  --brand-accent-green-tint: #ebfbee;
+  --brand-nav-max-width: 1280px;
 }
 
-.chemfox-landing-mark {
-  color: var(--chemfox-accent-green, #2f9e44);
+.brand-landing-mark {
+  color: var(--brand-accent-green, #2f9e44);
 }
 
 .formula-code textarea {

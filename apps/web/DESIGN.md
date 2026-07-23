@@ -1,13 +1,12 @@
 ---
-name: ChemFox
-description: Approachable pro lab workflow UI — Linear clarity, Mantine structure, status-first hierarchy.
+name: Harper Anslitics
+description: Approachable pro lab workflow UI — Linear clarity, Mantine structure, status-first hierarchy, green brand accent.
 colors:
   staff-nav: "#111318"
   accent-green: "#2f9e44"
   accent-green-bright: "#51cf66"
-  accent-green-tint: "#b2f2bb"
-  client-active: "#228be6"
-  client-active-bg: "#e7f5ff"
+  accent-green-tint: "#ebfbee"
+  accent-green-border: "#b2f2bb"
   body: "#ffffff"
   surface-muted: "#f1f3f5"
   text-primary: "#212529"
@@ -79,8 +78,8 @@ components:
     textColor: "{colors.text-primary}"
     height: "56px"
   nav-client-active:
-    backgroundColor: "{colors.client-active-bg}"
-    textColor: "{colors.client-active}"
+    backgroundColor: "{colors.accent-green-tint}"
+    textColor: "{colors.accent-green}"
     rounded: "{rounded.sm}"
   button-primary:
     backgroundColor: "{colors.accent-green}"
@@ -98,13 +97,13 @@ components:
     padding: "2px 8px"
 ---
 
-# Design System: ChemFox
+# Design System: Harper Anslitics
 
 ## Overview
 
 **Creative North Star: "The Status Board"**
 
-ChemFox is a workflow instrument, not a brochure. Visual hierarchy follows experiment lifecycle: where a sample is, who owns it, and what happens next should read faster than any decorative chrome. The system builds on Mantine 9 defaults for forms, inputs, and density, then layers two deliberate registers — a **light client shell** (blue active states, white body) and a **dark staff shell** (charcoal nav, green accent) — that still feel like one product.
+Harper Anslitics is a workflow instrument, not a brochure. Visual hierarchy follows experiment lifecycle: where a sample is, who owns it, and what happens next should read faster than any decorative chrome. The system builds on Mantine 9 defaults for forms, inputs, and density, then layers two deliberate registers — a **light client shell** and a **dark staff shell** — that share one green brand accent and still feel like one product.
 
 Approachable pro means Linear-grade clarity without cold minimalism: readable type, confident status color, subtle hover feedback on interactive cards and rows. Motion is functional (0.15–0.18s ease on hovers and lifts), never ornamental. Surfaces stay flat at rest; depth appears on interaction or when grouping kanban lanes.
 
@@ -113,23 +112,20 @@ The system rejects consumer/playful UI, generic SaaS marketing patterns, legacy 
 **Key Characteristics:**
 
 - Status color is semantic and reserved — lifecycle hues (blue → cyan → yellow → teal → green → red) never double as brand decoration.
-- Staff brand green (`#2f9e44`) appears on admin nav, bold cards, and primary actions — not on every badge.
-- Client surfaces use Mantine blue for navigation active states; staff surfaces use green underline tabs on dark chrome.
+- Brand green (`#2f9e44`) is the single accent across landing, client, and staff — nav active states, logo stroke, bold-card top bar, and primary actions.
+- Client surfaces use green tint pills for navigation active states; staff surfaces use green-tinted pills on dark chrome.
 - Cards and tables carry data; borders and muted fills separate groups, not nested card stacks.
 - Custom CSS (`bold-card`, `bold-row`) extends Mantine for catalog/onboarding hover affordances — use sparingly, not as a default card pattern.
 
 ## Colors
 
-The palette is **restrained product UI**: white body, gray borders, a lifecycle status spectrum, and two accent voices (green for staff brand, blue for client navigation).
+The palette is **restrained product UI**: white body, gray borders, a lifecycle status spectrum, and one brand accent (green) shared by landing and app shells.
 
 ### Primary
 
-- **Lab Green** (`#2f9e44`): Staff brand accent — admin nav underline, logo stroke, bold-card top bar, primary CTAs on staff flows. The signal that an action moves lab work forward.
+- **Brand Green** (`#2f9e44`): Logo stroke, nav active states (client + staff), bold-card top bar, Mantine `primaryColor`, primary CTAs. The signal that an action moves lab work forward.
 - **Bright Green** (`#51cf66`): Gradient partner in bold-card accent bars only; never used alone for text on white.
-
-### Secondary
-
-- **Client Blue** (`#228be6` / bg `#e7f5ff`): Client nav active pill and focus within the experiment requester shell. Keeps client wayfinding distinct from staff green without introducing a second brand.
+- **Green Tint** (`#ebfbee`): Client nav hover/active fill; landing soft highlights.
 
 ### Tertiary
 
@@ -162,7 +158,9 @@ Collaborative editor presence colors (`grape`, `violet`, `indigo`, `cyan`, `pink
 
 **The Status-Color Rule.** Lifecycle colors communicate ticket state only. Never use status yellow or red as marketing accent, and never reuse editor presence hues for status badges.
 
-**The Two-Shell Rule.** Client routes use light header + blue active nav. Staff routes use dark `#111318` header + green active underline. Do not mix shells on the same page.
+**The One-Accent Rule.** Brand green is the only interactive accent across landing, client, and staff. Do not introduce a second brand hue (e.g. client blue) for navigation or primary actions.
+
+**The Two-Shell Rule.** Client routes use light header + green active nav. Staff routes use dark `#111318` header + green active pills. Do not mix shells on the same page.
 
 ## Typography
 
@@ -187,7 +185,7 @@ Collaborative editor presence colors (`grape`, `violet`, `indigo`, `cyan`, `pink
 
 ## Elevation
 
-ChemFox is **flat-by-default with interactive lift**. Resting cards use `withBorder` and no shadow (Mantine `Card`, `Paper`). Auth uses `shadow="sm"` as an exception for the login panel.
+Harper Anslitics is **flat-by-default with interactive lift**. Resting cards use `withBorder` and no shadow (Mantine `Card`, `Paper`). Auth uses `shadow="sm"` as an exception for the login panel.
 
 Depth on interaction:
 
@@ -211,7 +209,7 @@ Depth on interaction:
 ### Buttons
 
 - **Shape:** Mantine default — `radius="sm"` (4px). Full pill only for tiny badges/tags.
-- **Primary:** Mantine `Button` color `green` on staff flows; default filled blue acceptable on generic Mantine defaults — prefer green when the action is lab/staff-specific.
+- **Primary:** Mantine `Button` with theme `primaryColor: "green"` (landing `#2f9e44` family). Prefer default/primary green for lab actions; avoid blue filled buttons for brand chrome.
 - **Hover / Focus:** Mantine built-in; no custom bounce. Respect `prefers-reduced-motion`.
 - **Secondary / Ghost:** `variant="subtle"` or `variant="light"` for toolbar actions; `LinkButton` wrapper for Next.js navigation from server components.
 
@@ -236,8 +234,8 @@ Depth on interaction:
 
 ### Navigation
 
-- **Staff (`AdminNav`):** 54px dark bar, max-width 1280px centered. Tabs are text links with 2px bottom border — active `#2f9e44`, inactive `rgba(255,255,255,.45)`. Logo: green stroke flask icon + white wordmark.
-- **Client (`ClientNav`):** 56px light bar, `Container size="xl"`. Active item: blue text on `blue-light` pill; inactive dimmed. Emoji 🧪 prefix on wordmark (client-only quirk).
+- **Staff (`AdminNav`):** 56px dark bar, max-width 1280px centered. Tabs are text links in a muted track — active green tint pill, inactive `rgba(255,255,255,.55)`. Logo: green stroke flask icon + white wordmark (`Harper Anslitics`).
+- **Client (`ClientNav`):** 56px light bar. Active item: green text on green-tint pill; inactive dimmed. Same flask + wordmark as landing/staff.
 - **Mobile:** Horizontal scroll on kanban; nav items `nowrap` — test narrow viewports for overflow.
 
 ### Bold Card (signature)
@@ -257,7 +255,7 @@ Depth on interaction:
 
 - **Do** lead every list and board view with status — badge, lane, or banner before secondary metadata.
 - **Do** use Mantine spacing scale (`xs`–`xl`) and components before inventing custom layout primitives.
-- **Do** keep staff green for brand moments and primary lab actions; keep lifecycle colors for ticket state.
+- **Do** keep brand green for brand moments and primary actions; keep lifecycle colors for ticket state.
 - **Do** use `bold-card` / `bold-row` hover language consistently when building catalog or admin list affordances.
 - **Do** provide `@media (prefers-reduced-motion: reduce)` alternatives when adding custom transitions beyond Mantine defaults.
 
@@ -270,3 +268,4 @@ Depth on interaction:
 - **Don't** use `border-left` or `border-right` greater than 1px as a colored stripe on cards or alerts (the `bold-row` 3px green is a hover-only list affordance — do not copy to static callouts).
 - **Don't** nest cards inside cards — use spacing and muted lane backgrounds to group instead.
 - **Don't** apply bold-card hover lift to dense data tables or form fields — it signals "pick me" navigation, not data entry.
+- **Don't** reintroduce client-only blue for navigation or primary CTAs — green is the shared brand accent.

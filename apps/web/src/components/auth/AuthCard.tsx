@@ -2,6 +2,8 @@
 
 import { Container, Paper, Stack, Tabs, Text, Title } from "@mantine/core";
 
+import { BRAND } from "@/lib/brand";
+
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 
@@ -13,7 +15,7 @@ export function AuthCard({ defaultTab = "login" }: { defaultTab?: AuthTab }) {
       <Stack gap="lg">
         <div>
           <Title order={1} ta="center">
-            Chemical Mapfox
+            {BRAND.name}
           </Title>
           <Text c="dimmed" ta="center" size="sm">
             Sign in or create an account to continue.

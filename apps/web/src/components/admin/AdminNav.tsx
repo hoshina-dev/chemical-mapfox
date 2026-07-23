@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChemFoxIcon } from "@/components/brand/ChemFoxMark";
+import { BrandIcon } from "@/components/brand/BrandMark";
 import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import type { UserOrganization } from "@/lib/auth/organizations";
+import { BRAND } from "@/lib/brand";
 import {
   experimentListingPath,
   onboardingPath,
@@ -55,8 +56,8 @@ export function AdminNav({
       <div className={classes.staffInner}>
         <div className={classes.leftCluster}>
           <Link href={LISTING_PATH} className={classes.brand}>
-            <ChemFoxIcon size={18} className={classes.brandIcon} />
-            <span className={classes.staffBrandLabel}>ChemFox</span>
+            <BrandIcon size={18} className={classes.brandIcon} />
+            <span className={classes.staffBrandLabel}>{BRAND.name}</span>
           </Link>
           <div className={classes.staffBrandDivider} aria-hidden />
           <div className={classes.staffNavTrack} role="navigation" aria-label="Staff sections">

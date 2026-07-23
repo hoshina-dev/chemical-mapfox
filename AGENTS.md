@@ -88,7 +88,7 @@ UI design work for the web app is governed by Impeccable context files under
 - [`apps/web/PRODUCT.md`](apps/web/PRODUCT.md) — register (`product`), users,
   brand personality, anti-references, strategic design principles.
 - [`apps/web/DESIGN.md`](apps/web/DESIGN.md) — visual tokens, typography,
-  components, elevation, do's/don'ts (Mantine 9 + ChemFox staff/client shells).
+  components, elevation, do's/don'ts (Mantine 9 + Harper Anslitics staff/client shells).
 
 Run Impeccable commands scoped to the web app, e.g.
 `node .agents/skills/impeccable/scripts/context.mjs --target apps/web`.

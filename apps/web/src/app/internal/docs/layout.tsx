@@ -2,9 +2,10 @@ import { Box } from "@mantine/core";
 import type { Metadata } from "next";
 
 import { GallerySidebar } from "@/components/docs/GallerySidebar";
+import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "ChemFox Docs",
+  title: BRAND.docsTitle,
   description:
     "Reference for lab technicians building forms: every question type the form engine supports.",
 };

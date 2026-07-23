@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChemFoxIcon } from "@/components/brand/ChemFoxMark";
+import { BrandIcon } from "@/components/brand/BrandMark";
 import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import type { UserOrganization } from "@/lib/auth/organizations";
+import { BRAND } from "@/lib/brand";
 import {
   myExperimentsPath,
   requestCatalogPath,
@@ -51,8 +52,8 @@ export function ClientNav({
       <div className={classes.clientInner}>
         <div className={classes.leftCluster}>
           <Link href={myExperimentsPath()} className={classes.brand}>
-            <ChemFoxIcon size={18} className={classes.brandIcon} />
-            <span className={classes.clientBrandLabel}>ChemFox</span>
+            <BrandIcon size={18} className={classes.brandIcon} />
+            <span className={classes.clientBrandLabel}>{BRAND.name}</span>
           </Link>
           <div className={classes.clientBrandDivider} aria-hidden />
           <nav className={classes.clientNavTrack} aria-label="Client">

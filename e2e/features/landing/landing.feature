@@ -1,5 +1,5 @@
 Feature: Landing page
-  The public homepage at "/" introduces ChemFox laboratory services to
+  The public homepage at "/" introduces Harper Anslitics laboratory services to
   visitors. It is reachable without signing in; call-to-action controls send
   unauthenticated visitors to sign-in.
 

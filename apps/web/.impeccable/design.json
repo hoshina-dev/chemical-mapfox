@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-06-26T00:00:00.000Z",
-  "title": "Design System: ChemFox",
+  "title": "Design System: Harper Anslitics",
   "extensions": {
     "colorMeta": {
       "staff-nav": {
@@ -12,15 +12,9 @@
       },
       "accent-green": {
         "role": "primary",
-        "displayName": "Lab Green",
+        "displayName": "Brand Green",
         "canonical": "oklch(58% 0.15 145)",
         "tonalRamp": ["#0d2818", "#1a4d2e", "#2f9e44", "#40c057", "#51cf66", "#69db7c", "#8ce99a", "#b2f2bb", "#d3f9d8", "#ebfbee"]
-      },
-      "client-active": {
-        "role": "secondary",
-        "displayName": "Client Blue",
-        "canonical": "oklch(55% 0.18 255)",
-        "tonalRamp": ["#0b2d4d", "#1864ab", "#228be6", "#339af0", "#4dabf7", "#74c0fc", "#a5d8ff", "#d0ebff", "#e7f5ff", "#f4faff"]
       },
       "body": {
         "role": "neutral",
@@ -68,13 +62,13 @@
       "refersTo": "nav-client-active",
       "description": "Active navigation item in the light client header.",
       "html": "<header class=\"ds-nav-client\"><a class=\"ds-nav-client-link ds-nav-client-link--active\" href=\"#\">My experiments</a></header>",
-      "css": ".ds-nav-client { background: #fff; border-bottom: 1px solid #dee2e6; height: 56px; display: flex; align-items: center; padding: 0 16px; } .ds-nav-client-link { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 500; color: #868e96; text-decoration: none; } .ds-nav-client-link--active { color: #228be6; background: #e7f5ff; } .ds-nav-client-link:hover { color: #228be6; }"
+      "css": ".ds-nav-client { background: #fff; border-bottom: 1px solid #dee2e6; height: 56px; display: flex; align-items: center; padding: 0 16px; } .ds-nav-client-link { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: 500; color: #868e96; text-decoration: none; } .ds-nav-client-link--active { color: #2f9e44; background: #ebfbee; } .ds-nav-client-link:hover { color: #2f9e44; background: #ebfbee; }"
     },
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Staff primary action — lab green fill.",
+      "description": "Primary action — brand green fill.",
       "html": "<button class=\"ds-btn-primary\" type=\"button\">Check in sample</button>",
       "css": ".ds-btn-primary { background: #2f9e44; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s ease; } .ds-btn-primary:hover { background: #28913d; } .ds-btn-primary:focus-visible { outline: 2px solid #2f9e44; outline-offset: 2px; }"
     },
@@ -108,7 +102,7 @@
       "refersTo": "card-default",
       "description": "Standard Mantine-style search/filter field.",
       "html": "<input class=\"ds-input\" type=\"search\" placeholder=\"Search experiment or context ID…\" aria-label=\"Search experiments\" />",
-      "css": ".ds-input { width: 100%; max-width: 340px; padding: 8px 12px; font-size: 14px; border: 1px solid #dee2e6; border-radius: 4px; background: #fff; color: #212529; } .ds-input::placeholder { color: #868e96; } .ds-input:focus { outline: none; border-color: #228be6; box-shadow: 0 0 0 2px rgba(34,139,230,0.15); }"
+      "css": ".ds-input { width: 100%; max-width: 340px; padding: 8px 12px; font-size: 14px; border: 1px solid #dee2e6; border-radius: 4px; background: #fff; color: #212529; } .ds-input::placeholder { color: #868e96; } .ds-input:focus { outline: none; border-color: #2f9e44; box-shadow: 0 0 0 2px rgba(47,158,68,0.15); }"
     },
     {
       "name": "Admin Group Banner",
@@ -120,17 +114,18 @@
   ],
   "narrative": {
     "northStar": "The Status Board",
-    "overview": "ChemFox is a workflow instrument, not a brochure. Visual hierarchy follows experiment lifecycle: where a sample is, who owns it, and what happens next should read faster than any decorative chrome. The system builds on Mantine 9 defaults for forms, inputs, and density, then layers two deliberate registers — a light client shell (blue active states, white body) and a dark staff shell (charcoal nav, green accent) — that still feel like one product.",
+    "overview": "Harper Anslitics is a workflow instrument, not a brochure. Visual hierarchy follows experiment lifecycle: where a sample is, who owns it, and what happens next should read faster than any decorative chrome. The system builds on Mantine 9 defaults for forms, inputs, and density, then layers two deliberate registers — a light client shell and a dark staff shell — that share one green brand accent and still feel like one product.",
     "keyCharacteristics": [
       "Status color is semantic and reserved — lifecycle hues never double as brand decoration.",
-      "Staff brand green appears on admin nav, bold cards, and primary lab actions.",
-      "Client surfaces use Mantine blue for navigation active states.",
+      "Brand green appears on landing, client/staff nav, bold cards, and primary actions.",
+      "Client and staff surfaces share the same green interactive accent.",
       "Cards and tables carry data; borders and muted fills separate groups.",
       "Custom bold-card CSS extends Mantine for catalog hover affordances — use sparingly."
     ],
     "rules": [
       { "name": "The Status-Color Rule", "body": "Lifecycle colors communicate ticket state only. Never use status yellow or red as marketing accent.", "section": "colors" },
-      { "name": "The Two-Shell Rule", "body": "Client routes use light header + blue active nav. Staff routes use dark header + green active underline.", "section": "colors" },
+      { "name": "The One-Accent Rule", "body": "Brand green is the only interactive accent across landing, client, and staff.", "section": "colors" },
+      { "name": "The Two-Shell Rule", "body": "Client routes use light header + green active nav. Staff routes use dark header + green active pills.", "section": "colors" },
       { "name": "The System-Font Rule", "body": "Do not introduce a second geometric sans for personality.", "section": "typography" },
       { "name": "The No Ghost-Card Rule", "body": "Never pair a 1px border with a wide soft shadow on the same resting element.", "section": "elevation" },
       { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only as a response to hover or isolated auth containment.", "section": "elevation" }
@@ -138,7 +133,7 @@
     "dos": [
       "Do lead every list and board view with status — badge, lane, or banner before secondary metadata.",
       "Do use Mantine spacing scale and components before inventing custom layout primitives.",
-      "Do keep staff green for brand moments and primary lab actions; keep lifecycle colors for ticket state.",
+      "Do keep brand green for brand moments and primary actions; keep lifecycle colors for ticket state.",
       "Do use bold-card / bold-row hover language consistently when building catalog or admin list affordances.",
       "Do provide prefers-reduced-motion alternatives when adding custom transitions beyond Mantine defaults."
     ],
@@ -148,8 +143,7 @@
       "Don't use legacy enterprise gray — tiny muted text, modal-heavy flows, tables that bury status.",
       "Don't use dark neon / cyberpunk tool aesthetic — decorative glow, high-chroma accents everywhere, glassmorphism as default.",
       "Don't use border-left or border-right greater than 1px as a colored stripe on cards or alerts.",
-      "Don't nest cards inside cards — use spacing and muted lane backgrounds to group instead.",
-      "Don't apply bold-card hover lift to dense data tables or form fields."
+      "Don't reintroduce client-only blue for navigation or primary CTAs."
     ]
   }
 }

@@ -16,7 +16,8 @@ import {
 } from "@mantine/core";
 import Link from "next/link";
 
-import { ChemFoxIcon } from "@/components/brand/ChemFoxMark";
+import { BrandIcon } from "@/components/brand/BrandMark";
+import { BRAND } from "@/lib/brand";
 
 import { HeadingMark, WorkflowDiagram } from "./decor";
 import {
@@ -104,10 +105,26 @@ function ShieldIcon() {
   );
 }
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function scrollToTop() {
+  // Brand targets document top — not `#top` on <main>, which sits below the
+  // sticky header and leaves ~64px of scroll remaining.
+  window.scrollTo({
+    top: 0,
+    behavior: prefersReducedMotion() ? "instant" : "smooth",
+  });
+}
+
 function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.scrollIntoView({
+    behavior: prefersReducedMotion() ? "instant" : "smooth",
+    block: "start",
+  });
 }
 
 export function Landing({
@@ -133,12 +150,12 @@ export function Landing({
             className={classes.brand}
             onClick={(e) => {
               e.preventDefault();
-              scrollToId("top");
+              scrollToTop();
             }}
           >
-            <ChemFoxIcon size={22} className={classes.brandIcon} />
-            <span className={classes.brandLabel}>ChemFox</span>
-            <span className={classes.brandTag}>Laboratory Services</span>
+            <BrandIcon size={22} className={classes.brandIcon} />
+            <span className={classes.brandLabel}>{BRAND.name}</span>
+            <span className={classes.brandTag}>{BRAND.tagline}</span>
           </a>
 
           <nav className={classes.nav} aria-label="Primary">
@@ -192,7 +209,7 @@ export function Landing({
                 Chemical experiments, from request to certified results.
               </Title>
               <Text className={classes.heroLead}>
-                ChemFox runs your samples through an accredited workflow — intake,
+                {BRAND.name} runs your samples through an accredited workflow — intake,
                 lab execution and reporting in one place. Track every specimen,
                 see exactly where it is, and receive results you can trust.
               </Text>
@@ -407,7 +424,7 @@ export function Landing({
                   step={3}
                   kicker="About us"
                   title="A laboratory built around your samples"
-                  lead="ChemFox brings together sample intake, collaborative lab execution and accredited reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools."
+                  lead={`${BRAND.name} brings together sample intake, collaborative lab execution and accredited reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.`}
                   align="left"
                 />
                 <Text c="dimmed" mt="md">
@@ -455,8 +472,8 @@ export function Landing({
                 <ContactRow
                   icon={<MailIcon />}
                   label="Email"
-                  value="hello@chemfox.lab"
-                  href="mailto:hello@chemfox.lab"
+                  value={BRAND.email}
+                  href={`mailto:${BRAND.email}`}
                 />
                 <ContactRow
                   icon={<PhoneIcon />}
@@ -484,13 +501,13 @@ export function Landing({
         <Container size="xl">
           <Group justify="space-between" align="center" wrap="wrap" gap="md">
             <Group gap="xs">
-              <ChemFoxIcon size={18} className={classes.brandIcon} />
+              <BrandIcon size={18} className={classes.brandIcon} />
               <Text fw={700} fz="sm">
-                ChemFox
+                {BRAND.name}
               </Text>
             </Group>
             <Text fz="xs" c="dimmed">
-              © {new Date().getFullYear()} ChemFox Laboratory Services. All rights
+              © {new Date().getFullYear()} {BRAND.legalName}. All rights
               reserved.
             </Text>
           </Group>

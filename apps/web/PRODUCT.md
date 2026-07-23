@@ -6,7 +6,7 @@ product
 
 ## Users
 
-ChemFox serves two audiences with equal weight:
+Harper Anslitics serves two audiences with equal weight:
 
 - **Experiment requesters (clients)** — researchers and lab customers who browse supported specimens, submit intake forms, track experiment lifecycle, and print sample labels for shipping. They use the app intermittently, often under deadline, and need clarity on status and next steps without lab jargon.
 - **Lab technicians (staff)** — admins who check in samples, run collaborative lab-form workflows, manage experiment state, and onboard new templates. They live in the app daily, often alongside bench work, and need fast scanning, dense information, and reliable multi-user editing.
@@ -15,7 +15,7 @@ Both groups expect a professional tool that respects their time: approachable, n
 
 ## Product Purpose
 
-ChemFox is the front-end for a chemical experiment workflow: request → sample receipt → lab execution → results. It connects ticketing, experiment-manager state, and JSON-driven lab forms into a single interface for clients and staff.
+Harper Anslitics is the front-end for a chemical experiment workflow: request → sample receipt → lab execution → results. It connects ticketing, experiment-manager state, and JSON-driven lab forms into a single interface for clients and staff.
 
 Success looks like requesters who never wonder where their sample is, and technicians who can move experiments forward without fighting the UI — especially during collaborative form editing on `/internal/experiment/*`.
 
@@ -36,7 +36,7 @@ Emotional goal: *trust through competence* — users should feel the product is 
 
 1. **Status is the headline** — lifecycle state, ownership, and next action should be scannable before any secondary detail. Boards, badges, and timelines earn their space.
 2. **Forms are the work** — lab and intake forms are not side panels; they deserve clear structure, field-level feedback, and collaborative presence that never obscures the data.
-3. **Two registers, one system** — client surfaces stay lighter and explanatory; staff surfaces can be denser, but both share components and never feel like different products.
+3. **Two registers, one system** — client surfaces stay lighter and explanatory; staff surfaces can be denser, but both share components, green brand accent, and never feel like different products.
 4. **Show the real object** — experiment titles, sample IDs, requester identity, and timestamps are first-class; avoid placeholder copy and anonymous cards.
 5. **Motion with purpose** — hover lifts and transitions signal interactivity (as in the existing bold-card language), never decorate idle screens. Respect reduced motion.
 
