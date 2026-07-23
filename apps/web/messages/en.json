@@ -1,0 +1,1089 @@
+{
+  "meta": {
+    "description": "{legalName} — chemical experiment workflow."
+  },
+  "common": {
+    "language": {
+      "label": "Language"
+    },
+    "userMenu": {
+      "ariaLabel": "User menu",
+      "organizations": "Organizations",
+      "noOrganizations": "No organizations yet.",
+      "settings": "Notification settings",
+      "logout": "Log out"
+    },
+    "roles": {
+      "labStaff": "Lab Staff",
+      "client": "Client"
+    },
+    "emDash": "—",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "copied": "Copied",
+    "yes": "Yes",
+    "no": "No",
+    "error": "Error",
+    "save": "Save",
+    "saved": "Saved",
+    "delete": "Delete",
+    "create": "Create",
+    "done": "Done",
+    "back": "Back",
+    "search": "Search",
+    "none": "None",
+    "optional": "Optional",
+    "unknown": "Unknown",
+    "notGenerated": "Not generated",
+    "untitledExperiment": "Untitled experiment",
+    "loading": "Loading…"
+  },
+  "settings": {
+    "breadcrumb": "Settings",
+    "notifications": {
+      "title": "Email notifications",
+      "subtitle": "Choose which ticket lifecycle stages should email you. Turning a stage off skips that email before it is queued.",
+      "emailForStage": "Email me when a ticket reaches {stage}",
+      "loadErrorTitle": "Could not load notification preferences",
+      "loadErrorFallback": "Failed to load notification preferences.",
+      "saveErrorFallback": "Failed to save notification preferences."
+    }
+  },
+  "landing": {
+    "nav": {
+      "labOffer": "Laboratory offer",
+      "certifications": "Certifications",
+      "about": "About us",
+      "contact": "Contact",
+      "primaryAriaLabel": "Primary",
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "goToWorkspace": "Go to your workspace"
+    },
+    "hero": {
+      "eyebrow": "Accredited laboratory services",
+      "title": "Chemical experiments, from request to certified results.",
+      "lead": "{brand} runs your samples through an accredited workflow — intake, lab execution and reporting in one place. Track every specimen, see exactly where it is, and receive results you can trust.",
+      "exploreOffer": "Explore our offer",
+      "accreditedLabel": "ISO/IEC 17025",
+      "accredited": "accredited",
+      "specimenTypes": "specimen types",
+      "testMethods": "test methods"
+    },
+    "offer": {
+      "kicker": "Laboratory offer",
+      "title": "What we test",
+      "lead": "Browse the specimens our labs support. Open any one to see the individual test methods available for it.",
+      "fallbackTitle": "Our offer is being updated",
+      "fallbackBody": "The catalogue is briefly unavailable. Please check back shortly or get in touch and we'll walk you through what we test.",
+      "methodCount": "{count, plural, one {# method} other {# methods}}",
+      "methodsBeingAdded": "Methods for this specimen are being added.",
+      "requestThisExperiment": "Request this experiment"
+    },
+    "howItWorks": {
+      "kicker": "How it works",
+      "title": "From request to certified results",
+      "lead": "One accountable pipeline. You always know which stage your sample is in and what happens next.",
+      "diagramAriaLabel": "Experiment lifecycle: request, sample received, in progress, finalizing, certified report.",
+      "stages": {
+        "request": {
+          "label": "Request",
+          "caption": "Submit intake form"
+        },
+        "sampleReceived": {
+          "label": "Sample received",
+          "caption": "Lab checks it in"
+        },
+        "inProgress": {
+          "label": "In progress",
+          "caption": "Collaborative analysis"
+        },
+        "finalizing": {
+          "label": "Finalizing",
+          "caption": "Results reviewed"
+        },
+        "certifiedReport": {
+          "label": "Certified report",
+          "caption": "Signed PDF ready"
+        }
+      }
+    },
+    "certifications": {
+      "kicker": "Accreditations",
+      "title": "Certifications & accreditations",
+      "lead": "Our results carry recognised accreditation. Every method runs under a quality system audited against international standards.",
+      "items": {
+        "iso17025": {
+          "code": "ISO/IEC 17025",
+          "title": "Testing competence",
+          "description": "Accredited for the general competence to carry out tests and calibrations, including sampling."
+        },
+        "iso9001": {
+          "code": "ISO 9001",
+          "title": "Quality management",
+          "description": "Certified quality management system covering every step from intake to reporting."
+        },
+        "iso17043": {
+          "code": "ISO 17043",
+          "title": "Proficiency testing",
+          "description": "Authorised provider of proficiency testing and inter-laboratory comparison schemes."
+        },
+        "glp": {
+          "code": "GLP",
+          "title": "Good Laboratory Practice",
+          "description": "Compliant with GLP principles for the integrity and traceability of study data."
+        },
+        "haccp": {
+          "code": "HACCP",
+          "title": "Food safety",
+          "description": "Hazard analysis and critical control points applied across food and feed testing."
+        },
+        "iso14001": {
+          "code": "ISO 14001",
+          "title": "Environmental management",
+          "description": "Environmental management system governing safe handling and disposal of reagents."
+        }
+      }
+    },
+    "about": {
+      "kicker": "About us",
+      "title": "A laboratory built around your samples",
+      "lead": "{brand} brings together sample intake, collaborative lab execution and accredited reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.",
+      "body": "We pair experienced analysts with a modern workflow so that every result is traceable, reproducible and delivered on time. From a single water sample to a full production-hygiene programme, the process is the same: clear, accountable and quality-assured.",
+      "statSpecimenTypes": "Specimen types",
+      "statAccreditedMethods": "Accredited methods",
+      "statActiveAccreditations": "Active accreditations",
+      "statActiveAccreditationsValue": "6",
+      "statSampleIntake": "Sample intake",
+      "statSampleIntakeValue": "24h"
+    },
+    "contact": {
+      "kicker": "Contact",
+      "title": "Interested in our offer?",
+      "lead": "Get in touch today and let's start working together — or jump straight in and create your first request.",
+      "email": "Email",
+      "phone": "Phone",
+      "phoneValue": "+48 22 000 00 00",
+      "laboratory": "Laboratory",
+      "laboratoryValue": "ul. Laboratoryjna 1, 00-001 Warszawa",
+      "hours": "Hours",
+      "hoursValue": "Mon–Fri, 8:00–16:00"
+    },
+    "footer": {
+      "rights": "© {year} {legalName}. All rights reserved."
+    }
+  },
+  "auth": {
+    "card": {
+      "subtitle": "Sign in or create an account to continue.",
+      "tabLogin": "Sign in",
+      "tabRegister": "Register"
+    },
+    "login": {
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in"
+    },
+    "register": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account"
+    },
+    "organization": {
+      "label": "Organization",
+      "placeholder": "Search organizations...",
+      "typeToSearch": "Type at least 2 characters",
+      "noResults": "No organizations found"
+    },
+    "validation": {
+      "emailInvalid": "Please enter a valid email.",
+      "passwordRequired": "Password is required.",
+      "nameRequired": "Name is required.",
+      "passwordMinLength": "Password must be at least 8 characters.",
+      "organizationRequired": "Please choose an organization."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "createAccountFailed": "Could not create your account. The email may already be in use.",
+      "organizationAssignFailed": "Your account was created, but assigning your organization failed. Please sign in and try again."
+    }
+  },
+  "status": {
+    "requested": "Requested",
+    "open": "Open",
+    "sampleReceived": "Sample received",
+    "inProgress": "In progress",
+    "finalizing": "Finalizing",
+    "resultsSubmitted": "Results submitted",
+    "completed": "Completed",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "experiment": {
+    "nav": {
+      "myExperiments": "My experiments",
+      "requestExperiment": "Request experiment",
+      "clientAriaLabel": "Client"
+    },
+    "listing": {
+      "breadcrumb": "My experiments",
+      "title": "My experiments",
+      "subtitle": "Every experiment you've requested, grouped by where it is in the lab's workflow. Open one to see its details.",
+      "requestButton": "Request an experiment",
+      "loadErrorTitle": "Could not load your experiments",
+      "loadErrorFallback": "Failed to load experiments."
+    },
+    "board": {
+      "emptyMessage": "You haven't requested any experiments yet.",
+      "emptyCta": "Request your first experiment",
+      "searchPlaceholder": "Search experiment or context ID…",
+      "searchAriaLabel": "Search experiments",
+      "experimentCount": "{visible} of {total, plural, one {# experiment} other {# experiments}}",
+      "laneEmpty": "None",
+      "untitled": "Untitled experiment",
+      "updated": "Updated",
+      "lanes": {
+        "requested": "Requested",
+        "sampleReceived": "Sample received",
+        "inProgress": "In progress",
+        "finalizing": "Finalizing",
+        "closed": "Closed",
+        "cancelled": "Cancelled",
+        "other": "Other"
+      }
+    },
+    "detail": {
+      "breadcrumbMyExperiments": "My experiments",
+      "titleFallback": "Experiment",
+      "someDetailsUnavailableTitle": "Some details unavailable",
+      "noDetailsTitle": "No details yet",
+      "noDetailsBody": "No details available yet. Your entries and results appear here once the lab begins work on this experiment.",
+      "lifecycle": "Lifecycle",
+      "closedReason": "Closed reason: {reason}",
+      "details": "Details",
+      "reportStatus": "Report status",
+      "reportGenerated": "Report generated",
+      "stages": {
+        "created": "Created",
+        "sampleReceived": "Sample received",
+        "experimentStarted": "Experiment started",
+        "resultsSubmitted": "Results submitted",
+        "closed": "Closed"
+      }
+    },
+    "report": {
+      "title": "Report",
+      "generated": "Generated <date></date>.",
+      "body": "View the PDF in your browser or download a copy.",
+      "view": "View report",
+      "download": "Download PDF"
+    },
+    "sampleLabel": {
+      "title": "Ship your sample",
+      "description": "Print this QR label and attach it to the box you send to the lab. Staff scan it to check your sample in on arrival.",
+      "print": "Print label",
+      "shareLink": "Or share this link:",
+      "copyAriaLabel": "Copy check-in URL",
+      "printDocTitle": "Sample label",
+      "printHint": "Attach this label to the box containing your sample before shipping it to the lab."
+    },
+    "request": {
+      "catalog": {
+        "breadcrumb": "Request an experiment",
+        "title": "Request an experiment",
+        "subtitle": "Browse the specimens our labs support and start a request from a template.",
+        "loadErrorTitle": "Could not load the catalogue",
+        "loadErrorFallback": "Failed to load the catalogue.",
+        "searchPlaceholder": "Search specimens or experiments…",
+        "searchAriaLabel": "Search the catalogue",
+        "experimentCount": "{visible} of {total, plural, one {# experiment} other {# experiments}}",
+        "noSpecimens": "No specimens are available yet.",
+        "noMatches": "No experiments match your search.",
+        "noTemplates": "No templates available yet.",
+        "requestButton": "Request"
+      },
+      "form": {
+        "outOfDateTitle": "Template may be out of date",
+        "outOfDateBody": "The stored template didn't fully match the current form schema; the form below is best-effort.",
+        "errorTitle": "Could not submit your request",
+        "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
+        "submit": "Submit request"
+      },
+      "errors": {
+        "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
+        "templateGone": "That experiment template no longer exists.",
+        "noTicketId": "The ticketing service returned a request without an id.",
+        "submitFailed": "Could not submit your experiment request.",
+        "intakeNotSaved": "Your request was submitted, but saving your intake answers didn't go through. The lab may ask you to re-enter them."
+      }
+    }
+  },
+  "staff": {
+    "nav": {
+      "experiments": "Experiments",
+      "onboarding": "Onboarding",
+      "docs": "Docs",
+      "users": "Users",
+      "staffAriaLabel": "Staff",
+      "staffSectionsAriaLabel": "Staff sections"
+    },
+    "experiments": {
+      "title": "Experiments",
+      "subtitle": "Every experiment ticket from the ticketing service. Filter by lifecycle group, search, sort, and open a row to work the experiment.",
+      "filterGroupAriaLabel": "Filter by lifecycle group",
+      "filters": {
+        "all": "All",
+        "allHint": "Every experiment ticket",
+        "active": "Active",
+        "activeHint": "In progress · Finalizing",
+        "pending": "Pending",
+        "pendingHint": "Requested · Sample received",
+        "done": "Closed",
+        "doneHint": "Completed · Cancelled"
+      },
+      "searchPlaceholder": "Search experiments, requesters…",
+      "searchAriaLabel": "Search experiments",
+      "allStatuses": "All statuses",
+      "experimentCount": "{visible} of {total, plural, one {# experiment} other {# experiments}}",
+      "columns": {
+        "experiment": "Experiment",
+        "requester": "Requester",
+        "status": "Status",
+        "created": "Created",
+        "updated": "Updated",
+        "contextId": "Context ID"
+      },
+      "untitled": "Untitled experiment",
+      "emptyTitle": "No experiments found",
+      "emptyNone": "No experiments yet.",
+      "emptyFiltered": "Try adjusting your search or filter.",
+      "loadErrorTitle": "Could not reach Ticketing Service",
+      "loadErrorFallback": "Failed to load experiments.",
+      "degradedTitle": "Some requester details unavailable",
+      "degradedBody": "Requester details could not be loaded from the user service. The list below is complete; some requester cells may show raw user IDs."
+    },
+    "workspace": {
+      "breadcrumbExperiments": "Experiments",
+      "title": "Experiment workspace",
+      "titleFallback": "Experiment",
+      "loadTicketErrorTitle": "Could not load ticket",
+      "requestedTitle": "Sample not received yet",
+      "requestedBody": "This experiment is waiting for its sample to arrive. Check it in once the box reaches the lab to begin.",
+      "goToCheckin": "Go to check-in",
+      "pendingTitle": "Sample received — ready to start",
+      "pendingBody": "The sample is checked in. Start the experiment to enter and collaborate on lab values.",
+      "stateUnavailableTitle": "Current state unavailable",
+      "stateUnavailableBody": "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager.",
+      "requester": "Requester",
+      "unknownRequester": "Unknown",
+      "lifecycle": "Lifecycle",
+      "closedReason": "Closed reason: {reason}",
+      "details": "Details",
+      "organization": "Organization",
+      "templateId": "Template ID",
+      "reportStatus": "Report status",
+      "reportGenerated": "Report generated",
+      "stages": {
+        "created": "Created",
+        "sampleReceived": "Sample received",
+        "experimentStarted": "Experiment started",
+        "resultsSubmitted": "Results submitted",
+        "closed": "Closed"
+      }
+    },
+    "startExperiment": {
+      "button": "Start experiment",
+      "errorTitle": "Could not start experiment"
+    },
+    "checkin": {
+      "breadcrumb": "Sample check-in",
+      "title": "Sample check-in",
+      "experimentFallback": "Experiment",
+      "loadTicketErrorTitle": "Could not load ticket",
+      "ticketNotFoundTitle": "Ticket not found",
+      "ticketNotFoundBody": "No experiment ticket exists for this context id.",
+      "ticketHeading": "Ticket",
+      "requester": "Requester",
+      "organization": "Organization",
+      "requested": "Requested",
+      "checkInHeading": "Check in this sample",
+      "checkInBody": "Confirm the sample box has arrived at the lab. This moves the ticket to “Sample received”, ready for an experiment to be started in the workspace.",
+      "alreadyTitle": "Already checked in",
+      "alreadyBody": "This sample was already received. Continue in the experiment workspace.",
+      "alreadyBodyWithDate": "This sample was already received on <date></date>. Continue in the experiment workspace.",
+      "openWorkspace": "Open workspace",
+      "experimentDetail": "Experiment detail",
+      "button": "Check in sample",
+      "errorTitle": "Could not check in"
+    },
+    "experimentState": {
+      "invalidSchema": "The stored forms didn't fully match the current form schema; the view below is best-effort.",
+      "tabs": {
+        "lab": "Lab form",
+        "client": "Client intake",
+        "calculations": "Calculations"
+      },
+      "calculations": {
+        "title": "Calculations",
+        "subtitle": "Computed from the entered values",
+        "name": "Name",
+        "formula": "Formula",
+        "result": "Result"
+      }
+    },
+    "collab": {
+      "submitFailedTitle": "Submit failed",
+      "submittedTitle": "Submitted",
+      "submittedBody": "Experiment submitted to the final stage.",
+      "submitToFinalStage": "Submit to final stage",
+      "noOneEditing": "No one else is editing right now.",
+      "editingNow": "Editing now:"
+    },
+    "finalize": {
+      "title": "Finalize",
+      "reportBadge": "Report: {status}",
+      "status": {
+        "queued": "Queued",
+        "generating": "Generating…",
+        "ready": "Ready",
+        "failed": "Failed",
+        "notGenerated": "Not generated"
+      },
+      "calculate": "Calculate",
+      "recalculate": "Recalculate",
+      "generateReport": "Generate report",
+      "regenerateReport": "Regenerate report",
+      "viewReport": "View report",
+      "download": "Download",
+      "closeTicket": "Close ticket",
+      "readyToClose": "Ready to close. Closing locks further calculation and report generation.",
+      "notReadyToClose": "Run calculations and generate the report before closing this ticket.",
+      "reportReady": "Report ready",
+      "reportReadySince": "Report ready since <date></date>.",
+      "runCalcsFirst": "Run the calculations first to enable report generation.",
+      "reportGenFailed": "Report generation failed. You can try again.",
+      "calcFailedTitle": "Calculation failed",
+      "genErrorTitle": "Could not generate report",
+      "closeErrorTitle": "Could not close ticket",
+      "closeModalTitle": "Close ticket?",
+      "closeModalBody": "This will mark the ticket as closed. Calculations and report generation will no longer be available after closing."
+    },
+    "actions": {
+      "notAllowedSubmit": "You aren't allowed to submit this experiment.",
+      "saveBeforeSubmit": "Couldn't save the latest values before submitting. Try again.",
+      "submitFailed": "Could not submit to the final stage.",
+      "notAllowedCheckIn": "You aren't allowed to check in this sample.",
+      "checkInFailed": "Could not check in this sample.",
+      "notAllowedStart": "You aren't allowed to start this experiment.",
+      "startFailed": "Could not start this experiment.",
+      "notAllowedCalculate": "You aren't allowed to run calculations.",
+      "calculateFailed": "Could not run calculations.",
+      "notAllowedGenerate": "You aren't allowed to generate a report.",
+      "generateFailed": "Could not start report generation.",
+      "notAllowedViewReport": "You aren't allowed to view this report.",
+      "reportStatusFailed": "Could not check the report status.",
+      "notAllowedDownload": "You aren't allowed to download this report.",
+      "reportNotReady": "The report isn't ready to download yet.",
+      "notAllowedClose": "You aren't allowed to close this ticket.",
+      "verifyCloseFailed": "Could not verify this experiment is ready to close.",
+      "runCalcsBeforeClose": "Run calculations before closing this ticket.",
+      "generateBeforeClose": "Generate the PDF report before closing this ticket.",
+      "closeFailed": "Could not close this ticket."
+    },
+    "raw": {
+      "breadcrumb": "Raw JSON",
+      "title": "Raw JSON",
+      "ticketHeading": "Ticket (ticketing-service)",
+      "ticketErrorTitle": "Ticketing Service error",
+      "ticketErrorFallback": "Failed to load ticket.",
+      "experimentHeading": "Experiment (experiment-manager)",
+      "experimentReturned": "Experiment Manager returned {status}",
+      "experimentErrorTitle": "Experiment Manager error",
+      "experimentNotFound": "No experiment context has been created for this id yet, so there is no state to show.",
+      "experimentErrorFallback": "Failed to load experiment.",
+      "noData": "No data",
+      "copyJson": "Copy JSON"
+    },
+    "copyableId": {
+      "copyAriaLabel": "Copy context ID"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Mapfox-admin tools for managing every user and organization.",
+      "usersCard": "Users",
+      "organizationsCard": "Organizations",
+      "usersHeading": "Users",
+      "organizationsHeading": "Organizations",
+      "noUsers": "No users found.",
+      "noOrganizations": "No organizations found.",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role"
+      }
+    },
+    "onboarding": {
+      "breadcrumb": "Onboarding",
+      "title": "Experiment onboarding",
+      "subtitle": "Samples (specimen types) supported by the labs. Open one to manage its experiment templates, or register a new sample.",
+      "loadErrorTitle": "Could not reach Experiment Manager",
+      "loadSamplesFallback": "Failed to load samples.",
+      "emptyMessage": "No samples yet. Register your first one.",
+      "templateCount": "{count, plural, one {# template} other {# templates}}",
+      "noDescription": "No description",
+      "manageTemplates": "Manage templates",
+      "registerSample": "Register sample",
+      "sample": {
+        "titleFallback": "Sample",
+        "defaultDescription": "Experiment templates for this sample.",
+        "newTemplate": "New template",
+        "loadSampleFallback": "Failed to load sample.",
+        "emptyTemplates": "No templates yet for this sample. Create the first one."
+      }
+    },
+    "registerSample": {
+      "button": "Register sample",
+      "modalTitle": "Register a new sample",
+      "description": "A sample is a specimen type (e.g. Coal). Experiment templates are created under it.",
+      "errorTitle": "Could not create sample",
+      "name": "Name",
+      "namePlaceholder": "e.g. Coal",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional",
+      "cancel": "Cancel",
+      "create": "Create",
+      "nameRequired": "Sample name is required."
+    },
+    "templatesTable": {
+      "template": "Template",
+      "description": "Description",
+      "editTooltip": "Click to edit \"{title}\""
+    }
+  },
+  "builder": {
+    "newTemplateTitle": "New template",
+    "editTitle": "Edit: {title}",
+    "backToTemplates": "Back to templates",
+    "saveFailedTitle": "Save failed",
+    "fixValidation": "Fix validation errors before saving.",
+    "payloadForDebugging": "Payload (for debugging)",
+    "livePreview": "Live preview",
+    "createTemplate": "Create template",
+    "saveChanges": "Save changes",
+    "designPdf": "Design PDF report",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this experiment template?",
+    "draftNotValidTitle": "Draft is not valid",
+    "draftNotValidBody": "Fix the schema before previewing.",
+    "metadata": {
+      "title": "Metadata",
+      "subtitle": "Basic info about this template. The ID is auto-assigned and read-only.",
+      "associatedWithSample": "This template is associated with sample {name}.",
+      "templateId": "Template ID",
+      "name": "Name",
+      "description": "Description"
+    },
+    "section": {
+      "clientForm": "Client form",
+      "labForm": "Lab form",
+      "questionCount": "{count, plural, one {# question} other {# questions}}",
+      "name": "Section name",
+      "description": "Section description",
+      "noQuestions": "No questions yet.",
+      "addQuestion": "Add question"
+    },
+    "question": {
+      "untitled": "Untitled question",
+      "required": "required",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "deleteConfirm": "Delete?",
+      "yes": "Yes",
+      "no": "No",
+      "remove": "Remove question",
+      "id": "ID",
+      "idPlaceholder": "snake_case identifier",
+      "type": "Type",
+      "label": "Label",
+      "description": "Description",
+      "requiredLabel": "Required",
+      "placeholder": "Placeholder",
+      "defaultValue": "Default value",
+      "minLength": "Min length",
+      "maxLength": "Max length",
+      "minRows": "Min rows",
+      "maxRows": "Max rows",
+      "min": "Min",
+      "max": "Max",
+      "step": "Step",
+      "maxSelectable": "Max selectable values",
+      "defaultChecked": "Default checked",
+      "count": "Count (stars)",
+      "fractions": "Fractions",
+      "fractionsDescription": "2 = half stars",
+      "format": "Format",
+      "default": "Default",
+      "stepSeconds": "Step (seconds)",
+      "maxTags": "Max tags",
+      "repetitionCount": "Repetition count",
+      "itemLabel": "Item label",
+      "noChildQuestions": "No child questions yet.",
+      "addChildQuestion": "Add child question",
+      "colorPlaceholder": "#ffffff"
+    },
+    "questionTypes": {
+      "string": "Text (short answer)",
+      "textarea": "Paragraph",
+      "password": "Password",
+      "number": "Number",
+      "selectString": "Dropdown (text values)",
+      "selectNumber": "Dropdown (number values)",
+      "multiSelect": "Multi-select dropdown",
+      "radio": "Radio (multiple choice)",
+      "checkboxGroup": "Checkboxes (multi)",
+      "boolean": "Yes/No switch",
+      "segmented": "Segmented control",
+      "slider": "Slider (linear scale)",
+      "rating": "Star rating",
+      "color": "Color",
+      "date": "Date",
+      "time": "Time",
+      "datetime": "Date & time",
+      "tags": "Tags",
+      "repeatableGroup": "Repeatable group"
+    },
+    "options": {
+      "title": "Options",
+      "none": "No options yet.",
+      "label": "Label",
+      "value": "Value",
+      "remove": "Remove option",
+      "add": "Add option"
+    },
+    "calculations": {
+      "title": "Calculations",
+      "subtitle": "Each calculation is a Python formula string evaluated by the backend; results are display-only here.",
+      "formulaCount": "{count, plural, one {# formula} other {# formulas}}",
+      "none": "No calculations yet.",
+      "name": "Name",
+      "namePlaceholder": "totalCost",
+      "formula": "Formula",
+      "formulaPlaceholder": "mean(values['reading_a'])",
+      "openCodeEditor": "Open code editor",
+      "deleteConfirm": "Delete?",
+      "yes": "Yes",
+      "no": "No",
+      "remove": "Remove calculation",
+      "add": "Add calculation",
+      "editFormula": "Edit formula",
+      "editFormulaNamed": "Edit formula: {name}",
+      "availableInFormulas": "Available in formulas",
+      "helpValues": "answers from the client/lab forms",
+      "helpOtherCalcs": "Other calculation names (defined above) can be referenced directly",
+      "helpMath": "math module (e.g. math.sqrt, math.pi)",
+      "helpBuiltins": "Builtins: round, abs, min, max, sum, len, zip, mean, median, stdev",
+      "helpMultiline": "You can write multiple lines: the final line is used as the result, or assign it to a result variable. Dunder (__) access is rejected by the backend.",
+      "done": "Done"
+    },
+    "collapsible": {
+      "collapse": "Collapse ↑",
+      "expand": "Expand ↓"
+    },
+    "newTemplate": {
+      "title": "New template",
+      "subtitle": "Fill in the details below to create a new experiment template.",
+      "errorTitle": "Error",
+      "sample": "Sample",
+      "sampleDescription": "The specimen type this template belongs to.",
+      "samplePlaceholder": "— Choose a sample —",
+      "createNewSample": "+ Create new sample…",
+      "newSampleDetails": "New sample details",
+      "sampleName": "Sample name",
+      "sampleNamePlaceholder": "e.g. Soil",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional",
+      "templateName": "Template name",
+      "templateNameDescription": "A short descriptive name for this template.",
+      "templateNamePlaceholder": "e.g. Moisture Analysis",
+      "templateDescriptionPlaceholder": "What does this template measure or test?",
+      "create": "Create template →",
+      "selectSample": "Please select a sample.",
+      "newSampleNameRequired": "New sample name is required.",
+      "templateNameRequired": "Template name is required."
+    },
+    "preview": {
+      "clientForm": "Client form",
+      "labForm": "Lab form",
+      "capture": "Capture values",
+      "capturedClient": "Captured client values",
+      "capturedLab": "Captured lab values"
+    },
+    "editPage": {
+      "legacyTitle": "Legacy / invalid template",
+      "legacyBody": "This template does not match the current schema. Saving will rewrite it in the current format.",
+      "loadErrorTitle": "Could not load template",
+      "unknownError": "Unknown error."
+    },
+    "newPage": {
+      "loadErrorTitle": "Could not reach Experiment Manager",
+      "loadSamplesFallback": "Failed to load samples."
+    },
+    "errors": {
+      "createSample": "Could not create sample.",
+      "createTemplate": "Could not create template.",
+      "saveTemplate": "Could not save template.",
+      "deleteTemplate": "Could not delete template."
+    }
+  },
+  "pdfEditor": {
+    "back": "← Back",
+    "title": "PDF Template",
+    "addText": "+ Text",
+    "addShape": "+ Shape",
+    "addPage": "+ Page",
+    "copy": "Copy",
+    "paste": "Paste",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "deleteCount": "Delete ({count})",
+    "undo": "Undo",
+    "undoTooltip": "Undo (Ctrl/Cmd+Z)",
+    "redo": "Redo",
+    "redoTooltip": "Redo (Ctrl/Cmd+Shift+Z)",
+    "zoomOut": "Zoom out",
+    "resetZoom": "Reset zoom",
+    "zoomIn": "Zoom in",
+    "snap": "Snap",
+    "unsavedChanges": "Unsaved changes",
+    "previewRaw": "Show placeholders",
+    "previewDefaults": "Use defaults",
+    "previewExperiment": "From experiment",
+    "pickExperiment": "Pick experiment…",
+    "openRealPdf": "Open real PDF",
+    "openRealPdfTooltip": "Save, render, and open the real generated PDF for this experiment",
+    "save": "Save",
+    "saved": "Saved",
+    "openedPdf": "Opened PDF",
+    "pdfTimedOut": "Timed out waiting for the PDF",
+    "reportGenFailed": "Report generation failed",
+    "variables": "Variables",
+    "variablesHint": "Click to insert into a selected text box, else copy {token}",
+    "searchVariables": "Search variables…",
+    "noMatches": "No matches",
+    "copiedExclaim": "Copied!",
+    "components": "Components",
+    "pageBreak": "— page break —",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "emptyCanvas": "Canvas is empty — add a Text or Shape component",
+    "page": "Page {number}",
+    "pageOfPages": "Page {page} of {total}",
+    "inspectorTab": "Inspector",
+    "pagesTab": "Pages",
+    "group": {
+      "selected": "{count} components selected",
+      "shiftClickHint": "Shift-click to add/remove. Drag to move together.",
+      "align": "Align",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "top": "Top",
+      "middle": "Middle",
+      "bottom": "Bottom",
+      "distribute": "Distribute",
+      "needThree": "Needs 3+ selected",
+      "horizontally": "Horizontally",
+      "vertically": "Vertically"
+    },
+    "inspector": {
+      "selectComponent": "Select a component to edit",
+      "order": "Order",
+      "toBack": "To back",
+      "back": "Back",
+      "forward": "Fwd",
+      "toFront": "To front",
+      "position": "Position",
+      "content": "Content",
+      "contentPlaceholder": "Text (supports '{{'variables'}}')",
+      "unknownVariables": "{count, plural, one {Unknown variable} other {Unknown variables}}: {vars}",
+      "style": "Style",
+      "font": "Font",
+      "size": "Size",
+      "align": "Align",
+      "color": "Color",
+      "bold": "Bold",
+      "italic": "Italic",
+      "shape": "Shape",
+      "type": "Type",
+      "strokeWidth": "Stroke width",
+      "fill": "Fill"
+    },
+    "pages": {
+      "pageLabel": "Page {number}",
+      "componentCount": "{count, plural, one {# component} other {# components}}",
+      "deleteConfirm": "Delete page {number}? Its {count, plural, one {# component} other {# components}} will be removed."
+    },
+    "unavailableTitle": "PDF editor unavailable",
+    "loadTemplateError": "Could not load the experiment template.",
+    "loadLayoutError": "Could not load the PDF layout."
+  },
+  "docs": {
+    "layout": {
+      "description": "Reference for lab technicians building forms: every question type the form engine supports."
+    },
+    "sidebar": {
+      "components": "Components"
+    },
+    "index": {
+      "title": "Component reference",
+      "subtitle": "A reference for lab technicians building forms. Every question type the form engine supports — pick one from the sidebar to customize its JSON fields and see a live preview.",
+      "componentCount": "{count, plural, one {# component} other {# components}}.",
+      "templateHeading": "The experiment template",
+      "templateBody": "An experiment template is the top-level document the form engine loads. It pairs two forms — clientForm and labForm — each a FormDoc with a name, optional description, and a questions array. Named calculations map variable names to objects with a Python formula (evaluated by the backend) and an optional computed result. Collected answers live in values, keyed by question id.",
+      "repeatableHeading": "Repeatable group",
+      "repeatableBody": "A repeatable group is a fixed-count repeating section — for example, “measure the sample 8 times”. It may include an optional itemLabel and a list of child questions in its config. Only one level of nesting is supported: a repeatable group cannot contain another repeatable group. Answers are stored columnar: each child question id maps to an array of length count (one entry per repetition).",
+      "repeatableLink": "See the repeatable-group component →",
+      "schemaHeading": "Schema source of truth",
+      "schemaBody": "The experiment-template.schema.json JSON Schema below is the source of truth and is what the backend matches. The Zod schemas in @repo/forms (schema.ts), used for runtime validation and types in the frontend, are written by hand to mirror that JSON Schema. They are kept in sync manually — an accepted bit of tech debt, since the schema does not change often. When you change one, change the other.",
+      "fullSchema": "Full JSON Schema"
+    },
+    "detail": {
+      "schemaFields": "Schema fields",
+      "schemaFieldsSubtitle": "Generated from the Zod schema for this question type.",
+      "outputValue": "Output value",
+      "discriminator": "Discriminator",
+      "constant": "constant",
+      "required": "Required",
+      "requiredYes": "Yes",
+      "requiredNo": "No",
+      "config": "config",
+      "columns": {
+        "field": "Field",
+        "type": "Type",
+        "required": "Required",
+        "meaning": "Meaning",
+        "details": "Details"
+      },
+      "noFieldInfo": "No field information is available for this schema.",
+      "additionalConfig": "Additional configuration.",
+      "noAdditionalRules": "No additional rules.",
+      "repeatableCount": "Fixed number of repetitions.",
+      "nestedQuestions": "Array of nested question definitions.",
+      "discriminatorSelects": "This value selects this question variant in the JSON union.",
+      "mustMatchConstant": "Must match the constant value.",
+      "allowedValues": "Allowed values: {values}.",
+      "eachItemIncludes": "Each item includes {fields}.",
+      "typeUnknown": "Unknown",
+      "typeFixedValue": "Fixed value",
+      "typeOneOf": "One of",
+      "typeArrayOf": "Array of {item}",
+      "typeObject": "Object",
+      "typeAny": "Any",
+      "typeGenericValues": "values",
+      "typeGenericObjects": "objects",
+      "typePlural": "{type}s"
+    },
+    "workbench": {
+      "customizeJson": "Customize JSON",
+      "reset": "Reset",
+      "jsonAriaLabel": "Question JSON",
+      "validJson": "Valid JSON. The preview updates as you edit the field settings.",
+      "livePreview": "Live preview",
+      "activeJson": "Active JSON",
+      "currentValue": "Current value",
+      "invalidJson": "Invalid JSON.",
+      "invalidQuestion": "Invalid question JSON.",
+      "typeMustRemain": "type must remain \"{type}\" on this docs page."
+    },
+    "fields": {
+      "config": "Type-specific configuration object.",
+      "count": "Number of rating icons to display.",
+      "itemLabel": "Singular noun for one repetition, e.g. 'Measurement'.",
+      "questions": "Child questions repeated each iteration.",
+      "default": "Initial value used before the user changes the answer.",
+      "description": "Optional helper text shown under the question label.",
+      "format": "Color value format accepted by the color input.",
+      "fractions": "Fractional precision for rating values.",
+      "id": "Stable answer key used when storing or reading this value.",
+      "label": "Question text shown to the user.",
+      "marks": "Visible labels placed along a slider.",
+      "max": "Largest accepted value.",
+      "maxLength": "Maximum number of characters.",
+      "maxRows": "Maximum visible textarea rows.",
+      "maxTags": "Maximum number of tags the user can add.",
+      "maxValues": "Maximum number of choices the user can select.",
+      "min": "Smallest accepted value.",
+      "minLength": "Minimum number of characters.",
+      "minRows": "Minimum visible textarea rows.",
+      "options": "Choices available to the user.",
+      "placeholder": "Hint text shown before a value is entered.",
+      "required": "Whether the user must answer this question.",
+      "step": "Increment used by numeric controls.",
+      "suggestions": "Suggested tags offered while typing.",
+      "swatches": "Preset color choices shown by the color input.",
+      "type": "Discriminator field that chooses the question schema and renderer."
+    },
+    "outputTypes": {
+      "boolean": {
+        "typeLabel": "boolean",
+        "description": "Stored as true or false."
+      },
+      "checkbox-group": {
+        "typeLabel": "string[]",
+        "description": "Stored as an array of selected option values."
+      },
+      "color": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as a color string in the configured format, or undefined when empty."
+      },
+      "date": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as a yyyy-MM-dd date string, or undefined when empty."
+      },
+      "datetime": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as a yyyy-MM-ddTHH:mm datetime string, or undefined when empty."
+      },
+      "multi-select": {
+        "typeLabel": "string[]",
+        "description": "Stored as an array of selected option values."
+      },
+      "number": {
+        "typeLabel": "number | undefined",
+        "description": "Stored as a number, or undefined when empty."
+      },
+      "password": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the entered string, or undefined when empty."
+      },
+      "radio": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the selected option value, or undefined when nothing is selected."
+      },
+      "rating": {
+        "typeLabel": "number | undefined",
+        "description": "Stored as a number, or undefined when no rating is selected."
+      },
+      "segmented": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the selected segment value, or undefined when empty."
+      },
+      "select-number": {
+        "typeLabel": "number | undefined",
+        "description": "Stored as the selected numeric option value, or undefined when empty."
+      },
+      "select-string": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the selected string option value, or undefined when empty."
+      },
+      "slider": {
+        "typeLabel": "number | undefined",
+        "description": "Stored as a number after the slider changes; it may be undefined before interaction."
+      },
+      "string": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the entered string, or undefined when empty."
+      },
+      "tags": {
+        "typeLabel": "string[]",
+        "description": "Stored as an array of tag strings."
+      },
+      "textarea": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as the entered string, or undefined when empty."
+      },
+      "time": {
+        "typeLabel": "string | undefined",
+        "description": "Stored as an HH:mm time string, or undefined when empty."
+      },
+      "repeatable-group": {
+        "typeLabel": "object (columnar)",
+        "description": "Stores one array per child question id; each array has `count` entries (one per repetition)."
+      }
+    },
+    "gallery": {
+      "string": {
+        "label": "Short text",
+        "description": "Single-line text input. Mantine TextInput. Google Forms' short answer."
+      },
+      "textarea": {
+        "label": "Paragraph",
+        "description": "Multi-line autosizing text area. Mantine Textarea. Google Forms' paragraph."
+      },
+      "password": {
+        "label": "Password",
+        "description": "Masked text input with reveal toggle. Mantine PasswordInput."
+      },
+      "number": {
+        "label": "Number",
+        "description": "Numeric input with optional min/max/step. Mantine NumberInput."
+      },
+      "select-string": {
+        "label": "Dropdown (text)",
+        "description": "Single-value dropdown whose values are strings. Mantine Select."
+      },
+      "select-number": {
+        "label": "Dropdown (number)",
+        "description": "Single-value dropdown whose values are numbers (useful when feeding calculations)."
+      },
+      "multi-select": {
+        "label": "Multi-select",
+        "description": "Pick zero or more values from a dropdown. Mantine MultiSelect. Value is a string array."
+      },
+      "radio": {
+        "label": "Radio",
+        "description": "Single-choice rendered as radio buttons. Mantine Radio.Group. Google Forms' multiple choice."
+      },
+      "checkbox-group": {
+        "label": "Checkboxes",
+        "description": "Multi-choice rendered as checkboxes. Mantine Checkbox.Group. Google Forms' checkboxes."
+      },
+      "boolean": {
+        "label": "Switch",
+        "description": "Yes/no toggle. Mantine Switch. Value is a boolean."
+      },
+      "segmented": {
+        "label": "Segmented control",
+        "description": "Single-choice rendered as a pill-style segmented control. Mantine SegmentedControl."
+      },
+      "slider": {
+        "label": "Slider",
+        "description": "Numeric slider with optional marks. Mantine Slider. Google Forms' linear scale."
+      },
+      "rating": {
+        "label": "Rating",
+        "description": "Star rating with optional fractional precision. Mantine Rating."
+      },
+      "color": {
+        "label": "Color",
+        "description": "Color picker with optional swatches. Mantine ColorInput."
+      },
+      "date": {
+        "label": "Date",
+        "description": "Native date picker. Value is an ISO yyyy-MM-dd string."
+      },
+      "time": {
+        "label": "Time",
+        "description": "Native time picker. Value is an HH:mm string."
+      },
+      "datetime": {
+        "label": "Date & time",
+        "description": "Native datetime-local picker. Value is an ISO yyyy-MM-ddTHH:mm string."
+      },
+      "tags": {
+        "label": "Tags",
+        "description": "Free-form chips/tags input. Mantine TagsInput. Value is a string array."
+      },
+      "repeatable-group": {
+        "label": "Repeatable group",
+        "description": "A fixed-count repeating section (e.g. 'measure the sample 8 times'). Child questions repeat exactly `count` times; answers are stored columnar (one array per child question id)."
+      }
+    }
+  },
+  "forms": {
+    "submit": "Submit",
+    "saveDraft": "Save draft",
+    "item": "Item"
+  }
+}

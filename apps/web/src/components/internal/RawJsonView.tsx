@@ -1,13 +1,17 @@
 "use client";
 
 import { Box, Button, CopyButton, Text } from "@mantine/core";
+import { useTranslations } from "next-intl";
 
 /** Pretty-printed, scrollable JSON with a copy-to-clipboard button. */
 export function RawJsonView({ data }: { data: unknown }) {
+  const t = useTranslations("staff.raw");
+  const tCommon = useTranslations("common");
+
   if (data === undefined) {
     return (
       <Text size="sm" c="dimmed">
-        No data
+        {t("noData")}
       </Text>
     );
   }
@@ -25,7 +29,7 @@ export function RawJsonView({ data }: { data: unknown }) {
               color={copied ? "teal" : "gray"}
               onClick={copy}
             >
-              {copied ? "Copied" : "Copy JSON"}
+              {copied ? tCommon("copied") : t("copyJson")}
             </Button>
           )}
         </CopyButton>

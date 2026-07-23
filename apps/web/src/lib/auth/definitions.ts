@@ -29,21 +29,39 @@ export function roleLabel(role?: CustApiRole): string {
   return role === "admin" ? "Lab Staff" : "Client";
 }
 
-export const LoginFormSchema = z.object({
-  email: z.email({ message: "Please enter a valid email." }).trim(),
-  password: z.string().min(1, { message: "Password is required." }),
-});
+export interface LoginValidationMessages {
+  emailInvalid: string;
+  passwordRequired: string;
+}
 
-export const RegisterFormSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }).trim(),
-  email: z.email({ message: "Please enter a valid email." }).trim(),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters." }),
-  organizationId: z
-    .uuid({ message: "Please choose an organization." })
-    .trim(),
-});
+export interface RegisterValidationMessages {
+  nameRequired: string;
+  emailInvalid: string;
+  passwordMinLength: string;
+  organizationRequired: string;
+}
+
+/**
+ * Built inside server actions with `getTranslations("auth.validation")` so
+ * Zod's field errors come back in the visitor's locale.
+ */
+export function createLoginFormSchema(messages: LoginValidationMessages) {
+  return z.object({
+    email: z.email({ message: messages.emailInvalid }).trim(),
+    password: z.string().min(1, { message: messages.passwordRequired }),
+  });
+}
+
+export function createRegisterFormSchema(messages: RegisterValidationMessages) {
+  return z.object({
+    name: z.string().min(1, { message: messages.nameRequired }).trim(),
+    email: z.email({ message: messages.emailInvalid }).trim(),
+    password: z.string().min(8, { message: messages.passwordMinLength }),
+    organizationId: z
+      .uuid({ message: messages.organizationRequired })
+      .trim(),
+  });
+}
 
 export type LoginFormState =
   | {

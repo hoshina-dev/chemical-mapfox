@@ -34,3 +34,8 @@ export function requestTemplatePath(templateId: string, sampleId?: string) {
     ? `${BASE}/request/${templateId}?sampleId=${encodeURIComponent(sampleId)}`
     : `${BASE}/request/${templateId}`;
 }
+
+/** Client notification / account settings. */
+export function settingsPath() {
+  return `${BASE}/settings`;
+}

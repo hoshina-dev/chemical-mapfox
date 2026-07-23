@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -21,7 +22,8 @@ import { myExperimentDetailPath, requestCatalogPath } from "@/lib/experiment/rou
 
 interface Lane {
   key: string;
-  label: string;
+  /** Key under experiment.board.lanes.* */
+  labelKey: string;
   /** Mantine color for the column's count badge accent. */
   color: string;
   statuses: string[];
@@ -34,31 +36,31 @@ interface Lane {
 const PIPELINE_LANES: Lane[] = [
   {
     key: "requested",
-    label: "Requested",
+    labelKey: "requested",
     color: "blue",
     statuses: ["requested", "open"],
   },
   {
     key: "sample_received",
-    label: "Sample received",
+    labelKey: "sampleReceived",
     color: "cyan",
     statuses: ["pending", "sample_received"],
   },
   {
     key: "in_progress",
-    label: "In progress",
+    labelKey: "inProgress",
     color: "yellow",
     statuses: ["experimenting", "experiment_started", "in_progress"],
   },
   {
     key: "finalizing",
-    label: "Finalizing",
+    labelKey: "finalizing",
     color: "teal",
     statuses: ["finalizing", "results_submitted"],
   },
   {
     key: "closed",
-    label: "Closed",
+    labelKey: "closed",
     color: "green",
     statuses: ["closed", "completed"],
   },
@@ -69,11 +71,16 @@ const PIPELINE_LANES: Lane[] = [
 // screen without horizontal scrolling.
 const CANCELLED_LANE: Lane = {
   key: "cancelled",
-  label: "Cancelled",
+  labelKey: "cancelled",
   color: "red",
   statuses: ["cancelled", "canceled"],
 };
-const OTHER_LANE: Lane = { key: "other", label: "Other", color: "gray", statuses: [] };
+const OTHER_LANE: Lane = {
+  key: "other",
+  labelKey: "other",
+  color: "gray",
+  statuses: [],
+};
 
 const LANE_LOOKUP: Lane[] = [...PIPELINE_LANES, CANCELLED_LANE];
 
@@ -84,11 +91,31 @@ function laneFor(status: string): Lane {
   );
 }
 
+function laneLabel(t: ReturnType<typeof useTranslations>, labelKey: string): string {
+  switch (labelKey) {
+    case "requested":
+      return t("lanes.requested");
+    case "sampleReceived":
+      return t("lanes.sampleReceived");
+    case "inProgress":
+      return t("lanes.inProgress");
+    case "finalizing":
+      return t("lanes.finalizing");
+    case "closed":
+      return t("lanes.closed");
+    case "cancelled":
+      return t("lanes.cancelled");
+    default:
+      return t("lanes.other");
+  }
+}
+
 export function MyExperimentsBoard({
   experiments,
 }: {
   experiments: MyExperiment[];
 }) {
+  const t = useTranslations("experiment.board");
   const [query, setQuery] = useState("");
 
   const visible = useMemo(() => {
@@ -123,10 +150,8 @@ export function MyExperimentsBoard({
   if (experiments.length === 0) {
     return (
       <Stack gap="md" align="flex-start">
-        <Text c="dimmed">You haven&apos;t requested any experiments yet.</Text>
-        <LinkButton href={requestCatalogPath()}>
-          Request your first experiment
-        </LinkButton>
+        <Text c="dimmed">{t("emptyMessage")}</Text>
+        <LinkButton href={requestCatalogPath()}>{t("emptyCta")}</LinkButton>
       </Stack>
     );
   }
@@ -135,15 +160,17 @@ export function MyExperimentsBoard({
     <Stack gap="md">
       <Group justify="space-between" align="flex-end" wrap="wrap">
         <TextInput
-          placeholder="Search experiment or context ID…"
+          placeholder={t("searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           w={340}
-          aria-label="Search experiments"
+          aria-label={t("searchAriaLabel")}
         />
         <Text size="sm" c="dimmed">
-          {visible.length} of {experiments.length} experiment
-          {experiments.length === 1 ? "" : "s"}
+          {t("experimentCount", {
+            visible: visible.length,
+            total: experiments.length,
+          })}
         </Text>
       </Group>
 
@@ -174,7 +201,7 @@ export function MyExperimentsBoard({
           >
             <Group justify="space-between" align="center" mb="sm" px={4}>
               <Text size="sm" fw={600}>
-                {lane.label}
+                {laneLabel(t, lane.labelKey)}
               </Text>
               <Badge size="sm" variant="light" color={lane.color} circle>
                 {items.length}
@@ -183,7 +210,7 @@ export function MyExperimentsBoard({
             <Stack gap="sm">
               {items.length === 0 ? (
                 <Text size="xs" c="dimmed" ta="center" py="md">
-                  None
+                  {t("laneEmpty")}
                 </Text>
               ) : (
                 items.map((exp) => (
@@ -199,6 +226,7 @@ export function MyExperimentsBoard({
 }
 
 function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
+  const t = useTranslations("experiment.board");
   return (
     <Card
       component={Link}
@@ -210,13 +238,13 @@ function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
     >
       <Stack gap="xs">
         <Text size="sm" fw={500} lineClamp={2}>
-          {experiment.name ?? "Untitled experiment"}
+          {experiment.name ?? t("untitled")}
         </Text>
         <Group gap="xs">
           <StatusChip status={experiment.status} variant="badge" size="xs" />
         </Group>
         <Text size="xs" c="dimmed">
-          Updated <LocalDateTime iso={experiment.updatedAt} />
+          {t("updated")} <LocalDateTime iso={experiment.updatedAt} />
         </Text>
       </Stack>
     </Card>

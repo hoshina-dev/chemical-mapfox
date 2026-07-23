@@ -17,14 +17,16 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import {
   type FormDraft,
+  getNestedQuestionTypeOptions,
+  getQuestionTypeOptions,
   makeNestedQuestion,
   makeQuestion,
-  NESTED_QUESTION_TYPE_OPTIONS,
-  QUESTION_TYPE_OPTIONS,
+  type TranslateFn,
 } from "@/lib/builder";
 
 import { checkboxProps, numberProps, textProps } from "./fieldProps";
@@ -53,6 +55,7 @@ export function QuestionEditor({
   onRemove,
   nested = false,
 }: QuestionEditorProps) {
+  const t = useTranslations("builder");
   // Questions default to expanded — matches the design (every question opens
   // expanded; the toggle is for collapsing ones you're not editing).
   const [expanded, setExpanded] = useState(true);
@@ -74,7 +77,8 @@ export function QuestionEditor({
     form.setFieldValue(path, fresh);
   };
 
-  const summary = question.label?.trim() || question.id?.trim() || "Untitled question";
+  const summary =
+    question.label?.trim() || question.id?.trim() || t("question.untitled");
 
   return (
     <Paper withBorder p="md" radius="md" style={{ width: "100%" }}>
@@ -99,7 +103,7 @@ export function QuestionEditor({
             </Badge>
             {question.required && (
               <Badge size="xs" color="red" variant="light" radius="sm">
-                required
+                {t("question.required")}
               </Badge>
             )}
           </Group>
@@ -109,7 +113,7 @@ export function QuestionEditor({
             variant="subtle"
             onClick={onMoveUp}
             disabled={index === 0}
-            aria-label="Move up"
+            aria-label={t("question.moveUp")}
           >
             ↑
           </ActionIcon>
@@ -117,24 +121,24 @@ export function QuestionEditor({
             variant="subtle"
             onClick={onMoveDown}
             disabled={index === total - 1}
-            aria-label="Move down"
+            aria-label={t("question.moveDown")}
           >
             ↓
           </ActionIcon>
           {confirmDelete ? (
             <Group gap={4} wrap="nowrap">
               <Text size="xs" c="red" fw={600}>
-                Delete?
+                {t("question.deleteConfirm")}
               </Text>
               <Button size="compact-xs" color="red" onClick={onRemove}>
-                Yes
+                {t("question.yes")}
               </Button>
               <Button
                 size="compact-xs"
                 variant="default"
                 onClick={() => setConfirmDelete(false)}
               >
-                No
+                {t("question.no")}
               </Button>
             </Group>
           ) : (
@@ -142,7 +146,7 @@ export function QuestionEditor({
               variant="subtle"
               color="red"
               onClick={() => setConfirmDelete(true)}
-              aria-label="Remove question"
+              aria-label={t("question.remove")}
             >
               ✕
             </ActionIcon>
@@ -154,15 +158,17 @@ export function QuestionEditor({
         <Stack gap="sm" pt="md" style={{ width: "100%" }}>
           <Group gap="sm" grow>
             <TextInput
-              label="ID"
-              placeholder="snake_case identifier"
+              label={t("question.id")}
+              placeholder={t("question.idPlaceholder")}
               required
               {...textProps(form, `${path}.id`)}
             />
             <Select
-              label="Type"
+              label={t("question.type")}
               data={
-                nested ? NESTED_QUESTION_TYPE_OPTIONS : QUESTION_TYPE_OPTIONS
+                nested
+                  ? getNestedQuestionTypeOptions(t as TranslateFn)
+                  : getQuestionTypeOptions(t as TranslateFn)
               }
               value={question.type}
               onChange={(v) => v && handleTypeChange(v as QuestionType)}
@@ -171,16 +177,16 @@ export function QuestionEditor({
           </Group>
 
           <TextInput
-            label="Label"
+            label={t("question.label")}
             required
             {...textProps(form, `${path}.label`)}
           />
           <TextInput
-            label="Description"
+            label={t("question.description")}
             {...textProps(form, `${path}.description`)}
           />
           <Checkbox
-            label="Required"
+            label={t("question.requiredLabel")}
             {...checkboxProps(form, `${path}.required`)}
           />
 
@@ -202,25 +208,26 @@ function TypeSpecificFields({
   path,
   question,
 }: TypeSpecificFieldsProps) {
+  const t = useTranslations("builder");
   switch (question.type) {
     case "string":
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <TextInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...textProps(form, `${path}.config.default`)}
           />
           <Group grow>
             <NumberInput
-              label="Min length"
+              label={t("question.minLength")}
               {...numberProps(form, `${path}.config.minLength`)}
             />
             <NumberInput
-              label="Max length"
+              label={t("question.maxLength")}
               {...numberProps(form, `${path}.config.maxLength`)}
             />
           </Group>
@@ -230,28 +237,28 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <TextInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...textProps(form, `${path}.config.default`)}
           />
           <Group grow>
             <NumberInput
-              label="Min length"
+              label={t("question.minLength")}
               {...numberProps(form, `${path}.config.minLength`)}
             />
             <NumberInput
-              label="Max length"
+              label={t("question.maxLength")}
               {...numberProps(form, `${path}.config.maxLength`)}
             />
             <NumberInput
-              label="Min rows"
+              label={t("question.minRows")}
               {...numberProps(form, `${path}.config.minRows`)}
             />
             <NumberInput
-              label="Max rows"
+              label={t("question.maxRows")}
               {...numberProps(form, `${path}.config.maxRows`)}
             />
           </Group>
@@ -261,16 +268,16 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <Group grow>
             <NumberInput
-              label="Min length"
+              label={t("question.minLength")}
               {...numberProps(form, `${path}.config.minLength`)}
             />
             <NumberInput
-              label="Max length"
+              label={t("question.maxLength")}
               {...numberProps(form, `${path}.config.maxLength`)}
             />
           </Group>
@@ -280,24 +287,24 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <Group grow>
             <NumberInput
-              label="Default value"
+              label={t("question.defaultValue")}
               {...numberProps(form, `${path}.config.default`)}
             />
             <NumberInput
-              label="Min"
+              label={t("question.min")}
               {...numberProps(form, `${path}.config.min`)}
             />
             <NumberInput
-              label="Max"
+              label={t("question.max")}
               {...numberProps(form, `${path}.config.max`)}
             />
             <NumberInput
-              label="Step"
+              label={t("question.step")}
               {...numberProps(form, `${path}.config.step`)}
             />
           </Group>
@@ -307,11 +314,11 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <TextInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...textProps(form, `${path}.config.default`)}
           />
           <OptionsEditor
@@ -326,11 +333,11 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <NumberInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...numberProps(form, `${path}.config.default`)}
           />
           <OptionsEditor
@@ -345,11 +352,11 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <NumberInput
-            label="Max selectable values"
+            label={t("question.maxSelectable")}
             {...numberProps(form, `${path}.config.maxValues`)}
           />
           <OptionsEditor
@@ -364,7 +371,7 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...textProps(form, `${path}.config.default`)}
           />
           <OptionsEditor
@@ -387,7 +394,7 @@ function TypeSpecificFields({
     case "boolean":
       return (
         <Checkbox
-          label="Default checked"
+          label={t("question.defaultChecked")}
           {...checkboxProps(form, `${path}.config.default`)}
         />
       );
@@ -395,7 +402,7 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...textProps(form, `${path}.config.default`)}
           />
           <OptionsEditor
@@ -410,21 +417,21 @@ function TypeSpecificFields({
       return (
         <Group grow>
           <NumberInput
-            label="Min"
+            label={t("question.min")}
             required
             {...numberProps(form, `${path}.config.min`)}
           />
           <NumberInput
-            label="Max"
+            label={t("question.max")}
             required
             {...numberProps(form, `${path}.config.max`)}
           />
           <NumberInput
-            label="Step"
+            label={t("question.step")}
             {...numberProps(form, `${path}.config.step`)}
           />
           <NumberInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...numberProps(form, `${path}.config.default`)}
           />
         </Group>
@@ -433,16 +440,16 @@ function TypeSpecificFields({
       return (
         <Group grow>
           <NumberInput
-            label="Count (stars)"
+            label={t("question.count")}
             {...numberProps(form, `${path}.config.count`)}
           />
           <NumberInput
-            label="Fractions"
-            description="2 = half stars"
+            label={t("question.fractions")}
+            description={t("question.fractionsDescription")}
             {...numberProps(form, `${path}.config.fractions`)}
           />
           <NumberInput
-            label="Default value"
+            label={t("question.defaultValue")}
             {...numberProps(form, `${path}.config.default`)}
           />
         </Group>
@@ -451,16 +458,16 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Default value"
-            placeholder="#ffffff"
+            label={t("question.defaultValue")}
+            placeholder={t("question.colorPlaceholder")}
             {...textProps(form, `${path}.config.default`)}
           />
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <Select
-            label="Format"
+            label={t("question.format")}
             data={["hex", "hexa", "rgb", "rgba", "hsl", "hsla"]}
             clearable
             value={
@@ -479,17 +486,17 @@ function TypeSpecificFields({
         <Group grow>
           <TextInput
             type="date"
-            label="Default"
+            label={t("question.default")}
             {...textProps(form, `${path}.config.default`)}
           />
           <TextInput
             type="date"
-            label="Min"
+            label={t("question.min")}
             {...textProps(form, `${path}.config.min`)}
           />
           <TextInput
             type="date"
-            label="Max"
+            label={t("question.max")}
             {...textProps(form, `${path}.config.max`)}
           />
         </Group>
@@ -499,11 +506,11 @@ function TypeSpecificFields({
         <Group grow>
           <TextInput
             type="time"
-            label="Default"
+            label={t("question.default")}
             {...textProps(form, `${path}.config.default`)}
           />
           <NumberInput
-            label="Step (seconds)"
+            label={t("question.stepSeconds")}
             {...numberProps(form, `${path}.config.step`)}
           />
         </Group>
@@ -512,7 +519,7 @@ function TypeSpecificFields({
       return (
         <TextInput
           type="datetime-local"
-          label="Default"
+          label={t("question.default")}
           {...textProps(form, `${path}.config.default`)}
         />
       );
@@ -520,11 +527,11 @@ function TypeSpecificFields({
       return (
         <>
           <TextInput
-            label="Placeholder"
+            label={t("question.placeholder")}
             {...textProps(form, `${path}.config.placeholder`)}
           />
           <NumberInput
-            label="Max tags"
+            label={t("question.maxTags")}
             {...numberProps(form, `${path}.config.maxTags`)}
           />
         </>
@@ -535,18 +542,18 @@ function TypeSpecificFields({
       return (
         <>
           <NumberInput
-            label="Repetition count"
+            label={t("question.repetitionCount")}
             min={1}
             {...numberProps(form, `${path}.config.count`)}
           />
           <TextInput
-            label="Item label"
+            label={t("question.itemLabel")}
             {...textProps(form, `${path}.config.itemLabel`)}
           />
           <Stack gap="md">
             {children.length === 0 && (
               <Text size="sm" c="dimmed">
-                No child questions yet.
+                {t("question.noChildQuestions")}
               </Text>
             )}
             {children.map((child, j) => (
@@ -575,7 +582,7 @@ function TypeSpecificFields({
               form.insertListItem(childrenPath, makeNestedQuestion("number"))
             }
           >
-            Add child question
+            {t("question.addChildQuestion")}
           </Button>
         </>
       );

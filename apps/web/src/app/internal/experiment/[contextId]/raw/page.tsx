@@ -1,4 +1,5 @@
 import { Alert, Card, Container, Stack, Text, Title } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { RawJsonView } from "@/components/internal/RawJsonView";
@@ -26,6 +27,8 @@ export default async function ExperimentRawPage({
   params: Promise<{ contextId: string }>;
 }) {
   const { contextId } = await params;
+  const t = await getTranslations("staff.raw");
+  const tNav = await getTranslations("staff.nav");
 
   let ticket: unknown;
   let ticketError: FetchError | null = null;
@@ -35,7 +38,7 @@ export default async function ExperimentRawPage({
     ticketError = {
       status: null,
       body: undefined,
-      message: error instanceof Error ? error.message : "Failed to load ticket.",
+      message: error instanceof Error ? error.message : t("ticketErrorFallback"),
     };
   }
 
@@ -55,7 +58,7 @@ export default async function ExperimentRawPage({
         status: null,
         body: undefined,
         message:
-          error instanceof Error ? error.message : "Failed to load experiment.",
+          error instanceof Error ? error.message : t("experimentErrorFallback"),
       };
     }
   }
@@ -65,14 +68,14 @@ export default async function ExperimentRawPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Experiments", href: experimentListingPath() },
+            { label: tNav("experiments"), href: experimentListingPath() },
             { label: contextId, href: experimentWorkspacePath(contextId) },
-            { label: "Raw JSON" },
+            { label: t("breadcrumb") },
           ]}
         />
 
         <Stack gap={4}>
-          <Title order={2}>Raw JSON</Title>
+          <Title order={2}>{t("title")}</Title>
           <Text size="sm" c="dimmed" ff="monospace">
             {contextId}
           </Text>
@@ -80,10 +83,10 @@ export default async function ExperimentRawPage({
 
         <Card withBorder radius="md" padding="lg">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-            Ticket (ticketing-service)
+            {t("ticketHeading")}
           </Text>
           {ticketError ? (
-            <Alert color="orange" variant="light" title="Ticketing Service error">
+            <Alert color="orange" variant="light" title={t("ticketErrorTitle")}>
               {ticketError.message}
             </Alert>
           ) : (
@@ -93,7 +96,7 @@ export default async function ExperimentRawPage({
 
         <Card withBorder radius="md" padding="lg">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-            Experiment (experiment-manager)
+            {t("experimentHeading")}
           </Text>
           {experimentError ? (
             <Stack gap="sm">
@@ -102,12 +105,12 @@ export default async function ExperimentRawPage({
                 variant="light"
                 title={
                   experimentError.status
-                    ? `Experiment Manager returned ${experimentError.status}`
-                    : "Experiment Manager error"
+                    ? t("experimentReturned", { status: experimentError.status })
+                    : t("experimentErrorTitle")
                 }
               >
                 {experimentError.status === 404
-                  ? "No experiment context has been created for this id yet, so there is no state to show."
+                  ? t("experimentNotFound")
                   : experimentError.message}
               </Alert>
               {experimentError.body !== undefined && (

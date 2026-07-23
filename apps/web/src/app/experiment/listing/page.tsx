@@ -1,4 +1,5 @@
 import { Alert, Container, Group, Stack, Text, Title } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 
 import { MyExperimentsBoard } from "@/components/experiment/MyExperimentsBoard";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MyExperimentsPage() {
   const session = await requireSession();
+  const t = await getTranslations("experiment.listing");
 
   let experiments: MyExperiment[] | null = null;
   let loadError: string | null = null;
@@ -18,32 +20,24 @@ export default async function MyExperimentsPage() {
   try {
     experiments = await listMyExperiments(session.userId);
   } catch (error) {
-    loadError =
-      error instanceof Error ? error.message : "Failed to load experiments.";
+    loadError = error instanceof Error ? error.message : t("loadErrorFallback");
   }
 
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
-        <Breadcrumbs
-          items={[{ label: "My experiments" }]}
-        />
+        <Breadcrumbs items={[{ label: t("breadcrumb") }]} />
 
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Stack gap={4}>
-            <Title order={2}>My experiments</Title>
-            <Text c="dimmed">
-              Every experiment you&apos;ve requested, grouped by where it is in
-              the lab&apos;s workflow. Open one to see its details.
-            </Text>
+            <Title order={2}>{t("title")}</Title>
+            <Text c="dimmed">{t("subtitle")}</Text>
           </Stack>
-          <LinkButton href={requestCatalogPath()}>
-            Request an experiment
-          </LinkButton>
+          <LinkButton href={requestCatalogPath()}>{t("requestButton")}</LinkButton>
         </Group>
 
         {loadError && (
-          <Alert color="red" variant="light" title="Could not load your experiments">
+          <Alert color="red" variant="light" title={t("loadErrorTitle")}>
             {loadError}
           </Alert>
         )}

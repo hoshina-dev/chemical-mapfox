@@ -1,12 +1,18 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
+
+function EditorLoading() {
+  const t = useTranslations("common");
+  return <div style={{ padding: 12 }}>{t("loading")}</div>;
+}
 
 const Editor = dynamic(
   () => import("@monaco-editor/react").then((m) => m.default),
   {
     ssr: false,
-    loading: () => <div style={{ padding: 12 }}>Loading editor…</div>,
+    loading: () => <EditorLoading />,
   },
 );
 

@@ -17,6 +17,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { GalleryValueDisplay } from "@/components/docs/GalleryValueDisplay";
@@ -35,6 +36,7 @@ export function GalleryQuestionWorkbench({
   example,
   expectedType,
 }: GalleryQuestionWorkbenchProps) {
+  const t = useTranslations("docs.workbench");
   const initialJson = formatJson(example);
   const [json, setJson] = useState(initialJson);
   const [question, setQuestion] = useState<Question>(example);
@@ -43,7 +45,7 @@ export function GalleryQuestionWorkbench({
   const updateJson = (nextJson: string) => {
     setJson(nextJson);
 
-    const result = parseQuestion(nextJson, expectedType);
+    const result = parseQuestion(nextJson, expectedType, t);
     setError(result.error);
 
     if (result.question) {
@@ -62,13 +64,13 @@ export function GalleryQuestionWorkbench({
       <Paper withBorder p="md" radius="md">
         <Stack gap="sm">
           <Group justify="space-between" align="center">
-            <Title order={4}>Customize JSON</Title>
+            <Title order={4}>{t("customizeJson")}</Title>
             <Button variant="light" size="xs" onClick={resetJson}>
-              Reset
+              {t("reset")}
             </Button>
           </Group>
           <Textarea
-            aria-label="Question JSON"
+            aria-label={t("jsonAriaLabel")}
             autosize
             minRows={18}
             maxRows={32}
@@ -90,7 +92,7 @@ export function GalleryQuestionWorkbench({
             </Alert>
           ) : (
             <Text size="sm" c="dimmed">
-              Valid JSON. The preview updates as you edit the field settings.
+              {t("validJson")}
             </Text>
           )}
         </Stack>
@@ -98,11 +100,11 @@ export function GalleryQuestionWorkbench({
 
       <Paper withBorder p="md" radius="md">
         <Stack gap="sm">
-          <Title order={4}>Live preview</Title>
+          <Title order={4}>{t("livePreview")}</Title>
           <GalleryValueDisplay question={question} />
           <div>
             <Text size="sm" c="dimmed" mb={4}>
-              Active JSON
+              {t("activeJson")}
             </Text>
             <Code block>{formatJson(question)}</Code>
           </div>
@@ -115,6 +117,7 @@ export function GalleryQuestionWorkbench({
 function parseQuestion(
   source: string,
   expectedType: QuestionType,
+  t: ReturnType<typeof useTranslations>,
 ): ValidationResult {
   let parsed: unknown;
 
@@ -122,7 +125,7 @@ function parseQuestion(
     parsed = JSON.parse(source);
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Invalid JSON.",
+      error: error instanceof Error ? error.message : t("invalidJson"),
     };
   }
 
@@ -132,13 +135,13 @@ function parseQuestion(
     const issue = result.error.issues[0];
     const path = issue?.path.length ? issue.path.join(".") : "root";
     return {
-      error: issue ? `${path}: ${issue.message}` : "Invalid question JSON.",
+      error: issue ? `${path}: ${issue.message}` : t("invalidQuestion"),
     };
   }
 
   if (result.data.type !== expectedType) {
     return {
-      error: `type must remain "${expectedType}" on this docs page.`,
+      error: t("typeMustRemain", { type: expectedType }),
     };
   }
 

@@ -1,9 +1,12 @@
 "use client";
 
+import { Group } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { BrandIcon } from "@/components/brand/BrandMark";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
@@ -17,11 +20,11 @@ import {
 const LISTING_PATH = experimentListingPath();
 
 const NAV_ITEMS = [
-  { href: LISTING_PATH, label: "Experiments" },
-  { href: onboardingPath(), label: "Onboarding" },
-  { href: "/internal/docs", label: "Docs" },
-  { href: "/admin/users", label: "Users" },
-];
+  { href: LISTING_PATH, key: "experiments" },
+  { href: onboardingPath(), key: "onboarding" },
+  { href: "/internal/docs", key: "docs" },
+  { href: "/admin/users", key: "users" },
+] as const;
 
 function isActive(pathname: string, href: string): boolean {
   if (href === LISTING_PATH) {
@@ -50,9 +53,10 @@ export function AdminNav({
   organizationPortalUrl: string;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("staff.nav");
 
   return (
-    <nav className={classes.staffShell} aria-label="Staff">
+    <nav className={classes.staffShell} aria-label={t("staffAriaLabel")}>
       <div className={classes.staffInner}>
         <div className={classes.leftCluster}>
           <Link href={LISTING_PATH} className={classes.brand}>
@@ -60,7 +64,11 @@ export function AdminNav({
             <span className={classes.staffBrandLabel}>{BRAND.name}</span>
           </Link>
           <div className={classes.staffBrandDivider} aria-hidden />
-          <div className={classes.staffNavTrack} role="navigation" aria-label="Staff sections">
+          <div
+            className={classes.staffNavTrack}
+            role="navigation"
+            aria-label={t("staffSectionsAriaLabel")}
+          >
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -70,21 +78,24 @@ export function AdminNav({
                   className={`${classes.staffLink}${active ? ` ${classes.staffLinkActive}` : ""}`}
                   aria-current={active ? "page" : undefined}
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               );
             })}
           </div>
         </div>
-        <UserMenu
-          name={name}
-          email={email}
-          avatarUrl={avatarUrl}
-          role={role}
-          organizations={organizations}
-          organizationPortalUrl={organizationPortalUrl}
-          variant="dark"
-        />
+        <Group gap="sm" wrap="nowrap">
+          <LanguageSwitcher variant="dark" />
+          <UserMenu
+            name={name}
+            email={email}
+            avatarUrl={avatarUrl}
+            role={role}
+            organizations={organizations}
+            organizationPortalUrl={organizationPortalUrl}
+            variant="dark"
+          />
+        </Group>
       </div>
     </nav>
   );

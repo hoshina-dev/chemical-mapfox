@@ -8,6 +8,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 /**
@@ -24,6 +25,9 @@ export function CopyableId({
   size?: "xs" | "sm";
   href?: string;
 }) {
+  const t = useTranslations("common");
+  const tCopyableId = useTranslations("staff.copyableId");
+
   return (
     <Group gap={6} wrap="nowrap">
       {href ? (
@@ -43,12 +47,12 @@ export function CopyableId({
       )}
       <CopyButton value={value} timeout={1500}>
         {({ copied, copy }) => (
-          <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
+          <Tooltip label={copied ? t("copied") : t("copy")} withArrow>
             <ActionIcon
               size="sm"
               variant="subtle"
               color={copied ? "teal" : "gray"}
-              aria-label="Copy context ID"
+              aria-label={tCopyableId("copyAriaLabel")}
               onClick={(e) => {
                 e.stopPropagation();
                 copy();

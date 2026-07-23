@@ -12,6 +12,7 @@ import {
   TimelineItem,
   Title,
 } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 
 import type { ReactNode } from "react";
 
@@ -43,6 +44,8 @@ export default async function ExperimentWorkspacePage({
   params: Promise<{ contextId: string }>;
 }) {
   const { contextId } = await params;
+  const t = await getTranslations("staff.workspace");
+  const tCommon = await getTranslations("common");
   const session = await requireSession();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
@@ -70,11 +73,17 @@ export default async function ExperimentWorkspacePage({
     state?.reportStatus?.toLowerCase() === "succeeded";
 
   const stages = [
-    { label: "Created", at: ticket?.createdAt ?? null },
-    { label: "Sample received", at: ticket?.sampleReceivedAt ?? null },
-    { label: "Experiment started", at: ticket?.experimentStartedAt ?? null },
-    { label: "Results submitted", at: ticket?.resultsSubmittedAt ?? null },
-    { label: "Closed", at: ticket?.closedAt ?? null },
+    { label: t("stages.created"), at: ticket?.createdAt ?? null },
+    { label: t("stages.sampleReceived"), at: ticket?.sampleReceivedAt ?? null },
+    {
+      label: t("stages.experimentStarted"),
+      at: ticket?.experimentStartedAt ?? null,
+    },
+    {
+      label: t("stages.resultsSubmitted"),
+      at: ticket?.resultsSubmittedAt ?? null,
+    },
+    { label: t("stages.closed"), at: ticket?.closedAt ?? null },
   ];
   const reachedCount = stages.filter((s) => s.at).length;
 
@@ -83,7 +92,7 @@ export default async function ExperimentWorkspacePage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Experiments", href: experimentListingPath() },
+            { label: t("breadcrumbExperiments"), href: experimentListingPath() },
             { label: ws.experimentTitle ?? contextId },
           ]}
         />
@@ -91,9 +100,7 @@ export default async function ExperimentWorkspacePage({
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Stack gap={6}>
             <Group gap="sm" align="center">
-              <Title order={2}>
-                {ws.experimentTitle ?? "Experiment workspace"}
-              </Title>
+              <Title order={2}>{ws.experimentTitle ?? t("title")}</Title>
               {ws.sampleType && (
                 <Badge variant="light" color="grape" radius="sm">
                   {ws.sampleType}
@@ -108,7 +115,7 @@ export default async function ExperimentWorkspacePage({
         </Group>
 
         {ws.errors.ticket && (
-          <Alert color="red" variant="light" title="Could not load ticket">
+          <Alert color="red" variant="light" title={t("loadTicketErrorTitle")}>
             {ws.errors.ticket}
           </Alert>
         )}
@@ -117,37 +124,23 @@ export default async function ExperimentWorkspacePage({
           <GridCol span={{ base: 12, md: 8 }}>
             <Stack gap="lg">
               {status === "REQUESTED" && (
-                <Alert
-                  color="blue"
-                  variant="light"
-                  title="Sample not received yet"
-                >
+                <Alert color="blue" variant="light" title={t("requestedTitle")}>
                   <Stack gap="sm" align="flex-start">
-                    <Text size="sm">
-                      This experiment is waiting for its sample to arrive. Check
-                      it in once the box reaches the lab to begin.
-                    </Text>
+                    <Text size="sm">{t("requestedBody")}</Text>
                     <LinkButton
                       href={experimentCheckinPath(contextId)}
                       variant="light"
                     >
-                      Go to check-in
+                      {t("goToCheckin")}
                     </LinkButton>
                   </Stack>
                 </Alert>
               )}
 
               {status === "PENDING" && (
-                <Alert
-                  color="blue"
-                  variant="light"
-                  title="Sample received — ready to start"
-                >
+                <Alert color="blue" variant="light" title={t("pendingTitle")}>
                   <Stack gap="sm" align="flex-start">
-                    <Text size="sm">
-                      The sample is checked in. Start the experiment to enter and
-                      collaborate on lab values.
-                    </Text>
+                    <Text size="sm">{t("pendingBody")}</Text>
                     <StartExperimentButton contextId={contextId} />
                   </Stack>
                 </Alert>
@@ -188,10 +181,9 @@ export default async function ExperimentWorkspacePage({
                 <Alert
                   color="gray"
                   variant="light"
-                  title="Current state unavailable"
+                  title={t("stateUnavailableTitle")}
                 >
-                  {ws.errors.state ??
-                    "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager."}
+                  {ws.errors.state ?? t("stateUnavailableBody")}
                 </Alert>
               )}
             </Stack>
@@ -201,7 +193,7 @@ export default async function ExperimentWorkspacePage({
             <Stack gap="lg">
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-                  Requester
+                  {t("requester")}
                 </Text>
                 {requester ? (
                   <Group gap="sm" wrap="nowrap">
@@ -224,14 +216,14 @@ export default async function ExperimentWorkspacePage({
                   </Group>
                 ) : (
                   <Text size="sm" c="dimmed">
-                    {ticket?.userId ?? "Unknown"}
+                    {ticket?.userId ?? t("unknownRequester")}
                   </Text>
                 )}
               </Card>
 
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="md">
-                  Lifecycle
+                  {t("lifecycle")}
                 </Text>
                 <Timeline active={reachedCount - 1} bulletSize={16} lineWidth={2}>
                   {stages.map((stage) => (
@@ -244,25 +236,33 @@ export default async function ExperimentWorkspacePage({
                 </Timeline>
                 {ticket?.closedReason && (
                   <Text size="sm" c="dimmed" mt="md">
-                    Closed reason: {ticket.closedReason}
+                    {t("closedReason", { reason: ticket.closedReason })}
                   </Text>
                 )}
               </Card>
 
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-                  Details
+                  {t("details")}
                 </Text>
                 <Stack gap="sm">
-                  <Detail label="Organization" value={ticket?.organizationId} mono />
-                  <Detail label="Template ID" value={ticket?.templateId} mono />
                   <Detail
-                    label="Report status"
-                    value={state?.reportStatus ?? "Not generated"}
+                    label={t("organization")}
+                    value={ticket?.organizationId}
+                    mono
+                  />
+                  <Detail
+                    label={t("templateId")}
+                    value={ticket?.templateId}
+                    mono
+                  />
+                  <Detail
+                    label={t("reportStatus")}
+                    value={state?.reportStatus ?? tCommon("notGenerated")}
                   />
                   {state?.reportGeneratedAt && (
                     <Detail
-                      label="Report generated"
+                      label={t("reportGenerated")}
                       value={<LocalDateTime iso={state.reportGeneratedAt} />}
                     />
                   )}

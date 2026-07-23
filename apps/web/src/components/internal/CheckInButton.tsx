@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Button, Stack } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -12,6 +13,7 @@ import { experimentWorkspacePath } from "@/lib/experiment-manager/routes";
  * technician to the experiment workspace, where they can start the experiment.
  */
 export function CheckInButton({ contextId }: { contextId: string }) {
+  const t = useTranslations("staff.checkin");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -35,14 +37,14 @@ export function CheckInButton({ contextId }: { contextId: string }) {
         <Alert
           color="red"
           variant="light"
-          title="Could not check in"
+          title={t("errorTitle")}
           style={{ whiteSpace: "pre-line" }}
         >
           {error}
         </Alert>
       )}
       <Button size="md" onClick={onClick} loading={isPending} w="fit-content">
-        Check in sample
+        {t("button")}
       </Button>
     </Stack>
   );

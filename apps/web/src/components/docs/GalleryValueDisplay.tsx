@@ -9,6 +9,7 @@ import {
   type RepeatableGroupQuestion,
 } from "@repo/forms";
 import { Code, Paper, Stack, Text } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type RepeatableColumn = Exclude<Extract<AnswerValue, unknown[]>, string[]>;
@@ -60,6 +61,7 @@ function LeafValueDisplay({
 }: {
   question: Exclude<Question, RepeatableGroupQuestion>;
 }) {
+  const t = useTranslations("docs.workbench");
   const [value, setValue] = useState<AnswerValue>(defaultFor(question));
 
   return (
@@ -69,7 +71,7 @@ function LeafValueDisplay({
       </Paper>
       <div>
         <Text size="sm" c="dimmed" mb={4}>
-          Current value
+          {t("currentValue")}
         </Text>
         <Code block>{JSON.stringify(value, null, 2)}</Code>
       </div>
@@ -82,6 +84,7 @@ function GroupValueDisplay({
 }: {
   question: RepeatableGroupQuestion;
 }) {
+  const t = useTranslations("docs.workbench");
   const [groupValues, setGroupValues] = useState<FormAnswers>(() =>
     initialGroupValues(question),
   );
@@ -106,7 +109,7 @@ function GroupValueDisplay({
       </Paper>
       <div>
         <Text size="sm" c="dimmed" mb={4}>
-          Current value
+          {t("currentValue")}
         </Text>
         <Code block>{JSON.stringify(groupValues, null, 2)}</Code>
       </div>

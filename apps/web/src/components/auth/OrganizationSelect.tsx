@@ -2,6 +2,7 @@
 
 import { Loader, Select } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import {
@@ -20,6 +21,7 @@ export function OrganizationSelect({
   onChange,
   error,
 }: OrganizationSelectProps) {
+  const t = useTranslations("auth.organization");
   const [search, setSearch] = useState("");
   const [debounced] = useDebouncedValue(search, 250);
   const [data, setData] = useState<OrganizationOption[]>([]);
@@ -52,8 +54,8 @@ export function OrganizationSelect({
 
   return (
     <Select
-      label="Organization"
-      placeholder="Search organizations..."
+      label={t("label")}
+      placeholder={t("placeholder")}
       searchable
       data={options}
       value={value}
@@ -63,8 +65,8 @@ export function OrganizationSelect({
       rightSection={loading ? <Loader size="xs" /> : undefined}
       nothingFoundMessage={
         debounced.trim().length < 2
-          ? "Type at least 2 characters"
-          : "No organizations found"
+          ? t("typeToSearch")
+          : t("noResults")
       }
       error={error}
       required

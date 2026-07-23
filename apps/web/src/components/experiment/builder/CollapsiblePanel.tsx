@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge, Collapse, Group, Paper, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 interface CollapsiblePanelProps {
@@ -26,6 +27,7 @@ export function CollapsiblePanel({
   defaultOpen = true,
   children,
 }: CollapsiblePanelProps) {
+  const t = useTranslations("builder.collapsible");
   const [open, setOpen] = useState(defaultOpen);
 
   return (
@@ -59,7 +61,7 @@ export function CollapsiblePanel({
               padding: "3px 10px",
             }}
           >
-            {open ? "Collapse ↑" : "Expand ↓"}
+            {open ? t("collapse") : t("expand")}
           </Text>
         </Group>
       </UnstyledButton>

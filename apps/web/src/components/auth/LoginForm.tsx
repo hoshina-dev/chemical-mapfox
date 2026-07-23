@@ -7,18 +7,20 @@ import {
   Stack,
   TextInput,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { login } from "@/app/actions/auth";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
+  const t = useTranslations("auth.login");
 
   return (
     <form action={action}>
       <Stack gap="md">
         <TextInput
-          label="Email"
+          label={t("email")}
           name="email"
           type="email"
           autoComplete="email"
@@ -26,7 +28,7 @@ export function LoginForm() {
           error={state?.errors?.email?.[0]}
         />
         <PasswordInput
-          label="Password"
+          label={t("password")}
           name="password"
           autoComplete="current-password"
           required
@@ -40,7 +42,7 @@ export function LoginForm() {
         )}
 
         <Button type="submit" loading={pending}>
-          Sign in
+          {t("submit")}
         </Button>
       </Stack>
     </form>

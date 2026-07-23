@@ -9,6 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
@@ -51,44 +52,38 @@ async function loadSamples(): Promise<SampleCard[]> {
 }
 
 export default async function OnboardingPage() {
+  const t = await getTranslations("staff.onboarding");
+  const tCommon = await getTranslations("common");
+
   let samples: SampleCard[] | null = null;
   let loadError: string | null = null;
   try {
     samples = await loadSamples();
   } catch (error) {
     loadError =
-      error instanceof Error ? error.message : "Failed to load samples.";
+      error instanceof Error ? error.message : t("loadSamplesFallback");
   }
 
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
-        <Breadcrumbs
-          items={[{ label: "Onboarding" }]}
-        />
+        <Breadcrumbs items={[{ label: t("breadcrumb") }]} />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>
-            <Title order={2}>Experiment onboarding</Title>
-            <Text c="dimmed">
-              Samples (specimen types) supported by the labs. Open one to manage
-              its experiment templates, or register a new sample.
-            </Text>
+            <Title order={2}>{t("title")}</Title>
+            <Text c="dimmed">{t("subtitle")}</Text>
           </Stack>
           <RegisterSampleButton />
         </Group>
 
         {loadError && (
-          <Alert
-            color="red"
-            variant="light"
-            title="Could not reach Experiment Manager"
-          >
+          <Alert color="red" variant="light" title={t("loadErrorTitle")}>
             {loadError}
           </Alert>
         )}
 
         {samples && samples.length === 0 && !loadError && (
-          <Text c="dimmed">No samples yet. Register your first one.</Text>
+          <Text c="dimmed">{t("emptyMessage")}</Text>
         )}
 
         {samples && samples.length > 0 && (
@@ -97,9 +92,19 @@ export default async function OnboardingPage() {
               <Link
                 key={sample.id}
                 href={sampleOnboardingPath(sample.id)}
-                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "block",
+                }}
               >
-                <Card withBorder radius="md" padding="lg" h="100%" className="bold-card">
+                <Card
+                  withBorder
+                  radius="md"
+                  padding="lg"
+                  h="100%"
+                  className="bold-card"
+                >
                   <Stack gap="xs" h="100%">
                     <Group
                       justify="space-between"
@@ -108,15 +113,17 @@ export default async function OnboardingPage() {
                     >
                       <Text fw={600}>{sample.name}</Text>
                       <Badge variant="light" color="grape" radius="sm">
-                        {sample.templateCount ?? "—"}{" "}
-                        {sample.templateCount === 1 ? "template" : "templates"}
+                        {sample.templateCount == null
+                          ? tCommon("emDash")
+                          : t("templateCount", { count: sample.templateCount })}
                       </Badge>
                     </Group>
                     <Text size="sm" c="dimmed" lineClamp={2}>
-                      {sample.description ?? "No description"}
+                      {sample.description ?? t("noDescription")}
                     </Text>
                     <Text size="sm" c="green.8" fw={600} mt="auto">
-                      Manage templates <span className="bold-card-arrow">→</span>
+                      {t("manageTemplates")}{" "}
+                      <span className="bold-card-arrow">→</span>
                     </Text>
                   </Stack>
                 </Card>

@@ -2,6 +2,7 @@
 
 import type { UserResponse } from "@repo/api-client";
 import { Badge, Table } from "@mantine/core";
+import { useTranslations } from "next-intl";
 
 /**
  * Mantine's `Table.*` compound parts are assigned as properties on `Table`
@@ -12,13 +13,15 @@ import { Badge, Table } from "@mantine/core";
  * components aren't affected — keep any `Table.*` usage in one of these.
  */
 export function AdminUsersTable({ users }: { users: UserResponse[] }) {
+  const t = useTranslations("staff.users.table");
+
   return (
     <Table highlightOnHover>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th>Name</Table.Th>
-          <Table.Th>Email</Table.Th>
-          <Table.Th>Role</Table.Th>
+          <Table.Th>{t("name")}</Table.Th>
+          <Table.Th>{t("email")}</Table.Th>
+          <Table.Th>{t("role")}</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>

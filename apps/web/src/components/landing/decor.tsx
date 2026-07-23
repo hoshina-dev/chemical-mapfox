@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import classes from "./landing.module.css";
 
 /**
@@ -54,11 +56,19 @@ export function HeadingMark({
   );
 }
 
+/** Keys under `landing.howItWorks.stages` in messages/en.json. */
+type StageKey =
+  | "request"
+  | "sampleReceived"
+  | "inProgress"
+  | "finalizing"
+  | "certifiedReport";
+
 interface Stage {
   /** Lifecycle accent colour (matches the product status board). */
   color: string;
-  label: string;
-  caption: string;
+  /** i18n key under `landing.howItWorks.stages`. */
+  key: StageKey;
   /** Real ticket state shown as a pill under the node. */
   status: string;
   glyph: React.ReactNode;
@@ -74,8 +84,7 @@ const STAGE_COLOR = "#2f9e44";
 const STAGES: Stage[] = [
   {
     color: STAGE_COLOR,
-    label: "Request",
-    caption: "Submit intake form",
+    key: "request",
     status: "REQUESTED",
     glyph: (
       <>
@@ -86,8 +95,7 @@ const STAGES: Stage[] = [
   },
   {
     color: STAGE_COLOR,
-    label: "Sample received",
-    caption: "Lab checks it in",
+    key: "sampleReceived",
     status: "PENDING",
     glyph: (
       <>
@@ -99,8 +107,7 @@ const STAGES: Stage[] = [
   },
   {
     color: STAGE_COLOR,
-    label: "In progress",
-    caption: "Collaborative analysis",
+    key: "inProgress",
     status: "EXPERIMENTING",
     glyph: (
       <>
@@ -111,8 +118,7 @@ const STAGES: Stage[] = [
   },
   {
     color: STAGE_COLOR,
-    label: "Finalizing",
-    caption: "Results reviewed",
+    key: "finalizing",
     status: "FINALIZING",
     glyph: (
       <>
@@ -124,8 +130,7 @@ const STAGES: Stage[] = [
   },
   {
     color: STAGE_COLOR,
-    label: "Certified report",
-    caption: "Signed PDF ready",
+    key: "certifiedReport",
     status: "COMPLETED",
     glyph: (
       <>
@@ -151,6 +156,7 @@ const STATUS_CHIP_PAD_X = 12; // horizontal inset each side of the status pill
  * `prefers-reduced-motion` via CSS.
  */
 export function WorkflowDiagram() {
+  const t = useTranslations("landing.howItWorks");
   const cy = 78;
   const x0 = 80;
   const x1 = 880;
@@ -162,7 +168,7 @@ export function WorkflowDiagram() {
       viewBox="0 0 960 180"
       className={classes.flow}
       role="img"
-      aria-label="Experiment lifecycle: request, sample received, in progress, finalizing, certified report."
+      aria-label={t("diagramAriaLabel")}
     >
       <defs>
         <linearGradient id="chemfoxFlow" x1="0" y1="0" x2="1" y2="0">
@@ -221,9 +227,11 @@ export function WorkflowDiagram() {
 
       {STAGES.map((stage, i) => {
         const delay = `${i * STEP_DELAY}s`;
+        const label = t(`stages.${stage.key}.label`);
+        const caption = t(`stages.${stage.key}.caption`);
         return (
           <g
-            key={stage.label}
+            key={stage.key}
             transform={`translate(${x0 + i * gap}, ${cy})`}
             style={{ color: stage.color }}
           >
@@ -278,10 +286,10 @@ export function WorkflowDiagram() {
             </g>
 
             <text x="0" y={NODE_R + 26} textAnchor="middle" className={classes.flowLabel}>
-              {stage.label}
+              {label}
             </text>
             <text x="0" y={NODE_R + 42} textAnchor="middle" className={classes.flowCaption}>
-              {stage.caption}
+              {caption}
             </text>
             {/* status pill */}
             <g transform={`translate(0, ${NODE_R + 52})`}>

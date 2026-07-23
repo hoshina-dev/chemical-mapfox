@@ -8,6 +8,14 @@ vi.mock("@/app/actions/auth", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("@/app/actions/locale", () => ({
+  setLocaleAction: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 const portalBase = "https://portal.example.com";
 
 const baseProps = {
@@ -75,6 +83,24 @@ describe("UserMenu", () => {
     const header = screen.getByText("Organizations").closest("div");
     expect(header).not.toBeNull();
     expect(within(header as HTMLElement).queryByText("MANAGER")).not.toBeInTheDocument();
+  });
+
+  it("links to notification settings when settingsHref is provided", async () => {
+    const user = userEvent.setup();
+    render(
+      <UserMenu
+        {...baseProps}
+        organizations={[]}
+        settingsHref="/experiment/settings"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "User menu" }));
+
+    const link = await screen.findByRole("menuitem", {
+      name: "Notification settings",
+    });
+    expect(link).toHaveAttribute("href", "/experiment/settings");
   });
 
   it("calls logout when Log out is clicked", async () => {

@@ -8,6 +8,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
@@ -32,6 +33,8 @@ export default async function SampleCheckInPage({
   params: Promise<{ contextId: string }>;
 }) {
   const { contextId } = await params;
+  const t = await getTranslations("staff.checkin");
+  const tNav = await getTranslations("staff.nav");
   await requireSession();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
@@ -45,52 +48,61 @@ export default async function SampleCheckInPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Experiments", href: experimentListingPath() },
-            { label: "Sample check-in" },
+            { label: tNav("experiments"), href: experimentListingPath() },
+            { label: t("breadcrumb") },
           ]}
         />
 
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Stack gap={6}>
             <Group gap="sm" align="center">
-              <Title order={2}>Sample check-in</Title>
+              <Title order={2}>{t("title")}</Title>
               {ws.sampleType && (
                 <Badge variant="light" color="grape" radius="sm">
                   {ws.sampleType}
                 </Badge>
               )}
             </Group>
-            <Text c="dimmed">{ws.experimentTitle ?? "Experiment"}</Text>
-            <CopyableId value={contextId} href={experimentWorkspacePath(contextId)} />
+            <Text c="dimmed">
+              {ws.experimentTitle ?? t("experimentFallback")}
+            </Text>
+            <CopyableId
+              value={contextId}
+              href={experimentWorkspacePath(contextId)}
+            />
           </Stack>
           {status && <StatusChip status={status} variant="badge" size="lg" />}
         </Group>
 
         {ws.errors.ticket && (
-          <Alert color="red" variant="light" title="Could not load ticket">
+          <Alert color="red" variant="light" title={t("loadTicketErrorTitle")}>
             {ws.errors.ticket}
           </Alert>
         )}
 
         {!ticket && !ws.errors.ticket && (
-          <Alert color="gray" variant="light" title="Ticket not found">
-            No experiment ticket exists for this context id.
+          <Alert color="gray" variant="light" title={t("ticketNotFoundTitle")}>
+            {t("ticketNotFoundBody")}
           </Alert>
         )}
 
         {ticket && (
           <Card withBorder radius="md" padding="lg">
             <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-              Ticket
+              {t("ticketHeading")}
             </Text>
             <Stack gap="sm">
               <Detail
-                label="Requester"
+                label={t("requester")}
                 value={requester?.name ?? requester?.email ?? ticket.userId}
               />
-              <Detail label="Organization" value={ticket.organizationId} mono />
               <Detail
-                label="Requested"
+                label={t("organization")}
+                value={ticket.organizationId}
+                mono
+              />
+              <Detail
+                label={t("requested")}
                 value={<LocalDateTime iso={ticket.createdAt} />}
               />
             </Stack>
@@ -101,11 +113,9 @@ export default async function SampleCheckInPage({
           <Card withBorder radius="md" padding="lg">
             <Stack gap="md">
               <div>
-                <Title order={4}>Check in this sample</Title>
+                <Title order={4}>{t("checkInHeading")}</Title>
                 <Text size="sm" c="dimmed">
-                  Confirm the sample box has arrived at the lab. This moves the
-                  ticket to &ldquo;Sample received&rdquo;, ready for an
-                  experiment to be started in the workspace.
+                  {t("checkInBody")}
                 </Text>
               </div>
               <CheckInButton contextId={contextId} />
@@ -114,23 +124,22 @@ export default async function SampleCheckInPage({
         )}
 
         {alreadyReceived && (
-          <Alert color="teal" variant="light" title="Already checked in">
+          <Alert color="teal" variant="light" title={t("alreadyTitle")}>
             <Stack gap="sm" align="flex-start">
               <Text size="sm">
-                This sample was already received
-                {ticket?.sampleReceivedAt && (
-                  <>
-                    {" on "}
-                    <LocalDateTime iso={ticket.sampleReceivedAt} />
-                  </>
-                )}
-                . Continue in the experiment workspace.
+                {ticket?.sampleReceivedAt
+                  ? t.rich("alreadyBodyWithDate", {
+                      date: () => (
+                        <LocalDateTime iso={ticket.sampleReceivedAt} />
+                      ),
+                    })
+                  : t("alreadyBody")}
               </Text>
               <LinkButton
                 href={experimentWorkspacePath(contextId)}
                 variant="light"
               >
-                Open workspace
+                {t("openWorkspace")}
               </LinkButton>
             </Stack>
           </Alert>
@@ -139,7 +148,7 @@ export default async function SampleCheckInPage({
         {state && (
           <Stack gap="sm">
             <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-              Experiment detail
+              {t("experimentDetail")}
             </Text>
             <ExperimentStateView state={state} />
           </Stack>

@@ -11,6 +11,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
 
@@ -44,6 +45,8 @@ export function SampleLabel({
   contextId: string;
 }) {
   const qrRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("experiment.sampleLabel");
+  const tCommon = useTranslations("common");
 
   function handlePrint() {
     const svg = qrRef.current?.querySelector("svg");
@@ -51,7 +54,7 @@ export function SampleLabel({
     const win = window.open("", "_blank", "width=420,height=620");
     if (!win) return;
     win.document.write(
-      `<!doctype html><html><head><meta charset="utf-8"><title>Sample label</title>` +
+      `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(t("printDocTitle"))}</title>` +
         `<style>` +
         `body{font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:32px;color:#111}` +
         `h1{font-size:18px;margin:0 0 4px}` +
@@ -62,7 +65,7 @@ export function SampleLabel({
         `<h1>${escapeHtml(title)}</h1>` +
         `<div class="ctx">${escapeHtml(contextId)}</div>` +
         `<div class="qr">${svg.outerHTML}</div>` +
-        `<div class="hint">Attach this label to the box containing your sample before shipping it to the lab.</div>` +
+        `<div class="hint">${escapeHtml(t("printHint"))}</div>` +
         `<div class="ctx">${escapeHtml(url)}</div>` +
         `</body></html>`,
     );
@@ -75,10 +78,9 @@ export function SampleLabel({
     <Card withBorder radius="md" padding="lg">
       <Stack gap="md">
         <div>
-          <Title order={4}>Ship your sample</Title>
+          <Title order={4}>{t("title")}</Title>
           <Text size="sm" c="dimmed">
-            Print this QR label and attach it to the box you send to the lab.
-            Staff scan it to check your sample in on arrival.
+            {t("description")}
           </Text>
         </div>
         <Group align="flex-start" gap="lg" wrap="wrap">
@@ -90,10 +92,10 @@ export function SampleLabel({
           </div>
           <Stack gap="sm" style={{ flex: 1, minWidth: 220 }}>
             <Button onClick={handlePrint} variant="light" w="fit-content">
-              Print label
+              {t("print")}
             </Button>
             <Text size="xs" c="dimmed">
-              Or share this link:
+              {t("shareLink")}
             </Text>
             <Group gap={6} wrap="nowrap" align="center">
               <Text size="xs" ff="monospace" style={{ wordBreak: "break-all" }}>
@@ -101,12 +103,15 @@ export function SampleLabel({
               </Text>
               <CopyButton value={url} timeout={1500}>
                 {({ copied, copy }) => (
-                  <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
+                  <Tooltip
+                    label={copied ? tCommon("copied") : tCommon("copy")}
+                    withArrow
+                  >
                     <ActionIcon
                       size="sm"
                       variant="subtle"
                       color={copied ? "teal" : "gray"}
-                      aria-label="Copy check-in URL"
+                      aria-label={t("copyAriaLabel")}
                       onClick={copy}
                     >
                       <Text size="xs" aria-hidden>

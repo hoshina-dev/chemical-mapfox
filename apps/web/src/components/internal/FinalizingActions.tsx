@@ -11,6 +11,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -45,19 +46,13 @@ function isFailed(status: string | null): boolean {
   return normalizeStatus(status) === "failed";
 }
 
-const STATUS_META: Record<string, { label: string; color: string }> = {
-  pending: { label: "Queued", color: "blue" },
-  processing: { label: "Generating…", color: "blue" },
-  success: { label: "Ready", color: "teal" },
-  succeeded: { label: "Ready", color: "teal" },
-  failed: { label: "Failed", color: "red" },
+const STATUS_META: Record<string, { labelKey: "queued" | "generating" | "ready" | "failed"; color: string }> = {
+  pending: { labelKey: "queued", color: "blue" },
+  processing: { labelKey: "generating", color: "blue" },
+  success: { labelKey: "ready", color: "teal" },
+  succeeded: { labelKey: "ready", color: "teal" },
+  failed: { labelKey: "failed", color: "red" },
 };
-
-function statusMeta(status: string | null) {
-  const normalized = normalizeStatus(status);
-  if (!normalized) return { label: "Not generated", color: "gray" };
-  return STATUS_META[normalized] ?? { label: status ?? normalized, color: "gray" };
-}
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -85,6 +80,8 @@ export function FinalizingActions({
   initialReportStatus,
   reportGeneratedAt,
 }: FinalizingActionsProps) {
+  const t = useTranslations("staff.finalize");
+  const tCommon = useTranslations("common");
   const router = useRouter();
 
   const [calcPending, startCalc] = useTransition();
@@ -106,7 +103,14 @@ export function FinalizingActions({
     !hasCalculations || calculationsReady || calcDoneThisSession;
   const reportIsReady = isReady(reportStatus);
   const canClose = calcSatisfied && reportIsReady && !inFlight;
-  const meta = statusMeta(reportStatus);
+  const meta = (() => {
+    const normalized = normalizeStatus(reportStatus);
+    if (!normalized) return { label: t("status.notGenerated"), color: "gray" };
+    const entry = STATUS_META[normalized];
+    return entry
+      ? { label: t(`status.${entry.labelKey}`), color: entry.color }
+      : { label: reportStatus ?? normalized, color: "gray" };
+  })();
 
   // Poll for completion while a report job is in flight. A self-rescheduling
   // timeout (not setInterval) so requests never overlap, and it stops the
@@ -180,16 +184,16 @@ export function FinalizingActions({
 
   const generateLabel =
     isReady(reportStatus) || isFailed(reportStatus)
-      ? "Regenerate report"
-      : "Generate report";
+      ? t("regenerateReport")
+      : t("generateReport");
 
   return (
     <Card withBorder radius="md" padding="md">
       <Stack gap="sm">
         <Group justify="space-between" align="center" gap="sm">
-          <Title order={4}>Finalize</Title>
+          <Title order={4}>{t("title")}</Title>
           <Badge color={meta.color} variant="light" radius="sm">
-            Report: {meta.label}
+            {t("reportBadge", { status: meta.label })}
           </Badge>
         </Group>
 
@@ -202,7 +206,9 @@ export function FinalizingActions({
               disabled={inFlight || closePending}
               size="sm"
             >
-              {calculationsReady || calcDoneThisSession ? "Recalculate" : "Calculate"}
+              {calculationsReady || calcDoneThisSession
+                ? t("recalculate")
+                : t("calculate")}
             </Button>
           )}
           <Button
@@ -223,7 +229,7 @@ export function FinalizingActions({
                 variant="light"
                 size="sm"
               >
-                View report
+                {t("viewReport")}
               </Button>
               <Button
                 component="a"
@@ -232,7 +238,7 @@ export function FinalizingActions({
                 size="sm"
                 download
               >
-                Download
+                {t("download")}
               </Button>
             </>
           )}
@@ -243,26 +249,21 @@ export function FinalizingActions({
             disabled={!canClose || closePending}
             size="sm"
           >
-            Close ticket
+            {t("closeTicket")}
           </Button>
         </Group>
 
         <Text size="xs" c="dimmed">
-          {canClose
-            ? "Ready to close. Closing locks further calculation and report generation."
-            : "Run calculations and generate the report before closing this ticket."}
+          {canClose ? t("readyToClose") : t("notReadyToClose")}
         </Text>
 
         {reportIsReady && (
           <Text size="xs" c="teal">
-            Report ready
-            {reportGeneratedAt ? (
-              <>
-                {" "}
-                since <LocalDateTime iso={reportGeneratedAt} />
-              </>
-            ) : null}
-            .
+            {reportGeneratedAt
+              ? t.rich("reportReadySince", {
+                  date: () => <LocalDateTime iso={reportGeneratedAt} />,
+                })
+              : t("reportReady")}
           </Text>
         )}
 
@@ -270,7 +271,7 @@ export function FinalizingActions({
           <Alert
             color="red"
             variant="light"
-            title="Calculation failed"
+            title={t("calcFailedTitle")}
             style={{ whiteSpace: "pre-line" }}
           >
             {calcError}
@@ -278,19 +279,19 @@ export function FinalizingActions({
         )}
         {!calcSatisfied && (
           <Text size="xs" c="dimmed">
-            Run the calculations first to enable report generation.
+            {t("runCalcsFirst")}
           </Text>
         )}
         {isFailed(reportStatus) && (
           <Text size="sm" c="red">
-            Report generation failed. You can try again.
+            {t("reportGenFailed")}
           </Text>
         )}
         {genError && (
           <Alert
             color="red"
             variant="light"
-            title="Could not generate report"
+            title={t("genErrorTitle")}
             style={{ whiteSpace: "pre-line" }}
           >
             {genError}
@@ -300,7 +301,7 @@ export function FinalizingActions({
           <Alert
             color="red"
             variant="light"
-            title="Could not close ticket"
+            title={t("closeErrorTitle")}
             style={{ whiteSpace: "pre-line" }}
           >
             {closeError}
@@ -310,24 +311,21 @@ export function FinalizingActions({
       <Modal
         opened={closeModalOpen}
         onClose={() => setCloseModalOpen(false)}
-        title="Close ticket?"
+        title={t("closeModalTitle")}
         centered
       >
         <Stack gap="md">
-          <Text size="sm">
-            This will mark the ticket as closed. Calculations and report
-            generation will no longer be available after closing.
-          </Text>
+          <Text size="sm">{t("closeModalBody")}</Text>
           <Group justify="flex-end" gap="sm">
             <Button
               variant="subtle"
               onClick={() => setCloseModalOpen(false)}
               disabled={closePending}
             >
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button color="green" onClick={onClose} loading={closePending}>
-              Close ticket
+              {t("closeTicket")}
             </Button>
           </Group>
         </Stack>

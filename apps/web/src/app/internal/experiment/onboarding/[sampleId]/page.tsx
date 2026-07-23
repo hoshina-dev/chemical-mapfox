@@ -1,4 +1,5 @@
 import { Alert, Container, Group, Stack, Text, Title } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 
 import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemplatesTable";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
@@ -11,7 +12,10 @@ import {
   type TemplateSummary,
   toTemplateSummary,
 } from "@/lib/experiment-manager/mappers";
-import { newTemplatePath, onboardingPath } from "@/lib/experiment-manager/routes";
+import {
+  newTemplatePath,
+  onboardingPath,
+} from "@/lib/experiment-manager/routes";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +43,7 @@ export default async function SampleOnboardingPage({
   params: Promise<{ sampleId: string }>;
 }) {
   const { sampleId } = await params;
+  const t = await getTranslations("staff.onboarding");
 
   let data: SampleTemplates | null = null;
   let loadError: string | null = null;
@@ -46,7 +51,7 @@ export default async function SampleOnboardingPage({
     data = await loadSample(sampleId);
   } catch (error) {
     loadError =
-      error instanceof Error ? error.message : "Failed to load sample.";
+      error instanceof Error ? error.message : t("sample.loadSampleFallback");
   }
 
   return (
@@ -54,37 +59,32 @@ export default async function SampleOnboardingPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Onboarding", href: onboardingPath() },
+            { label: t("breadcrumb"), href: onboardingPath() },
             { label: data?.sampleName ?? sampleId },
           ]}
         />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>
-            <Title order={2}>{data?.sampleName ?? "Sample"}</Title>
+            <Title order={2}>
+              {data?.sampleName ?? t("sample.titleFallback")}
+            </Title>
             <Text c="dimmed">
-              {data?.sampleDescription ??
-                "Experiment templates for this sample."}
+              {data?.sampleDescription ?? t("sample.defaultDescription")}
             </Text>
           </Stack>
           <LinkButton href={newTemplatePath(sampleId)} color="green">
-            New template
+            {t("sample.newTemplate")}
           </LinkButton>
         </Group>
 
         {loadError && (
-          <Alert
-            color="red"
-            variant="light"
-            title="Could not reach Experiment Manager"
-          >
+          <Alert color="red" variant="light" title={t("loadErrorTitle")}>
             {loadError}
           </Alert>
         )}
 
         {data && data.templates.length === 0 && !loadError && (
-          <Text c="dimmed">
-            No templates yet for this sample. Create the first one.
-          </Text>
+          <Text c="dimmed">{t("sample.emptyTemplates")}</Text>
         )}
 
         {data && data.templates.length > 0 && (

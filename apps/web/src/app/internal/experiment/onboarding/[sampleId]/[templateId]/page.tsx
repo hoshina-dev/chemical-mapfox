@@ -1,4 +1,5 @@
 import { Alert, Container } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { BuilderApp } from "@/components/experiment/builder/BuilderApp";
@@ -18,6 +19,7 @@ interface PageProps {
 
 export default async function EditTemplatePage({ params }: PageProps) {
   const { sampleId, templateId } = await params;
+  const t = await getTranslations("builder.editPage");
 
   let loaded;
   let sampleName: string | undefined;
@@ -34,8 +36,8 @@ export default async function EditTemplatePage({ params }: PageProps) {
     }
     return (
       <Container size="xl" py="xl">
-        <Alert color="red" variant="light" title="Could not load template">
-          {error instanceof Error ? error.message : "Unknown error."}
+        <Alert color="red" variant="light" title={t("loadErrorTitle")}>
+          {error instanceof Error ? error.message : t("unknownError")}
         </Alert>
       </Container>
     );
@@ -44,14 +46,8 @@ export default async function EditTemplatePage({ params }: PageProps) {
   return (
     <Container size="xl" py="xl">
       {!loaded.valid && (
-        <Alert
-          color="yellow"
-          variant="light"
-          title="Legacy / invalid template"
-          mb="md"
-        >
-          This template does not match the current schema. Saving will rewrite it
-          in the current format.
+        <Alert color="yellow" variant="light" title={t("legacyTitle")} mb="md">
+          {t("legacyBody")}
         </Alert>
       )}
       <BuilderApp

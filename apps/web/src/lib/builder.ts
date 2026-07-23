@@ -24,31 +24,62 @@ export interface FormDraft {
   calculations: CalcEntry[];
 }
 
-export const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
-  { value: "string", label: "Text (short answer)" },
-  { value: "textarea", label: "Paragraph" },
-  { value: "password", label: "Password" },
-  { value: "number", label: "Number" },
-  { value: "select-string", label: "Dropdown (text values)" },
-  { value: "select-number", label: "Dropdown (number values)" },
-  { value: "multi-select", label: "Multi-select dropdown" },
-  { value: "radio", label: "Radio (multiple choice)" },
-  { value: "checkbox-group", label: "Checkboxes (multi)" },
-  { value: "boolean", label: "Yes/No switch" },
-  { value: "segmented", label: "Segmented control" },
-  { value: "slider", label: "Slider (linear scale)" },
-  { value: "rating", label: "Star rating" },
-  { value: "color", label: "Color" },
-  { value: "date", label: "Date" },
-  { value: "time", label: "Time" },
-  { value: "datetime", label: "Date & time" },
-  { value: "tags", label: "Tags" },
-  { value: "repeatable-group", label: "Repeatable group" },
-];
+/** Loosely-typed translator so callers can pass a scoped `useTranslations("builder")`. */
+export type TranslateFn = (key: string, values?: Record<string, unknown>) => string;
 
-export const NESTED_QUESTION_TYPE_OPTIONS = QUESTION_TYPE_OPTIONS.filter(
-  (o) => o.value !== "repeatable-group",
+/** Maps each `QuestionType` to its leaf key under `builder.questionTypes`. */
+const QUESTION_TYPE_MESSAGE_KEYS: Record<QuestionType, string> = {
+  string: "string",
+  textarea: "textarea",
+  password: "password",
+  number: "number",
+  "select-string": "selectString",
+  "select-number": "selectNumber",
+  "multi-select": "multiSelect",
+  radio: "radio",
+  "checkbox-group": "checkboxGroup",
+  boolean: "boolean",
+  segmented: "segmented",
+  slider: "slider",
+  rating: "rating",
+  color: "color",
+  date: "date",
+  time: "time",
+  datetime: "datetime",
+  tags: "tags",
+  "repeatable-group": "repeatableGroup",
+};
+
+export const QUESTION_TYPE_VALUES = Object.keys(
+  QUESTION_TYPE_MESSAGE_KEYS,
+) as QuestionType[];
+
+export const NESTED_QUESTION_TYPE_VALUES = QUESTION_TYPE_VALUES.filter(
+  (value) => value !== "repeatable-group",
 );
+
+/** Translate a question type into its display label (`builder.questionTypes.*`). */
+export function getQuestionTypeLabel(t: TranslateFn, type: QuestionType): string {
+  return t(`questionTypes.${QUESTION_TYPE_MESSAGE_KEYS[type]}`);
+}
+
+export function getQuestionTypeOptions(
+  t: TranslateFn,
+): { value: QuestionType; label: string }[] {
+  return QUESTION_TYPE_VALUES.map((value) => ({
+    value,
+    label: getQuestionTypeLabel(t, value),
+  }));
+}
+
+export function getNestedQuestionTypeOptions(
+  t: TranslateFn,
+): { value: QuestionType; label: string }[] {
+  return NESTED_QUESTION_TYPE_VALUES.map((value) => ({
+    value,
+    label: getQuestionTypeLabel(t, value),
+  }));
+}
 
 export function emptyDraft(): FormDraft {
   return {

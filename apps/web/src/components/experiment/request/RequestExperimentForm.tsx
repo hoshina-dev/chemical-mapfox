@@ -2,6 +2,7 @@
 
 import { Alert, Box, LoadingOverlay, Stack, Text } from "@mantine/core";
 import { type FormAnswers, type FormDoc, FormRenderer } from "@repo/forms";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,6 +22,7 @@ export function RequestExperimentForm({
   clientForm,
   submitLabel,
 }: RequestExperimentFormProps) {
+  const t = useTranslations("experiment.request.form");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export function RequestExperimentForm({
         <Alert
           color="red"
           variant="light"
-          title="Could not submit your request"
+          title={t("errorTitle")}
           style={{ whiteSpace: "pre-wrap" }}
         >
           {error}
@@ -59,8 +61,7 @@ export function RequestExperimentForm({
 
       {isEmpty && (
         <Text size="sm" c="dimmed">
-          This experiment needs no intake details — submit to send your request
-          to the lab.
+          {t("noIntake")}
         </Text>
       )}
 
@@ -72,7 +73,7 @@ export function RequestExperimentForm({
         />
         <FormRenderer
           doc={clientForm}
-          submitLabel={submitLabel ?? "Submit request"}
+          submitLabel={submitLabel ?? t("submit")}
           onSubmit={handleSubmit}
         />
       </Box>

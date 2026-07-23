@@ -13,6 +13,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -53,6 +54,7 @@ export function BuilderApp({
   templateId,
   lineageId,
 }: BuilderAppProps) {
+  const t = useTranslations("builder");
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function BuilderApp({
     const { meta, template } = fromDraft(form.values);
     const parsed = ExperimentTemplate.safeParse(template);
     if (!parsed.success) {
-      setSaveError("Fix validation errors before saving.");
+      setSaveError(t("fixValidation"));
       setDebugPayload({ meta, template, validationErrors: parsed.error.format() });
       return;
     }
@@ -110,7 +112,7 @@ export function BuilderApp({
 
   const remove = () => {
     if (!templateId) return;
-    if (!window.confirm("Delete this experiment template?")) return;
+    if (!window.confirm(t("deleteConfirm"))) return;
     startTransition(async () => {
       const result = await deleteTemplateAction({ sampleId, templateId });
       if (!result.success) {
@@ -128,16 +130,16 @@ export function BuilderApp({
       <Group justify="space-between">
         <Title order={2}>
           {mode === "create"
-            ? "New template"
-            : `Edit: ${form.values.title || initial.title}`}
+            ? t("newTemplateTitle")
+            : t("editTitle", { title: form.values.title || initial.title })}
         </Title>
         <Button variant="subtle" component={Link} href={onboardingPath()}>
-          Back to templates
+          {t("backToTemplates")}
         </Button>
       </Group>
 
       {saveError && (
-        <Alert color="red" variant="light" title="Save failed">
+        <Alert color="red" variant="light" title={t("saveFailedTitle")}>
           <Stack gap="xs">
             <Text size="sm" style={{ whiteSpace: "pre-line" }}>
               {saveError}
@@ -145,7 +147,7 @@ export function BuilderApp({
             {debugPayload != null && (
               <>
                 <Text size="xs" c="dimmed" fw={600}>
-                  Payload (for debugging)
+                  {t("payloadForDebugging")}
                 </Text>
                 <Code
                   block
@@ -159,24 +161,20 @@ export function BuilderApp({
         </Alert>
       )}
 
-      <CollapsiblePanel
-        title="Metadata"
-        subtitle="Basic info about this template. The ID is auto-assigned and read-only."
-      >
+      <CollapsiblePanel title={t("metadata.title")} subtitle={t("metadata.subtitle")}>
         {sampleName && (
           <Text size="sm">
-            This template is associated with sample{" "}
-            <Text span fw={600}>
-              {sampleName}
-            </Text>
-            .
+            {t("metadata.associatedWithSample", { name: sampleName })}
           </Text>
         )}
         {mode === "edit" && templateId && (
-          <TextInput label="Template ID" value={templateId} disabled />
+          <TextInput label={t("metadata.templateId")} value={templateId} disabled />
         )}
-        <TextInput label="Name" required {...textProps(form, "title")} />
-        <TextInput label="Description" {...textProps(form, "description")} />
+        <TextInput label={t("metadata.name")} required {...textProps(form, "title")} />
+        <TextInput
+          label={t("metadata.description")}
+          {...textProps(form, "description")}
+        />
       </CollapsiblePanel>
 
       <SectionEditor form={form} path="clientForm" />
@@ -194,10 +192,10 @@ export function BuilderApp({
         }}
       >
         <Button variant="default" onClick={() => setPreviewOpen(true)}>
-          Live preview
+          {t("livePreview")}
         </Button>
         <Button onClick={save} loading={isPending} color="green">
-          {mode === "create" ? "Create template" : "Save changes"}
+          {mode === "create" ? t("createTemplate") : t("saveChanges")}
         </Button>
         {mode === "edit" && templateId && (
           <Button
@@ -205,7 +203,7 @@ export function BuilderApp({
             component={Link}
             href={templatePdfPath({ sampleId, templateId })}
           >
-            Design PDF report
+            {t("designPdf")}
           </Button>
         )}
         {mode === "edit" && templateId && (
@@ -215,7 +213,7 @@ export function BuilderApp({
             onClick={remove}
             loading={isPending}
           >
-            Delete
+            {t("delete")}
           </Button>
         )}
       </Group>
@@ -225,13 +223,13 @@ export function BuilderApp({
         onClose={() => setPreviewOpen(false)}
         position="right"
         size="xl"
-        title="Live preview"
+        title={t("livePreview")}
       >
         {draftTemplate ? (
           <TemplatePreview template={draftTemplate} />
         ) : (
-          <Alert color="red" variant="light" title="Draft is not valid">
-            Fix the schema before previewing.
+          <Alert color="red" variant="light" title={t("draftNotValidTitle")}>
+            {t("draftNotValidBody")}
           </Alert>
         )}
       </Drawer>

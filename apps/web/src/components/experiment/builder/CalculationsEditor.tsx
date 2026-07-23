@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useTranslations } from "next-intl";
 
 import type { FormDraft } from "@/lib/builder";
 
@@ -44,44 +45,45 @@ function CalcRow({
   nameProps,
   onDelete,
 }: CalcRowProps) {
+  const t = useTranslations("builder.calculations");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
     <Group gap="xs" wrap="nowrap" align="flex-start">
       <TextInput
-        label={isFirst ? "Name" : undefined}
-        placeholder="totalCost"
+        label={isFirst ? t("name") : undefined}
+        placeholder={t("namePlaceholder")}
         style={{ flex: 1 }}
         {...nameProps}
       />
-      <Input.Wrapper label={isFirst ? "Formula" : undefined} style={{ flex: 2 }}>
+      <Input.Wrapper label={isFirst ? t("formula") : undefined} style={{ flex: 2 }}>
         <CompactFormulaEditor
           value={formula}
           onChange={onFormulaChange}
           onExpand={onExpand}
-          placeholder="mean(values['reading_a'])"
+          placeholder={t("formulaPlaceholder")}
         />
       </Input.Wrapper>
       <Group gap={4} wrap="nowrap" mt={isFirst ? 25 : 0}>
-        <Tooltip label="Open code editor">
-          <ActionIcon variant="subtle" onClick={onExpand} aria-label="Open code editor">
+        <Tooltip label={t("openCodeEditor")}>
+          <ActionIcon variant="subtle" onClick={onExpand} aria-label={t("openCodeEditor")}>
             ⤢
           </ActionIcon>
         </Tooltip>
         {confirmDelete ? (
           <Group gap={4} wrap="nowrap">
             <Text size="xs" c="red" fw={600}>
-              Delete?
+              {t("deleteConfirm")}
             </Text>
             <Button size="compact-xs" color="red" onClick={onDelete}>
-              Yes
+              {t("yes")}
             </Button>
             <Button
               size="compact-xs"
               variant="default"
               onClick={() => setConfirmDelete(false)}
             >
-              No
+              {t("no")}
             </Button>
           </Group>
         ) : (
@@ -89,7 +91,7 @@ function CalcRow({
             color="red"
             variant="subtle"
             onClick={() => setConfirmDelete(true)}
-            aria-label="Remove calculation"
+            aria-label={t("remove")}
           >
             ✕
           </ActionIcon>
@@ -100,6 +102,7 @@ function CalcRow({
 }
 
 export function CalculationsEditor({ form }: CalculationsEditorProps) {
+  const t = useTranslations("builder.calculations");
   const calcs = form.values.calculations;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -107,14 +110,14 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
 
   return (
     <CollapsiblePanel
-      title="Calculations"
-      subtitle="Each calculation is a Python formula string evaluated by the backend; results are display-only here."
-      badge={`${calcs.length} formula${calcs.length === 1 ? "" : "s"}`}
+      title={t("title")}
+      subtitle={t("subtitle")}
+      badge={t("formulaCount", { count: calcs.length })}
     >
       <Stack gap="sm" style={{ width: "100%" }}>
         {calcs.length === 0 && (
           <Text size="sm" c="dimmed">
-            No calculations yet.
+            {t("none")}
           </Text>
         )}
         {calcs.map((calc, i) => (
@@ -138,7 +141,7 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
               form.insertListItem("calculations", { name: "", formula: "" })
             }
           >
-            Add calculation
+            {t("add")}
           </Button>
         </Group>
       </Stack>
@@ -150,7 +153,9 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
         size="lg"
         title={
           <Text fw={600}>
-            Edit formula{activeCalc?.name ? `: ${activeCalc.name}` : ""}
+            {activeCalc?.name
+              ? t("editFormulaNamed", { name: activeCalc.name })
+              : t("editFormula")}
           </Text>
         }
       >
@@ -167,37 +172,24 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
 
             <div>
               <Text size="sm" fw={600}>
-                Available in formulas
+                {t("availableInFormulas")}
               </Text>
               <List size="xs" spacing={2} mt={4}>
                 <List.Item>
-                  <Code>values[&apos;question_id&apos;]</Code> — answers from the
-                  client/lab forms
+                  <Code>values[&apos;question_id&apos;]</Code> —{" "}
+                  {t("helpValues")}
                 </List.Item>
-                <List.Item>
-                  Other calculation names (defined above) can be referenced
-                  directly
-                </List.Item>
-                <List.Item>
-                  <Code>math</Code> module (e.g. <Code>math.sqrt</Code>,{" "}
-                  <Code>math.pi</Code>)
-                </List.Item>
-                <List.Item>
-                  Builtins: <Code>round</Code>, <Code>abs</Code>,{" "}
-                  <Code>min</Code>, <Code>max</Code>, <Code>sum</Code>,{" "}
-                  <Code>len</Code>, <Code>zip</Code>, <Code>mean</Code>,{" "}
-                  <Code>median</Code>, <Code>stdev</Code>
-                </List.Item>
+                <List.Item>{t("helpOtherCalcs")}</List.Item>
+                <List.Item>{t("helpMath")}</List.Item>
+                <List.Item>{t("helpBuiltins")}</List.Item>
               </List>
               <Text size="xs" c="dimmed" mt={6}>
-                You can write multiple lines: the final line is used as the
-                result, or assign it to a <Code>result</Code> variable. Dunder (
-                <Code>__</Code>) access is rejected by the backend.
+                {t("helpMultiline")}
               </Text>
             </div>
 
             <Group justify="flex-end">
-              <Button onClick={() => setActiveIndex(null)}>Done</Button>
+              <Button onClick={() => setActiveIndex(null)}>{t("done")}</Button>
             </Group>
           </Stack>
         )}

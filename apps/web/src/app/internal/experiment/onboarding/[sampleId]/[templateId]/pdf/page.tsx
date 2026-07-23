@@ -1,4 +1,5 @@
 import { Alert, Container } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { listTemplateExperimentsAction } from "@/app/actions/pdf";
@@ -50,6 +51,7 @@ function expandSourceVars(
 export default async function PdfEditorPage({ params }: PdfEditorPageProps) {
   await requireAdmin();
   const { sampleId, templateId } = await params;
+  const t = await getTranslations("pdfEditor");
 
   let template;
   try {
@@ -58,8 +60,8 @@ export default async function PdfEditorPage({ params }: PdfEditorPageProps) {
     if (err instanceof ExperimentManagerError && err.status === 404) notFound();
     return (
       <Container size="xl" py="xl">
-        <Alert color="red" variant="light" title="PDF editor unavailable">
-          Could not load the experiment template.
+        <Alert color="red" variant="light" title={t("unavailableTitle")}>
+          {t("loadTemplateError")}
         </Alert>
       </Container>
     );
@@ -74,8 +76,8 @@ export default async function PdfEditorPage({ params }: PdfEditorPageProps) {
     if (!(err instanceof ExperimentManagerError && err.status === 404)) {
       return (
         <Container size="xl" py="xl">
-          <Alert color="red" variant="light" title="PDF editor unavailable">
-            Could not load the PDF layout.
+          <Alert color="red" variant="light" title={t("unavailableTitle")}>
+            {t("loadLayoutError")}
           </Alert>
         </Container>
       );

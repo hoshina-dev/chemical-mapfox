@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import {
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
 import type { EnrichedTicket } from "@/lib/internal/experiments";
+import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
 import { statusMeta } from "@/lib/ticketing/tickets";
 
 type SortField = "experiment" | "requester" | "status" | "createdAt" | "updatedAt";
@@ -33,36 +35,36 @@ const DONE_STATUSES = [
 
 const GROUP_FILTERS: {
   group: Group;
-  label: string;
-  hint: string;
+  labelKey: "all" | "active" | "pending" | "done";
+  hintKey: "allHint" | "activeHint" | "pendingHint" | "doneHint";
   accent: string;
   bg: string;
 }[] = [
   {
     group: "all",
-    label: "All",
-    hint: "Every experiment ticket",
+    labelKey: "all",
+    hintKey: "allHint",
     accent: "#343a40",
     bg: "#f8f9fa",
   },
   {
     group: "active",
-    label: "Active",
-    hint: "In progress · Finalizing",
+    labelKey: "active",
+    hintKey: "activeHint",
     accent: "#1864ab",
     bg: "#e7f5ff",
   },
   {
     group: "pending",
-    label: "Pending",
-    hint: "Requested · Sample received",
+    labelKey: "pending",
+    hintKey: "pendingHint",
     accent: "#c04a00",
     bg: "#fff4e6",
   },
   {
     group: "done",
-    label: "Closed",
-    hint: "Completed · Cancelled",
+    labelKey: "done",
+    hintKey: "doneHint",
     accent: "#1a6b2a",
     bg: "#ebfbee",
   },
@@ -91,15 +93,20 @@ function groupOf(status: string): Group {
   return "all";
 }
 
-const SORTABLE: { field: SortField; label: string }[] = [
-  { field: "experiment", label: "Experiment" },
-  { field: "requester", label: "Requester" },
-  { field: "status", label: "Status" },
-  { field: "createdAt", label: "Created" },
-  { field: "updatedAt", label: "Updated" },
+const SORTABLE: {
+  field: SortField;
+  columnKey: "experiment" | "requester" | "status" | "created" | "updated";
+}[] = [
+  { field: "experiment", columnKey: "experiment" },
+  { field: "requester", columnKey: "requester" },
+  { field: "status", columnKey: "status" },
+  { field: "createdAt", columnKey: "created" },
+  { field: "updatedAt", columnKey: "updated" },
 ];
 
 export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] }) {
+  const t = useTranslations("staff.experiments");
+  const tStatus = useTranslations("status");
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -109,8 +116,8 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
 
   const counts = useMemo(() => {
     const result: Record<Group, number> = { all: tickets.length, active: 0, pending: 0, done: 0 };
-    for (const t of tickets) {
-      const g = groupOf(t.status);
+    for (const ticket of tickets) {
+      const g = groupOf(ticket.status);
       if (g !== "all") result[g]++;
     }
     return result;
@@ -118,22 +125,27 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
 
   const statusOptions = useMemo(() => {
     const seen = new Map<string, string>();
-    for (const t of tickets) {
-      if (!seen.has(t.status)) seen.set(t.status, statusMeta(t.status).label);
+    for (const ticket of tickets) {
+      if (!seen.has(ticket.status)) {
+        const key = statusTranslationKey(ticket.status);
+        const label =
+          key && tStatus.has(key) ? tStatus(key) : statusMeta(ticket.status).label;
+        seen.set(ticket.status, label);
+      }
     }
     return [...seen.entries()].map(([value, label]) => ({ value, label }));
-  }, [tickets]);
+  }, [tickets, tStatus]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = tickets.filter((t) => {
+    const filtered = tickets.filter((ticket) => {
       if (statusFilter) {
-        if (t.status !== statusFilter) return false;
-      } else if (activeGroup !== "all" && groupOf(t.status) !== activeGroup) {
+        if (ticket.status !== statusFilter) return false;
+      } else if (activeGroup !== "all" && groupOf(ticket.status) !== activeGroup) {
         return false;
       }
       if (!q) return true;
-      return [t.contextId, t.experimentTitle, t.sampleType, t.requester?.email, t.requester?.name].some(
+      return [ticket.contextId, ticket.experimentTitle, ticket.sampleType, ticket.requester?.email, ticket.requester?.name].some(
         (v) => v?.toLowerCase().includes(q),
       );
     });
@@ -165,14 +177,15 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
   return (
     <div className={classes.page}>
       <header className={classes.header}>
-        <h1 className={classes.title}>Experiments</h1>
-        <p className={classes.subtitle}>
-          Every experiment ticket from the ticketing service. Filter by lifecycle group,
-          search, sort, and open a row to work the experiment.
-        </p>
+        <h1 className={classes.title}>{t("title")}</h1>
+        <p className={classes.subtitle}>{t("subtitle")}</p>
       </header>
 
-      <div className={classes.groupFilters} role="group" aria-label="Filter by lifecycle group">
+      <div
+        className={classes.groupFilters}
+        role="group"
+        aria-label={t("filterGroupAriaLabel")}
+      >
         {GROUP_FILTERS.map((filter) => {
           const active = statusFilter === null && activeGroup === filter.group;
           const filterStyle = active
@@ -191,11 +204,15 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
               aria-pressed={active}
               onClick={() => selectGroup(filter.group)}
             >
-              <span className={classes.groupFilterLabel}>{filter.label}</span>
+              <span className={classes.groupFilterLabel}>
+                {t(`filters.${filter.labelKey}`)}
+              </span>
               <div className={classes.groupFilterRow}>
                 <span className={classes.groupFilterCount}>{counts[filter.group]}</span>
               </div>
-              <span className={classes.groupFilterHint}>{filter.hint}</span>
+              <span className={classes.groupFilterHint}>
+                {t(`filters.${filter.hintKey}`)}
+              </span>
             </button>
           );
         })}
@@ -207,8 +224,8 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
             className={classes.search}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search experiments, requesters…"
-            aria-label="Search experiments"
+            placeholder={t("searchPlaceholder")}
+            aria-label={t("searchAriaLabel")}
           />
           <div className={classes.statusPills}>
             <button
@@ -216,7 +233,7 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
               className={`${classes.statusPill}${statusFilter === null && activeGroup === "all" ? ` ${classes.statusPillActive}` : ""}`}
               onClick={() => selectStatus(null)}
             >
-              All statuses
+              {t("allStatuses")}
             </button>
             {statusOptions.map((opt) => (
               <button
@@ -231,7 +248,10 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
             ))}
           </div>
           <span className={classes.resultCount}>
-            {visible.length} of {tickets.length} experiment{tickets.length === 1 ? "" : "s"}
+            {t("experimentCount", {
+              visible: visible.length,
+              total: tickets.length,
+            })}
           </span>
         </div>
 
@@ -239,19 +259,19 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
           <table className={classes.table}>
             <thead className={classes.thead}>
               <tr>
-                {SORTABLE.map(({ field, label }) => (
+                {SORTABLE.map(({ field, columnKey }) => (
                   <th
                     key={field}
                     onClick={() => toggleSort(field)}
                     className={`${classes.th}${sortField === field ? ` ${classes.thSorted}` : ""}`}
                   >
-                    {label}{" "}
+                    {t(`columns.${columnKey}`)}{" "}
                     <span aria-hidden style={{ opacity: sortField === field ? 1 : 0.4, fontSize: 10 }}>
                       {sortField === field ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                     </span>
                   </th>
                 ))}
-                <th className={classes.th}>Context ID</th>
+                <th className={classes.th}>{t("columns.contextId")}</th>
               </tr>
             </thead>
             <tbody>
@@ -264,7 +284,7 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                   >
                     <td style={{ padding: "12px 14px 12px 20px" }}>
                       <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
-                        {ticket.experimentTitle ?? "Untitled experiment"}
+                        {ticket.experimentTitle ?? t("untitled")}
                       </div>
                       {ticket.sampleType && (
                         <span
@@ -330,11 +350,9 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
 
         {visible.length === 0 && (
           <div className={classes.empty}>
-            <div className={classes.emptyTitle}>No experiments found</div>
+            <div className={classes.emptyTitle}>{t("emptyTitle")}</div>
             <div className={classes.emptyHint}>
-              {tickets.length === 0
-                ? "No experiments yet."
-                : "Try adjusting your search or filter."}
+              {tickets.length === 0 ? t("emptyNone") : t("emptyFiltered")}
             </div>
           </div>
         )}

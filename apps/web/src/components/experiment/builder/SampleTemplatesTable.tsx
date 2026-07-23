@@ -10,6 +10,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 import { templateBuilderPath } from "@/lib/experiment-manager/routes";
@@ -20,21 +21,22 @@ export function SampleTemplatesTable({
 }: {
   templates: TemplateSummary[];
 }) {
+  const t = useTranslations("staff.templatesTable");
   const router = useRouter();
 
   return (
     <Table highlightOnHover verticalSpacing="sm">
       <TableThead>
         <TableTr>
-          <TableTh>Template</TableTh>
-          <TableTh>Description</TableTh>
+          <TableTh>{t("template")}</TableTh>
+          <TableTh>{t("description")}</TableTh>
         </TableTr>
       </TableThead>
       <TableTbody>
         {templates.map((tpl) => (
           <Tooltip
             key={tpl.templateId}
-            label={`Click to edit "${tpl.title}"`}
+            label={t("editTooltip", { title: tpl.title })}
             openDelay={700}
             position="top-start"
           >

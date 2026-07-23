@@ -10,6 +10,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useTranslations } from "next-intl";
 
 import type { FormDraft } from "@/lib/builder";
 
@@ -26,32 +27,33 @@ export function OptionsEditor({
   valueType,
   count,
 }: OptionsEditorProps) {
+  const t = useTranslations("builder.options");
   return (
     <Stack gap="xs">
       <Text size="sm" fw={500}>
-        Options
+        {t("title")}
       </Text>
       {count === 0 && (
         <Text size="xs" c="dimmed">
-          No options yet.
+          {t("none")}
         </Text>
       )}
       {Array.from({ length: count }).map((_, i) => (
         <Group key={i} gap="xs" wrap="nowrap">
           <TextInput
-            placeholder="Label"
+            placeholder={t("label")}
             style={{ flex: 1 }}
             {...form.getInputProps(`${path}.${i}.label`)}
           />
           {valueType === "string" ? (
             <TextInput
-              placeholder="Value"
+              placeholder={t("value")}
               style={{ flex: 1 }}
               {...form.getInputProps(`${path}.${i}.value`)}
             />
           ) : (
             <NumberInput
-              placeholder="Value"
+              placeholder={t("value")}
               style={{ flex: 1 }}
               {...form.getInputProps(`${path}.${i}.value`)}
             />
@@ -60,7 +62,7 @@ export function OptionsEditor({
             color="red"
             variant="subtle"
             onClick={() => form.removeListItem(path, i)}
-            aria-label="Remove option"
+            aria-label={t("remove")}
           >
             ✕
           </ActionIcon>
@@ -79,7 +81,7 @@ export function OptionsEditor({
           )
         }
       >
-        Add option
+        {t("add")}
       </Button>
     </Stack>
   );

@@ -14,9 +14,11 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { BrandIcon } from "@/components/brand/BrandMark";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { BRAND } from "@/lib/brand";
 
 import { HeadingMark, WorkflowDiagram } from "./decor";
@@ -35,56 +37,20 @@ import type { OfferSample } from "@/lib/landing/offer";
 export type { OfferSample } from "@/lib/landing/offer";
 
 const NAV_LINKS = [
-  { id: "offer", label: "Laboratory offer" },
-  { id: "certifications", label: "Certifications" },
-  { id: "about", label: "About us" },
-  { id: "contact", label: "Contact" },
-];
+  { id: "offer", key: "labOffer" },
+  { id: "certifications", key: "certifications" },
+  { id: "about", key: "about" },
+  { id: "contact", key: "contact" },
+] as const;
 
-interface Certification {
-  code: string;
-  title: string;
-  description: string;
-}
-
-const CERTIFICATIONS: Certification[] = [
-  {
-    code: "ISO/IEC 17025",
-    title: "Testing competence",
-    description:
-      "Accredited for the general competence to carry out tests and calibrations, including sampling.",
-  },
-  {
-    code: "ISO 9001",
-    title: "Quality management",
-    description:
-      "Certified quality management system covering every step from intake to reporting.",
-  },
-  {
-    code: "ISO 17043",
-    title: "Proficiency testing",
-    description:
-      "Authorised provider of proficiency testing and inter-laboratory comparison schemes.",
-  },
-  {
-    code: "GLP",
-    title: "Good Laboratory Practice",
-    description:
-      "Compliant with GLP principles for the integrity and traceability of study data.",
-  },
-  {
-    code: "HACCP",
-    title: "Food safety",
-    description:
-      "Hazard analysis and critical control points applied across food and feed testing.",
-  },
-  {
-    code: "ISO 14001",
-    title: "Environmental management",
-    description:
-      "Environmental management system governing safe handling and disposal of reagents.",
-  },
-];
+const CERTIFICATION_KEYS = [
+  "iso17025",
+  "iso9001",
+  "iso17043",
+  "glp",
+  "haccp",
+  "iso14001",
+] as const;
 
 function ShieldIcon() {
   return (
@@ -134,8 +100,11 @@ export function Landing({
   workspaceHref: string | null;
   offer: OfferSample[] | null;
 }) {
+  const t = useTranslations("landing");
   const ctaHref = workspaceHref ?? "/login";
-  const ctaLabel = workspaceHref ? "Go to your workspace" : "Get started";
+  const ctaLabel = workspaceHref
+    ? t("nav.goToWorkspace")
+    : t("nav.getStarted");
 
   const sampleCount = offer?.length ?? 0;
   const methodCount =
@@ -158,7 +127,7 @@ export function Landing({
             <span className={classes.brandTag}>{BRAND.tagline}</span>
           </a>
 
-          <nav className={classes.nav} aria-label="Primary">
+          <nav className={classes.nav} aria-label={t("nav.primaryAriaLabel")}>
             {NAV_LINKS.map((link) => (
               <a
                 key={link.id}
@@ -169,12 +138,13 @@ export function Landing({
                   scrollToId(link.id);
                 }}
               >
-                {link.label}
+                {t(`nav.${link.key}`)}
               </a>
             ))}
           </nav>
 
           <Group gap="sm" wrap="nowrap">
+            <LanguageSwitcher />
             {!workspaceHref && (
               <Anchor
                 component={Link}
@@ -184,7 +154,7 @@ export function Landing({
                 fz="sm"
                 className={classes.signIn}
               >
-                Sign in
+                {t("nav.signIn")}
               </Anchor>
             )}
             <Button
@@ -204,14 +174,12 @@ export function Landing({
         <section className={classes.hero}>
           <Container size="xl" className={classes.heroInner}>
             <div className={classes.heroCopy}>
-              <span className={classes.eyebrow}>Accredited laboratory services</span>
+              <span className={classes.eyebrow}>{t("hero.eyebrow")}</span>
               <Title order={1} className={classes.heroTitle}>
-                Chemical experiments, from request to certified results.
+                {t("hero.title")}
               </Title>
               <Text className={classes.heroLead}>
-                {BRAND.name} runs your samples through an accredited workflow — intake,
-                lab execution and reporting in one place. Track every specimen,
-                see exactly where it is, and receive results you can trust.
+                {t("hero.lead", { brand: BRAND.name })}
               </Text>
               <Group gap="md" mt="lg">
                 <Button
@@ -229,21 +197,23 @@ export function Landing({
                   radius="sm"
                   onClick={() => scrollToId("offer")}
                 >
-                  Explore our offer
+                  {t("hero.exploreOffer")}
                 </Button>
               </Group>
               <Group gap="lg" mt="xl" className={classes.heroTrust}>
                 <Text fz="sm" c="dimmed">
-                  <strong className={classes.trustNum}>ISO/IEC 17025</strong>{" "}
-                  accredited
+                  <strong className={classes.trustNum}>
+                    {t("hero.accreditedLabel")}
+                  </strong>{" "}
+                  {t("hero.accredited")}
                 </Text>
                 <Text fz="sm" c="dimmed">
                   <strong className={classes.trustNum}>{sampleCount}</strong>{" "}
-                  specimen types
+                  {t("hero.specimenTypes")}
                 </Text>
                 <Text fz="sm" c="dimmed">
                   <strong className={classes.trustNum}>{methodCount}</strong>{" "}
-                  test methods
+                  {t("hero.testMethods")}
                 </Text>
               </Group>
             </div>
@@ -256,17 +226,16 @@ export function Landing({
           <Container size="xl">
             <SectionHeading
               step={0}
-              kicker="Laboratory offer"
-              title="What we test"
-              lead="Browse the specimens our labs support. Open any one to see the individual test methods available for it."
+              kicker={t("offer.kicker")}
+              title={t("offer.title")}
+              lead={t("offer.lead")}
             />
 
             {offer === null ? (
               <Box className={classes.fallback}>
-                <Text fw={600}>Our offer is being updated</Text>
+                <Text fw={600}>{t("offer.fallbackTitle")}</Text>
                 <Text c="dimmed" fz="sm">
-                  The catalogue is briefly unavailable. Please check back shortly
-                  or get in touch and we&apos;ll walk you through what we test.
+                  {t("offer.fallbackBody")}
                 </Text>
               </Box>
             ) : (
@@ -311,15 +280,16 @@ export function Landing({
                           radius="sm"
                           className={classes.offerCount}
                         >
-                          {sample.experiments.length}{" "}
-                          {sample.experiments.length === 1 ? "method" : "methods"}
+                          {t("offer.methodCount", {
+                            count: sample.experiments.length,
+                          })}
                         </Badge>
                       </Group>
                     </Accordion.Control>
                     <Accordion.Panel>
                       {sample.experiments.length === 0 ? (
                         <Text fz="sm" c="dimmed">
-                          Methods for this specimen are being added.
+                          {t("offer.methodsBeingAdded")}
                         </Text>
                       ) : (
                         <Stack gap="xs">
@@ -349,7 +319,7 @@ export function Landing({
                             mt={4}
                           >
                             <Group gap={6} wrap="nowrap" component="span">
-                              Request this experiment
+                              {t("offer.requestThisExperiment")}
                               <ArrowRightIcon size={16} />
                             </Group>
                           </Anchor>
@@ -368,9 +338,9 @@ export function Landing({
           <Container size="xl">
             <SectionHeading
               step={1}
-              kicker="How it works"
-              title="From request to certified results"
-              lead="One accountable pipeline. You always know which stage your sample is in and what happens next."
+              kicker={t("howItWorks.kicker")}
+              title={t("howItWorks.title")}
+              lead={t("howItWorks.lead")}
             />
             <WorkflowDiagram />
           </Container>
@@ -381,13 +351,13 @@ export function Landing({
           <Container size="xl">
             <SectionHeading
               step={2}
-              kicker="Accreditations"
-              title="Certifications & accreditations"
-              lead="Our results carry recognised accreditation. Every method runs under a quality system audited against international standards."
+              kicker={t("certifications.kicker")}
+              title={t("certifications.title")}
+              lead={t("certifications.lead")}
             />
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-              {CERTIFICATIONS.map((cert) => (
-                <div key={cert.code} className={classes.certCard}>
+              {CERTIFICATION_KEYS.map((key) => (
+                <div key={key} className={classes.certCard}>
                   <Group gap="sm" wrap="nowrap" mb="xs">
                     <ThemeIcon
                       variant="light"
@@ -399,15 +369,15 @@ export function Landing({
                     </ThemeIcon>
                     <div>
                       <Text fw={700} className={classes.certCode}>
-                        {cert.code}
+                        {t(`certifications.items.${key}.code`)}
                       </Text>
                       <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>
-                        {cert.title}
+                        {t(`certifications.items.${key}.title`)}
                       </Text>
                     </div>
                   </Group>
                   <Text fz="sm" c="dimmed">
-                    {cert.description}
+                    {t(`certifications.items.${key}.description`)}
                   </Text>
                 </div>
               ))}
@@ -422,24 +392,26 @@ export function Landing({
               <div className={classes.aboutCopy}>
                 <SectionHeading
                   step={3}
-                  kicker="About us"
-                  title="A laboratory built around your samples"
-                  lead={`${BRAND.name} brings together sample intake, collaborative lab execution and accredited reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.`}
+                  kicker={t("about.kicker")}
+                  title={t("about.title")}
+                  lead={t("about.lead", { brand: BRAND.name })}
                   align="left"
                 />
                 <Text c="dimmed" mt="md">
-                  We pair experienced analysts with a modern workflow so that
-                  every result is traceable, reproducible and delivered on time.
-                  From a single water sample to a full production-hygiene
-                  programme, the process is the same: clear, accountable and
-                  quality-assured.
+                  {t("about.body")}
                 </Text>
               </div>
               <div className={classes.statGrid}>
-                <Stat value={`${sampleCount}`} label="Specimen types" />
-                <Stat value={`${methodCount}`} label="Accredited methods" />
-                <Stat value="6" label="Active accreditations" />
-                <Stat value="24h" label="Sample intake" />
+                <Stat value={`${sampleCount}`} label={t("about.statSpecimenTypes")} />
+                <Stat value={`${methodCount}`} label={t("about.statAccreditedMethods")} />
+                <Stat
+                  value={t("about.statActiveAccreditationsValue")}
+                  label={t("about.statActiveAccreditations")}
+                />
+                <Stat
+                  value={t("about.statSampleIntakeValue")}
+                  label={t("about.statSampleIntake")}
+                />
               </div>
             </div>
           </Container>
@@ -452,9 +424,9 @@ export function Landing({
               <div>
                 <SectionHeading
                   step={4}
-                  kicker="Contact"
-                  title="Interested in our offer?"
-                  lead="Get in touch today and let's start working together — or jump straight in and create your first request."
+                  kicker={t("contact.kicker")}
+                  title={t("contact.title")}
+                  lead={t("contact.lead")}
                   align="left"
                 />
                 <Button
@@ -471,25 +443,25 @@ export function Landing({
               <div className={classes.contactDetails}>
                 <ContactRow
                   icon={<MailIcon />}
-                  label="Email"
+                  label={t("contact.email")}
                   value={BRAND.email}
                   href={`mailto:${BRAND.email}`}
                 />
                 <ContactRow
                   icon={<PhoneIcon />}
-                  label="Phone"
-                  value="+48 22 000 00 00"
+                  label={t("contact.phone")}
+                  value={t("contact.phoneValue")}
                   href="tel:+48220000000"
                 />
                 <ContactRow
                   icon={<PinIcon />}
-                  label="Laboratory"
-                  value="ul. Laboratoryjna 1, 00-001 Warszawa"
+                  label={t("contact.laboratory")}
+                  value={t("contact.laboratoryValue")}
                 />
                 <ContactRow
                   icon={<ClockIcon />}
-                  label="Hours"
-                  value="Mon–Fri, 8:00–16:00"
+                  label={t("contact.hours")}
+                  value={t("contact.hoursValue")}
                 />
               </div>
             </div>
@@ -507,8 +479,10 @@ export function Landing({
               </Text>
             </Group>
             <Text fz="xs" c="dimmed">
-              © {new Date().getFullYear()} {BRAND.legalName}. All rights
-              reserved.
+              {t("footer.rights", {
+                year: new Date().getFullYear(),
+                legalName: BRAND.legalName,
+              })}
             </Text>
           </Group>
         </Container>

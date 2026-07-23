@@ -1,4 +1,5 @@
 import { Alert, Card, Container, Stack, Text, Title } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { RequestExperimentForm } from "@/components/experiment/request/RequestExperimentForm";
@@ -17,6 +18,7 @@ export default async function RequestExperimentPage({
 }) {
   const { templateId } = await params;
   const { sampleId } = await searchParams;
+  const t = await getTranslations("experiment.request");
 
   const loaded = await loadRequestTemplate(templateId, sampleId);
   if (!loaded) {
@@ -28,7 +30,7 @@ export default async function RequestExperimentPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "Request an experiment", href: requestCatalogPath() },
+            { label: t("catalog.breadcrumb"), href: requestCatalogPath() },
             { label: loaded.template.meta.title },
           ]}
         />
@@ -41,9 +43,8 @@ export default async function RequestExperimentPage({
         </Stack>
 
         {!loaded.template.valid && (
-          <Alert color="orange" variant="light" title="Template may be out of date">
-            The stored template didn&apos;t fully match the current form schema;
-            the form below is best-effort.
+          <Alert color="orange" variant="light" title={t("form.outOfDateTitle")}>
+            {t("form.outOfDateBody")}
           </Alert>
         )}
 

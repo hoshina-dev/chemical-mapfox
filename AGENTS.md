@@ -35,6 +35,77 @@ component from a server component.
 Rule of thumb: if a Mantine element needs `component={Link}`, an `onClick`, or
 any other function prop, that element belongs in a `"use client"` component.
 
+## Internationalization (i18n)
+
+The web app uses **`next-intl`** with **no locale URL prefixes**. Locales:
+`en` (default + message fallback), `pl`, `th`. Preference is the `NEXT_LOCALE`
+cookie (set by `apps/web/src/proxy.ts` from `Accept-Language` on first visit;
+changed via `setLocaleAction` + `LanguageSwitcher`). Config:
+`apps/web/src/i18n/` (`config.ts`, `request.ts`, `mergeMessages.ts`).
+
+### Message catalogs
+
+- **Source of truth:** `apps/web/messages/en.json` — every user-facing string
+  belongs here first.
+- **Translations:** `apps/web/messages/pl.json` and `th.json` must mirror the
+  **same nested key tree**. Incomplete locales are deep-merged onto English at
+  runtime (`mergeMessages`), but **do not rely on that** — when you add or
+  change a key, update **all three** files in the same change.
+- Top-level namespaces (pick the closest; add a nested group rather than a new
+  top-level unless nothing fits): `meta`, `common`, `landing`, `auth`, `status`,
+  `experiment`, `staff`, `builder`, `pdfEditor`, `docs`, `forms`.
+
+### When adding or changing UI copy
+
+1. **No hardcoded English** in JSX, alerts, buttons, placeholders, `aria-label`s,
+   `confirm()`, Zod/`message:` validation, or server-action user errors.
+2. Add the key to `en.json`, then accurate `pl` / `th` translations (same
+   placeholders and ICU shape).
+3. Wire the UI:
+   - Client components: `useTranslations("namespace")` from `next-intl`.
+   - Server Components / server actions: `getTranslations("namespace")` from
+     `next-intl/server`.
+4. Prefer existing keys under `common.*` (cancel, copy, save, emDash, …) over
+   duplicating shared chrome.
+
+### ICU / rich text
+
+- Interpolation: `{name}`, `{count}`, `{brand}`, … — keep placeholder names
+  identical across locales.
+- Counts: use ICU plurals, e.g.
+  `"{count, plural, one {# method} other {# methods}}"`. Polish may use
+  `one`/`few`/`many`/`other`; Thai may keep `one`/`other` or collapse to
+  `other` — preserve a valid plural block.
+- Embedding React (e.g. `<LocalDateTime />`): use **rich-text tags** in the
+  message (`"… <date></date> …"`) and `t.rich("key", { date: () => <… /> })`.
+  Do **not** pass a raw React element as a `{date}` value.
+- Literal braces in copy (e.g. `{{variables}}`) must be ICU-escaped:
+  `'{{'variables'}}'`.
+
+### Do not translate
+
+- Brand / legal names, emails, phones, street addresses (unless the catalog
+  already localizes a related label).
+- ISO / accreditation codes (`ISO/IEC 17025`, `GLP`, …).
+- Backend/API content (ticket titles, template question labels, org names).
+- Technical identifiers and code (`clientForm`, formula examples, schema field
+  names shown as code).
+
+### Tests
+
+`apps/web/test/render.tsx` wraps RTL in `NextIntlClientProvider` with English
+messages. Prefer that helper for component tests. Mock
+`@/app/actions/locale` / `next/navigation` if the tree includes
+`LanguageSwitcher`.
+
+**Acceptance / Cucumber e2e (`e2e/`):** assert against **English** UI copy only
+(Gherkin steps and Playwright locators use `en.json` strings). Do not write
+locale-parameterized scenarios or assert Polish/Thai labels in e2e — **except**
+the dedicated language-switch feature (`e2e/features/i18n/`), which must verify
+localized copy and the `NEXT_LOCALE` cookie. Locale coverage for PL/TH otherwise
+is via message catalogs + manual/spot checks. Ensure other scenarios resolve to
+English (default `Accept-Language` / `NEXT_LOCALE=en` is fine).
+
 ## Schema source of truth
 
 `packages/forms/experiment-template.schema.json` (JSON Schema) is the source of

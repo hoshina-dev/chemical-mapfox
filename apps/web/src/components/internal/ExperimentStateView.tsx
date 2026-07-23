@@ -16,6 +16,7 @@ import {
   Title,
 } from "@mantine/core";
 import { FormRenderer } from "@repo/forms";
+import { useTranslations } from "next-intl";
 
 import type { SessionUser } from "@/lib/auth/definitions";
 import type { ExperimentState } from "@/lib/experiment-manager/mappers";
@@ -44,6 +45,7 @@ export function ExperimentStateView({
   state: ExperimentState;
   editable?: EditableConfig;
 }) {
+  const t = useTranslations("staff.experimentState");
   const { template } = state;
   const calculations = Object.entries(template.calculations);
   const hasClientForm = template.clientForm.questions.length > 0;
@@ -52,15 +54,16 @@ export function ExperimentStateView({
     <Stack gap="lg">
       {!state.valid && (
         <Text size="sm" c="orange">
-          The stored forms didn&apos;t fully match the current form schema; the
-          view below is best-effort.
+          {t("invalidSchema")}
         </Text>
       )}
 
       <Tabs defaultValue="lab">
         <Tabs.List>
-          <Tabs.Tab value="lab">Lab form</Tabs.Tab>
-          {hasClientForm && <Tabs.Tab value="client">Client intake</Tabs.Tab>}
+          <Tabs.Tab value="lab">{t("tabs.lab")}</Tabs.Tab>
+          {hasClientForm && (
+            <Tabs.Tab value="client">{t("tabs.client")}</Tabs.Tab>
+          )}
           {calculations.length > 0 && (
             <Tabs.Tab
               value="calculations"
@@ -70,7 +73,7 @@ export function ExperimentStateView({
                 </Badge>
               }
             >
-              Calculations
+              {t("tabs.calculations")}
             </Tabs.Tab>
           )}
         </Tabs.List>
@@ -118,17 +121,17 @@ export function ExperimentStateView({
             <Card withBorder radius="md" padding="lg">
               <Stack gap="md">
                 <Group justify="space-between">
-                  <Title order={4}>Calculations</Title>
+                  <Title order={4}>{t("calculations.title")}</Title>
                   <Text size="xs" c="dimmed">
-                    Computed from the entered values
+                    {t("calculations.subtitle")}
                   </Text>
                 </Group>
                 <Table verticalSpacing="xs" horizontalSpacing="md">
                   <TableThead>
                     <TableTr>
-                      <TableTh>Name</TableTh>
-                      <TableTh>Formula</TableTh>
-                      <TableTh>Result</TableTh>
+                      <TableTh>{t("calculations.name")}</TableTh>
+                      <TableTh>{t("calculations.formula")}</TableTh>
+                      <TableTh>{t("calculations.result")}</TableTh>
                     </TableTr>
                   </TableThead>
                   <TableTbody>

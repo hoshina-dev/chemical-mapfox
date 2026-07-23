@@ -10,14 +10,15 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
 import { logout } from "@/app/actions/auth";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { UserAvatar } from "@/components/UserAvatar";
 import classes from "@/components/nav/nav.module.css";
 import type { UserOrganization } from "@/lib/auth/organizations";
 import type { CustApiRole } from "@/lib/auth/definitions";
-import { roleLabel } from "@/lib/auth/definitions";
 import { organizationPageUrl } from "@/lib/organizationPortal/url";
 
 export interface UserMenuProps {
@@ -27,6 +28,8 @@ export interface UserMenuProps {
   role?: CustApiRole;
   organizations: UserOrganization[];
   organizationPortalUrl: string;
+  /** Client settings page; omit for staff menus. */
+  settingsHref?: string;
   /** "dark" tunes the trigger colors for the dark admin nav. */
   variant?: "light" | "dark";
 }
@@ -38,16 +41,19 @@ export function UserMenu({
   role,
   organizations,
   organizationPortalUrl,
+  settingsHref,
   variant = "light",
 }: UserMenuProps) {
   const [pending, startTransition] = useTransition();
   const dark = variant === "dark";
+  const t = useTranslations("common");
+  const roleText = role === "admin" ? t("roles.labStaff") : t("roles.client");
 
   return (
     <Menu position="bottom-end" width={260} withinPortal shadow="md">
       <Menu.Target>
         <UnstyledButton
-          aria-label="User menu"
+          aria-label={t("userMenu.ariaLabel")}
           className={`${classes.userMenuTrigger} ${dark ? classes.userMenuTriggerDark : classes.userMenuTriggerLight}`}
         >
           <UserAvatar
@@ -66,7 +72,7 @@ export function UserMenu({
             {name}
           </Text>
           <Badge variant="light" color={role === "admin" ? "grape" : "blue"}>
-            {roleLabel(role)}
+            {roleText}
           </Badge>
         </UnstyledButton>
       </Menu.Target>
@@ -97,10 +103,10 @@ export function UserMenu({
         <Menu.Divider />
         {organizations.length === 0 ? (
           <>
-            <Menu.Label>Organizations</Menu.Label>
+            <Menu.Label>{t("userMenu.organizations")}</Menu.Label>
             <Box px="sm" pb="xs">
               <Text size="xs" c="dimmed">
-                No organizations yet.
+                {t("userMenu.noOrganizations")}
               </Text>
             </Box>
           </>
@@ -108,7 +114,7 @@ export function UserMenu({
           <Box pb="xs">
             <Group wrap="nowrap" align="center" gap="xs" px="sm" py={6}>
               <Text size="xs" fw={500} c="dimmed">
-                Organizations
+                {t("userMenu.organizations")}
               </Text>
               {organizations.length === 1 && organizations[0]?.role && (
                 <Badge
@@ -155,13 +161,26 @@ export function UserMenu({
           </Box>
         )}
 
+        {settingsHref && (
+          <>
+            <Menu.Divider />
+            <Menu.Item component="a" href={settingsHref}>
+              {t("userMenu.settings")}
+            </Menu.Item>
+          </>
+        )}
+
+        <Menu.Divider />
+        <Box px="sm" py="xs">
+          <LanguageSwitcher size="xs" />
+        </Box>
         <Menu.Divider />
         <Menu.Item
           color="red"
           disabled={pending}
           onClick={() => startTransition(() => void logout())}
         >
-          Log out
+          {t("userMenu.logout")}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

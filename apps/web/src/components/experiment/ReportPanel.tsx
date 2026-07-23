@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Card, Group, Stack, Text, Title } from "@mantine/core";
+import { useTranslations } from "next-intl";
 
 import { LocalDateTime } from "@/components/LocalDateTime";
 
@@ -13,18 +14,21 @@ export function ReportPanel({
   viewHref: string;
   downloadHref: string;
 }) {
+  const t = useTranslations("experiment.report");
   return (
     <Card withBorder radius="md" padding="md">
       <Stack gap="sm">
         <Stack gap={2}>
-          <Title order={4}>Report</Title>
+          <Title order={4}>{t("title")}</Title>
           <Text size="sm" c="dimmed">
             {generatedAt ? (
               <>
-                Generated <LocalDateTime iso={generatedAt} />.{" "}
+                {t.rich("generated", {
+                  date: () => <LocalDateTime iso={generatedAt} />,
+                })}{" "}
               </>
             ) : null}
-            View the PDF in your browser or download a copy.
+            {t("body")}
           </Text>
         </Stack>
         <Group gap="sm">
@@ -35,7 +39,7 @@ export function ReportPanel({
             rel="noreferrer"
             size="sm"
           >
-            View report
+            {t("view")}
           </Button>
           <Button
             component="a"
@@ -44,7 +48,7 @@ export function ReportPanel({
             size="sm"
             download
           >
-            Download PDF
+            {t("download")}
           </Button>
         </Group>
       </Stack>

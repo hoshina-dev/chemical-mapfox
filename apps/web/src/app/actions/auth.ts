@@ -1,11 +1,12 @@
 "use server";
 
 import { CustApiResponseError, MemberRole } from "@repo/api-client";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import {
-  LoginFormSchema,
-  RegisterFormSchema,
+  createLoginFormSchema,
+  createRegisterFormSchema,
   type CustApiRole,
   type LoginFormState,
   type RegisterFormState,
@@ -44,7 +45,13 @@ export async function login(
   _state: LoginFormState,
   formData: FormData,
 ): Promise<LoginFormState> {
-  const parsed = LoginFormSchema.safeParse({
+  const tValidation = await getTranslations("auth.validation");
+  const schema = createLoginFormSchema({
+    emailInvalid: tValidation("emailInvalid"),
+    passwordRequired: tValidation("passwordRequired"),
+  });
+
+  const parsed = schema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -62,7 +69,8 @@ export async function login(
   try {
     user = await usersApi.authVerifyPost({ email, password });
   } catch {
-    return { message: "Invalid email or password." };
+    const tErrors = await getTranslations("auth.errors");
+    return { message: tErrors("invalidCredentials") };
   }
 
   await createSession({
@@ -81,7 +89,15 @@ export async function register(
   _state: RegisterFormState,
   formData: FormData,
 ): Promise<RegisterFormState> {
-  const parsed = RegisterFormSchema.safeParse({
+  const tValidation = await getTranslations("auth.validation");
+  const schema = createRegisterFormSchema({
+    nameRequired: tValidation("nameRequired"),
+    emailInvalid: tValidation("emailInvalid"),
+    passwordMinLength: tValidation("passwordMinLength"),
+    organizationRequired: tValidation("organizationRequired"),
+  });
+
+  const parsed = schema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
@@ -93,6 +109,7 @@ export async function register(
   }
 
   const { name, email, password, organizationId } = parsed.data;
+  const tErrors = await getTranslations("auth.errors");
 
   let created;
   try {
@@ -101,7 +118,7 @@ export async function register(
     return {
       message: await custApiErrorMessage(
         error,
-        "Could not create your account. The email may already be in use.",
+        tErrors("createAccountFailed"),
       ),
     };
   }
@@ -113,8 +130,7 @@ export async function register(
     });
   } catch {
     return {
-      message:
-        "Your account was created, but assigning your organization failed. Please sign in and try again.",
+      message: tErrors("organizationAssignFailed"),
     };
   }
 

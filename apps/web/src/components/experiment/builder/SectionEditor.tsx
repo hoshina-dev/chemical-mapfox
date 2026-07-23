@@ -2,6 +2,7 @@
 
 import { Button, Group, Stack, Text, TextInput } from "@mantine/core";
 import type { UseFormReturnType } from "@mantine/form";
+import { useTranslations } from "next-intl";
 
 import { type FormDraft, makeQuestion } from "@/lib/builder";
 
@@ -15,6 +16,7 @@ interface SectionEditorProps {
 }
 
 export function SectionEditor({ form, path }: SectionEditorProps) {
+  const t = useTranslations("builder");
   const section = form.values[path];
   const questionsPath = `${path}.questions`;
 
@@ -22,23 +24,23 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
 
   return (
     <CollapsiblePanel
-      title={path === "clientForm" ? "Client form" : "Lab form"}
-      badge={`${count} question${count === 1 ? "" : "s"}`}
+      title={path === "clientForm" ? t("section.clientForm") : t("section.labForm")}
+      badge={t("section.questionCount", { count })}
     >
       <TextInput
-        label="Section name"
+        label={t("section.name")}
         required
         {...textProps(form, `${path}.name`)}
       />
       <TextInput
-        label="Section description"
+        label={t("section.description")}
         {...textProps(form, `${path}.description`)}
       />
 
       <Stack gap="md">
         {count === 0 && (
           <Text size="sm" c="dimmed">
-            No questions yet.
+            {t("section.noQuestions")}
           </Text>
         )}
         {section.questions.map((question, i) => (
@@ -65,7 +67,7 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
           variant="light"
           onClick={() => form.insertListItem(questionsPath, makeQuestion("string"))}
         >
-          Add question
+          {t("section.addQuestion")}
         </Button>
       </Group>
     </CollapsiblePanel>

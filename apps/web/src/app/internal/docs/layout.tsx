@@ -1,14 +1,17 @@
 import { Box } from "@mantine/core";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { GallerySidebar } from "@/components/docs/GallerySidebar";
 import { BRAND } from "@/lib/brand";
 
-export const metadata: Metadata = {
-  title: BRAND.docsTitle,
-  description:
-    "Reference for lab technicians building forms: every question type the form engine supports.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("docs.layout");
+  return {
+    title: BRAND.docsTitle,
+    description: t("description"),
+  };
+}
 
 export default function DocsLayout({
   children,

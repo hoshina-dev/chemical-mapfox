@@ -3,22 +3,30 @@ import "./globals.css";
 
 import { mantineHtmlProps, MantineProvider } from "@mantine/core";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 
 import { BRAND } from "@/lib/brand";
 import { theme } from "@/theme";
 
-export const metadata: Metadata = {
-  title: BRAND.name,
-  description: `${BRAND.legalName} — chemical experiment workflow.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return {
+    title: BRAND.name,
+    description: t("description", { legalName: BRAND.legalName }),
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang={locale} {...mantineHtmlProps}>
       <head>
         {/*
           Dark-mode / color-scheme switching is not enabled yet. When you add a
@@ -54,7 +62,9 @@ export default function RootLayout({
         */}
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <MantineProvider theme={theme}>{children}</MantineProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

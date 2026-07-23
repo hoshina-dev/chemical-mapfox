@@ -1,9 +1,11 @@
 "use client";
 
 import { Badge } from "@mantine/core";
+import { useTranslations } from "next-intl";
 
 import { StatusIcon, statusIconKind } from "@/components/ticketing/StatusIcon";
 import { colorsForStatus } from "@/lib/ticketing/statusColors";
+import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
 import { statusMeta } from "@/lib/ticketing/tickets";
 
 type ChipVariant = "badge" | "pill";
@@ -28,9 +30,13 @@ export function StatusChip({
   variant?: ChipVariant;
   size?: "xs" | "sm" | "md" | "lg";
 }) {
+  const t = useTranslations("status");
   const meta = statusMeta(status);
   const iconKind = statusIconKind(status);
   const iconSize = BADGE_SIZES[size];
+  const translationKey = statusTranslationKey(status);
+  const label =
+    translationKey && t.has(translationKey) ? t(translationKey) : meta.label;
 
   if (variant === "badge") {
     return (
@@ -42,7 +48,7 @@ export function StatusChip({
         leftSection={<StatusIcon kind={iconKind} size={iconSize} />}
         styles={{ label: { textTransform: "none" } }}
       >
-        {meta.label}
+        {label}
       </Badge>
     );
   }
@@ -68,7 +74,7 @@ export function StatusChip({
       }}
     >
       <StatusIcon kind={iconKind} size={iconSize} />
-      {meta.label}
+      {label}
     </span>
   );
 }

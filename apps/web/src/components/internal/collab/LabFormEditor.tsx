@@ -2,6 +2,7 @@
 
 import { Alert, Button, Card, Group, Stack } from "@mantine/core";
 import type { FormAnswers, FormDoc } from "@repo/forms";
+import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
 
 import { submitExperimentAction } from "@/app/actions/experiment";
@@ -33,6 +34,7 @@ export function LabFormEditor({
   currentUser,
   canSubmit,
 }: LabFormEditorProps) {
+  const t = useTranslations("staff.collab");
   const { values, presence, locks, connectionId, focusField, blurField, edit } =
     useCollab(contextId, initialValues);
 
@@ -81,19 +83,19 @@ export function LabFormEditor({
       </Card>
 
       {result?.error && (
-        <Alert color="red" variant="light" title="Submit failed">
+        <Alert color="red" variant="light" title={t("submitFailedTitle")}>
           {result.error}
         </Alert>
       )}
       {result?.ok && (
-        <Alert color="teal" variant="light" title="Submitted">
-          Experiment submitted to the final stage.
+        <Alert color="teal" variant="light" title={t("submittedTitle")}>
+          {t("submittedBody")}
         </Alert>
       )}
 
       <Group justify="flex-end">
         <Button onClick={submit} loading={pending} disabled={!canSubmit}>
-          Submit to final stage
+          {t("submitToFinalStage")}
         </Button>
       </Group>
     </Stack>

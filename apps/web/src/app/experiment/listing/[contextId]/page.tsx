@@ -12,6 +12,7 @@ import {
   TimelineItem,
   Title,
 } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -43,6 +44,8 @@ export default async function MyExperimentDetailPage({
   const session = await requireSession();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, state } = ws;
+  const t = await getTranslations("experiment.detail");
+  const tCommon = await getTranslations("common");
 
   // Ownership: a client may only view their own experiment. Fail closed —
   // if the ticket did not load, has no owner, or belongs to someone else,
@@ -56,12 +59,13 @@ export default async function MyExperimentDetailPage({
     ? `${await getRequestOrigin()}${experimentCheckinPath(contextId)}`
     : null;
 
+  const titleFallback = t("titleFallback");
   const stages = [
-    { label: "Created", at: ticket?.createdAt ?? null },
-    { label: "Sample received", at: ticket?.sampleReceivedAt ?? null },
-    { label: "Experiment started", at: ticket?.experimentStartedAt ?? null },
-    { label: "Results submitted", at: ticket?.resultsSubmittedAt ?? null },
-    { label: "Closed", at: ticket?.closedAt ?? null },
+    { label: t("stages.created"), at: ticket?.createdAt ?? null },
+    { label: t("stages.sampleReceived"), at: ticket?.sampleReceivedAt ?? null },
+    { label: t("stages.experimentStarted"), at: ticket?.experimentStartedAt ?? null },
+    { label: t("stages.resultsSubmitted"), at: ticket?.resultsSubmittedAt ?? null },
+    { label: t("stages.closed"), at: ticket?.closedAt ?? null },
   ];
   const reachedCount = stages.filter((s) => s.at).length;
   const reportReady =
@@ -73,7 +77,7 @@ export default async function MyExperimentDetailPage({
       <Stack gap="lg">
         <Breadcrumbs
           items={[
-            { label: "My experiments", href: myExperimentsPath() },
+            { label: t("breadcrumbMyExperiments"), href: myExperimentsPath() },
             { label: ws.experimentTitle ?? contextId },
           ]}
         />
@@ -81,7 +85,7 @@ export default async function MyExperimentDetailPage({
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <Stack gap={6}>
             <Group gap="sm" align="center">
-              <Title order={2}>{ws.experimentTitle ?? "Experiment"}</Title>
+              <Title order={2}>{ws.experimentTitle ?? titleFallback}</Title>
               {ws.sampleType && (
                 <Badge variant="light" color="grape" radius="sm">
                   {ws.sampleType}
@@ -96,7 +100,7 @@ export default async function MyExperimentDetailPage({
         </Group>
 
         {ws.errors.ticket && (
-          <Alert color="yellow" variant="light" title="Some details unavailable">
+          <Alert color="yellow" variant="light" title={t("someDetailsUnavailableTitle")}>
             {ws.errors.ticket}
           </Alert>
         )}
@@ -104,7 +108,7 @@ export default async function MyExperimentDetailPage({
         {checkinUrl && (
           <SampleLabel
             url={checkinUrl}
-            title={ws.experimentTitle ?? "Experiment"}
+            title={ws.experimentTitle ?? titleFallback}
             contextId={contextId}
           />
         )}
@@ -114,9 +118,8 @@ export default async function MyExperimentDetailPage({
             {state ? (
               <ExperimentStateView state={state} />
             ) : (
-              <Alert color="gray" variant="light" title="No details yet">
-                {ws.errors.state ??
-                  "No details available yet. Your entries and results appear here once the lab begins work on this experiment."}
+              <Alert color="gray" variant="light" title={t("noDetailsTitle")}>
+                {ws.errors.state ?? t("noDetailsBody")}
               </Alert>
             )}
           </GridCol>
@@ -133,7 +136,7 @@ export default async function MyExperimentDetailPage({
 
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="md">
-                  Lifecycle
+                  {t("lifecycle")}
                 </Text>
                 <Timeline active={reachedCount - 1} bulletSize={16} lineWidth={2}>
                   {stages.map((stage) => (
@@ -146,24 +149,26 @@ export default async function MyExperimentDetailPage({
                 </Timeline>
                 {ticket?.closedReason && (
                   <Text size="sm" c="dimmed" mt="md">
-                    Closed reason: {ticket.closedReason}
+                    {t("closedReason", { reason: ticket.closedReason })}
                   </Text>
                 )}
               </Card>
 
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
-                  Details
+                  {t("details")}
                 </Text>
                 <Stack gap="sm">
                   <Detail
-                    label="Report status"
-                    value={state?.reportStatus ?? "Not generated"}
+                    label={t("reportStatus")}
+                    value={state?.reportStatus ?? tCommon("notGenerated")}
+                    dash={tCommon("emDash")}
                   />
                   {state?.reportGeneratedAt && (
                     <Detail
-                      label="Report generated"
+                      label={t("reportGenerated")}
                       value={<LocalDateTime iso={state.reportGeneratedAt} />}
+                      dash={tCommon("emDash")}
                     />
                   )}
                 </Stack>
@@ -179,16 +184,18 @@ export default async function MyExperimentDetailPage({
 function Detail({
   label,
   value,
+  dash,
 }: {
   label: string;
   value: ReactNode;
+  dash: string;
 }) {
   return (
     <Stack gap={2}>
       <Text size="xs" c="dimmed">
         {label}
       </Text>
-      <Text size="sm">{value ?? "—"}</Text>
+      <Text size="sm">{value ?? dash}</Text>
     </Stack>
   );
 }

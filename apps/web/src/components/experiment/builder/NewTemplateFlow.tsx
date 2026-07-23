@@ -10,6 +10,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { createSampleAction } from "@/app/actions/experiment-manager";
@@ -62,6 +63,7 @@ function NewTemplateForm({
 }: {
   initialSamples: SampleOption[];
 }) {
+  const t = useTranslations("builder.newTemplate");
   const [samples, setSamples] = useState<SampleOption[]>(initialSamples);
   const [sampleChoice, setSampleChoice] = useState<string | null>(null);
   const [newSampleName, setNewSampleName] = useState("");
@@ -95,15 +97,15 @@ function NewTemplateForm({
 
   function handleSubmit() {
     if (!sampleChoice) {
-      setError("Please select a sample.");
+      setError(t("selectSample"));
       return;
     }
     if (isNewSample && !newSampleName.trim()) {
-      setError("New sample name is required.");
+      setError(t("newSampleNameRequired"));
       return;
     }
     if (!templateName.trim()) {
-      setError("Template name is required.");
+      setError(t("templateNameRequired"));
       return;
     }
     setError(null);
@@ -131,13 +133,11 @@ function NewTemplateForm({
 
   return (
     <Stack gap="md" maw={560}>
-      <Title order={2}>New template</Title>
-      <Text c="dimmed">
-        Fill in the details below to create a new experiment template.
-      </Text>
+      <Title order={2}>{t("title")}</Title>
+      <Text c="dimmed">{t("subtitle")}</Text>
 
       {error && (
-        <Alert color="red" variant="light" title="Error">
+        <Alert color="red" variant="light" title={t("errorTitle")}>
           <Text size="sm" style={{ whiteSpace: "pre-line" }}>
             {error}
           </Text>
@@ -147,12 +147,12 @@ function NewTemplateForm({
       <Paper withBorder p="lg" radius="md">
         <Stack gap="md">
           <Select
-            label="Sample"
-            description="The specimen type this template belongs to."
-            placeholder="— Choose a sample —"
+            label={t("sample")}
+            description={t("sampleDescription")}
+            placeholder={t("samplePlaceholder")}
             data={[
               ...samples.map((s) => ({ value: s.id, label: s.name })),
-              { value: NEW_SAMPLE_VALUE, label: "+ Create new sample…" },
+              { value: NEW_SAMPLE_VALUE, label: t("createNewSample") },
             ]}
             value={sampleChoice}
             onChange={(v) => {
@@ -174,12 +174,12 @@ function NewTemplateForm({
               }}
             >
               <Text size="xs" fw={700} c="green.8" tt="uppercase">
-                New sample details
+                {t("newSampleDetails")}
               </Text>
               <TextInput
-                label="Sample name"
+                label={t("sampleName")}
                 required
-                placeholder="e.g. Soil"
+                placeholder={t("sampleNamePlaceholder")}
                 value={newSampleName}
                 onChange={(e) => {
                   setNewSampleName(e.currentTarget.value);
@@ -187,8 +187,8 @@ function NewTemplateForm({
                 }}
               />
               <TextInput
-                label="Description"
-                placeholder="Optional"
+                label={t("descriptionLabel")}
+                placeholder={t("descriptionPlaceholder")}
                 value={newSampleDescription}
                 onChange={(e) => setNewSampleDescription(e.currentTarget.value)}
               />
@@ -196,10 +196,10 @@ function NewTemplateForm({
           )}
 
           <TextInput
-            label="Template name"
-            description="A short descriptive name for this template."
+            label={t("templateName")}
+            description={t("templateNameDescription")}
             required
-            placeholder="e.g. Moisture Analysis"
+            placeholder={t("templateNamePlaceholder")}
             value={templateName}
             onChange={(e) => {
               setTemplateName(e.currentTarget.value);
@@ -209,8 +209,8 @@ function NewTemplateForm({
           />
 
           <TextInput
-            label="Description"
-            placeholder="What does this template measure or test?"
+            label={t("descriptionLabel")}
+            placeholder={t("templateDescriptionPlaceholder")}
             value={templateDescription}
             onChange={(e) => setTemplateDescription(e.currentTarget.value)}
           />
@@ -222,7 +222,7 @@ function NewTemplateForm({
             fullWidth
             color="green"
           >
-            Create template →
+            {t("create")}
           </Button>
         </Stack>
       </Paper>

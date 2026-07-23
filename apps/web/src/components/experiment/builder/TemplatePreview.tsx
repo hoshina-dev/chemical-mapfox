@@ -3,6 +3,7 @@
 import type { ExperimentTemplate, FormAnswers } from "@repo/forms";
 import { FormRenderer } from "@repo/forms";
 import { Code, Divider, Stack, Text } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 interface TemplatePreviewProps {
@@ -16,6 +17,7 @@ interface TemplatePreviewProps {
  * separate, deferred feature.)
  */
 export function TemplatePreview({ template }: TemplatePreviewProps) {
+  const t = useTranslations("builder.preview");
   const [clientAnswers, setClientAnswers] = useState<FormAnswers | null>(null);
   const [labAnswers, setLabAnswers] = useState<FormAnswers | null>(null);
 
@@ -23,17 +25,17 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
     <Stack gap="xl">
       <Stack gap="sm">
         <Text size="sm" fw={700} tt="uppercase" c="dimmed">
-          Client form
+          {t("clientForm")}
         </Text>
         <FormRenderer
           doc={template.clientForm}
-          submitLabel="Capture values"
+          submitLabel={t("capture")}
           onSubmit={(answers) => setClientAnswers(answers)}
         />
         {clientAnswers && (
           <div>
             <Text size="xs" c="dimmed" mb={4}>
-              Captured client values
+              {t("capturedClient")}
             </Text>
             <Code block>{JSON.stringify(clientAnswers, null, 2)}</Code>
           </div>
@@ -44,17 +46,17 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
       <Stack gap="sm">
         <Text size="sm" fw={700} tt="uppercase" c="dimmed">
-          Lab form
+          {t("labForm")}
         </Text>
         <FormRenderer
           doc={template.labForm}
-          submitLabel="Capture values"
+          submitLabel={t("capture")}
           onSubmit={(answers) => setLabAnswers(answers)}
         />
         {labAnswers && (
           <div>
             <Text size="xs" c="dimmed" mb={4}>
-              Captured lab values
+              {t("capturedLab")}
             </Text>
             <Code block>{JSON.stringify(labAnswers, null, 2)}</Code>
           </div>

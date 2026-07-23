@@ -10,6 +10,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -17,6 +18,7 @@ import { createSampleAction } from "@/app/actions/experiment-manager";
 import { sampleOnboardingPath } from "@/lib/experiment-manager/routes";
 
 export function RegisterSampleButton() {
+  const t = useTranslations("staff.registerSample");
   const [opened, { open, close }] = useDisclosure(false);
   const router = useRouter();
   const [name, setName] = useState("");
@@ -47,42 +49,36 @@ export function RegisterSampleButton() {
   return (
     <>
       <Button onClick={open} color="green">
-        Register sample
+        {t("button")}
       </Button>
-      <Modal
-        opened={opened}
-        onClose={close}
-        title="Register a new sample"
-        centered
-      >
+      <Modal opened={opened} onClose={close} title={t("modalTitle")} centered>
         <Stack gap="sm">
           <Text size="sm" c="dimmed">
-            A sample is a specimen type (e.g. Coal). Experiment templates are
-            created under it.
+            {t("description")}
           </Text>
           {error && (
-            <Alert color="red" variant="light" title="Could not create sample">
+            <Alert color="red" variant="light" title={t("errorTitle")}>
               <Text size="sm" style={{ whiteSpace: "pre-line" }}>
                 {error}
               </Text>
             </Alert>
           )}
           <TextInput
-            label="Name"
+            label={t("name")}
             required
-            placeholder="e.g. Coal"
+            placeholder={t("namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
           />
           <TextInput
-            label="Description"
-            placeholder="Optional"
+            label={t("descriptionLabel")}
+            placeholder={t("descriptionPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.currentTarget.value)}
           />
           <Group justify="flex-end" mt="xs">
             <Button variant="default" onClick={close}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               onClick={submit}
@@ -90,7 +86,7 @@ export function RegisterSampleButton() {
               disabled={!name.trim()}
               color="green"
             >
-              Create
+              {t("create")}
             </Button>
           </Group>
         </Stack>

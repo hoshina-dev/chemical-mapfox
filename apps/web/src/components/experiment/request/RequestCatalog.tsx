@@ -14,6 +14,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { LinkButton } from "@/components/links";
@@ -21,6 +22,7 @@ import type { CatalogGroup } from "@/lib/experiment/data";
 import { requestTemplatePath } from "@/lib/experiment/routes";
 
 export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
+  const t = useTranslations("experiment.request.catalog");
   const [query, setQuery] = useState("");
 
   const totalTemplates = useMemo(
@@ -34,10 +36,10 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
     return groups
       .map((group) => {
         const specimenMatches = group.sampleName.toLowerCase().includes(q);
-        const templates = group.templates.filter((t) =>
+        const templates = group.templates.filter((tpl) =>
           specimenMatches
             ? true
-            : [t.title, t.description].some((v) =>
+            : [tpl.title, tpl.description].some((v) =>
                 v?.toLowerCase().includes(q),
               ),
         );
@@ -56,15 +58,14 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
     <Stack gap="md">
       <Group justify="space-between" align="flex-end" wrap="wrap">
         <TextInput
-          placeholder="Search specimens or experiments…"
+          placeholder={t("searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           w={320}
-          aria-label="Search the catalogue"
+          aria-label={t("searchAriaLabel")}
         />
         <Text size="sm" c="dimmed">
-          {matchCount} of {totalTemplates} experiment
-          {totalTemplates === 1 ? "" : "s"}
+          {t("experimentCount", { visible: matchCount, total: totalTemplates })}
         </Text>
       </Group>
 
@@ -72,9 +73,7 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
         <Paper withBorder radius="md">
           <Box p="xl">
             <Text c="dimmed" ta="center" size="sm">
-              {totalTemplates === 0
-                ? "No specimens are available yet."
-                : "No experiments match your search."}
+              {totalTemplates === 0 ? t("noSpecimens") : t("noMatches")}
             </Text>
           </Box>
         </Paper>
@@ -98,26 +97,26 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
               <AccordionPanel>
                 {group.templates.length === 0 ? (
                   <Text size="sm" c="dimmed">
-                    No templates available yet.
+                    {t("noTemplates")}
                   </Text>
                 ) : (
                   <Stack gap="sm">
-                    {group.templates.map((t) => (
-                      <Card key={t.templateId} withBorder radius="md" padding="md">
+                    {group.templates.map((tpl) => (
+                      <Card key={tpl.templateId} withBorder radius="md" padding="md">
                         <Group justify="space-between" align="flex-start" wrap="nowrap">
                           <Stack gap={2} style={{ minWidth: 0 }}>
-                            <Text fw={500}>{t.title}</Text>
-                            {t.description && (
+                            <Text fw={500}>{tpl.title}</Text>
+                            {tpl.description && (
                               <Text size="sm" c="dimmed">
-                                {t.description}
+                                {tpl.description}
                               </Text>
                             )}
                           </Stack>
                           <LinkButton
-                            href={requestTemplatePath(t.templateId, t.sampleId)}
+                            href={requestTemplatePath(tpl.templateId, tpl.sampleId)}
                             size="xs"
                           >
-                            Request
+                            {t("requestButton")}
                           </LinkButton>
                         </Group>
                       </Card>

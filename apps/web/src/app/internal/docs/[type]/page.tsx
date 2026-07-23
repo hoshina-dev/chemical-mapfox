@@ -1,8 +1,4 @@
-import {
-  findGalleryEntry,
-  GALLERY,
-  type QuestionType,
-} from "@repo/forms";
+import { findGalleryEntry, GALLERY, type QuestionType } from "@repo/forms";
 import {
   Badge,
   Code,
@@ -18,133 +14,52 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { GalleryQuestionWorkbench } from "@/components/docs/GalleryQuestionWorkbench";
 
 type JsonSchemaObject = Record<string, unknown>;
+type DocsTranslator = Awaited<ReturnType<typeof getTranslations<"docs">>>;
+type CommonTranslator = Awaited<ReturnType<typeof getTranslations<"common">>>;
 
 const DISCRIMINATOR_FIELD = "type";
 
-const FIELD_DESCRIPTIONS: Record<string, string> = {
-  config: "Type-specific configuration object.",
-  count: "Number of rating icons to display.",
-  itemLabel: "Singular noun for one repetition, e.g. 'Measurement'.",
-  questions: "Child questions repeated each iteration.",
-  default: "Initial value used before the user changes the answer.",
-  description: "Optional helper text shown under the question label.",
-  format: "Color value format accepted by the color input.",
-  fractions: "Fractional precision for rating values.",
-  id: "Stable answer key used when storing or reading this value.",
-  label: "Question text shown to the user.",
-  marks: "Visible labels placed along a slider.",
-  max: "Largest accepted value.",
-  maxLength: "Maximum number of characters.",
-  maxRows: "Maximum visible textarea rows.",
-  maxTags: "Maximum number of tags the user can add.",
-  maxValues: "Maximum number of choices the user can select.",
-  min: "Smallest accepted value.",
-  minLength: "Minimum number of characters.",
-  minRows: "Minimum visible textarea rows.",
-  options: "Choices available to the user.",
-  placeholder: "Hint text shown before a value is entered.",
-  required: "Whether the user must answer this question.",
-  step: "Increment used by numeric controls.",
-  suggestions: "Suggested tags offered while typing.",
-  swatches: "Preset color choices shown by the color input.",
-  type: "Discriminator field that chooses the question schema and renderer.",
-};
+const FIELD_DESCRIPTION_KEYS = [
+  "config",
+  "count",
+  "itemLabel",
+  "questions",
+  "default",
+  "description",
+  "format",
+  "fractions",
+  "id",
+  "label",
+  "marks",
+  "max",
+  "maxLength",
+  "maxRows",
+  "maxTags",
+  "maxValues",
+  "min",
+  "minLength",
+  "minRows",
+  "options",
+  "placeholder",
+  "required",
+  "step",
+  "suggestions",
+  "swatches",
+  "type",
+] as const;
 
-const OUTPUT_VALUE_TYPES: Record<
-  QuestionType,
-  { typeLabel: string; description: string }
-> = {
-  boolean: {
-    typeLabel: "boolean",
-    description: "Stored as true or false.",
-  },
-  "checkbox-group": {
-    typeLabel: "string[]",
-    description: "Stored as an array of selected option values.",
-  },
-  color: {
-    typeLabel: "string | undefined",
-    description:
-      "Stored as a color string in the configured format, or undefined when empty.",
-  },
-  date: {
-    typeLabel: "string | undefined",
-    description: "Stored as a yyyy-MM-dd date string, or undefined when empty.",
-  },
-  datetime: {
-    typeLabel: "string | undefined",
-    description:
-      "Stored as a yyyy-MM-ddTHH:mm datetime string, or undefined when empty.",
-  },
-  "multi-select": {
-    typeLabel: "string[]",
-    description: "Stored as an array of selected option values.",
-  },
-  number: {
-    typeLabel: "number | undefined",
-    description: "Stored as a number, or undefined when empty.",
-  },
-  password: {
-    typeLabel: "string | undefined",
-    description: "Stored as the entered string, or undefined when empty.",
-  },
-  radio: {
-    typeLabel: "string | undefined",
-    description:
-      "Stored as the selected option value, or undefined when nothing is selected.",
-  },
-  rating: {
-    typeLabel: "number | undefined",
-    description: "Stored as a number, or undefined when no rating is selected.",
-  },
-  segmented: {
-    typeLabel: "string | undefined",
-    description:
-      "Stored as the selected segment value, or undefined when empty.",
-  },
-  "select-number": {
-    typeLabel: "number | undefined",
-    description:
-      "Stored as the selected numeric option value, or undefined when empty.",
-  },
-  "select-string": {
-    typeLabel: "string | undefined",
-    description:
-      "Stored as the selected string option value, or undefined when empty.",
-  },
-  slider: {
-    typeLabel: "number | undefined",
-    description:
-      "Stored as a number after the slider changes; it may be undefined before interaction.",
-  },
-  string: {
-    typeLabel: "string | undefined",
-    description: "Stored as the entered string, or undefined when empty.",
-  },
-  tags: {
-    typeLabel: "string[]",
-    description: "Stored as an array of tag strings.",
-  },
-  textarea: {
-    typeLabel: "string | undefined",
-    description: "Stored as the entered string, or undefined when empty.",
-  },
-  time: {
-    typeLabel: "string | undefined",
-    description: "Stored as an HH:mm time string, or undefined when empty.",
-  },
-  "repeatable-group": {
-    typeLabel: "object (columnar)",
-    description:
-      "Stores one array per child question id; each array has `count` entries (one per repetition).",
-  },
-};
+type FieldDescriptionKey = (typeof FIELD_DESCRIPTION_KEYS)[number];
+
+function isFieldDescriptionKey(value: string): value is FieldDescriptionKey {
+  return (FIELD_DESCRIPTION_KEYS as readonly string[]).includes(value);
+}
 
 interface PageProps {
   params: Promise<{ type: string }>;
@@ -155,19 +70,21 @@ export default async function GalleryDetailPage({ params }: PageProps) {
   const entry = findGalleryEntry(type);
   if (!entry) notFound();
 
+  const t = await getTranslations("docs");
+  const tCommon = await getTranslations("common");
   const jsonSchema = z.toJSONSchema(entry.zodSchema);
 
   return (
     <Stack gap="lg" maw={1100}>
       <Stack gap={4}>
         <Group gap="sm" align="center">
-          <Title order={2}>{entry.label}</Title>
+          <Title order={2}>{t(`gallery.${entry.type}.label`)}</Title>
           <Badge variant="light" color="grape" size="lg">
             {entry.type}
           </Badge>
         </Group>
-        <Text c="dimmed">{entry.description}</Text>
-        <OutputValueSummary type={entry.type} />
+        <Text c="dimmed">{t(`gallery.${entry.type}.description`)}</Text>
+        <OutputValueSummary type={entry.type} t={t} />
       </Stack>
 
       <GalleryQuestionWorkbench
@@ -177,12 +94,17 @@ export default async function GalleryDetailPage({ params }: PageProps) {
 
       <Paper withBorder p="md" radius="md">
         <Title order={4} mb="sm">
-          Schema fields
+          {t("detail.schemaFields")}
         </Title>
         <Text size="sm" c="dimmed" mb="xs">
-          Generated from the Zod schema for this question type.
+          {t("detail.schemaFieldsSubtitle")}
         </Text>
-        <SchemaTable schema={jsonSchema} questionType={entry.type} />
+        <SchemaTable
+          schema={jsonSchema}
+          questionType={entry.type}
+          t={t}
+          tCommon={tCommon}
+        />
       </Paper>
     </Stack>
   );
@@ -202,9 +124,13 @@ interface SchemaFieldRow {
 function SchemaTable({
   schema,
   questionType,
+  t,
+  tCommon,
 }: {
   schema: unknown;
   questionType: QuestionType;
+  t: DocsTranslator;
+  tCommon: CommonTranslator;
 }) {
   const schemaObject = asSchemaObject(schema);
   const properties = asSchemaObject(schemaObject?.properties);
@@ -221,7 +147,7 @@ function SchemaTable({
   if (!properties) {
     return (
       <Text size="sm" c="dimmed">
-        No field information is available for this schema.
+        {t("detail.noFieldInfo")}
       </Text>
     );
   }
@@ -232,6 +158,8 @@ function SchemaTable({
         <DiscriminatorSummary
           property={discriminator[1]}
           required={required.has(DISCRIMINATOR_FIELD)}
+          t={t}
+          tCommon={tCommon}
         />
       ) : null}
 
@@ -239,11 +167,11 @@ function SchemaTable({
         <Table highlightOnHover verticalSpacing="sm">
           <TableThead>
             <TableTr>
-              <TableTh>Field</TableTh>
-              <TableTh>Type</TableTh>
-              <TableTh>Required</TableTh>
-              <TableTh>Meaning</TableTh>
-              <TableTh>Details</TableTh>
+              <TableTh>{t("detail.columns.field")}</TableTh>
+              <TableTh>{t("detail.columns.type")}</TableTh>
+              <TableTh>{t("detail.columns.required")}</TableTh>
+              <TableTh>{t("detail.columns.meaning")}</TableTh>
+              <TableTh>{t("detail.columns.details")}</TableTh>
             </TableTr>
           </TableThead>
           <TableTbody>
@@ -257,29 +185,31 @@ function SchemaTable({
                       <Group gap="xs" pl={configSubfield ? "md" : 0}>
                         {configSubfield ? (
                           <Text size="xs" c="dimmed">
-                            config
+                            {t("detail.config")}
                           </Text>
                         ) : null}
                         <Code>{name}</Code>
                       </Group>
                     </TableTd>
-                    <TableTd>{describeType(propertyObject)}</TableTd>
+                    <TableTd>{describeType(propertyObject, t)}</TableTd>
                     <TableTd>
                       <Badge
                         color={isRequired ? "green" : "gray"}
                         variant="light"
                       >
-                        {isRequired ? "Yes" : "No"}
+                        {isRequired
+                          ? t("detail.requiredYes")
+                          : t("detail.requiredNo")}
                       </Badge>
                     </TableTd>
                     <TableTd>
                       <Text size="sm">
-                        {fieldDescription(name, questionType)}
+                        {fieldDescription(name, questionType, t)}
                       </Text>
                     </TableTd>
                     <TableTd>
                       <Text size="sm" c="dimmed">
-                        {describeDetails(name, propertyObject)}
+                        {describeDetails(name, propertyObject, t)}
                       </Text>
                     </TableTd>
                   </TableTr>
@@ -330,25 +260,28 @@ function buildSchemaFieldRows(
 function fieldDescription(
   fieldName: string,
   questionType: QuestionType,
+  t: DocsTranslator,
 ): string {
   if (fieldName === "config.count" && questionType === "repeatable-group") {
-    return "Fixed number of repetitions.";
+    return t("detail.repeatableCount");
   }
 
   const shortName = fieldName.includes(".")
     ? fieldName.slice(fieldName.lastIndexOf(".") + 1)
     : fieldName;
 
-  return (
-    FIELD_DESCRIPTIONS[fieldName] ??
-    FIELD_DESCRIPTIONS[shortName] ??
-    "Additional configuration."
-  );
+  if (isFieldDescriptionKey(fieldName)) return t(`fields.${fieldName}`);
+  if (isFieldDescriptionKey(shortName)) return t(`fields.${shortName}`);
+  return t("detail.additionalConfig");
 }
 
-function OutputValueSummary({ type }: { type: QuestionType }) {
-  const output = OUTPUT_VALUE_TYPES[type];
-
+function OutputValueSummary({
+  type,
+  t,
+}: {
+  type: QuestionType;
+  t: DocsTranslator;
+}) {
   return (
     <div
       style={{
@@ -362,12 +295,12 @@ function OutputValueSummary({ type }: { type: QuestionType }) {
       <Stack gap={4}>
         <Group gap="xs" wrap="wrap">
           <Badge color="teal" variant="filled" size="sm">
-            Output value
+            {t("detail.outputValue")}
           </Badge>
-          <Code>{output.typeLabel}</Code>
+          <Code>{t(`outputTypes.${type}.typeLabel`)}</Code>
         </Group>
         <Text size="sm" c="dimmed">
-          {output.description}
+          {t(`outputTypes.${type}.description`)}
         </Text>
       </Stack>
     </div>
@@ -377,15 +310,19 @@ function OutputValueSummary({ type }: { type: QuestionType }) {
 function DiscriminatorSummary({
   property,
   required,
+  t,
+  tCommon,
 }: {
   property: unknown;
   required: boolean;
+  t: DocsTranslator;
+  tCommon: CommonTranslator;
 }) {
   const propertyObject = asSchemaObject(property);
   const constant =
     propertyObject && "const" in propertyObject
       ? formatValue(propertyObject.const)
-      : "Unknown";
+      : tCommon("unknown");
 
   return (
     <div
@@ -399,21 +336,21 @@ function DiscriminatorSummary({
       <Stack gap={4}>
         <Group gap="xs" wrap="wrap">
           <Badge color="grape" variant="filled" size="sm">
-            Discriminator
+            {t("detail.discriminator")}
           </Badge>
           <Code>{DISCRIMINATOR_FIELD}</Code>
           <Text size="sm" c="dimmed">
-            constant
+            {t("detail.constant")}
           </Text>
           <Code>{constant}</Code>
           {required ? (
             <Badge color="green" variant="light" size="sm">
-              Required
+              {t("detail.required")}
             </Badge>
           ) : null}
         </Group>
         <Text size="sm" c="dimmed">
-          {FIELD_DESCRIPTIONS[DISCRIMINATOR_FIELD]}
+          {t("fields.type")}
         </Text>
       </Stack>
     </div>
@@ -428,86 +365,97 @@ function asSchemaObject(value: unknown): JsonSchemaObject | undefined {
   return value as JsonSchemaObject;
 }
 
-function describeType(schema: JsonSchemaObject | undefined): string {
-  if (!schema) return "Unknown";
+function describeType(
+  schema: JsonSchemaObject | undefined,
+  t: DocsTranslator,
+): string {
+  if (!schema) return t("detail.typeUnknown");
 
   if ("const" in schema) {
-    return "Fixed value";
+    return t("detail.typeFixedValue");
   }
 
   if (Array.isArray(schema.enum)) {
-    return "One of";
+    return t("detail.typeOneOf");
   }
 
   const type = normalizeType(schema.type);
 
   if (type === "array") {
-    return `Array of ${describeArrayItemType(schema.items)}`;
+    return t("detail.typeArrayOf", {
+      item: describeArrayItemType(schema.items, t),
+    });
   }
 
   if (type) return titleCase(type);
-  if (schema.properties) return "Object";
+  if (schema.properties) return t("detail.typeObject");
 
-  return "Any";
+  return t("detail.typeAny");
 }
 
-function describeArrayItemType(items: unknown): string {
+function describeArrayItemType(items: unknown, t: DocsTranslator): string {
   const itemSchema = asSchemaObject(items);
-  if (!itemSchema) return "values";
+  if (!itemSchema) return t("detail.typeGenericValues");
 
-  if (itemSchema.properties) return "objects";
+  if (itemSchema.properties) return t("detail.typeGenericObjects");
 
   const type = normalizeType(itemSchema.type);
-  if (!type) return "values";
+  if (!type) return t("detail.typeGenericValues");
 
-  return `${type}s`;
+  return t("detail.typePlural", { type });
 }
 
 function describeDetails(
   fieldName: string,
   schema: JsonSchemaObject | undefined,
+  t: DocsTranslator,
 ): string {
-  if (!schema) return "No additional rules.";
+  if (!schema) return t("detail.noAdditionalRules");
 
   if (fieldName === "config.questions") {
-    return "Array of nested question definitions.";
+    return t("detail.nestedQuestions");
   }
 
   const details: string[] = [];
 
   if ("const" in schema) {
     if (fieldName === DISCRIMINATOR_FIELD) {
-      details.push(
-        "This value selects this question variant in the JSON union.",
-      );
+      details.push(t("detail.discriminatorSelects"));
     } else {
-      details.push("Must match the constant value.");
+      details.push(t("detail.mustMatchConstant"));
     }
   }
 
   if (Array.isArray(schema.enum)) {
-    details.push(`Allowed values: ${schema.enum.map(formatValue).join(", ")}.`);
+    details.push(
+      t("detail.allowedValues", {
+        values: schema.enum.map(formatValue).join(", "),
+      }),
+    );
   }
 
-  const itemDetails = describeArrayItems(schema.items);
+  const itemDetails = describeArrayItems(schema.items, t);
   if (itemDetails) {
     details.push(itemDetails);
   }
 
-  return details.join(" ") || "No additional rules.";
+  return details.join(" ") || t("detail.noAdditionalRules");
 }
 
-function describeArrayItems(items: unknown): string | undefined {
+function describeArrayItems(
+  items: unknown,
+  t: DocsTranslator,
+): string | undefined {
   const itemSchema = asSchemaObject(items);
   const itemProperties = asSchemaObject(itemSchema?.properties);
   if (!itemProperties) return undefined;
 
   const fields = Object.entries(itemProperties).map(([name, property]) => {
-    const type = describeType(asSchemaObject(property)).toLowerCase();
+    const type = describeType(asSchemaObject(property), t).toLowerCase();
     return `${name} (${type})`;
   });
 
-  return `Each item includes ${fields.join(", ")}.`;
+  return t("detail.eachItemIncludes", { fields: fields.join(", ") });
 }
 
 function normalizeType(type: unknown): string | undefined {

@@ -1,16 +1,19 @@
 "use client";
 
 import { Avatar, Group, Text, Tooltip } from "@mantine/core";
+import { useTranslations } from "next-intl";
 
 import { UserAvatar } from "@/components/UserAvatar";
 import type { PresenceEntry } from "@/lib/collab/events";
 
 /** Avatars of the staff currently in edit mode; hover shows the full name. */
 export function PresenceBar({ editors }: { editors: PresenceEntry[] }) {
+  const t = useTranslations("staff.collab");
+
   if (editors.length === 0) {
     return (
       <Text size="sm" c="dimmed">
-        No one else is editing right now.
+        {t("noOneEditing")}
       </Text>
     );
   }
@@ -18,7 +21,7 @@ export function PresenceBar({ editors }: { editors: PresenceEntry[] }) {
   return (
     <Group gap="xs" align="center">
       <Text size="sm" c="dimmed">
-        Editing now:
+        {t("editingNow")}
       </Text>
       <Avatar.Group>
         {editors.map((editor) => (

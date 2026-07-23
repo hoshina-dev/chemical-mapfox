@@ -1,0 +1,1089 @@
+{
+  "meta": {
+    "description": "{legalName} — proces obsługi eksperymentów chemicznych."
+  },
+  "common": {
+    "language": {
+      "label": "Język"
+    },
+    "userMenu": {
+      "ariaLabel": "Menu użytkownika",
+      "organizations": "Organizacje",
+      "noOrganizations": "Brak organizacji.",
+      "settings": "Ustawienia powiadomień",
+      "logout": "Wyloguj się"
+    },
+    "roles": {
+      "labStaff": "Personel laboratorium",
+      "client": "Klient"
+    },
+    "emDash": "—",
+    "cancel": "Anuluj",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano",
+    "yes": "Tak",
+    "no": "Nie",
+    "error": "Błąd",
+    "save": "Zapisz",
+    "saved": "Zapisano",
+    "delete": "Usuń",
+    "create": "Utwórz",
+    "done": "Gotowe",
+    "back": "Wstecz",
+    "search": "Szukaj",
+    "none": "Brak",
+    "optional": "Opcjonalne",
+    "unknown": "Nieznane",
+    "notGenerated": "Nie wygenerowano",
+    "untitledExperiment": "Eksperyment bez tytułu",
+    "loading": "Ładowanie…"
+  },
+  "settings": {
+    "breadcrumb": "Ustawienia",
+    "notifications": {
+      "title": "Powiadomienia e-mail",
+      "subtitle": "Wybierz etapy cyklu życia zgłoszenia, o których chcesz dostawać e-mail. Wyłączenie etapu pomija wysyłkę zanim trafi do kolejki.",
+      "emailForStage": "Wyślij e-mail, gdy zgłoszenie osiągnie etap {stage}",
+      "loadErrorTitle": "Nie udało się wczytać preferencji powiadomień",
+      "loadErrorFallback": "Nie udało się wczytać preferencji powiadomień.",
+      "saveErrorFallback": "Nie udało się zapisać preferencji powiadomień."
+    }
+  },
+  "landing": {
+    "nav": {
+      "labOffer": "Oferta laboratorium",
+      "certifications": "Certyfikaty",
+      "about": "O nas",
+      "contact": "Kontakt",
+      "primaryAriaLabel": "Główna",
+      "signIn": "Zaloguj się",
+      "getStarted": "Rozpocznij",
+      "goToWorkspace": "Przejdź do obszaru roboczego"
+    },
+    "hero": {
+      "eyebrow": "Akredytowane usługi laboratoryjne",
+      "title": "Eksperymenty chemiczne — od zgłoszenia do certyfikowanych wyników.",
+      "lead": "{brand} prowadzi Twoje próbki przez akredytowany proces — przyjęcie, wykonanie badań i raportowanie w jednym miejscu. Śledź każdą próbkę, sprawdzaj dokładnie, na jakim jest etapie, i otrzymuj wyniki, którym możesz zaufać.",
+      "exploreOffer": "Poznaj naszą ofertę",
+      "accreditedLabel": "ISO/IEC 17025",
+      "accredited": "akredytacja",
+      "specimenTypes": "rodzaje próbek",
+      "testMethods": "metody badawcze"
+    },
+    "offer": {
+      "kicker": "Oferta laboratorium",
+      "title": "Co badamy",
+      "lead": "Przeglądaj próbki obsługiwane przez nasze laboratoria. Otwórz dowolną, aby zobaczyć dostępne dla niej metody badawcze.",
+      "fallbackTitle": "Nasza oferta jest aktualizowana",
+      "fallbackBody": "Katalog jest chwilowo niedostępny. Zajrzyj ponownie za chwilę lub skontaktuj się z nami, a przedstawimy zakres naszych badań.",
+      "methodCount": "{count, plural, one {# metoda} few {# metody} many {# metod} other {# metody}}",
+      "methodsBeingAdded": "Metody dla tej próbki są właśnie dodawane.",
+      "requestThisExperiment": "Zamów ten eksperyment"
+    },
+    "howItWorks": {
+      "kicker": "Jak to działa",
+      "title": "Od zgłoszenia do certyfikowanych wyników",
+      "lead": "Jeden przejrzysty proces. Zawsze wiesz, na jakim etapie jest Twoja próbka i co wydarzy się dalej.",
+      "diagramAriaLabel": "Cykl życia eksperymentu: zgłoszenie, próbka przyjęta, w toku, finalizowanie, certyfikowany raport.",
+      "stages": {
+        "request": {
+          "label": "Zgłoszenie",
+          "caption": "Prześlij formularz wstępny"
+        },
+        "sampleReceived": {
+          "label": "Próbka przyjęta",
+          "caption": "Laboratorium ją przyjmuje"
+        },
+        "inProgress": {
+          "label": "W toku",
+          "caption": "Wspólna analiza"
+        },
+        "finalizing": {
+          "label": "Finalizowanie",
+          "caption": "Wyniki weryfikowane"
+        },
+        "certifiedReport": {
+          "label": "Certyfikowany raport",
+          "caption": "Podpisany PDF gotowy"
+        }
+      }
+    },
+    "certifications": {
+      "kicker": "Akredytacje",
+      "title": "Certyfikaty i akredytacje",
+      "lead": "Nasze wyniki są objęte uznaną akredytacją. Każda metoda działa w ramach systemu jakości audytowanego zgodnie z normami międzynarodowymi.",
+      "items": {
+        "iso17025": {
+          "code": "ISO/IEC 17025",
+          "title": "Kompetencje badawcze",
+          "description": "Akredytacja w zakresie ogólnych kompetencji do wykonywania badań i wzorcowań, w tym pobierania próbek."
+        },
+        "iso9001": {
+          "code": "ISO 9001",
+          "title": "Zarządzanie jakością",
+          "description": "Certyfikowany system zarządzania jakością obejmujący każdy etap — od przyjęcia próbki po raportowanie."
+        },
+        "iso17043": {
+          "code": "ISO 17043",
+          "title": "Badania biegłości",
+          "description": "Uprawniony organizator badań biegłości i porównań międzylaboratoryjnych."
+        },
+        "glp": {
+          "code": "GLP",
+          "title": "Dobra Praktyka Laboratoryjna",
+          "description": "Zgodność z zasadami GLP w zakresie integralności i identyfikowalności danych z badań."
+        },
+        "haccp": {
+          "code": "HACCP",
+          "title": "Bezpieczeństwo żywności",
+          "description": "Analiza zagrożeń i krytyczne punkty kontroli stosowane w badaniach żywności i pasz."
+        },
+        "iso14001": {
+          "code": "ISO 14001",
+          "title": "Zarządzanie środowiskowe",
+          "description": "System zarządzania środowiskowego regulujący bezpieczne obchodzenie się z odczynnikami i ich utylizację."
+        }
+      }
+    },
+    "about": {
+      "kicker": "O nas",
+      "title": "Laboratorium zbudowane wokół Twoich próbek",
+      "lead": "{brand} łączy przyjmowanie próbek, wspólne wykonywanie badań i akredytowane raportowanie. Zlecający zawsze wiedzą, gdzie znajduje się próbka, a nasi technicy posuwają pracę naprzód, nie walcząc z narzędziami.",
+      "body": "Łączymy doświadczonych analityków z nowoczesnym procesem pracy, aby każdy wynik był identyfikowalny, powtarzalny i dostarczony na czas. Od pojedynczej próbki wody po pełny program higieny produkcji — proces pozostaje ten sam: przejrzysty, odpowiedzialny i objęty kontrolą jakości.",
+      "statSpecimenTypes": "Rodzaje próbek",
+      "statAccreditedMethods": "Akredytowane metody",
+      "statActiveAccreditations": "Aktywne akredytacje",
+      "statActiveAccreditationsValue": "6",
+      "statSampleIntake": "Przyjęcie próbki",
+      "statSampleIntakeValue": "24h"
+    },
+    "contact": {
+      "kicker": "Kontakt",
+      "title": "Zainteresowany naszą ofertą?",
+      "lead": "Skontaktuj się z nami już dziś i zacznijmy współpracę — albo od razu utwórz swoje pierwsze zgłoszenie.",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "phoneValue": "+48 22 000 00 00",
+      "laboratory": "Laboratorium",
+      "laboratoryValue": "ul. Laboratoryjna 1, 00-001 Warszawa",
+      "hours": "Godziny otwarcia",
+      "hoursValue": "Pon–Pt, 8:00–16:00"
+    },
+    "footer": {
+      "rights": "© {year} {legalName}. Wszelkie prawa zastrzeżone."
+    }
+  },
+  "auth": {
+    "card": {
+      "subtitle": "Zaloguj się lub utwórz konto, aby kontynuować.",
+      "tabLogin": "Zaloguj się",
+      "tabRegister": "Zarejestruj się"
+    },
+    "login": {
+      "email": "E-mail",
+      "password": "Hasło",
+      "submit": "Zaloguj się"
+    },
+    "register": {
+      "name": "Imię i nazwisko",
+      "email": "E-mail",
+      "password": "Hasło",
+      "submit": "Utwórz konto"
+    },
+    "organization": {
+      "label": "Organizacja",
+      "placeholder": "Szukaj organizacji...",
+      "typeToSearch": "Wpisz co najmniej 2 znaki",
+      "noResults": "Nie znaleziono organizacji"
+    },
+    "validation": {
+      "emailInvalid": "Podaj prawidłowy adres e-mail.",
+      "passwordRequired": "Hasło jest wymagane.",
+      "nameRequired": "Imię i nazwisko jest wymagane.",
+      "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków.",
+      "organizationRequired": "Wybierz organizację."
+    },
+    "errors": {
+      "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło.",
+      "createAccountFailed": "Nie udało się utworzyć konta. Adres e-mail może być już używany.",
+      "organizationAssignFailed": "Twoje konto zostało utworzone, ale przypisanie organizacji nie powiodło się. Zaloguj się i spróbuj ponownie."
+    }
+  },
+  "status": {
+    "requested": "Zgłoszono",
+    "open": "Otwarte",
+    "sampleReceived": "Próbka przyjęta",
+    "inProgress": "W toku",
+    "finalizing": "Finalizowanie",
+    "resultsSubmitted": "Wyniki przesłane",
+    "completed": "Zakończone",
+    "closed": "Zamknięte",
+    "cancelled": "Anulowane"
+  },
+  "experiment": {
+    "nav": {
+      "myExperiments": "Moje eksperymenty",
+      "requestExperiment": "Zamów eksperyment",
+      "clientAriaLabel": "Klient"
+    },
+    "listing": {
+      "breadcrumb": "Moje eksperymenty",
+      "title": "Moje eksperymenty",
+      "subtitle": "Wszystkie zamówione eksperymenty, pogrupowane według etapu w procesie laboratorium. Otwórz dowolny, aby zobaczyć szczegóły.",
+      "requestButton": "Zamów eksperyment",
+      "loadErrorTitle": "Nie udało się załadować Twoich eksperymentów",
+      "loadErrorFallback": "Nie udało się załadować eksperymentów."
+    },
+    "board": {
+      "emptyMessage": "Nie zamówiłeś jeszcze żadnych eksperymentów.",
+      "emptyCta": "Zamów swój pierwszy eksperyment",
+      "searchPlaceholder": "Szukaj eksperymentu lub identyfikatora kontekstu…",
+      "searchAriaLabel": "Szukaj eksperymentów",
+      "experimentCount": "{visible} z {total, plural, one {# eksperyment} few {# eksperymenty} many {# eksperymentów} other {# eksperymentów}}",
+      "laneEmpty": "Brak",
+      "untitled": "Eksperyment bez tytułu",
+      "updated": "Zaktualizowano",
+      "lanes": {
+        "requested": "Zgłoszono",
+        "sampleReceived": "Próbka przyjęta",
+        "inProgress": "W toku",
+        "finalizing": "Finalizowanie",
+        "closed": "Zamknięte",
+        "cancelled": "Anulowane",
+        "other": "Inne"
+      }
+    },
+    "detail": {
+      "breadcrumbMyExperiments": "Moje eksperymenty",
+      "titleFallback": "Eksperyment",
+      "someDetailsUnavailableTitle": "Niektóre szczegóły są niedostępne",
+      "noDetailsTitle": "Brak szczegółów",
+      "noDetailsBody": "Brak dostępnych szczegółów. Twoje wpisy i wyniki pojawią się tutaj, gdy laboratorium rozpocznie pracę nad tym eksperymentem.",
+      "lifecycle": "Cykl życia",
+      "closedReason": "Powód zamknięcia: {reason}",
+      "details": "Szczegóły",
+      "reportStatus": "Status raportu",
+      "reportGenerated": "Raport wygenerowano",
+      "stages": {
+        "created": "Utworzono",
+        "sampleReceived": "Próbka przyjęta",
+        "experimentStarted": "Eksperyment rozpoczęty",
+        "resultsSubmitted": "Wyniki przesłane",
+        "closed": "Zamknięte"
+      }
+    },
+    "report": {
+      "title": "Raport",
+      "generated": "Wygenerowano <date></date>.",
+      "body": "Wyświetl plik PDF w przeglądarce lub pobierz kopię.",
+      "view": "Wyświetl raport",
+      "download": "Pobierz PDF"
+    },
+    "sampleLabel": {
+      "title": "Wyślij próbkę",
+      "description": "Wydrukuj tę etykietę QR i przyklej ją do pudełka wysyłanego do laboratorium. Personel zeskanuje ją, aby przyjąć Twoją próbkę po jej dotarciu.",
+      "print": "Drukuj etykietę",
+      "shareLink": "Lub udostępnij ten link:",
+      "copyAriaLabel": "Kopiuj adres URL przyjęcia",
+      "printDocTitle": "Etykieta próbki",
+      "printHint": "Przyklej tę etykietę do pudełka z próbką przed wysłaniem go do laboratorium."
+    },
+    "request": {
+      "catalog": {
+        "breadcrumb": "Zamów eksperyment",
+        "title": "Zamów eksperyment",
+        "subtitle": "Przeglądaj próbki obsługiwane przez nasze laboratoria i rozpocznij zgłoszenie na podstawie szablonu.",
+        "loadErrorTitle": "Nie udało się załadować katalogu",
+        "loadErrorFallback": "Nie udało się załadować katalogu.",
+        "searchPlaceholder": "Szukaj próbek lub eksperymentów…",
+        "searchAriaLabel": "Szukaj w katalogu",
+        "experimentCount": "{visible} z {total, plural, one {# eksperyment} few {# eksperymenty} many {# eksperymentów} other {# eksperymentów}}",
+        "noSpecimens": "Brak dostępnych próbek.",
+        "noMatches": "Żaden eksperyment nie pasuje do wyszukiwania.",
+        "noTemplates": "Brak dostępnych szablonów.",
+        "requestButton": "Zamów"
+      },
+      "form": {
+        "outOfDateTitle": "Szablon może być nieaktualny",
+        "outOfDateBody": "Zapisany szablon nie w pełni pasuje do bieżącego schematu formularza; poniższy formularz jest przybliżeniem.",
+        "errorTitle": "Nie udało się przesłać zgłoszenia",
+        "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
+        "submit": "Prześlij zgłoszenie"
+      },
+      "errors": {
+        "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
+        "templateGone": "Ten szablon eksperymentu już nie istnieje.",
+        "noTicketId": "Usługa zgłoszeń zwróciła zgłoszenie bez identyfikatora.",
+        "submitFailed": "Nie udało się przesłać zgłoszenia eksperymentu.",
+        "intakeNotSaved": "Twoje zgłoszenie zostało przesłane, ale zapisanie odpowiedzi wstępnych się nie powiodło. Laboratorium może poprosić o ich ponowne wprowadzenie."
+      }
+    }
+  },
+  "staff": {
+    "nav": {
+      "experiments": "Eksperymenty",
+      "onboarding": "Wdrażanie",
+      "docs": "Dokumentacja",
+      "users": "Użytkownicy",
+      "staffAriaLabel": "Personel",
+      "staffSectionsAriaLabel": "Sekcje personelu"
+    },
+    "experiments": {
+      "title": "Eksperymenty",
+      "subtitle": "Wszystkie zgłoszenia eksperymentów z usługi zgłoszeń. Filtruj według grupy cyklu życia, wyszukuj, sortuj i otwórz wiersz, aby pracować nad eksperymentem.",
+      "filterGroupAriaLabel": "Filtruj według grupy cyklu życia",
+      "filters": {
+        "all": "Wszystkie",
+        "allHint": "Wszystkie zgłoszenia eksperymentów",
+        "active": "Aktywne",
+        "activeHint": "W toku · Finalizowanie",
+        "pending": "Oczekujące",
+        "pendingHint": "Zgłoszone · Próbka przyjęta",
+        "done": "Zamknięte",
+        "doneHint": "Zakończone · Anulowane"
+      },
+      "searchPlaceholder": "Szukaj eksperymentów, zlecających…",
+      "searchAriaLabel": "Szukaj eksperymentów",
+      "allStatuses": "Wszystkie statusy",
+      "experimentCount": "{visible} z {total, plural, one {# eksperyment} few {# eksperymenty} many {# eksperymentów} other {# eksperymentów}}",
+      "columns": {
+        "experiment": "Eksperyment",
+        "requester": "Zlecający",
+        "status": "Status",
+        "created": "Utworzono",
+        "updated": "Zaktualizowano",
+        "contextId": "Identyfikator kontekstu"
+      },
+      "untitled": "Eksperyment bez tytułu",
+      "emptyTitle": "Nie znaleziono eksperymentów",
+      "emptyNone": "Brak eksperymentów.",
+      "emptyFiltered": "Spróbuj zmienić wyszukiwanie lub filtr.",
+      "loadErrorTitle": "Nie można połączyć się z usługą zgłoszeń",
+      "loadErrorFallback": "Nie udało się załadować eksperymentów.",
+      "degradedTitle": "Niektóre dane zlecających są niedostępne",
+      "degradedBody": "Nie udało się załadować danych zlecających z usługi użytkowników. Poniższa lista jest kompletna; niektóre komórki zlecających mogą wyświetlać surowe identyfikatory użytkowników."
+    },
+    "workspace": {
+      "breadcrumbExperiments": "Eksperymenty",
+      "title": "Obszar roboczy eksperymentu",
+      "titleFallback": "Eksperyment",
+      "loadTicketErrorTitle": "Nie udało się załadować zgłoszenia",
+      "requestedTitle": "Próbka jeszcze nieprzyjęta",
+      "requestedBody": "Ten eksperyment czeka na dotarcie próbki. Przyjmij ją, gdy pudełko dotrze do laboratorium, aby rozpocząć.",
+      "goToCheckin": "Przejdź do przyjęcia",
+      "pendingTitle": "Próbka przyjęta — gotowe do rozpoczęcia",
+      "pendingBody": "Próbka została przyjęta. Rozpocznij eksperyment, aby wprowadzać wartości laboratoryjne i współpracować nad nimi.",
+      "stateUnavailableTitle": "Bieżący stan niedostępny",
+      "stateUnavailableBody": "Nie znaleziono jeszcze kontekstu eksperymentu dla tego identyfikatora. Wartości pojawią się tutaj po utworzeniu eksperymentu w Experiment Manager.",
+      "requester": "Zlecający",
+      "unknownRequester": "Nieznany",
+      "lifecycle": "Cykl życia",
+      "closedReason": "Powód zamknięcia: {reason}",
+      "details": "Szczegóły",
+      "organization": "Organizacja",
+      "templateId": "Identyfikator szablonu",
+      "reportStatus": "Status raportu",
+      "reportGenerated": "Raport wygenerowano",
+      "stages": {
+        "created": "Utworzono",
+        "sampleReceived": "Próbka przyjęta",
+        "experimentStarted": "Eksperyment rozpoczęty",
+        "resultsSubmitted": "Wyniki przesłane",
+        "closed": "Zamknięte"
+      }
+    },
+    "startExperiment": {
+      "button": "Rozpocznij eksperyment",
+      "errorTitle": "Nie udało się rozpocząć eksperymentu"
+    },
+    "checkin": {
+      "breadcrumb": "Przyjęcie próbki",
+      "title": "Przyjęcie próbki",
+      "experimentFallback": "Eksperyment",
+      "loadTicketErrorTitle": "Nie udało się załadować zgłoszenia",
+      "ticketNotFoundTitle": "Nie znaleziono zgłoszenia",
+      "ticketNotFoundBody": "Dla tego identyfikatora kontekstu nie istnieje żadne zgłoszenie eksperymentu.",
+      "ticketHeading": "Zgłoszenie",
+      "requester": "Zlecający",
+      "organization": "Organizacja",
+      "requested": "Zgłoszono",
+      "checkInHeading": "Przyjmij tę próbkę",
+      "checkInBody": "Potwierdź, że pudełko z próbką dotarło do laboratorium. Spowoduje to przeniesienie zgłoszenia do statusu „Próbka przyjęta”, gotowego do rozpoczęcia eksperymentu w obszarze roboczym.",
+      "alreadyTitle": "Już przyjęto",
+      "alreadyBody": "Ta próbka została już przyjęta. Kontynuuj w obszarze roboczym eksperymentu.",
+      "alreadyBodyWithDate": "Ta próbka została już przyjęta dnia <date></date>. Kontynuuj w obszarze roboczym eksperymentu.",
+      "openWorkspace": "Otwórz obszar roboczy",
+      "experimentDetail": "Szczegóły eksperymentu",
+      "button": "Przyjmij próbkę",
+      "errorTitle": "Nie udało się przyjąć próbki"
+    },
+    "experimentState": {
+      "invalidSchema": "Zapisane formularze nie w pełni pasują do bieżącego schematu formularza; poniższy widok jest przybliżeniem.",
+      "tabs": {
+        "lab": "Formularz laboratoryjny",
+        "client": "Dane od klienta",
+        "calculations": "Obliczenia"
+      },
+      "calculations": {
+        "title": "Obliczenia",
+        "subtitle": "Obliczone na podstawie wprowadzonych wartości",
+        "name": "Nazwa",
+        "formula": "Wzór",
+        "result": "Wynik"
+      }
+    },
+    "collab": {
+      "submitFailedTitle": "Przesyłanie nie powiodło się",
+      "submittedTitle": "Przesłano",
+      "submittedBody": "Eksperyment przesłany do etapu końcowego.",
+      "submitToFinalStage": "Prześlij do etapu końcowego",
+      "noOneEditing": "Nikt inny obecnie nie edytuje.",
+      "editingNow": "Teraz edytują:"
+    },
+    "finalize": {
+      "title": "Finalizacja",
+      "reportBadge": "Raport: {status}",
+      "status": {
+        "queued": "W kolejce",
+        "generating": "Generowanie…",
+        "ready": "Gotowy",
+        "failed": "Niepowodzenie",
+        "notGenerated": "Nie wygenerowano"
+      },
+      "calculate": "Oblicz",
+      "recalculate": "Przelicz ponownie",
+      "generateReport": "Generuj raport",
+      "regenerateReport": "Wygeneruj raport ponownie",
+      "viewReport": "Wyświetl raport",
+      "download": "Pobierz",
+      "closeTicket": "Zamknij zgłoszenie",
+      "readyToClose": "Gotowe do zamknięcia. Zamknięcie blokuje dalsze obliczenia i generowanie raportów.",
+      "notReadyToClose": "Wykonaj obliczenia i wygeneruj raport przed zamknięciem tego zgłoszenia.",
+      "reportReady": "Raport gotowy",
+      "reportReadySince": "Raport gotowy od <date></date>.",
+      "runCalcsFirst": "Najpierw wykonaj obliczenia, aby umożliwić generowanie raportu.",
+      "reportGenFailed": "Generowanie raportu nie powiodło się. Możesz spróbować ponownie.",
+      "calcFailedTitle": "Obliczenia nie powiodły się",
+      "genErrorTitle": "Nie udało się wygenerować raportu",
+      "closeErrorTitle": "Nie udało się zamknąć zgłoszenia",
+      "closeModalTitle": "Zamknąć zgłoszenie?",
+      "closeModalBody": "Spowoduje to oznaczenie zgłoszenia jako zamknięte. Po zamknięciu obliczenia i generowanie raportów nie będą już dostępne."
+    },
+    "actions": {
+      "notAllowedSubmit": "Nie masz uprawnień do przesłania tego eksperymentu.",
+      "saveBeforeSubmit": "Nie udało się zapisać najnowszych wartości przed przesłaniem. Spróbuj ponownie.",
+      "submitFailed": "Nie udało się przesłać do etapu końcowego.",
+      "notAllowedCheckIn": "Nie masz uprawnień do przyjęcia tej próbki.",
+      "checkInFailed": "Nie udało się przyjąć tej próbki.",
+      "notAllowedStart": "Nie masz uprawnień do rozpoczęcia tego eksperymentu.",
+      "startFailed": "Nie udało się rozpocząć tego eksperymentu.",
+      "notAllowedCalculate": "Nie masz uprawnień do wykonywania obliczeń.",
+      "calculateFailed": "Nie udało się wykonać obliczeń.",
+      "notAllowedGenerate": "Nie masz uprawnień do generowania raportu.",
+      "generateFailed": "Nie udało się rozpocząć generowania raportu.",
+      "notAllowedViewReport": "Nie masz uprawnień do wyświetlenia tego raportu.",
+      "reportStatusFailed": "Nie udało się sprawdzić statusu raportu.",
+      "notAllowedDownload": "Nie masz uprawnień do pobrania tego raportu.",
+      "reportNotReady": "Raport nie jest jeszcze gotowy do pobrania.",
+      "notAllowedClose": "Nie masz uprawnień do zamknięcia tego zgłoszenia.",
+      "verifyCloseFailed": "Nie udało się zweryfikować, czy ten eksperyment jest gotowy do zamknięcia.",
+      "runCalcsBeforeClose": "Wykonaj obliczenia przed zamknięciem tego zgłoszenia.",
+      "generateBeforeClose": "Wygeneruj raport PDF przed zamknięciem tego zgłoszenia.",
+      "closeFailed": "Nie udało się zamknąć tego zgłoszenia."
+    },
+    "raw": {
+      "breadcrumb": "Surowy JSON",
+      "title": "Surowy JSON",
+      "ticketHeading": "Zgłoszenie (ticketing-service)",
+      "ticketErrorTitle": "Błąd usługi zgłoszeń",
+      "ticketErrorFallback": "Nie udało się załadować zgłoszenia.",
+      "experimentHeading": "Eksperyment (experiment-manager)",
+      "experimentReturned": "Experiment Manager zwrócił {status}",
+      "experimentErrorTitle": "Błąd Experiment Manager",
+      "experimentNotFound": "Dla tego identyfikatora nie utworzono jeszcze kontekstu eksperymentu, więc nie ma stanu do wyświetlenia.",
+      "experimentErrorFallback": "Nie udało się załadować eksperymentu.",
+      "noData": "Brak danych",
+      "copyJson": "Kopiuj JSON"
+    },
+    "copyableId": {
+      "copyAriaLabel": "Kopiuj identyfikator kontekstu"
+    },
+    "users": {
+      "title": "Użytkownicy",
+      "subtitle": "Narzędzia administratora Mapfox do zarządzania wszystkimi użytkownikami i organizacjami.",
+      "usersCard": "Użytkownicy",
+      "organizationsCard": "Organizacje",
+      "usersHeading": "Użytkownicy",
+      "organizationsHeading": "Organizacje",
+      "noUsers": "Nie znaleziono użytkowników.",
+      "noOrganizations": "Nie znaleziono organizacji.",
+      "table": {
+        "name": "Imię i nazwisko",
+        "email": "E-mail",
+        "role": "Rola"
+      }
+    },
+    "onboarding": {
+      "breadcrumb": "Wdrażanie",
+      "title": "Wdrażanie eksperymentów",
+      "subtitle": "Próbki (rodzaje próbek) obsługiwane przez laboratoria. Otwórz jedną, aby zarządzać jej szablonami eksperymentów, lub zarejestruj nową próbkę.",
+      "loadErrorTitle": "Nie można połączyć się z Experiment Manager",
+      "loadSamplesFallback": "Nie udało się załadować próbek.",
+      "emptyMessage": "Brak próbek. Zarejestruj swoją pierwszą.",
+      "templateCount": "{count, plural, one {# szablon} few {# szablony} many {# szablonów} other {# szablonów}}",
+      "noDescription": "Brak opisu",
+      "manageTemplates": "Zarządzaj szablonami",
+      "registerSample": "Zarejestruj próbkę",
+      "sample": {
+        "titleFallback": "Próbka",
+        "defaultDescription": "Szablony eksperymentów dla tej próbki.",
+        "newTemplate": "Nowy szablon",
+        "loadSampleFallback": "Nie udało się załadować próbki.",
+        "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy."
+      }
+    },
+    "registerSample": {
+      "button": "Zarejestruj próbkę",
+      "modalTitle": "Zarejestruj nową próbkę",
+      "description": "Próbka to rodzaj próbki (np. Węgiel). Szablony eksperymentów są tworzone w jej ramach.",
+      "errorTitle": "Nie udało się utworzyć próbki",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Węgiel",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Opcjonalne",
+      "cancel": "Anuluj",
+      "create": "Utwórz",
+      "nameRequired": "Nazwa próbki jest wymagana."
+    },
+    "templatesTable": {
+      "template": "Szablon",
+      "description": "Opis",
+      "editTooltip": "Kliknij, aby edytować „{title}”"
+    }
+  },
+  "builder": {
+    "newTemplateTitle": "Nowy szablon",
+    "editTitle": "Edycja: {title}",
+    "backToTemplates": "Powrót do szablonów",
+    "saveFailedTitle": "Zapisywanie nie powiodło się",
+    "fixValidation": "Popraw błędy walidacji przed zapisaniem.",
+    "payloadForDebugging": "Ładunek (do debugowania)",
+    "livePreview": "Podgląd na żywo",
+    "createTemplate": "Utwórz szablon",
+    "saveChanges": "Zapisz zmiany",
+    "designPdf": "Zaprojektuj raport PDF",
+    "delete": "Usuń",
+    "deleteConfirm": "Usunąć ten szablon eksperymentu?",
+    "draftNotValidTitle": "Wersja robocza jest nieprawidłowa",
+    "draftNotValidBody": "Popraw schemat przed wyświetleniem podglądu.",
+    "metadata": {
+      "title": "Metadane",
+      "subtitle": "Podstawowe informacje o tym szablonie. Identyfikator jest przypisywany automatycznie i tylko do odczytu.",
+      "associatedWithSample": "Ten szablon jest powiązany z próbką {name}.",
+      "templateId": "Identyfikator szablonu",
+      "name": "Nazwa",
+      "description": "Opis"
+    },
+    "section": {
+      "clientForm": "Formularz klienta",
+      "labForm": "Formularz laboratoryjny",
+      "questionCount": "{count, plural, one {# pytanie} few {# pytania} many {# pytań} other {# pytań}}",
+      "name": "Nazwa sekcji",
+      "description": "Opis sekcji",
+      "noQuestions": "Brak pytań.",
+      "addQuestion": "Dodaj pytanie"
+    },
+    "question": {
+      "untitled": "Pytanie bez tytułu",
+      "required": "wymagane",
+      "moveUp": "Przenieś w górę",
+      "moveDown": "Przenieś w dół",
+      "deleteConfirm": "Usunąć?",
+      "yes": "Tak",
+      "no": "Nie",
+      "remove": "Usuń pytanie",
+      "id": "ID",
+      "idPlaceholder": "identyfikator snake_case",
+      "type": "Typ",
+      "label": "Etykieta",
+      "description": "Opis",
+      "requiredLabel": "Wymagane",
+      "placeholder": "Tekst zastępczy",
+      "defaultValue": "Wartość domyślna",
+      "minLength": "Min. długość",
+      "maxLength": "Maks. długość",
+      "minRows": "Min. wierszy",
+      "maxRows": "Maks. wierszy",
+      "min": "Min.",
+      "max": "Maks.",
+      "step": "Krok",
+      "maxSelectable": "Maks. liczba wybieranych wartości",
+      "defaultChecked": "Domyślnie zaznaczone",
+      "count": "Liczba (gwiazdek)",
+      "fractions": "Ułamki",
+      "fractionsDescription": "2 = połówki gwiazdek",
+      "format": "Format",
+      "default": "Domyślnie",
+      "stepSeconds": "Krok (sekundy)",
+      "maxTags": "Maks. liczba tagów",
+      "repetitionCount": "Liczba powtórzeń",
+      "itemLabel": "Etykieta elementu",
+      "noChildQuestions": "Brak pytań podrzędnych.",
+      "addChildQuestion": "Dodaj pytanie podrzędne",
+      "colorPlaceholder": "#ffffff"
+    },
+    "questionTypes": {
+      "string": "Tekst (krótka odpowiedź)",
+      "textarea": "Akapit",
+      "password": "Hasło",
+      "number": "Liczba",
+      "selectString": "Lista rozwijana (wartości tekstowe)",
+      "selectNumber": "Lista rozwijana (wartości liczbowe)",
+      "multiSelect": "Lista rozwijana wielokrotnego wyboru",
+      "radio": "Przyciski opcji (jednokrotny wybór)",
+      "checkboxGroup": "Pola wyboru (wielokrotny wybór)",
+      "boolean": "Przełącznik Tak/Nie",
+      "segmented": "Kontrolka segmentowa",
+      "slider": "Suwak (skala liniowa)",
+      "rating": "Ocena w gwiazdkach",
+      "color": "Kolor",
+      "date": "Data",
+      "time": "Czas",
+      "datetime": "Data i czas",
+      "tags": "Tagi",
+      "repeatableGroup": "Grupa powtarzalna"
+    },
+    "options": {
+      "title": "Opcje",
+      "none": "Brak opcji.",
+      "label": "Etykieta",
+      "value": "Wartość",
+      "remove": "Usuń opcję",
+      "add": "Dodaj opcję"
+    },
+    "calculations": {
+      "title": "Obliczenia",
+      "subtitle": "Każde obliczenie to ciąg wzoru Python obliczany przez backend; wyniki są tu tylko do wyświetlenia.",
+      "formulaCount": "{count, plural, one {# wzór} few {# wzory} many {# wzorów} other {# wzorów}}",
+      "none": "Brak obliczeń.",
+      "name": "Nazwa",
+      "namePlaceholder": "totalCost",
+      "formula": "Wzór",
+      "formulaPlaceholder": "mean(values['reading_a'])",
+      "openCodeEditor": "Otwórz edytor kodu",
+      "deleteConfirm": "Usunąć?",
+      "yes": "Tak",
+      "no": "Nie",
+      "remove": "Usuń obliczenie",
+      "add": "Dodaj obliczenie",
+      "editFormula": "Edytuj wzór",
+      "editFormulaNamed": "Edytuj wzór: {name}",
+      "availableInFormulas": "Dostępne we wzorach",
+      "helpValues": "odpowiedzi z formularzy klienta/laboratorium",
+      "helpOtherCalcs": "Nazwy innych obliczeń (zdefiniowanych powyżej) można przywoływać bezpośrednio",
+      "helpMath": "moduł math (np. math.sqrt, math.pi)",
+      "helpBuiltins": "Funkcje wbudowane: round, abs, min, max, sum, len, zip, mean, median, stdev",
+      "helpMultiline": "Możesz pisać w wielu wierszach: ostatni wiersz jest używany jako wynik lub przypisz go do zmiennej result. Dostęp do dunder (__) jest odrzucany przez backend.",
+      "done": "Gotowe"
+    },
+    "collapsible": {
+      "collapse": "Zwiń ↑",
+      "expand": "Rozwiń ↓"
+    },
+    "newTemplate": {
+      "title": "Nowy szablon",
+      "subtitle": "Wypełnij poniższe dane, aby utworzyć nowy szablon eksperymentu.",
+      "errorTitle": "Błąd",
+      "sample": "Próbka",
+      "sampleDescription": "Rodzaj próbki, do którego należy ten szablon.",
+      "samplePlaceholder": "— Wybierz próbkę —",
+      "createNewSample": "+ Utwórz nową próbkę…",
+      "newSampleDetails": "Dane nowej próbki",
+      "sampleName": "Nazwa próbki",
+      "sampleNamePlaceholder": "np. Gleba",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Opcjonalne",
+      "templateName": "Nazwa szablonu",
+      "templateNameDescription": "Krótka, opisowa nazwa tego szablonu.",
+      "templateNamePlaceholder": "np. Analiza wilgotności",
+      "templateDescriptionPlaceholder": "Co ten szablon mierzy lub bada?",
+      "create": "Utwórz szablon →",
+      "selectSample": "Wybierz próbkę.",
+      "newSampleNameRequired": "Nazwa nowej próbki jest wymagana.",
+      "templateNameRequired": "Nazwa szablonu jest wymagana."
+    },
+    "preview": {
+      "clientForm": "Formularz klienta",
+      "labForm": "Formularz laboratoryjny",
+      "capture": "Przechwyć wartości",
+      "capturedClient": "Przechwycone wartości klienta",
+      "capturedLab": "Przechwycone wartości laboratoryjne"
+    },
+    "editPage": {
+      "legacyTitle": "Przestarzały / nieprawidłowy szablon",
+      "legacyBody": "Ten szablon nie pasuje do bieżącego schematu. Zapisanie przepisze go w bieżącym formacie.",
+      "loadErrorTitle": "Nie udało się załadować szablonu",
+      "unknownError": "Nieznany błąd."
+    },
+    "newPage": {
+      "loadErrorTitle": "Nie można połączyć się z Experiment Manager",
+      "loadSamplesFallback": "Nie udało się załadować próbek."
+    },
+    "errors": {
+      "createSample": "Nie udało się utworzyć próbki.",
+      "createTemplate": "Nie udało się utworzyć szablonu.",
+      "saveTemplate": "Nie udało się zapisać szablonu.",
+      "deleteTemplate": "Nie udało się usunąć szablonu."
+    }
+  },
+  "pdfEditor": {
+    "back": "← Wstecz",
+    "title": "Szablon PDF",
+    "addText": "+ Tekst",
+    "addShape": "+ Kształt",
+    "addPage": "+ Strona",
+    "copy": "Kopiuj",
+    "paste": "Wklej",
+    "duplicate": "Duplikuj",
+    "delete": "Usuń",
+    "deleteCount": "Usuń ({count})",
+    "undo": "Cofnij",
+    "undoTooltip": "Cofnij (Ctrl/Cmd+Z)",
+    "redo": "Ponów",
+    "redoTooltip": "Ponów (Ctrl/Cmd+Shift+Z)",
+    "zoomOut": "Pomniejsz",
+    "resetZoom": "Resetuj powiększenie",
+    "zoomIn": "Powiększ",
+    "snap": "Przyciąganie",
+    "unsavedChanges": "Niezapisane zmiany",
+    "previewRaw": "Pokaż symbole zastępcze",
+    "previewDefaults": "Użyj wartości domyślnych",
+    "previewExperiment": "Z eksperymentu",
+    "pickExperiment": "Wybierz eksperyment…",
+    "openRealPdf": "Otwórz rzeczywisty PDF",
+    "openRealPdfTooltip": "Zapisz, wyrenderuj i otwórz rzeczywisty wygenerowany PDF dla tego eksperymentu",
+    "save": "Zapisz",
+    "saved": "Zapisano",
+    "openedPdf": "Otwarto PDF",
+    "pdfTimedOut": "Przekroczono limit czasu oczekiwania na PDF",
+    "reportGenFailed": "Generowanie raportu nie powiodło się",
+    "variables": "Zmienne",
+    "variablesHint": "Kliknij, aby wstawić do zaznaczonego pola tekstowego, w przeciwnym razie skopiuj {token}",
+    "searchVariables": "Szukaj zmiennych…",
+    "noMatches": "Brak dopasowań",
+    "copiedExclaim": "Skopiowano!",
+    "components": "Komponenty",
+    "pageBreak": "— podział strony —",
+    "lock": "Zablokuj",
+    "unlock": "Odblokuj",
+    "emptyCanvas": "Obszar roboczy jest pusty — dodaj komponent Tekst lub Kształt",
+    "page": "Strona {number}",
+    "pageOfPages": "Strona {page} z {total}",
+    "inspectorTab": "Inspektor",
+    "pagesTab": "Strony",
+    "group": {
+      "selected": "Zaznaczono {count} komponentów",
+      "shiftClickHint": "Shift + kliknięcie, aby dodać/usunąć. Przeciągnij, aby przesunąć razem.",
+      "align": "Wyrównaj",
+      "left": "Do lewej",
+      "center": "Do środka",
+      "right": "Do prawej",
+      "top": "Do góry",
+      "middle": "Do środka (pion)",
+      "bottom": "Do dołu",
+      "distribute": "Rozmieść",
+      "needThree": "Wymaga zaznaczenia co najmniej 3",
+      "horizontally": "Poziomo",
+      "vertically": "Pionowo"
+    },
+    "inspector": {
+      "selectComponent": "Wybierz komponent do edycji",
+      "order": "Kolejność",
+      "toBack": "Na spód",
+      "back": "Do tyłu",
+      "forward": "Do przodu",
+      "toFront": "Na wierzch",
+      "position": "Pozycja",
+      "content": "Treść",
+      "contentPlaceholder": "Tekst (obsługuje '{{'zmienne'}}')",
+      "unknownVariables": "{count, plural, one {Nieznana zmienna} few {Nieznane zmienne} many {Nieznane zmienne} other {Nieznane zmienne}}: {vars}",
+      "style": "Styl",
+      "font": "Czcionka",
+      "size": "Rozmiar",
+      "align": "Wyrównanie",
+      "color": "Kolor",
+      "bold": "Pogrubienie",
+      "italic": "Kursywa",
+      "shape": "Kształt",
+      "type": "Typ",
+      "strokeWidth": "Grubość linii",
+      "fill": "Wypełnienie"
+    },
+    "pages": {
+      "pageLabel": "Strona {number}",
+      "componentCount": "{count, plural, one {# komponent} few {# komponenty} many {# komponentów} other {# komponentów}}",
+      "deleteConfirm": "Usunąć stronę {number}? Spowoduje to usunięcie {count, plural, one {# komponentu} few {# komponentów} many {# komponentów} other {# komponentów}}."
+    },
+    "unavailableTitle": "Edytor PDF niedostępny",
+    "loadTemplateError": "Nie udało się załadować szablonu eksperymentu.",
+    "loadLayoutError": "Nie udało się załadować układu PDF."
+  },
+  "docs": {
+    "layout": {
+      "description": "Materiał referencyjny dla techników laboratoryjnych tworzących formularze: każdy typ pytania obsługiwany przez silnik formularzy."
+    },
+    "sidebar": {
+      "components": "Komponenty"
+    },
+    "index": {
+      "title": "Dokumentacja komponentów",
+      "subtitle": "Materiał referencyjny dla techników laboratoryjnych tworzących formularze. Każdy typ pytania obsługiwany przez silnik formularzy — wybierz jeden z paska bocznego, aby dostosować jego pola JSON i zobaczyć podgląd na żywo.",
+      "componentCount": "{count, plural, one {# komponent} few {# komponenty} many {# komponentów} other {# komponentów}}.",
+      "templateHeading": "Szablon eksperymentu",
+      "templateBody": "Szablon eksperymentu to dokument najwyższego poziomu ładowany przez silnik formularzy. Łączy dwa formularze — clientForm i labForm — z których każdy jest obiektem FormDoc z polami name, opcjonalnym description oraz tablicą questions. Nazwane calculations przypisują nazwy zmiennych do obiektów zawierających wzór Python (formula, obliczany przez backend) i opcjonalny obliczony result. Zebrane odpowiedzi znajdują się w values, kluczowane według id pytania.",
+      "repeatableHeading": "Grupa powtarzalna",
+      "repeatableBody": "Grupa powtarzalna to sekcja powtarzana ustaloną liczbę razy — na przykład „zmierz próbkę 8 razy”. W polu config może zawierać opcjonalny itemLabel oraz listę pytań podrzędnych. Obsługiwany jest tylko jeden poziom zagnieżdżenia: grupa powtarzalna nie może zawierać innej grupy powtarzalnej. Odpowiedzi są przechowywane kolumnowo: każde id pytania podrzędnego odpowiada tablicy o długości count (jeden wpis na powtórzenie).",
+      "repeatableLink": "Zobacz komponent grupy powtarzalnej →",
+      "schemaHeading": "Schemat jako źródło prawdy",
+      "schemaBody": "Poniższy schemat JSON experiment-template.schema.json jest źródłem prawdy i to z nim porównuje dane backend. Schematy Zod w @repo/forms (schema.ts), używane do walidacji w czasie wykonywania i typów we frontendzie, są pisane ręcznie, aby odzwierciedlać ten schemat JSON. Są synchronizowane ręcznie — zaakceptowany dług techniczny, ponieważ schemat rzadko się zmienia. Gdy zmieniasz jeden, zmień też drugi.",
+      "fullSchema": "Pełny schemat JSON"
+    },
+    "detail": {
+      "schemaFields": "Pola schematu",
+      "schemaFieldsSubtitle": "Wygenerowane ze schematu Zod dla tego typu pytania.",
+      "outputValue": "Wartość wyjściowa",
+      "discriminator": "Dyskryminator",
+      "constant": "stała",
+      "required": "Wymagane",
+      "requiredYes": "Tak",
+      "requiredNo": "Nie",
+      "config": "config",
+      "columns": {
+        "field": "Pole",
+        "type": "Typ",
+        "required": "Wymagane",
+        "meaning": "Znaczenie",
+        "details": "Szczegóły"
+      },
+      "noFieldInfo": "Brak informacji o polach dla tego schematu.",
+      "additionalConfig": "Dodatkowa konfiguracja.",
+      "noAdditionalRules": "Brak dodatkowych reguł.",
+      "repeatableCount": "Stała liczba powtórzeń.",
+      "nestedQuestions": "Tablica zagnieżdżonych definicji pytań.",
+      "discriminatorSelects": "Ta wartość wybiera ten wariant pytania w unii JSON.",
+      "mustMatchConstant": "Musi odpowiadać wartości stałej.",
+      "allowedValues": "Dozwolone wartości: {values}.",
+      "eachItemIncludes": "Każdy element zawiera {fields}.",
+      "typeUnknown": "Nieznany",
+      "typeFixedValue": "Stała wartość",
+      "typeOneOf": "Jedna z",
+      "typeArrayOf": "Tablica {item}",
+      "typeObject": "Obiekt",
+      "typeAny": "Dowolny",
+      "typeGenericValues": "wartości",
+      "typeGenericObjects": "obiekty",
+      "typePlural": "{type}"
+    },
+    "workbench": {
+      "customizeJson": "Dostosuj JSON",
+      "reset": "Resetuj",
+      "jsonAriaLabel": "JSON pytania",
+      "validJson": "Prawidłowy JSON. Podgląd aktualizuje się podczas edycji ustawień pól.",
+      "livePreview": "Podgląd na żywo",
+      "activeJson": "Aktywny JSON",
+      "currentValue": "Bieżąca wartość",
+      "invalidJson": "Nieprawidłowy JSON.",
+      "invalidQuestion": "Nieprawidłowy JSON pytania.",
+      "typeMustRemain": "pole type musi pozostać „{type}” na tej stronie dokumentacji."
+    },
+    "fields": {
+      "config": "Obiekt konfiguracji zależny od typu.",
+      "count": "Liczba ikon oceny do wyświetlenia.",
+      "itemLabel": "Rzeczownik w liczbie pojedynczej dla jednego powtórzenia, np. „Pomiar”.",
+      "questions": "Pytania podrzędne powtarzane w każdej iteracji.",
+      "default": "Wartość początkowa używana, zanim użytkownik zmieni odpowiedź.",
+      "description": "Opcjonalny tekst pomocniczy wyświetlany pod etykietą pytania.",
+      "format": "Format wartości koloru akceptowany przez pole wyboru koloru.",
+      "fractions": "Precyzja ułamkowa dla wartości oceny.",
+      "id": "Stały klucz odpowiedzi używany podczas zapisywania lub odczytywania tej wartości.",
+      "label": "Tekst pytania wyświetlany użytkownikowi.",
+      "marks": "Widoczne etykiety umieszczone wzdłuż suwaka.",
+      "max": "Największa akceptowana wartość.",
+      "maxLength": "Maksymalna liczba znaków.",
+      "maxRows": "Maksymalna liczba widocznych wierszy pola tekstowego.",
+      "maxTags": "Maksymalna liczba tagów, które może dodać użytkownik.",
+      "maxValues": "Maksymalna liczba opcji, które może wybrać użytkownik.",
+      "min": "Najmniejsza akceptowana wartość.",
+      "minLength": "Minimalna liczba znaków.",
+      "minRows": "Minimalna liczba widocznych wierszy pola tekstowego.",
+      "options": "Opcje dostępne dla użytkownika.",
+      "placeholder": "Tekst podpowiedzi wyświetlany przed wprowadzeniem wartości.",
+      "required": "Określa, czy użytkownik musi odpowiedzieć na to pytanie.",
+      "step": "Przyrost używany przez kontrolki numeryczne.",
+      "suggestions": "Sugerowane tagi proponowane podczas pisania.",
+      "swatches": "Predefiniowane kolory wyświetlane przez pole wyboru koloru.",
+      "type": "Pole dyskryminujące, które wybiera schemat pytania i sposób renderowania."
+    },
+    "outputTypes": {
+      "boolean": {
+        "typeLabel": "boolean",
+        "description": "Przechowywane jako true lub false."
+      },
+      "checkbox-group": {
+        "typeLabel": "string[]",
+        "description": "Przechowywane jako tablica wybranych wartości opcji."
+      },
+      "color": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako ciąg koloru w skonfigurowanym formacie lub undefined, gdy puste."
+      },
+      "date": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako ciąg daty w formacie yyyy-MM-dd lub undefined, gdy puste."
+      },
+      "datetime": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako ciąg daty i czasu w formacie yyyy-MM-ddTHH:mm lub undefined, gdy puste."
+      },
+      "multi-select": {
+        "typeLabel": "string[]",
+        "description": "Przechowywane jako tablica wybranych wartości opcji."
+      },
+      "number": {
+        "typeLabel": "number | undefined",
+        "description": "Przechowywane jako liczba lub undefined, gdy puste."
+      },
+      "password": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wprowadzony ciąg znaków lub undefined, gdy puste."
+      },
+      "radio": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wartość wybranej opcji lub undefined, gdy nic nie wybrano."
+      },
+      "rating": {
+        "typeLabel": "number | undefined",
+        "description": "Przechowywane jako liczba lub undefined, gdy nie wybrano oceny."
+      },
+      "segmented": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wartość wybranego segmentu lub undefined, gdy puste."
+      },
+      "select-number": {
+        "typeLabel": "number | undefined",
+        "description": "Przechowywane jako wybrana liczbowa wartość opcji lub undefined, gdy puste."
+      },
+      "select-string": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wybrana tekstowa wartość opcji lub undefined, gdy puste."
+      },
+      "slider": {
+        "typeLabel": "number | undefined",
+        "description": "Przechowywane jako liczba po zmianie suwaka; może być undefined przed interakcją."
+      },
+      "string": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wprowadzony ciąg znaków lub undefined, gdy puste."
+      },
+      "tags": {
+        "typeLabel": "string[]",
+        "description": "Przechowywane jako tablica ciągów tagów."
+      },
+      "textarea": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako wprowadzony ciąg znaków lub undefined, gdy puste."
+      },
+      "time": {
+        "typeLabel": "string | undefined",
+        "description": "Przechowywane jako ciąg czasu w formacie HH:mm lub undefined, gdy puste."
+      },
+      "repeatable-group": {
+        "typeLabel": "object (columnar)",
+        "description": "Przechowuje jedną tablicę na id pytania podrzędnego; każda tablica ma `count` wpisów (jeden na powtórzenie)."
+      }
+    },
+    "gallery": {
+      "string": {
+        "label": "Krótki tekst",
+        "description": "Jednowierszowe pole tekstowe. Mantine TextInput. Krótka odpowiedź z Google Forms."
+      },
+      "textarea": {
+        "label": "Akapit",
+        "description": "Wielowierszowe, automatycznie skalowane pole tekstowe. Mantine Textarea. Akapit z Google Forms."
+      },
+      "password": {
+        "label": "Hasło",
+        "description": "Maskowane pole tekstowe z przełącznikiem odsłaniania. Mantine PasswordInput."
+      },
+      "number": {
+        "label": "Liczba",
+        "description": "Pole numeryczne z opcjonalnymi min/max/step. Mantine NumberInput."
+      },
+      "select-string": {
+        "label": "Lista rozwijana (tekst)",
+        "description": "Lista rozwijana jednowartościowa, której wartości są ciągami znaków. Mantine Select."
+      },
+      "select-number": {
+        "label": "Lista rozwijana (liczba)",
+        "description": "Lista rozwijana jednowartościowa, której wartości są liczbami (przydatne przy zasilaniu obliczeń)."
+      },
+      "multi-select": {
+        "label": "Wielokrotny wybór",
+        "description": "Wybierz zero lub więcej wartości z listy rozwijanej. Mantine MultiSelect. Wartością jest tablica ciągów znaków."
+      },
+      "radio": {
+        "label": "Przyciski opcji",
+        "description": "Wybór jednokrotny renderowany jako przyciski opcji. Mantine Radio.Group. Pytanie jednokrotnego wyboru z Google Forms."
+      },
+      "checkbox-group": {
+        "label": "Pola wyboru",
+        "description": "Wybór wielokrotny renderowany jako pola wyboru. Mantine Checkbox.Group. Pola wyboru z Google Forms."
+      },
+      "boolean": {
+        "label": "Przełącznik",
+        "description": "Przełącznik Tak/Nie. Mantine Switch. Wartością jest boolean."
+      },
+      "segmented": {
+        "label": "Kontrolka segmentowa",
+        "description": "Wybór jednokrotny renderowany jako kontrolka segmentowa w stylu pigułek. Mantine SegmentedControl."
+      },
+      "slider": {
+        "label": "Suwak",
+        "description": "Suwak numeryczny z opcjonalnymi znacznikami. Mantine Slider. Skala liniowa z Google Forms."
+      },
+      "rating": {
+        "label": "Ocena",
+        "description": "Ocena w gwiazdkach z opcjonalną precyzją ułamkową. Mantine Rating."
+      },
+      "color": {
+        "label": "Kolor",
+        "description": "Selektor kolorów z opcjonalnymi próbkami. Mantine ColorInput."
+      },
+      "date": {
+        "label": "Data",
+        "description": "Natywny selektor daty. Wartością jest ciąg ISO yyyy-MM-dd."
+      },
+      "time": {
+        "label": "Czas",
+        "description": "Natywny selektor czasu. Wartością jest ciąg HH:mm."
+      },
+      "datetime": {
+        "label": "Data i czas",
+        "description": "Natywny selektor datetime-local. Wartością jest ciąg ISO yyyy-MM-ddTHH:mm."
+      },
+      "tags": {
+        "label": "Tagi",
+        "description": "Swobodne pole tagów/etykiet. Mantine TagsInput. Wartością jest tablica ciągów znaków."
+      },
+      "repeatable-group": {
+        "label": "Grupa powtarzalna",
+        "description": "Sekcja powtarzana ustaloną liczbę razy (np. „zmierz próbkę 8 razy”). Pytania podrzędne powtarzają się dokładnie `count` razy; odpowiedzi są przechowywane kolumnowo (jedna tablica na id pytania podrzędnego)."
+      }
+    }
+  },
+  "forms": {
+    "submit": "Prześlij",
+    "saveDraft": "Zapisz wersję roboczą",
+    "item": "Element"
+  }
+}

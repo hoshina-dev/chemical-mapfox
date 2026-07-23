@@ -1,4 +1,5 @@
 import { Alert } from "@mantine/core";
+import { getTranslations } from "next-intl/server";
 
 import { AdminExperimentsView } from "@/components/admin/AdminExperimentsView";
 import {
@@ -9,6 +10,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function StaffExperimentsListingPage() {
+  const t = await getTranslations("staff.experiments");
   let tickets: EnrichedTicket[] | null = null;
   let degraded = false;
   let loadError: string | null = null;
@@ -19,13 +21,13 @@ export default async function StaffExperimentsListingPage() {
     degraded = result.enrichmentDegraded;
   } catch (error) {
     loadError =
-      error instanceof Error ? error.message : "Failed to load experiments.";
+      error instanceof Error ? error.message : t("loadErrorFallback");
   }
 
   if (loadError) {
     return (
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
-        <Alert color="red" variant="light" title="Could not reach Ticketing Service">
+        <Alert color="red" variant="light" title={t("loadErrorTitle")}>
           {loadError}
         </Alert>
       </div>
@@ -36,9 +38,8 @@ export default async function StaffExperimentsListingPage() {
     <>
       {degraded && (
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "16px 24px 0" }}>
-          <Alert color="yellow" variant="light" title="Some requester details unavailable">
-            Requester details could not be loaded from the user service. The list below is
-            complete; some requester cells may show raw user IDs.
+          <Alert color="yellow" variant="light" title={t("degradedTitle")}>
+            {t("degradedBody")}
           </Alert>
         </div>
       )}

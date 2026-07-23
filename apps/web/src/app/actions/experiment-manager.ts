@@ -2,6 +2,7 @@
 
 import type { ExperimentTemplate } from "@repo/forms";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import {
@@ -33,7 +34,8 @@ export async function createSampleAction(
   await requireAdmin();
   const trimmed = name.trim();
   if (!trimmed) {
-    return { success: false, error: "Sample name is required." };
+    const t = await getTranslations("staff.registerSample");
+    return { success: false, error: t("nameRequired") };
   }
   try {
     const sample = await createSample({
@@ -43,7 +45,8 @@ export async function createSampleAction(
     revalidatePath("/internal/experiment/onboarding");
     return { success: true, data: { id: sample.id, name: sample.name } };
   } catch (error) {
-    return { success: false, error: errorMessage(error, "Could not create sample.") };
+    const t = await getTranslations("builder.errors");
+    return { success: false, error: errorMessage(error, t("createSample")) };
   }
 }
 
@@ -63,9 +66,10 @@ export async function createTemplateAction(
       data: { id: detail.id, lineageId: detail.lineage_id },
     };
   } catch (error) {
+    const t = await getTranslations("builder.errors");
     return {
       success: false,
-      error: errorMessage(error, "Could not create template."),
+      error: errorMessage(error, t("createTemplate")),
     };
   }
 }
@@ -91,9 +95,10 @@ export async function updateTemplateAction(
       data: { id: detail.id, lineageId: detail.lineage_id },
     };
   } catch (error) {
+    const t = await getTranslations("builder.errors");
     return {
       success: false,
-      error: errorMessage(error, "Could not save template."),
+      error: errorMessage(error, t("saveTemplate")),
     };
   }
 }
@@ -107,9 +112,10 @@ export async function deleteTemplateAction(
     revalidatePath("/internal/experiment/onboarding");
     return { success: true, data: null };
   } catch (error) {
+    const t = await getTranslations("builder.errors");
     return {
       success: false,
-      error: errorMessage(error, "Could not delete template."),
+      error: errorMessage(error, t("deleteTemplate")),
     };
   }
 }

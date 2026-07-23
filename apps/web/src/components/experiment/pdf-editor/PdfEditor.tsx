@@ -19,6 +19,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
@@ -565,6 +566,7 @@ export function PdfEditor({
   questionDefaults,
   experiments,
 }: PdfEditorProps) {
+  const t = useTranslations("pdfEditor");
   const router = useRouter();
   const [hist, hd] = useReducer(historyReducer, undefined, () => ({
     past: [],
@@ -1203,7 +1205,7 @@ export function PdfEditor({
       return;
     }
     setSavedSnapshot(JSON.stringify(payload));
-    setSaveMsg({ text: "Saved", ok: true });
+    setSaveMsg({ text: t("saved"), ok: true });
     if (result.data.templateId !== templateId) {
       router.push(
         templatePdfPath({
@@ -1214,7 +1216,7 @@ export function PdfEditor({
       router.refresh();
     }
     setTimeout(() => setSaveMsg(null), 2500);
-  }, [sampleId, lineageId, templateId, router]);
+  }, [sampleId, lineageId, templateId, router, t]);
 
   // ── Real PDF preview (render the saved layout for a chosen experiment) ─────
   const openRealPdf = useCallback(async () => {
@@ -1245,7 +1247,7 @@ export function PdfEditor({
       if (!st.success) continue;
       const s = (st.data.status ?? "").toLowerCase();
       if (s.includes("fail") || s.includes("error")) {
-        setPdfMsg({ text: "Report generation failed", ok: false });
+        setPdfMsg({ text: t("reportGenFailed"), ok: false });
         setPdfBusy(false);
         return;
       }
@@ -1266,12 +1268,12 @@ export function PdfEditor({
     setPdfBusy(false);
     if (url) {
       window.open(url, "_blank", "noopener");
-      setPdfMsg({ text: "Opened PDF", ok: true });
+      setPdfMsg({ text: t("openedPdf"), ok: true });
       setTimeout(() => setPdfMsg(null), 2500);
     } else {
-      setPdfMsg({ text: "Timed out waiting for the PDF", ok: false });
+      setPdfMsg({ text: t("pdfTimedOut"), ok: false });
     }
-  }, [selectedExpId, sampleId, lineageId, templateId]);
+  }, [selectedExpId, sampleId, lineageId, templateId, t]);
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────
   useEffect(() => {
@@ -1486,19 +1488,19 @@ export function PdfEditor({
               router.push(templateBuilderPath({ sampleId, templateId }))
             }
           >
-            ← Back
+            {t("back")}
           </Button>
           <Text fw={600} size="sm">
-            PDF Template
+            {t("title")}
           </Text>
           <Button size="xs" onClick={addText}>
-            + Text
+            {t("addText")}
           </Button>
           <Button size="xs" variant="default" onClick={addShape}>
-            + Shape
+            {t("addShape")}
           </Button>
           <Button size="xs" variant="default" onClick={addPageBreak}>
-            + Page
+            {t("addPage")}
           </Button>
           <Button
             size="xs"
@@ -1506,10 +1508,10 @@ export function PdfEditor({
             onClick={() => void copySelection()}
             disabled={selectedIds.length === 0}
           >
-            Copy
+            {t("copy")}
           </Button>
           <Button size="xs" variant="default" onClick={() => void paste()}>
-            Paste
+            {t("paste")}
           </Button>
           <Button
             size="xs"
@@ -1517,7 +1519,7 @@ export function PdfEditor({
             onClick={duplicateSelected}
             disabled={selectedIds.length === 0}
           >
-            Duplicate
+            {t("duplicate")}
           </Button>
           <Button
             size="xs"
@@ -1526,28 +1528,30 @@ export function PdfEditor({
             onClick={deleteSelected}
             disabled={selectedIds.length === 0}
           >
-            Delete{selectedIds.length > 1 ? ` (${selectedIds.length})` : ""}
+            {selectedIds.length > 1
+              ? t("deleteCount", { count: selectedIds.length })
+              : t("delete")}
           </Button>
 
           <Group gap={2} wrap="nowrap">
-            <Tooltip label="Undo (Ctrl/Cmd+Z)" withArrow>
+            <Tooltip label={t("undoTooltip")} withArrow>
               <ActionIcon
                 variant="default"
                 size="md"
                 onClick={undo}
                 disabled={!canUndo}
-                aria-label="Undo"
+                aria-label={t("undo")}
               >
                 ↶
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Redo (Ctrl/Cmd+Shift+Z)" withArrow>
+            <Tooltip label={t("redoTooltip")} withArrow>
               <ActionIcon
                 variant="default"
                 size="md"
                 onClick={redo}
                 disabled={!canRedo}
-                aria-label="Redo"
+                aria-label={t("redo")}
               >
                 ↷
               </ActionIcon>
@@ -1555,17 +1559,17 @@ export function PdfEditor({
           </Group>
 
           <Group gap={2} wrap="nowrap">
-            <Tooltip label="Zoom out" withArrow>
+            <Tooltip label={t("zoomOut")} withArrow>
               <ActionIcon
                 variant="default"
                 size="md"
                 onClick={() => setZoom((z) => clampZoom(z - 0.1))}
-                aria-label="Zoom out"
+                aria-label={t("zoomOut")}
               >
                 −
               </ActionIcon>
             </Tooltip>
-            <Tooltip label="Reset zoom" withArrow>
+            <Tooltip label={t("resetZoom")} withArrow>
               <Button
                 size="xs"
                 variant="default"
@@ -1576,12 +1580,12 @@ export function PdfEditor({
                 {Math.round(zoom * 100)}%
               </Button>
             </Tooltip>
-            <Tooltip label="Zoom in" withArrow>
+            <Tooltip label={t("zoomIn")} withArrow>
               <ActionIcon
                 variant="default"
                 size="md"
                 onClick={() => setZoom((z) => clampZoom(z + 0.1))}
-                aria-label="Zoom in"
+                aria-label={t("zoomIn")}
               >
                 +
               </ActionIcon>
@@ -1590,7 +1594,7 @@ export function PdfEditor({
 
           <Checkbox
             size="xs"
-            label="Snap"
+            label={t("snap")}
             checked={snap}
             onChange={(e) => setSnap(e.target.checked)}
           />
@@ -1599,7 +1603,7 @@ export function PdfEditor({
 
           {dirty && (
             <Badge color="yellow" variant="light">
-              Unsaved changes
+              {t("unsavedChanges")}
             </Badge>
           )}
 
@@ -1621,16 +1625,16 @@ export function PdfEditor({
               }
             }}
             data={[
-              { value: "raw", label: "Show placeholders" },
-              { value: "defaults", label: "Use defaults" },
-              { value: "experiment", label: "From experiment" },
+              { value: "raw", label: t("previewRaw") },
+              { value: "defaults", label: t("previewDefaults") },
+              { value: "experiment", label: t("previewExperiment") },
             ]}
           />
           {previewMode === "experiment" && (
             <Select
               size="xs"
               w={260}
-              placeholder="Pick experiment…"
+              placeholder={t("pickExperiment")}
               value={selectedExpId}
               onChange={onExperimentSelect}
               data={
@@ -1642,10 +1646,7 @@ export function PdfEditor({
             />
           )}
           {previewMode === "experiment" && (
-            <Tooltip
-              label="Save, render, and open the real generated PDF for this experiment"
-              withArrow
-            >
+            <Tooltip label={t("openRealPdfTooltip")} withArrow>
               <Button
                 size="xs"
                 variant="default"
@@ -1653,7 +1654,7 @@ export function PdfEditor({
                 disabled={!selectedExpId}
                 onClick={() => void openRealPdf()}
               >
-                Open real PDF
+                {t("openRealPdf")}
               </Button>
             </Tooltip>
           )}
@@ -1664,7 +1665,7 @@ export function PdfEditor({
           )}
 
           <Button size="xs" loading={saving} onClick={save}>
-            Save
+            {t("save")}
           </Button>
           {saveMsg && (
             <Badge color={saveMsg.ok ? "green" : "red"} variant="light">
@@ -1694,22 +1695,21 @@ export function PdfEditor({
               {/* Variables */}
               <div>
                 <Text fw={600} size="xs" mb={4}>
-                  Variables
+                  {t("variables")}
                 </Text>
                 <Text size="xs" c="dimmed" mb={6}>
-                  Click to insert into a selected text box, else copy{" "}
-                  <code>{"{{name}}"}</code>
+                  {t("variablesHint", { token: "{{name}}" })}
                 </Text>
                 <TextInput
                   size="xs"
-                  placeholder="Search variables…"
+                  placeholder={t("searchVariables")}
                   value={varSearch}
                   onChange={(e) => setVarSearch(e.currentTarget.value)}
                   mb={6}
                 />
                 {filteredGroups.length === 0 && (
                   <Text size="xs" c="dimmed">
-                    No matches
+                    {t("noMatches")}
                   </Text>
                 )}
                 {filteredGroups.map((group) => (
@@ -1721,7 +1721,11 @@ export function PdfEditor({
                       {group.variables.map((v) => (
                         <Tooltip
                           key={v.id}
-                          label={copiedVar === v.id ? "Copied!" : `{{${v.id}}}`}
+                          label={
+                            copiedVar === v.id
+                              ? t("copiedExclaim")
+                              : `{{${v.id}}}`
+                          }
                           position="right"
                           withArrow
                         >
@@ -1754,7 +1758,7 @@ export function PdfEditor({
               {/* Component list */}
               <div>
                 <Text fw={600} size="xs" mb={4}>
-                  Components
+                  {t("components")}
                 </Text>
                 <Stack gap={2}>
                   {comps.map((c) =>
@@ -1770,7 +1774,7 @@ export function PdfEditor({
                           marginTop: 2,
                         }}
                       >
-                        — page break —
+                        {t("pageBreak")}
                       </Text>
                     ) : (
                       <Box
@@ -1820,7 +1824,7 @@ export function PdfEditor({
                           p{(pageOf.get(c.id) ?? 0) + 1}
                         </Badge>
                         <Tooltip
-                          label={c.locked ? "Unlock" : "Lock"}
+                          label={c.locked ? t("unlock") : t("lock")}
                           withArrow
                         >
                           <ActionIcon
@@ -1835,7 +1839,7 @@ export function PdfEditor({
                                 patch: { locked: !c.locked },
                               });
                             }}
-                            aria-label={c.locked ? "Unlock" : "Lock"}
+                            aria-label={c.locked ? t("unlock") : t("lock")}
                           >
                             {c.locked ? "L" : "·"}
                           </ActionIcon>
@@ -1876,7 +1880,7 @@ export function PdfEditor({
                     padding: "6px 0",
                   }}
                 >
-                  Page {pageIdx + 1}
+                  {t("page", { number: pageIdx + 1 })}
                 </Text>
               )}
               <div
@@ -1921,7 +1925,7 @@ export function PdfEditor({
                       userSelect: "none",
                     }}
                   >
-                    Page {pageIdx + 1} of {pages.length}
+                    {t("pageOfPages", { page: pageIdx + 1, total: pages.length })}
                   </div>
 
                   {/* Alignment guides */}
@@ -2068,7 +2072,7 @@ export function PdfEditor({
 
           {comps.filter((c) => c.type !== "pagebreak").length === 0 && (
             <Text c="dimmed" size="sm" style={{ marginTop: 40 }}>
-              Canvas is empty — add a Text or Shape component
+              {t("emptyCanvas")}
             </Text>
           )}
         </div>
@@ -2098,10 +2102,10 @@ export function PdfEditor({
           >
             <Tabs.List>
               <Tabs.Tab value="inspector" style={{ fontSize: 12 }}>
-                Inspector
+                {t("inspectorTab")}
               </Tabs.Tab>
               <Tabs.Tab value="pages" style={{ fontSize: 12 }}>
-                Pages
+                {t("pagesTab")}
               </Tabs.Tab>
             </Tabs.List>
 
@@ -2225,53 +2229,54 @@ interface GroupPanelProps {
 }
 
 function GroupPanel({ count, onAlign, onDistribute }: GroupPanelProps) {
+  const t = useTranslations("pdfEditor");
   return (
     <Stack gap="xs" p="sm">
       <Text size="xs" fw={600}>
-        {count} components selected
+        {t("group.selected", { count })}
       </Text>
       <Text size="xs" c="dimmed">
-        Shift-click to add/remove. Drag to move together.
+        {t("group.shiftClickHint")}
       </Text>
 
       <Text size="xs" fw={600} mt="xs">
-        Align
+        {t("group.align")}
       </Text>
       <Group gap={4} wrap="wrap">
         <Button size="xs" variant="default" onClick={() => onAlign("left")}>
-          Left
+          {t("group.left")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onAlign("hcenter")}>
-          Center
+          {t("group.center")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onAlign("right")}>
-          Right
+          {t("group.right")}
         </Button>
       </Group>
       <Group gap={4} wrap="wrap">
         <Button size="xs" variant="default" onClick={() => onAlign("top")}>
-          Top
+          {t("group.top")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onAlign("vmiddle")}>
-          Middle
+          {t("group.middle")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onAlign("bottom")}>
-          Bottom
+          {t("group.bottom")}
         </Button>
       </Group>
 
       <Text size="xs" fw={600} mt="xs">
-        Distribute
+        {t("group.distribute")}
       </Text>
       <Text size="xs" c="dimmed">
-        Needs 3+ selected
+        {t("group.needThree")}
       </Text>
       <Group gap={4} wrap="wrap">
         <Button size="xs" variant="default" onClick={() => onDistribute("x")}>
-          Horizontally
+          {t("group.horizontally")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onDistribute("y")}>
-          Vertically
+          {t("group.vertically")}
         </Button>
       </Group>
     </Stack>
@@ -2296,10 +2301,11 @@ function InspectorPanel({
   onReorder,
   onChange,
 }: InspectorPanelProps) {
+  const t = useTranslations("pdfEditor");
   if (!comp || comp.type === "pagebreak") {
     return (
       <Text size="xs" c="dimmed" p="sm">
-        Select a component to edit
+        {t("inspector.selectComponent")}
       </Text>
     );
   }
@@ -2328,33 +2334,33 @@ function InspectorPanel({
       </Text>
 
       <Text size="xs" fw={600}>
-        Order
+        {t("inspector.order")}
       </Text>
       <Group gap={4} wrap="nowrap">
         <Button size="xs" variant="default" onClick={() => onReorder("back")}>
-          To back
+          {t("inspector.toBack")}
         </Button>
         <Button
           size="xs"
           variant="default"
           onClick={() => onReorder("backward")}
         >
-          Back
+          {t("inspector.back")}
         </Button>
         <Button
           size="xs"
           variant="default"
           onClick={() => onReorder("forward")}
         >
-          Fwd
+          {t("inspector.forward")}
         </Button>
         <Button size="xs" variant="default" onClick={() => onReorder("front")}>
-          To front
+          {t("inspector.toFront")}
         </Button>
       </Group>
 
       <Text size="xs" fw={600}>
-        Position
+        {t("inspector.position")}
       </Text>
       <Group gap="xs">
         <NumberInput
@@ -2394,13 +2400,13 @@ function InspectorPanel({
       {comp.type === "text" && (
         <>
           <Text size="xs" fw={600} mt="xs">
-            Content
+            {t("inspector.content")}
           </Text>
           <Textarea
             ref={contentRef}
             size="xs"
             value={comp.content}
-            placeholder="Text (supports {{variables}})"
+            placeholder={t("inspector.contentPlaceholder")}
             autosize
             minRows={2}
             maxRows={5}
@@ -2432,17 +2438,19 @@ function InspectorPanel({
           />
           {unknownVars.length > 0 && (
             <Text size="xs" c="orange">
-              Unknown variable{unknownVars.length > 1 ? "s" : ""}:{" "}
-              {unknownVars.map((u) => `{{${u}}}`).join(", ")}
+              {t("inspector.unknownVariables", {
+                count: unknownVars.length,
+                vars: unknownVars.map((u) => `{{${u}}}`).join(", "),
+              })}
             </Text>
           )}
 
           <Text size="xs" fw={600} mt="xs">
-            Style
+            {t("inspector.style")}
           </Text>
           <Select
             size="xs"
-            label="Font"
+            label={t("inspector.font")}
             value={comp.style.font}
             data={["Helvetica", "Times-Roman", "Courier"]}
             onChange={(v) =>
@@ -2453,7 +2461,7 @@ function InspectorPanel({
           />
           <NumberInput
             size="xs"
-            label="Size"
+            label={t("inspector.size")}
             value={comp.style.size}
             min={6}
             max={72}
@@ -2465,7 +2473,7 @@ function InspectorPanel({
           />
           <Select
             size="xs"
-            label="Align"
+            label={t("inspector.align")}
             value={comp.style.align}
             data={["left", "center", "right"]}
             onChange={(v) =>
@@ -2479,7 +2487,7 @@ function InspectorPanel({
           />
           <ColorInput
             size="xs"
-            label="Color"
+            label={t("inspector.color")}
             value={comp.style.color}
             onChange={(v) =>
               onChange({
@@ -2490,7 +2498,7 @@ function InspectorPanel({
           <Group gap="sm">
             <Checkbox
               size="xs"
-              label="Bold"
+              label={t("inspector.bold")}
               checked={comp.style.bold}
               onChange={(e) =>
                 onChange({
@@ -2500,7 +2508,7 @@ function InspectorPanel({
             />
             <Checkbox
               size="xs"
-              label="Italic"
+              label={t("inspector.italic")}
               checked={comp.style.italic}
               onChange={(e) =>
                 onChange({
@@ -2515,11 +2523,11 @@ function InspectorPanel({
       {comp.type === "shape" && (
         <>
           <Text size="xs" fw={600} mt="xs">
-            Shape
+            {t("inspector.shape")}
           </Text>
           <Select
             size="xs"
-            label="Type"
+            label={t("inspector.type")}
             value={comp.shape_type}
             data={["rect", "line", "circle"]}
             onChange={(v) =>
@@ -2530,13 +2538,13 @@ function InspectorPanel({
           />
           <ColorInput
             size="xs"
-            label="Color"
+            label={t("inspector.color")}
             value={comp.color}
             onChange={(v) => onChange({ color: v } as Partial<PdfComp>)}
           />
           <NumberInput
             size="xs"
-            label="Stroke width"
+            label={t("inspector.strokeWidth")}
             value={comp.stroke_width}
             min={0.5}
             max={20}
@@ -2547,7 +2555,7 @@ function InspectorPanel({
           />
           <Checkbox
             size="xs"
-            label="Fill"
+            label={t("inspector.fill")}
             checked={comp.fill}
             onChange={(e) =>
               onChange({ fill: e.target.checked } as Partial<PdfComp>)
@@ -2575,6 +2583,7 @@ function PagesPanel({
   onDelete,
   onNavigate,
 }: PagesPanelProps) {
+  const t = useTranslations("pdfEditor");
   return (
     <Stack gap="xs" p="sm">
       {pages.map((pageComps, idx) => (
@@ -2593,11 +2602,10 @@ function PagesPanel({
           <Group justify="space-between" gap="xs">
             <div>
               <Text size="xs" fw={500}>
-                Page {idx + 1}
+                {t("pages.pageLabel", { number: idx + 1 })}
               </Text>
               <Text size="xs" c="dimmed">
-                {pageComps.length} component
-                {pageComps.length !== 1 ? "s" : ""}
+                {t("pages.componentCount", { count: pageComps.length })}
               </Text>
             </div>
             <Group gap={4}>
@@ -2633,7 +2641,10 @@ function PagesPanel({
                   if (
                     pageComps.length === 0 ||
                     confirm(
-                      `Delete page ${idx + 1}? Its ${pageComps.length} component(s) will be removed.`,
+                      t("pages.deleteConfirm", {
+                        number: idx + 1,
+                        count: pageComps.length,
+                      }),
                     )
                   )
                     onDelete(idx);
