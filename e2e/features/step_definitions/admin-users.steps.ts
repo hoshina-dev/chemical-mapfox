@@ -1,15 +1,47 @@
 import assert from "node:assert/strict";
 
 import { DataTable, Then, When } from "@cucumber/cucumber";
+import type { Locator } from "playwright";
 
 import type { ChemFoxWorld } from "../support/world.js";
+
+/**
+ * Fill the search box until React's controlled value sticks and the
+ * "type to search" hint disappears. A single `fill` can race Next hydration
+ * in CI (value wiped → searchUsers never fires).
+ */
+async function searchUntilSettled(
+  world: ChemFoxWorld,
+  query: string,
+  attempts = 25,
+): Promise<void> {
+  const input = world.page.getByRole("textbox", { name: "Search users" });
+  await input.waitFor({ state: "visible", timeout: 15_000 });
+
+  const typeHint = world.page.getByText(
+    "Type at least 2 characters to search.",
+  );
+
+  for (let i = 0; i < attempts; i += 1) {
+    await input.click();
+    await input.fill(query);
+    if ((await input.inputValue()) !== query) continue;
+
+    try {
+      await typeHint.waitFor({ state: "hidden", timeout: 1_000 });
+      return;
+    } catch {
+      // debounce (250ms) / effect not attached yet — retry
+    }
+  }
+
+  await typeHint.waitFor({ state: "hidden", timeout: 5_000 });
+}
 
 When(
   "I search users for {string}",
   async function (this: ChemFoxWorld, query: string) {
-    const input = this.page.getByLabel("Search users");
-    await input.waitFor({ state: "visible", timeout: 15_000 });
-    await input.fill(query);
+    await searchUntilSettled(this, query);
   },
 );
 
@@ -26,7 +58,9 @@ Then(
   "the users search results should list:",
   async function (this: ChemFoxWorld, table: DataTable) {
     for (const { name, email, role } of table.hashes()) {
-      const row = this.page.getByRole("row").filter({ hasText: email });
+      const row: Locator = this.page
+        .getByRole("row")
+        .filter({ hasText: email });
       await row.first().waitFor({ state: "visible", timeout: 15_000 });
 
       const named = await row.filter({ hasText: name }).count();
@@ -60,7 +94,6 @@ Then(
         .getByText(value, { exact: true })
         .first()
         .waitFor({ state: "visible", timeout: 15_000 });
-      // Field label is also rendered; ensure both appear in the panel.
       await detail
         .getByText(field, { exact: true })
         .first()
