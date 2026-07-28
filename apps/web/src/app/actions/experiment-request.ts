@@ -1,12 +1,11 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
-import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { requireClient } from "@/lib/auth/dal";
-import { usersApi } from "@/lib/custapi/client";
+import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import {
   createExperiment,
   updateExperiment,
@@ -21,19 +20,6 @@ interface RequestExperimentInput {
   templateId: string;
   /** Client intake answers, keyed by question id. */
   values: Record<string, AnswerValue>;
-}
-
-async function resolveOrganizationId(
-  userId: string,
-  sessionOrgId: string | undefined,
-): Promise<string | undefined> {
-  if (sessionOrgId) return sessionOrgId;
-  try {
-    const memberships = await usersApi.usersIdIdOrganizationsGet(userId);
-    return memberships.find((m) => m.organizationId)?.organizationId;
-  } catch {
-    return undefined;
-  }
 }
 
 async function errorText(error: unknown, fallback: string): Promise<string> {
@@ -71,22 +57,10 @@ export async function requestExperimentAction(
   input: RequestExperimentInput,
 ): Promise<ActionResult<{ contextId: string; warning?: string }>> {
   const session = await requireClient();
-  const t = await getTranslations("experiment.request.errors");
-
-  const organizationId = await resolveOrganizationId(
-    session.userId,
-    session.organizationId,
-  );
-  if (!organizationId) {
-    return {
-      success: false,
-      error: t("noOrganization"),
-    };
-  }
 
   const resolved = await loadRequestTemplate(input.templateId, input.sampleId);
   if (!resolved) {
-    return { success: false, error: t("templateGone") };
+    return { success: false, error: "That experiment template no longer exists." };
   }
 
   let contextId: string;
@@ -94,20 +68,20 @@ export async function requestExperimentAction(
     const ticket = await ticketsApi.apiV1TicketsPost({
       experimentTemplateId: input.templateId,
       name: resolved.template.meta.title,
-      organizationId,
+      organizationId: CHEMFOX_ORG_ID,
       userId: session.userId,
     });
     if (!ticket.id) {
       return {
         success: false,
-        error: t("noTicketId"),
+        error: "The ticketing service returned a request without an id.",
       };
     }
     contextId = ticket.id;
   } catch (error) {
     return {
       success: false,
-      error: await errorText(error, t("submitFailed")),
+      error: await errorText(error, "Could not submit your experiment request."),
     };
   }
 
@@ -128,7 +102,8 @@ export async function requestExperimentAction(
       templateToExperimentUpdate(resolved.template.wireSnapshot, input.values),
     );
   } catch {
-    warning = t("intakeNotSaved");
+    warning =
+      "Your request was submitted, but saving your intake answers didn't go through. The lab may ask you to re-enter them.";
   }
 
   revalidatePath(myExperimentsPath());

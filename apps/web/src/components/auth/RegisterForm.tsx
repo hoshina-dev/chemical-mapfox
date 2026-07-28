@@ -8,15 +8,12 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useTranslations } from "next-intl";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 
 import { register } from "@/app/actions/auth";
 
-import { OrganizationSelect } from "./OrganizationSelect";
-
 export function RegisterForm() {
   const [state, action, pending] = useActionState(register, undefined);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const t = useTranslations("auth.register");
 
   return (
@@ -44,12 +41,6 @@ export function RegisterForm() {
           required
           error={state?.errors?.password?.[0]}
         />
-        <OrganizationSelect
-          value={organizationId}
-          onChange={setOrganizationId}
-          error={state?.errors?.organizationId?.[0]}
-        />
-        <input type="hidden" name="organizationId" value={organizationId ?? ""} />
 
         {state?.message && (
           <Alert color="red" variant="light">

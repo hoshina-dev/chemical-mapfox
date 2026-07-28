@@ -13,18 +13,8 @@ import {
 } from "@/lib/auth/definitions";
 import { landingPathForRole } from "@/lib/auth/appRole";
 import { createSession, deleteSession } from "@/lib/auth/session";
+import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
-
-async function resolvePrimaryOrganizationId(
-  userId: string,
-): Promise<string | undefined> {
-  try {
-    const memberships = await usersApi.usersIdIdOrganizationsGet(userId);
-    return memberships.find((m) => m.organizationId)?.organizationId;
-  } catch {
-    return undefined;
-  }
-}
 
 async function custApiErrorMessage(
   error: unknown,
@@ -79,7 +69,7 @@ export async function login(
     email: user.email,
     avatarUrl: user.avatarUrl,
     role: user.role as CustApiRole,
-    organizationId: await resolvePrimaryOrganizationId(user.id),
+    organizationId: CHEMFOX_ORG_ID,
   });
 
   redirect(landingPathForRole(user.role as CustApiRole));
@@ -94,21 +84,19 @@ export async function register(
     nameRequired: tValidation("nameRequired"),
     emailInvalid: tValidation("emailInvalid"),
     passwordMinLength: tValidation("passwordMinLength"),
-    organizationRequired: tValidation("organizationRequired"),
   });
 
   const parsed = schema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
-    organizationId: formData.get("organizationId"),
   });
 
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { name, email, password, organizationId } = parsed.data;
+  const { name, email, password } = parsed.data;
   const tErrors = await getTranslations("auth.errors");
 
   let created;
@@ -124,7 +112,7 @@ export async function register(
   }
 
   try {
-    await organizationsApi.organizationsIdMembersPost(organizationId, {
+    await organizationsApi.organizationsIdMembersPost(CHEMFOX_ORG_ID, {
       userId: created.id,
       role: MemberRole.RoleMember,
     });
@@ -140,7 +128,7 @@ export async function register(
     email: created.email,
     avatarUrl: created.avatarUrl,
     role: created.role as CustApiRole,
-    organizationId,
+    organizationId: CHEMFOX_ORG_ID,
   });
 
   redirect(landingPathForRole(created.role as CustApiRole));

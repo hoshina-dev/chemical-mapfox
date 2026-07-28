@@ -75,6 +75,10 @@ Scope a task to one package with `pnpm --filter <name> <task>`, e.g.
 `chemical-mapfox` talks to [custapi](../custapi) (users & organizations) server-side
 only, following the same BFF pattern as `form-poc`.
 
+ChemFox itself is **not** organization-aware in the UI: every user is assigned to
+the fixed dummy org id `CHEMFOX_ORG` so CUSTAPI's org-aware membership contract
+and ticketing's `organizationId` field stay satisfied.
+
 - **`@repo/api-client`** holds the `typescript-fetch` client generated from custapi's
   OpenAPI/Swagger doc. Regenerate it with `pnpm --filter @repo/api-client codegen`
   (set `CUSTAPI_DOC_URL` to override the source; generation is skipped if the server
@@ -83,6 +87,7 @@ only, following the same BFF pattern as `form-poc`.
 - **`apps/web/src/lib/custapi/client.ts`** is a `server-only` module that builds the
   configured `usersApi` / `organizationsApi` singletons. The base URL comes from
   `CUSTAPI_URL` (see `apps/web/.env.example`).
+- **`apps/web/src/lib/custapi/chemfoxOrg.ts`** exports `CHEMFOX_ORG_ID`.
 
 ### Local development & integration testing
 

@@ -53,10 +53,8 @@ describe("createRegisterFormSchema", () => {
     nameRequired: "name-required",
     emailInvalid: "email-invalid",
     passwordMinLength: "password-min",
-    organizationRequired: "org-required",
   };
   const schema = createRegisterFormSchema(messages);
-  const orgId = "11111111-1111-4111-8111-111111111111";
 
   it("accepts a valid registration payload", () => {
     expect(
@@ -64,13 +62,11 @@ describe("createRegisterFormSchema", () => {
         name: " Casey ",
         email: "casey@example.com",
         password: "password1",
-        organizationId: orgId,
       }),
     ).toEqual({
       name: "Casey",
       email: "casey@example.com",
       password: "password1",
-      organizationId: orgId,
     });
   });
 
@@ -79,7 +75,6 @@ describe("createRegisterFormSchema", () => {
       name: "",
       email: "bad",
       password: "short",
-      organizationId: "not-a-uuid",
     });
     expect(result.success).toBe(false);
     if (result.success) return;
@@ -89,6 +84,5 @@ describe("createRegisterFormSchema", () => {
     expect(byPath.name).toBe("name-required");
     expect(byPath.email).toBe("email-invalid");
     expect(byPath.password).toBe("password-min");
-    expect(byPath.organizationId).toBe("org-required");
   });
 });

@@ -32,6 +32,9 @@ export interface Database {
 
 export const db: Database = { users: [], orgs: [] };
 
+/** Fixed ChemFox org id — CUSTAPI is org-aware; ChemFox uses one dummy org. */
+export const CHEMFOX_ORG_ID = "CHEMFOX_ORG";
+
 let idCounter = 0;
 function nextId(prefix: string): string {
   idCounter += 1;
@@ -45,7 +48,7 @@ function slug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-/** A deterministic UUID-shaped id (custapi/zod expect a uuid for organizationId). */
+/** A deterministic UUID-shaped id for non-ChemFox fixture orgs if needed. */
 function pseudoUuid(seed: string): string {
   const hex = Buffer.from(seed).toString("hex").padEnd(32, "0").slice(0, 32);
   return [
@@ -57,15 +60,22 @@ function pseudoUuid(seed: string): string {
   ].join("-");
 }
 
-/** Reset the store to its baseline (one organization, no users) before each scenario. */
+/** Reset the store to its baseline (CHEMFOX_ORG, no users) before each scenario. */
 export function resetDb(): void {
   db.users = [];
   db.orgs = [];
   idCounter = 0;
-  addOrg("Acme Labs");
+  db.orgs.push({ id: CHEMFOX_ORG_ID, name: CHEMFOX_ORG_ID });
 }
 
 export function addOrg(name: string): DbOrg {
+  if (name === CHEMFOX_ORG_ID) {
+    const existing = findOrgById(CHEMFOX_ORG_ID);
+    if (existing) return existing;
+    const org: DbOrg = { id: CHEMFOX_ORG_ID, name: CHEMFOX_ORG_ID };
+    db.orgs.push(org);
+    return org;
+  }
   const existing = db.orgs.find((o) => o.name === name);
   if (existing) return existing;
   const org: DbOrg = { id: pseudoUuid(`org-${slug(name)}`), name };

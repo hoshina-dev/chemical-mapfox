@@ -38,6 +38,22 @@ async function handle(ctx: StubContext): Promise<boolean> {
 
   // ---- custapi: users ---------------------------------------------------
   if (path[0] === "users") {
+    if (method === "GET" && path[1] === "search") {
+      const q = (url.searchParams.get("q") ?? "").toLowerCase().trim();
+      const limitRaw = url.searchParams.get("limit");
+      const limit = limitRaw ? Number.parseInt(limitRaw, 10) : 50;
+      const matches = q
+        ? db.users.filter(
+            (u) =>
+              u.name.toLowerCase().includes(q) ||
+              u.email.toLowerCase().includes(q),
+          )
+        : [];
+      return ctx.json(
+        200,
+        matches.slice(0, Number.isFinite(limit) ? limit : 50).map(userWire),
+      );
+    }
     if (method === "GET" && path[1] === "email" && path[2]) {
       const user = findUserByEmail(decodeURIComponent(path[2]));
       if (!user) return ctx.json(404, { error: "user not found" });

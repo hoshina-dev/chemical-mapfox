@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import { createUserFromRegistration } from "../support/fixtures.js";
 import { seedCatalogTemplate } from "../support/stub/modules/client-request.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -40,17 +39,6 @@ Given(
       sampleDescription: `${sampleName} specimens accepted by the lab.`,
       templateTitle,
       templateDescription: `${templateTitle} run on a ${sampleName} specimen.`,
-    });
-  },
-);
-
-Given(
-  "a client {string} with password {string} who belongs to no organization",
-  function (this: ChemFoxWorld, email: string, password: string) {
-    createUserFromRegistration({
-      name: "Unaffiliated Client",
-      email,
-      password,
     });
   },
 );

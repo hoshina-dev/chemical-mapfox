@@ -1,36 +1,29 @@
 import assert from "node:assert/strict";
 
-import { DataTable, Then } from "@cucumber/cucumber";
-import type { Locator } from "playwright";
+import { DataTable, Then, When } from "@cucumber/cucumber";
 
 import type { ChemFoxWorld } from "../support/world.js";
 
-/**
- * The two headline cards (`/admin/users`) each pair a dimmed label with an
- * `<h2>` count. Scope to the only cards that contain a level-2 heading, then
- * pick the one whose label matches — avoids the ambiguity of the word "Users"
- * also appearing as the page title and the table-section heading.
- */
-function countCard(world: ChemFoxWorld, label: string): Locator {
-  return world.page
-    .locator(".mantine-Card-root")
-    .filter({ has: world.page.getByRole("heading", { level: 2 }) })
-    .filter({ hasText: label });
-}
+When(
+  "I search users for {string}",
+  async function (this: ChemFoxWorld, query: string) {
+    const input = this.page.getByLabel("Search users");
+    await input.waitFor({ state: "visible", timeout: 15_000 });
+    await input.fill(query);
+  },
+);
 
-Then(
-  "the {string} count should show {string}",
-  async function (this: ChemFoxWorld, label: string, expected: string) {
-    const heading = countCard(this, label)
-      .getByRole("heading", { level: 2 })
-      .first();
-    await heading.waitFor({ state: "visible", timeout: 15_000 });
-    assert.equal((await heading.textContent())?.trim(), expected);
+When(
+  "I select the user {string} from search results",
+  async function (this: ChemFoxWorld, email: string) {
+    const row = this.page.getByRole("row").filter({ hasText: email });
+    await row.first().waitFor({ state: "visible", timeout: 15_000 });
+    await row.first().click();
   },
 );
 
 Then(
-  "the users table should list:",
+  "the users search results should list:",
   async function (this: ChemFoxWorld, table: DataTable) {
     for (const { name, email, role } of table.hashes()) {
       const row = this.page.getByRole("row").filter({ hasText: email });
@@ -39,7 +32,6 @@ Then(
       const named = await row.filter({ hasText: name }).count();
       assert.ok(named > 0, `expected the row for ${email} to show "${name}"`);
 
-      // The role renders as a Mantine Badge whose only text is the role itself.
       await row
         .getByText(role, { exact: true })
         .first()
@@ -49,11 +41,28 @@ Then(
 );
 
 Then(
-  "the organizations list should include:",
+  "the users search results should be empty",
+  async function (this: ChemFoxWorld) {
+    await this.page
+      .getByText("No users found.", { exact: true })
+      .waitFor({ state: "visible", timeout: 15_000 });
+  },
+);
+
+Then(
+  "the user detail should show:",
   async function (this: ChemFoxWorld, table: DataTable) {
-    for (const { name } of table.hashes()) {
-      await this.page
-        .getByText(name, { exact: true })
+    const detail = this.page.getByTestId("user-detail");
+    await detail.waitFor({ state: "visible", timeout: 15_000 });
+
+    for (const { field, value } of table.hashes()) {
+      await detail
+        .getByText(value, { exact: true })
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
+      // Field label is also rendered; ensure both appear in the panel.
+      await detail
+        .getByText(field, { exact: true })
         .first()
         .waitFor({ state: "visible", timeout: 15_000 });
     }
