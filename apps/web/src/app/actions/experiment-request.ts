@@ -2,6 +2,7 @@
 
 import type { AnswerValue } from "@repo/forms";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { requireClient } from "@/lib/auth/dal";
@@ -57,10 +58,11 @@ export async function requestExperimentAction(
   input: RequestExperimentInput,
 ): Promise<ActionResult<{ contextId: string; warning?: string }>> {
   const session = await requireClient();
+  const t = await getTranslations("experiment.request.errors");
 
   const resolved = await loadRequestTemplate(input.templateId, input.sampleId);
   if (!resolved) {
-    return { success: false, error: "That experiment template no longer exists." };
+    return { success: false, error: t("templateGone") };
   }
 
   let contextId: string;
@@ -74,14 +76,14 @@ export async function requestExperimentAction(
     if (!ticket.id) {
       return {
         success: false,
-        error: "The ticketing service returned a request without an id.",
+        error: t("noTicketId"),
       };
     }
     contextId = ticket.id;
   } catch (error) {
     return {
       success: false,
-      error: await errorText(error, "Could not submit your experiment request."),
+      error: await errorText(error, t("submitFailed")),
     };
   }
 
@@ -102,8 +104,7 @@ export async function requestExperimentAction(
       templateToExperimentUpdate(resolved.template.wireSnapshot, input.values),
     );
   } catch {
-    warning =
-      "Your request was submitted, but saving your intake answers didn't go through. The lab may ask you to re-enter them.";
+    warning = t("intakeNotSaved");
   }
 
   revalidatePath(myExperimentsPath());
