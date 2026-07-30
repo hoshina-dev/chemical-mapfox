@@ -846,7 +846,7 @@
         "experiments": "Lista eksperymentów",
         "checkIn": "Przyjęcie próbki",
         "workspace": "Przestrzeń robocza",
-        "finalize": "Finalizacja i raporty",
+        "finalize": "Finalizowanie i raporty",
         "onboarding": "Rejestracja próbek",
         "components": "Dokumentacja komponentów",
         "templates": "Szablony i kreator",
@@ -1117,7 +1117,7 @@
           },
           "lifecycle": {
             "heading": "Cykl życia eksperymentu",
-            "body": "Każdy eksperyment to zgłoszenie z jasną ścieżką statusów:\n\nZlecone → Próbka przyjęta → W toku → Finalizacja → Zakończone (lub Anulowane).\n\nZlecający otwierają zgłoszenia i wysyłają próbki. Personel przyjmuje próbki, wypełnia formularz laboratoryjny, finalizuje obliczenia i raport PDF, a następnie zamyka zgłoszenie."
+            "body": "Każdy eksperyment to zgłoszenie z jasną ścieżką statusów:\n\nZgłoszono → Próbka przyjęta → W toku → Finalizowanie → Zakończone (lub Anulowane).\n\nZlecający otwierają zgłoszenia i wysyłają próbki. Personel przyjmuje próbki, wypełnia formularz laboratoryjny, finalizuje obliczenia i raport PDF, a następnie zamyka zgłoszenie."
           }
         },
         "links": {
@@ -1151,17 +1151,17 @@
           },
           "filters": {
             "heading": "Grupy cyklu życia",
-            "body": "Oczekujące obejmuje Zlecone i Próbka przyjęta. Aktywne obejmuje W toku i Finalizacja. Zamknięte obejmuje Zakończone i Anulowane. Używaj tych grup, gdy chcesz krótką kolejkę pracy, którą wykonujesz właśnie teraz."
+            "body": "Oczekujące obejmuje Zgłoszono i Próbka przyjęta. Aktywne obejmuje W toku i Finalizowanie. Zamknięte obejmuje Zakończone i Anulowane. Używaj tych grup, gdy chcesz krótką kolejkę pracy, którą wykonujesz właśnie teraz."
           }
         }
       },
       "checkIn": {
         "title": "Przyjęcie próbki",
-        "subtitle": "Przyjęcie potwierdza, że fizyczne pudełko z próbką dotarło, i przenosi zgłoszenie ze statusu Zlecone do Próbka przyjęta.",
+        "subtitle": "Przyjęcie potwierdza, że fizyczne pudełko z próbką dotarło, i przenosi zgłoszenie ze statusu Zgłoszono do Próbka przyjęta.",
         "sections": {
           "when": {
             "heading": "Kiedy przyjmować",
-            "body": "Zrób to, gdy oznaczone pudełko dotrze do laboratorium. Zlecający drukują etykietę QR próbki, gdy zgłoszenie ma jeszcze status Zlecone; ten QR otwiera stronę przyjęcia dla pasującego kontekstu."
+            "body": "Zrób to, gdy oznaczone pudełko dotrze do laboratorium. Zlecający drukują etykietę QR próbki, gdy zgłoszenie ma jeszcze status Zgłoszono; ten QR otwiera stronę przyjęcia dla pasującego kontekstu."
           },
           "how": {
             "heading": "Jak przyjąć próbkę",
@@ -1175,7 +1175,7 @@
           },
           "after": {
             "heading": "Już przyjęte",
-            "body": "Jeśli próbka została już przyjęta, strona o tym informuje i zamiast ponownie oferować przycisk prowadzi do przestrzeni roboczej. Z przestrzeni roboczej nadal możesz przejść do przyjęcia, gdy zgłoszenie ma status Zlecone."
+            "body": "Jeśli próbka została już przyjęta, strona o tym informuje i zamiast ponownie oferować przycisk prowadzi do przestrzeni roboczej. Z przestrzeni roboczej nadal możesz przejść do przyjęcia, gdy zgłoszenie ma status Zgłoszono."
           }
         }
       },
@@ -1185,7 +1185,7 @@
         "sections": {
           "stages": {
             "heading": "Co możesz zrobić na każdym etapie",
-            "body": "Zlecone — próbki jeszcze nie ma; skorzystaj z linku do przyjęcia.\n\nPróbka przyjęta — użyj Rozpocznij eksperyment, aby przejść do W toku i odblokować edycję.\n\nW toku — formularz laboratoryjny jest edytowalny; Prześlij do etapu finalizacji przenosi zgłoszenie do Finalizacja.\n\nPóźniejsze etapy pozostawiają formularz laboratoryjny do odczytu, ale bez wspólnej edycji."
+            "body": "Zgłoszono — próbki jeszcze nie ma; skorzystaj z linku do przyjęcia.\n\nPróbka przyjęta — użyj Rozpocznij eksperyment, aby przejść do W toku i odblokować edycję.\n\nW toku — formularz laboratoryjny jest edytowalny; Prześlij do etapu końcowego przenosi zgłoszenie do Finalizowanie.\n\nPóźniejsze etapy pozostawiają formularz laboratoryjny do odczytu, ale bez wspólnej edycji."
           },
           "collab": {
             "heading": "Wspólna edycja",
@@ -1193,28 +1193,28 @@
           },
           "tabs": {
             "heading": "Formularz laboratoryjny, przyjęcie klienta i obliczenia",
-            "body": "Przestrzeń robocza pokazuje trzy karty: Formularz laboratoryjny (edytowalny w toku), Przyjęcie klienta (odpowiedzi zlecającego, zawsze tylko do odczytu) oraz Obliczenia (formuły i wyniki obliczone z szablonu).\n\nUżyj Prześlij do etapu finalizacji dopiero, gdy wprowadzanie danych laboratoryjnych jest zakończone. To przechodzi W toku → Finalizacja."
+            "body": "Przestrzeń robocza pokazuje trzy karty: Formularz laboratoryjny (edytowalny w toku), Dane od klienta (odpowiedzi zlecającego, zawsze tylko do odczytu) oraz Obliczenia (formuły i wyniki obliczone z szablonu).\n\nUżyj Prześlij do etapu końcowego dopiero, gdy wprowadzanie danych laboratoryjnych jest zakończone. To przechodzi W toku → Finalizowanie."
           }
         }
       },
       "finalize": {
-        "title": "Finalizacja i raporty",
-        "subtitle": "W statusie Finalizacja uruchom obliczenia (gdy szablon je definiuje), wygeneruj raport PDF, a następnie zamknij zgłoszenie.",
+        "title": "Finalizowanie i raporty",
+        "subtitle": "W statusie Finalizowanie uruchom obliczenia (gdy szablon je definiuje), wygeneruj raport PDF, a następnie zamknij zgłoszenie.",
         "sections": {
           "flow": {
             "heading": "Zalecana kolejność",
-            "body": "Zakończ wspólną edycję laboratoryjną przed przesłaniem do Finalizacja. Następnie:",
+            "body": "Zakończ wspólną edycję laboratoryjną przed przesłaniem do Finalizowanie. Następnie:",
             "steps": [
-              "Otwórz panel Finalizacja w przestrzeni roboczej.",
+              "Otwórz panel Finalizowanie w przestrzeni roboczej.",
               "Jeśli szablon ma obliczenia, uruchom Oblicz (możesz przeliczyć później, gdy wartości się zmienią).",
               "Wygeneruj raport, gdy obliczenia są gotowe (lub od razu, jeśli ich nie ma).",
-              "Gdy status raportu to Gotowe, wyświetl lub pobierz PDF.",
+              "Gdy status raportu to Gotowy, wyświetl lub pobierz PDF.",
               "Zamknij zgłoszenie, gdy raport jest gotowy — zamknięcie blokuje dalsze obliczenia i generowanie raportu."
             ]
           },
           "report": {
             "heading": "Status raportu",
-            "body": "Generowanie jest asynchroniczne. Status przechodzi przez W kolejce i Generowanie do Gotowe, albo Niepowodzenie, jeśli coś poszło nie tak. Możesz wygenerować ponownie po niepowodzeniu lub gdy potrzebujesz świeżego PDF. Zlecający mogą wyświetlić i pobrać ten sam raport ze szczegółów swojego eksperymentu, gdy będzie gotowy."
+            "body": "Generowanie jest asynchroniczne. Status przechodzi przez W kolejce i Generowanie do Gotowy, albo Niepowodzenie, jeśli coś poszło nie tak. Możesz wygenerować ponownie po niepowodzeniu lub gdy potrzebujesz świeżego PDF. Zlecający mogą wyświetlić i pobrać ten sam raport ze szczegółów swojego eksperymentu, gdy będzie gotowy."
           },
           "close": {
             "heading": "Zamykanie zgłoszenia",
@@ -1247,11 +1247,11 @@
           },
           "templates": {
             "heading": "Szablony w ramach próbki",
-            "body": "Strona próbki wymienia każdy szablon dla tego typu materiału. Kliknij wiersz, aby edytować go w builderze, albo wybierz Nowy szablon, aby rozpocząć pusty szkic powiązany z tą próbką."
+            "body": "Strona próbki wymienia każdy szablon dla tego typu materiału. Kliknij wiersz, aby edytować go w kreatorze, albo wybierz Nowy szablon, aby rozpocząć pusty szkic powiązany z tą próbką."
           },
           "next": {
             "heading": "Co dalej",
-            "body": "Przygotuj formularze przyjęcia klienta i laboratoryjne w builderze szablonów, dodaj obliczenia, gdy wyniki mają być wyliczane, a następnie zaprojektuj układ raportu PDF, jeśli laboratorium wydaje raporty PDF. Korzystaj z Referencji komponentów przy wyborze typów pytań."
+            "body": "Przygotuj formularze przyjęcia klienta i laboratoryjne w kreatorze szablonów, dodaj obliczenia, gdy wyniki mają być wyliczane, a następnie zaprojektuj układ raportu PDF, jeśli laboratorium wydaje raporty PDF. Korzystaj z dokumentacji komponentów przy wyborze typów pytań."
           }
         }
       },
@@ -1261,7 +1261,7 @@
         "sections": {
           "create": {
             "heading": "Rozpocznij nowy szablon",
-            "body": "Ze strony próbki wybierz Nowy szablon. Builder otwiera się z metadanymi (nazwa, opis) oraz pustymi sekcjami Client form i Lab form. Identyfikator szablonu jest nadawany przy utworzeniu.",
+            "body": "Ze strony próbki wybierz Nowy szablon. Kreator otwiera się z metadanymi (nazwa, opis) oraz pustymi sekcjami Formularz klienta i Formularz laboratoryjny. Identyfikator szablonu jest nadawany przy utworzeniu.",
             "steps": [
               "Otwórz Wdrażanie → wybierz próbkę (np. Węgiel).",
               "Wybierz Nowy szablon.",
@@ -1271,16 +1271,16 @@
             ]
           },
           "forms": {
-            "heading": "Client form i lab form",
-            "body": "Client form to to, co wypełniają zlecający przy zlecaniu eksperymentu. Lab form to to, co wypełniają technicy w statusie W toku we wspólnej przestrzeni roboczej.\n\nDla każdej sekcji możesz ustawić nazwę i opis sekcji, a następnie dodać pytania. Każde pytanie potrzebuje stabilnego ID w snake_case (używanego przy zapisie odpowiedzi i w formułach), typu, etykiety oraz opcjonalnej konfiguracji, takiej jak required, placeholder, min/max lub options.\n\nDobrym rzeczywistym przykładem jest Total Moisture Determination (Wtr) w ramach Węgiel — pokazuje pełny formularz laboratoryjny z powtarzalnymi pomiarami naczynek."
+            "heading": "Formularz klienta i Formularz laboratoryjny",
+            "body": "Formularz klienta to to, co wypełniają zlecający przy zlecaniu eksperymentu. Formularz laboratoryjny to to, co wypełniają technicy w statusie W toku we wspólnej przestrzeni roboczej.\n\nDla każdej sekcji możesz ustawić nazwę i opis sekcji, a następnie dodać pytania. Każde pytanie potrzebuje stabilnego ID w snake_case (używanego przy zapisie odpowiedzi i w formułach), typu, etykiety oraz opcjonalnej konfiguracji, takiej jak required, placeholder, min/max lub options.\n\nDobrym rzeczywistym przykładem jest Total Moisture Determination (Wtr) w ramach Węgiel — pokazuje pełny formularz laboratoryjny z powtarzalnymi pomiarami naczynek."
           },
           "calculations": {
             "heading": "Obliczenia",
-            "body": "Nazwane obliczenia to ciągi formuł Python oceniane przez backend. Wyniki są tylko do wyświetlenia w podglądzie buildera i pojawiają się na karcie Obliczenia w przestrzeni roboczej, gdy istnieją wartości.\n\nUżywaj values['question_id'] dla odpowiedzi. Inne nazwy obliczeń zdefiniowane powyżej można wskazywać bezpośrednio. Otwórz edytor kodu, gdy formuła jest długa."
+            "body": "Nazwane obliczenia to ciągi formuł Python oceniane przez backend. Wyniki są tylko do wyświetlenia w podglądzie kreatora i pojawiają się na karcie Obliczenia w przestrzeni roboczej, gdy istnieją wartości.\n\nUżywaj values['question_id'] dla odpowiedzi. Inne nazwy obliczeń zdefiniowane powyżej można wskazywać bezpośrednio. Otwórz edytor kodu, gdy formuła jest długa."
           },
           "preview": {
             "heading": "Podgląd na żywo",
-            "body": "Builder pokazuje podgląd formularzy na żywo podczas edycji. Napraw błędy walidacji, zanim polegasz na podglądzie lub zapiszesz — niepoprawne szkice blokują utworzenie/zapis."
+            "body": "Kreator pokazuje podgląd formularzy na żywo podczas edycji. Napraw błędy walidacji, zanim polegasz na podglądzie lub zapiszesz — niepoprawne szkice blokują utworzenie/zapis."
           },
           "save": {
             "heading": "Zapisz, usuń i otwórz projektanta PDF",
@@ -1288,10 +1288,10 @@
           },
           "pdf": {
             "heading": "Układ raportu PDF",
-            "body": "Jeśli laboratorium wydaje raport PDF dla tego typu eksperymentu, otwórz Projektuj raport PDF z buildera. Ten edytor jest opisany w przewodniku Układ raportu PDF."
+            "body": "Jeśli laboratorium wydaje raport PDF dla tego typu eksperymentu, otwórz Projektuj raport PDF z kreatora. Ten edytor jest opisany w przewodniku Układ raportu PDF."
           },
           "components": {
-            "heading": "Referencja komponentów",
+            "heading": "Dokumentacja komponentów",
             "body": "Każdy obsługiwany typ pytania jest udokumentowany w Formularze — komponenty w tej sekcji dokumentacji — z podglądem na żywo i wygenerowanymi polami schematu. Preferuj te typy, aby renderer frontendu i Experiment Manager pozostały zsynchronizowane."
           }
         }
@@ -1302,11 +1302,11 @@
         "sections": {
           "open": {
             "heading": "Otwórz edytor PDF",
-            "body": "Z istniejącego szablonu w builderze wybierz Projektuj raport PDF. Możesz też otworzyć trasę /pdf w ramach tego szablonu. Brak układu po prostu zaczyna od pustego płótna — to normalne do pierwszego zapisu.",
+            "body": "Z istniejącego szablonu w kreatorze wybierz Projektuj raport PDF. Możesz też otworzyć trasę /pdf w ramach tego szablonu. Brak układu po prostu zaczyna od pustego płótna — to normalne do pierwszego zapisu.",
             "steps": [
               "Otwórz Wdrażanie → próbka → szablon (np. Total Moisture Determination w ramach Węgiel).",
               "Wybierz Projektuj raport PDF.",
-              "Użyj Wstecz, aby wrócić do buildera formularzy po zakończeniu."
+              "Użyj Wstecz, aby wrócić do kreatora formularzy po zakończeniu."
             ]
           },
           "canvas": {
@@ -1315,15 +1315,15 @@
           },
           "variables": {
             "heading": "Zmienne",
-            "body": "Panel Zmienne wymienia pola z client form, lab form oraz obliczeń. Kliknij zmienną, aby wstawić ją do zaznaczonego pola tekstowego, albo skopiuj token. Przeszukaj listę, gdy szablony są duże."
+            "body": "Panel Zmienne wymienia pola z formularza klienta, formularza laboratoryjnego oraz obliczeń. Kliknij zmienną, aby wstawić ją do zaznaczonego pola tekstowego, albo skopiuj token. Przeszukaj listę, gdy szablony są duże."
           },
           "preview": {
             "heading": "Tryby podglądu",
-            "body": "Pokaż placeholdery pozostawia tokeny zmiennych widoczne. Użyj wartości domyślnych wypełnia przykładowe wartości domyślne z szablonu. Z eksperymentu pozwala wybrać rzeczywisty kontekst eksperymentu do podglądu z żywymi wartościami. Otwórz prawdziwy PDF zapisuje, renderuje i otwiera wygenerowany PDF dla tego eksperymentu, gdy potrzebujesz prawdziwej kontroli wyniku."
+            "body": "Pokaż symbole zastępcze pozostawia tokeny zmiennych widoczne. Użyj wartości domyślnych wypełnia przykładowe wartości domyślne z szablonu. Z eksperymentu pozwala wybrać rzeczywisty kontekst eksperymentu do podglądu z żywymi wartościami. Otwórz rzeczywisty PDF zapisuje, renderuje i otwiera wygenerowany PDF dla tego eksperymentu, gdy potrzebujesz prawdziwej kontroli wyniku."
           },
           "save": {
             "heading": "Zapisz układ",
-            "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizacja, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
+            "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizowanie, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
           }
         }
       }
@@ -1339,7 +1339,7 @@
           },
           "lifecycle": {
             "heading": "Co dzieje się po złożeniu wniosku",
-            "body": "Twoje badanie przechodzi przez następujące etapy:\n\nZgłoszone — złożyłeś wniosek; wydrukuj etykietę próbki i wyślij paczkę.\n\nPróbka przyjęta — laboratorium przyjęło Twoją próbkę.\n\nW toku — technicy wykonują badanie.\n\nFinalizacja — laboratorium oblicza wyniki i przygotowuje raport.\n\nZakończone — zgłoszenie jest zamknięte; pobierz raport, gdy będzie dostępny.\n\nAnulowane badania kończą się poza normalną ścieżką ukończenia."
+            "body": "Twoje badanie przechodzi przez następujące etapy:\n\nZgłoszono — złożyłeś wniosek; wydrukuj etykietę próbki i wyślij paczkę.\n\nPróbka przyjęta — laboratorium przyjęło Twoją próbkę.\n\nW toku — technicy wykonują badanie.\n\nFinalizowanie — laboratorium oblicza wyniki i przygotowuje raport.\n\nZakończone — zgłoszenie jest zamknięte; pobierz raport, gdy będzie dostępny.\n\nAnulowane badania kończą się poza normalną ścieżką ukończenia."
           }
         },
         "links": {
@@ -1369,7 +1369,7 @@
           },
           "after": {
             "heading": "Po wysłaniu",
-            "body": "Zostaniesz przeniesiony na stronę szczegółów badania w Moje badania. Dopóki status to Zgłoszone, wydrukuj etykietę próbki i wyślij materiał. Laboratorium nie może rozpocząć pracy, dopóki próbka nie zostanie przyjęta."
+            "body": "Zostaniesz przeniesiony na stronę szczegółów badania w Moje badania. Dopóki status to Zgłoszono, wydrukuj etykietę próbki i wyślij materiał. Laboratorium nie może rozpocząć pracy, dopóki próbka nie zostanie przyjęta."
           }
         }
       },
@@ -1379,7 +1379,7 @@
         "sections": {
           "board": {
             "heading": "Tablica",
-            "body": "Karty znajdują się w ścieżkach takich jak Zgłoszone, Próbka przyjęta, W toku, Finalizacja, Zamknięte i Anulowane. Wyszukuj po tytule badania lub identyfikatorze kontekstu. Otwórz kartę, aby zobaczyć pełną stronę szczegółów."
+            "body": "Karty znajdują się w ścieżkach takich jak Zgłoszono, Próbka przyjęta, W toku, Finalizowanie, Zamknięte i Anulowane. Wyszukuj po tytule badania lub identyfikatorze kontekstu. Otwórz kartę, aby zobaczyć pełną stronę szczegółów."
           },
           "detail": {
             "heading": "Szczegóły badania",
@@ -1387,13 +1387,13 @@
           },
           "report": {
             "heading": "Raporty",
-            "body": "Gdy laboratorium wygeneruje raport PDF, na stronie szczegółów pojawią się opcje Zobacz raport i Pobierz PDF. Raporty są dostępne po etapie Finalizacja; jeśli ich jeszcze nie widać, laboratorium nadal przygotowuje wyniki."
+            "body": "Gdy laboratorium wygeneruje raport PDF, na stronie szczegółów pojawią się opcje Zobacz raport i Pobierz PDF. Raporty są dostępne po etapie Finalizowanie; jeśli ich jeszcze nie widać, laboratorium nadal przygotowuje wyniki."
           }
         }
       },
       "shipping": {
         "title": "Wyślij próbkę",
-        "subtitle": "Dopóki badanie ma status Zgłoszone, wydrukuj etykietę QR i przyklej ją do paczki wysyłanej do laboratorium.",
+        "subtitle": "Dopóki badanie ma status Zgłoszono, wydrukuj etykietę QR i przyklej ją do paczki wysyłanej do laboratorium.",
         "sections": {
           "label": {
             "heading": "Dlaczego etykieta jest ważna",
@@ -1403,7 +1403,7 @@
             "heading": "Drukuj i przyklej",
             "body": "Na stronie szczegółów badania użyj opcji Drukuj etykietę. Przyklej wydrukowaną etykietę na zewnątrz paczki. Możesz też skopiować adres URL przyjęcia, jeśli chcesz przekazać go laboratorium inną drogą.",
             "steps": [
-              "Otwórz badanie w Moje badania, dopóki ma status Zgłoszone.",
+              "Otwórz badanie w Moje badania, dopóki ma status Zgłoszono.",
               "W sekcji Wyślij próbkę wybierz Drukuj etykietę.",
               "Przyklej etykietę tak, aby pozostała czytelna w trakcie transportu.",
               "Wyślij paczkę do laboratorium zwykłą ścieżką kurierską."

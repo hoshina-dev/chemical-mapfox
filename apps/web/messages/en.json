@@ -1218,7 +1218,7 @@
           },
           "close": {
             "heading": "Closing the ticket",
-            "body": "Close ticket marks the experiment Completed. The UI asks for confirmation because calculation and report actions stop afterward. Make sure calculations (if any) and the report are ready before you close."
+            "body": "Close ticket marks the experiment Completed. The app asks for confirmation because calculation and report actions stop afterward. Make sure calculations (if any) and the report are ready before you close."
           }
         }
       },
@@ -1315,7 +1315,7 @@
           },
           "variables": {
             "heading": "Variables",
-            "body": "The Variables panel lists fields from the client form, lab form, and calculations. Click a variable to insert it into the selected text box, or copy the token. Search the list when templates are large."
+            "body": "The Variables panel lists fields from the Client form, Lab form, and calculations. Click a variable to insert it into the selected text box, or copy the token. Search the list when templates are large."
           },
           "preview": {
             "heading": "Preview modes",
