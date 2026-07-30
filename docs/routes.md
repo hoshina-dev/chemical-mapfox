@@ -65,6 +65,13 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 - Page: `apps/web/src/app/experiment/request/[templateId]/page.tsx` →
   `components/experiment/request/RequestExperimentForm.tsx`.
 
+### `/experiment/docs` ✅
+
+- Requester how-to documentation (overview, request, track, shipping,
+  notifications). Linked from client nav as **Docs**.
+- Pages: `apps/web/src/app/experiment/docs/` with shared sidebar chrome in
+  `components/docs/DocsSidebar.tsx`.
+
 ---
 
 ## Staff — `/internal/*` (admin only)
@@ -145,11 +152,18 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 > Path helpers live in `apps/web/src/lib/experiment-manager/routes.ts`
 > (`sampleOnboardingPath`, `newTemplatePath(sampleId?)`, …).
 
-### `/internal/docs` ✅ and `/internal/docs/[type]` ✅
+### `/internal/docs` ✅ (staff how-to + component gallery)
 
-- Component reference for form authors: one page per question type with a live
-  preview and the generated schema fields. Imports from `@repo/forms`. See
-  [`../README.md`](../README.md).
+- Staff documentation hub and guides:
+  overview, experiments list, sample check-in, lab workspace, finalize &
+  reports, **onboarding samples**, **templates & builder**, **PDF report
+  layout**, and the form **component reference**.
+- **Component reference** at `/internal/docs/components` plus one page per
+  question type at `/internal/docs/[type]` (live preview + schema fields from
+  `@repo/forms`). Linked from staff nav as **Docs**.
+- Pages under `apps/web/src/app/internal/docs/`; sidebar in
+  `components/docs/DocsSidebar.tsx`. Screenshots under
+  `apps/web/public/docs/{locale}/` (see `public/docs/SCREENSHOTS.md`).
 
 ---
 

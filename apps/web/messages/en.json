@@ -224,7 +224,8 @@
     "nav": {
       "myExperiments": "My experiments",
       "requestExperiment": "Request experiment",
-      "clientAriaLabel": "Client"
+      "clientAriaLabel": "Client",
+      "docs": "Docs"
     },
     "listing": {
       "breadcrumb": "My experiments",
@@ -832,23 +833,33 @@
   },
   "docs": {
     "layout": {
-      "description": "Reference for lab technicians building forms: every question type the form engine supports."
+      "description": "How to run experiments in Harper Anslitics — staff guides and the form component reference.",
+      "navAriaLabel": "Staff documentation",
+      "clientTitle": "Help",
+      "clientDescription": "How to request experiments, track progress, and ship samples with Harper Anslitics.",
+      "clientNavAriaLabel": "Help documentation"
     },
     "sidebar": {
-      "components": "Components"
-    },
-    "index": {
-      "title": "Component reference",
-      "subtitle": "A reference for lab technicians building forms. Every question type the form engine supports — pick one from the sidebar to customize its JSON fields and see a live preview.",
-      "componentCount": "{count, plural, one {# component} other {# components}}.",
-      "templateHeading": "The experiment template",
-      "templateBody": "An experiment template is the top-level document the form engine loads. It pairs two forms — clientForm and labForm — each a FormDoc with a name, optional description, and a questions array. Named calculations map variable names to objects with a Python formula (evaluated by the backend) and an optional computed result. Collected answers live in values, keyed by question id.",
-      "repeatableHeading": "Repeatable group",
-      "repeatableBody": "A repeatable group is a fixed-count repeating section — for example, “measure the sample 8 times”. It may include an optional itemLabel and a list of child questions in its config. Only one level of nesting is supported: a repeatable group cannot contain another repeatable group. Answers are stored columnar: each child question id maps to an array of length count (one entry per repetition).",
-      "repeatableLink": "See the repeatable-group component →",
-      "schemaHeading": "Schema source of truth",
-      "schemaBody": "The experiment-template.schema.json JSON Schema below is the source of truth and is what the backend matches. The Zod schemas in @repo/forms (schema.ts), used for runtime validation and types in the frontend, are written by hand to mirror that JSON Schema. They are kept in sync manually — an accepted bit of tech debt, since the schema does not change often. When you change one, change the other.",
-      "fullSchema": "Full JSON Schema"
+      "components": "Form components",
+      "guides": "How to use",
+      "staffGuides": {
+        "overview": "Overview",
+        "experiments": "Experiments list",
+        "checkIn": "Sample check-in",
+        "workspace": "Lab workspace",
+        "finalize": "Finalize & reports",
+        "onboarding": "Onboarding samples",
+        "components": "Component reference",
+        "templates": "Templates & builder",
+        "pdfReport": "PDF report layout"
+      },
+      "clientGuides": {
+        "overview": "Overview",
+        "request": "Request an experiment",
+        "track": "Track your experiments",
+        "shipping": "Ship your sample",
+        "settings": "Notifications"
+      }
     },
     "detail": {
       "schemaFields": "Schema fields",
@@ -1080,6 +1091,434 @@
       "repeatable-group": {
         "label": "Repeatable group",
         "description": "A fixed-count repeating section (e.g. 'measure the sample 8 times'). Child questions repeat exactly `count` times; answers are stored columnar (one array per child question id)."
+      }
+    },
+    "components": {
+      "title": "Component reference",
+      "subtitle": "A reference for lab technicians building forms. Every question type the form engine supports — pick one from the sidebar to customize its JSON fields and see a live preview.",
+      "componentCount": "{count, plural, one {# component} other {# components}}.",
+      "templateHeading": "The experiment template",
+      "templateBody": "An experiment template is the top-level document the form engine loads. It pairs two forms — clientForm and labForm — each a FormDoc with a name, optional description, and a questions array. Named calculations map variable names to objects with a Python formula (evaluated by the backend) and an optional computed result. Collected answers live in values, keyed by question id.",
+      "repeatableHeading": "Repeatable group",
+      "repeatableBody": "A repeatable group is a fixed-count repeating section — for example, “measure the sample 8 times”. It may include an optional itemLabel and a list of child questions in its config. Only one level of nesting is supported: a repeatable group cannot contain another repeatable group. Answers are stored columnar: each child question id maps to an array of length count (one entry per repetition).",
+      "repeatableLink": "See the repeatable-group component →",
+      "schemaHeading": "Schema source of truth",
+      "schemaBody": "The experiment-template.schema.json JSON Schema below is the source of truth and is what the backend matches. The Zod schemas in @repo/forms (schema.ts), used for runtime validation and types in the frontend, are written by hand to mirror that JSON Schema. They are kept in sync manually — an accepted bit of tech debt, since the schema does not change often. When you change one, change the other.",
+      "fullSchema": "Full JSON Schema"
+    },
+    "staff": {
+      "overview": {
+        "title": "Staff documentation",
+        "subtitle": "Guides for lab technicians: move tickets through the workflow, collaborate on lab forms, onboard templates, and look up every form component.",
+        "sections": {
+          "contents": {
+            "heading": "In this documentation",
+            "body": "Start with the guides below, or jump straight to the component reference when you are authoring templates."
+          },
+          "lifecycle": {
+            "heading": "Experiment lifecycle",
+            "body": "Every experiment is a ticket with a clear status path:\n\nRequested → Sample received → In progress → Finalizing → Completed (or Cancelled).\n\nRequesters open tickets and ship samples. Staff check samples in, run the lab form, finalize calculations and the PDF report, then close the ticket."
+          }
+        },
+        "links": {
+          "experiments": "Search, filter, and open every experiment ticket from the lab listing.",
+          "checkIn": "Confirm a shipped sample has arrived by scanning the requester’s QR label.",
+          "workspace": "Start experiments and edit the lab form live with other technicians.",
+          "finalize": "Run calculations, generate the PDF report, and close the ticket.",
+          "onboarding": "Register specimen types and open a sample’s template list.",
+          "components": "Live previews and schema fields for every question type in the form engine.",
+          "templates": "Create and edit client intake forms, lab forms, and calculations.",
+          "pdfReport": "Design the PDF report layout for a template with variables and preview."
+        }
+      },
+      "experiments": {
+        "title": "Experiments list",
+        "subtitle": "The Experiments page is your queue of every ticket from the ticketing service.",
+        "sections": {
+          "find": {
+            "heading": "Find an experiment",
+            "body": "Use the search box to match experiment titles, requester names or emails, or the context ID. Narrow the list with lifecycle group filters (All, Active, Pending, Closed) and the status dropdown.",
+            "steps": [
+              "Open Experiments from the staff navigation.",
+              "Type part of the title, requester, or context ID in the search field.",
+              "Optionally filter by lifecycle group or a specific status.",
+              "Sort any column by clicking its header."
+            ]
+          },
+          "open": {
+            "heading": "Open the workspace",
+            "body": "Click a row to open the experiment workspace for that context. The copyable context ID in the table (and in workspace headers) links to the raw JSON diagnostic view when you need to inspect payloads."
+          },
+          "filters": {
+            "heading": "Lifecycle groups",
+            "body": "Pending covers Requested and Sample received. Active covers In progress and Finalizing. Closed covers Completed and Cancelled. Use these groups when you want a short queue for the work you are doing right now."
+          }
+        }
+      },
+      "checkIn": {
+        "title": "Sample check-in",
+        "subtitle": "Check-in confirms the physical sample box arrived and moves the ticket from Requested to Sample received.",
+        "sections": {
+          "when": {
+            "heading": "When to check in",
+            "body": "Do this when a labeled box reaches the lab. Requesters print a QR sample label while the ticket is still Requested; that QR opens this check-in page for the matching context."
+          },
+          "how": {
+            "heading": "How to check in",
+            "body": "Scan the QR (or open the check-in URL) while signed in as lab staff. Review the ticket summary and the read-only experiment detail, then choose Check in sample.",
+            "steps": [
+              "Scan the QR on the shipping label (or paste the check-in link).",
+              "Confirm the experiment title and requester look correct.",
+              "Select Check in sample to mark the sample received.",
+              "Continue to the workspace when you are ready to start lab work."
+            ]
+          },
+          "after": {
+            "heading": "Already checked in",
+            "body": "If the sample was already received, the page says so and links to the workspace instead of offering the button again. From the workspace you can still reach check-in while the ticket is Requested."
+          }
+        }
+      },
+      "workspace": {
+        "title": "Lab workspace",
+        "subtitle": "The workspace is where staff start an experiment and fill the collaborative lab form.",
+        "sections": {
+          "stages": {
+            "heading": "What you can do at each stage",
+            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nSample received — use Start experiment to move to In progress and unlock editing.\n\nIn progress — the lab form is editable; Submit to final stage moves the ticket to Finalizing.\n\nLater stages keep the lab form readable but not collaboratively editable."
+          },
+          "collab": {
+            "heading": "Collaborative editing",
+            "body": "While the ticket is In progress, several technicians can edit the lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to Experiment Manager. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
+          },
+          "tabs": {
+            "heading": "Lab form, client intake, and calculations",
+            "body": "The workspace shows three tabs: Lab form (editable in progress), Client intake (the requester’s answers, always read-only), and Calculations (formulas and computed results from the template).\n\nUse Submit to final stage only when lab entry is complete. That transitions In progress → Finalizing."
+          }
+        }
+      },
+      "finalize": {
+        "title": "Finalize & reports",
+        "subtitle": "In Finalizing, run calculations (when the template defines them), generate the PDF report, then close the ticket.",
+        "sections": {
+          "flow": {
+            "heading": "Recommended order",
+            "body": "Finish collaborative lab entry before submitting to Finalizing. Then:",
+            "steps": [
+              "Open the Finalize panel on the workspace.",
+              "If the template has calculations, run Calculate (you can recalculate later if values change).",
+              "Generate the report once calculations are ready (or immediately if there are none).",
+              "When the report status is Ready, view or download the PDF.",
+              "Close the ticket when the report is ready — closing locks further calculation and report generation."
+            ]
+          },
+          "report": {
+            "heading": "Report status",
+            "body": "Generation is asynchronous. Status moves through Queued and Generating to Ready, or Failed if something went wrong. You can regenerate after a failure or when you need a fresh PDF. Requesters can view and download the same report from their experiment detail once it is ready."
+          },
+          "close": {
+            "heading": "Closing the ticket",
+            "body": "Close ticket marks the experiment Completed. The UI asks for confirmation because calculation and report actions stop afterward. Make sure calculations (if any) and the report are ready before you close."
+          }
+        }
+      },
+      "onboarding": {
+        "title": "Onboarding samples",
+        "subtitle": "Register specimen types and manage the experiment templates each sample offers to requesters.",
+        "sections": {
+          "samples": {
+            "heading": "Browse samples",
+            "body": "Open Onboarding from the staff navigation. Each card is a specimen type (for example Coal or Apple) with a short description and how many templates it currently has. Open a sample to manage its templates.",
+            "steps": [
+              "Go to Onboarding in the staff nav.",
+              "Scan the sample cards or use the page to find the specimen you need.",
+              "Open a sample to see its templates, or register a new specimen type first."
+            ]
+          },
+          "register": {
+            "heading": "Register a sample",
+            "body": "A sample is a specimen type, not a single physical box. Register sample opens a modal where you enter a name (required) and an optional description. After create, you land on that sample’s template list.",
+            "steps": [
+              "Choose Register sample.",
+              "Enter a clear specimen name (for example Coal).",
+              "Optionally add a description requesters and staff will see.",
+              "Create, then add at least one experiment template before clients can request it."
+            ]
+          },
+          "templates": {
+            "heading": "Templates under a sample",
+            "body": "The sample page lists every template for that specimen. Click a row to edit it in the builder, or choose New template to start a blank draft associated with this sample."
+          },
+          "next": {
+            "heading": "What to do next",
+            "body": "Author the client intake and lab forms in the template builder, add calculations when results should be computed, then design the PDF report layout if your lab issues PDF reports. Use the Component reference while choosing question types."
+          }
+        }
+      },
+      "templates": {
+        "title": "Create and edit templates",
+        "subtitle": "An experiment template defines the client intake form, the lab form, calculations, and (optionally) the PDF report layout requesters and staff share.",
+        "sections": {
+          "create": {
+            "heading": "Start a new template",
+            "body": "From a sample’s page, choose New template. The builder opens with metadata (name, description) and empty Client form and Lab form sections. The template ID is assigned when you create it.",
+            "steps": [
+              "Open Onboarding → choose a sample (for example Coal).",
+              "Select New template.",
+              "Fill metadata: name and optional description.",
+              "Add questions to the client form and/or lab form.",
+              "Create template when the draft is valid."
+            ]
+          },
+          "forms": {
+            "heading": "Client form and lab form",
+            "body": "The Client form is what requesters fill when they request the experiment. The Lab form is what technicians fill during In progress in the collaborative workspace.\n\nFor each section you can set a section name and description, then add questions. Each question needs a stable snake_case ID (used when storing answers and in formulas), a type, a label, and optional config such as required, placeholder, min/max, or options.\n\nA good real example is Total Moisture Determination (Wtr) under Coal — it shows a full lab form with repeatable dish measurements."
+          },
+          "calculations": {
+            "heading": "Calculations",
+            "body": "Named calculations are Python formula strings evaluated by the backend. Results are display-only in the builder preview and appear on the workspace Calculations tab after values exist.\n\nUse values['question_id'] for answers. Other calculation names defined above can be referenced directly. Open the code editor when a formula is long."
+          },
+          "preview": {
+            "heading": "Live preview",
+            "body": "The builder shows a live preview of the forms as you edit. Fix validation errors before you rely on the preview or save — invalid drafts block create/save."
+          },
+          "save": {
+            "heading": "Save, delete, and open the PDF designer",
+            "body": "Use Create template (new) or Save changes (edit) when the draft is valid. Design PDF report opens the PDF layout editor for this template version. Delete removes the template after confirmation — only do this when you are sure no active work depends on it."
+          },
+          "pdf": {
+            "heading": "PDF report layout",
+            "body": "If the lab issues a PDF report for this experiment type, open Design PDF report from the builder. That editor is covered in the PDF report layout guide."
+          },
+          "components": {
+            "heading": "Component reference",
+            "body": "Every supported question type is documented under Form components in this docs section — with a live preview and generated schema fields. Prefer those types so the frontend renderer and Experiment Manager stay aligned."
+          }
+        }
+      },
+      "pdfReport": {
+        "title": "PDF report layout",
+        "subtitle": "Design the PDF report for a template: place text and shapes, insert form variables, preview with real experiment data, then save.",
+        "sections": {
+          "open": {
+            "heading": "Open the PDF editor",
+            "body": "From an existing template in the builder, choose Design PDF report. You can also open the /pdf route under that template. A missing layout simply starts with an empty canvas — that is normal until the first save.",
+            "steps": [
+              "Open Onboarding → sample → template (for example Total Moisture Determination under Coal).",
+              "Choose Design PDF report.",
+              "Use Back to return to the form builder when finished."
+            ]
+          },
+          "canvas": {
+            "heading": "Build the layout",
+            "body": "Add Text or Shape components to the canvas. Move and resize them, use snap when helpful, and manage pages from the Pages tab. The Inspector edits the selected component: position, content, font, color, and shape options.\n\nText supports variables with the '{{'name'}}' syntax so report values fill in at generation time."
+          },
+          "variables": {
+            "heading": "Variables",
+            "body": "The Variables panel lists fields from the client form, lab form, and calculations. Click a variable to insert it into the selected text box, or copy the token. Search the list when templates are large."
+          },
+          "preview": {
+            "heading": "Preview modes",
+            "body": "Show placeholders leaves variable tokens visible. Use defaults fills sample defaults from the template. From experiment lets you pick a real experiment context to preview with live values. Open real PDF saves, renders, and opens the generated PDF for that experiment when you need a true output check."
+          },
+          "save": {
+            "heading": "Save the layout",
+            "body": "Save stores the PDF component layout for this template. Unsaved changes are indicated in the toolbar. After the layout is saved, staff can Generate report from a Finalizing workspace, and requesters can view or download the PDF when report status is ready."
+          }
+        }
+      }
+    },
+    "client": {
+      "overview": {
+        "title": "How to use Harper Anslitics",
+        "subtitle": "Request lab experiments, ship your sample with a QR label, and follow progress until the certified report is ready.",
+        "sections": {
+          "contents": {
+            "heading": "In this help",
+            "body": "These short guides cover the requester workflow from first request through the finished report."
+          },
+          "lifecycle": {
+            "heading": "What happens after you request",
+            "body": "Your experiment moves through these stages:\n\nRequested — you submitted the request; print the sample label and ship the box.\n\nSample received — the lab checked your sample in.\n\nIn progress — technicians are running the experiment.\n\nFinalizing — the lab is calculating results and preparing the report.\n\nCompleted — the ticket is closed; download the report when it is available.\n\nCancelled experiments stop outside the normal completion path."
+          }
+        },
+        "links": {
+          "request": "Browse supported specimens and submit an intake form for a template.",
+          "track": "Use My experiments to see status lanes and open read-only details.",
+          "shipping": "Print the QR label and attach it so the lab can check your sample in.",
+          "settings": "Choose which lifecycle stages should email you from the Settings page."
+        }
+      },
+      "request": {
+        "title": "Request an experiment",
+        "subtitle": "Start from the catalogue of specimens and templates your organization can request.",
+        "sections": {
+          "catalog": {
+            "heading": "Browse the catalogue",
+            "body": "Open Request experiment in the navigation. Specimens appear as expandable groups; each group lists the current templates for that sample type. Search by specimen or experiment name, then choose Request on the template you need.",
+            "steps": [
+              "Go to Request experiment.",
+              "Find your specimen type (expand the group or use search).",
+              "Select Request on the template that matches the work you need.",
+              "You must belong to an organization before a request can be submitted."
+            ]
+          },
+          "intake": {
+            "heading": "Complete the intake form",
+            "body": "Some templates ask for client intake details before the lab can start. Fill every required field, then submit. If a template needs no intake, you can submit immediately to send the request."
+          },
+          "after": {
+            "heading": "After you submit",
+            "body": "You are taken to the experiment’s detail page under My experiments. While status is Requested, print the sample label and ship your specimen. The lab cannot start work until the sample is checked in."
+          }
+        }
+      },
+      "track": {
+        "title": "Track your experiments",
+        "subtitle": "My experiments shows every request you own, grouped by where it is in the lab workflow.",
+        "sections": {
+          "board": {
+            "heading": "The board",
+            "body": "Cards sit in lanes such as Requested, Sample received, In progress, Finalizing, Closed, and Cancelled. Search by experiment title or context ID. Open a card to see the full detail page."
+          },
+          "detail": {
+            "heading": "Experiment detail",
+            "body": "The detail page is read-only for requesters. You see the lifecycle timeline, your intake answers, lab values as the lab fills them, calculations when available, and status. Only you can open experiments you requested."
+          },
+          "report": {
+            "heading": "Reports",
+            "body": "When the lab has generated a PDF report, the detail page offers View report and Download PDF. Reports appear after Finalizing work; if you do not see them yet, the lab is still preparing results."
+          }
+        }
+      },
+      "shipping": {
+        "title": "Ship your sample",
+        "subtitle": "While your experiment is Requested, print the QR label and attach it to the box you send to the lab.",
+        "sections": {
+          "label": {
+            "heading": "Why the label matters",
+            "body": "The QR encodes the staff check-in page for your experiment. When the box arrives, lab staff scan it to mark the sample received and continue the workflow. Without the label (or the check-in link), the lab may not match the box to your ticket quickly."
+          },
+          "print": {
+            "heading": "Print and attach",
+            "body": "On the experiment detail page, use Print label. Attach the printed label to the outside of the shipping box. You can also copy the check-in URL if you need to share it with the lab another way.",
+            "steps": [
+              "Open the experiment from My experiments while it is still Requested.",
+              "In Ship your sample, choose Print label.",
+              "Attach the label so it stays readable in transit.",
+              "Ship the box to the lab using your usual courier process."
+            ]
+          },
+          "arrival": {
+            "heading": "After the lab receives it",
+            "body": "Status moves to Sample received when staff check the sample in. You do not need to do anything else at that step — watch My experiments (and email, if enabled) for later updates."
+          }
+        }
+      },
+      "settings": {
+        "title": "Notification settings",
+        "subtitle": "Choose which ticket lifecycle stages should email you.",
+        "sections": {
+          "where": {
+            "heading": "Where to change preferences",
+            "body": "Open Settings from your user menu (or go to the settings page under your client workspace). Email notifications lists each lifecycle stage with a toggle."
+          },
+          "stages": {
+            "heading": "What the toggles do",
+            "body": "Turning a stage off skips that email before it is queued. Leave stages on when you want a heads-up without opening the app — for example Sample received or when a report is ready. Changes save from the settings form."
+          }
+        }
+      }
+    },
+    "figure": {
+      "placeholder": "Screenshot placeholder — {filename} will display here",
+      "pathHint": "Place the file at {path}",
+      "englishFallback": "(English screenshot shown; localized file not found.)"
+    },
+    "screenshots": {
+      "client-my-experiments-board": {
+        "alt": "My experiments board with lifecycle lanes",
+        "caption": "My experiments board"
+      },
+      "client-request-catalog": {
+        "alt": "Request experiment catalogue of specimens and templates",
+        "caption": "Request experiment catalogue"
+      },
+      "client-request-intake": {
+        "alt": "Client intake form for a new experiment request",
+        "caption": "Client intake form"
+      },
+      "client-experiment-detail": {
+        "alt": "Requester experiment detail with lifecycle timeline",
+        "caption": "Experiment detail"
+      },
+      "client-report-panel": {
+        "alt": "Report panel with view and download actions",
+        "caption": "Report ready to view or download"
+      },
+      "client-sample-label": {
+        "alt": "Ship your sample QR label with Print label button",
+        "caption": "Sample shipping label"
+      },
+      "client-notification-settings": {
+        "alt": "Email notification preferences by lifecycle stage",
+        "caption": "Notification settings"
+      },
+      "staff-experiments-listing": {
+        "alt": "Staff experiments listing with search and filters",
+        "caption": "Experiments listing"
+      },
+      "staff-sample-checkin": {
+        "alt": "Sample check-in page with Check in sample button",
+        "caption": "Sample check-in"
+      },
+      "staff-workspace-start": {
+        "alt": "Experiment workspace ready to start after sample receipt",
+        "caption": "Start experiment in the workspace"
+      },
+      "staff-lab-form-collab": {
+        "alt": "Collaborative lab form with presence indicators",
+        "caption": "Collaborative lab form editing"
+      },
+      "staff-workspace-tabs": {
+        "alt": "Workspace tabs for lab form, client intake, and calculations",
+        "caption": "Workspace tabs"
+      },
+      "staff-finalize-panel": {
+        "alt": "Finalize panel with calculate, report, and close actions",
+        "caption": "Finalize and reports"
+      },
+      "staff-onboarding-samples": {
+        "alt": "Onboarding page listing specimen samples",
+        "caption": "Onboarding samples"
+      },
+      "staff-sample-templates": {
+        "alt": "Templates table for the Coal sample",
+        "caption": "Templates for Coal"
+      },
+      "staff-template-builder": {
+        "alt": "Template builder for Total Moisture Determination (Wtr)",
+        "caption": "Example template: Total Moisture Determination (Wtr)"
+      },
+      "staff-component-reference": {
+        "alt": "Form component reference with live preview",
+        "caption": "Component reference"
+      },
+      "staff-register-sample": {
+        "alt": "Register sample modal with name and description fields",
+        "caption": "Register a new sample"
+      },
+      "staff-new-template": {
+        "alt": "New template builder with metadata and empty form sections",
+        "caption": "New template"
+      },
+      "staff-builder-calculations": {
+        "alt": "Calculations section in the template builder",
+        "caption": "Template calculations"
+      },
+      "staff-pdf-editor": {
+        "alt": "PDF report layout editor with canvas and variables",
+        "caption": "PDF report editor"
       }
     }
   },

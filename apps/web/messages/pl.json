@@ -224,7 +224,8 @@
     "nav": {
       "myExperiments": "Moje eksperymenty",
       "requestExperiment": "Zamów eksperyment",
-      "clientAriaLabel": "Klient"
+      "clientAriaLabel": "Klient",
+      "docs": "Dokumentacja"
     },
     "listing": {
       "breadcrumb": "Moje eksperymenty",
@@ -832,23 +833,33 @@
   },
   "docs": {
     "layout": {
-      "description": "Materiał referencyjny dla techników laboratoryjnych tworzących formularze: każdy typ pytania obsługiwany przez silnik formularzy."
+      "description": "Jak prowadzić eksperymenty w Harper Anslitics — przewodniki dla personelu i dokumentacja komponentów formularzy.",
+      "navAriaLabel": "Dokumentacja dla personelu",
+      "clientTitle": "Pomoc",
+      "clientDescription": "Jak zamawiać eksperymenty, śledzić postęp i wysyłać próbki z Harper Anslitics.",
+      "clientNavAriaLabel": "Dokumentacja pomocy"
     },
     "sidebar": {
-      "components": "Komponenty"
-    },
-    "index": {
-      "title": "Dokumentacja komponentów",
-      "subtitle": "Materiał referencyjny dla techników laboratoryjnych tworzących formularze. Każdy typ pytania obsługiwany przez silnik formularzy — wybierz jeden z paska bocznego, aby dostosować jego pola JSON i zobaczyć podgląd na żywo.",
-      "componentCount": "{count, plural, one {# komponent} few {# komponenty} many {# komponentów} other {# komponentów}}.",
-      "templateHeading": "Szablon eksperymentu",
-      "templateBody": "Szablon eksperymentu to dokument najwyższego poziomu ładowany przez silnik formularzy. Łączy dwa formularze — clientForm i labForm — z których każdy jest obiektem FormDoc z polami name, opcjonalnym description oraz tablicą questions. Nazwane calculations przypisują nazwy zmiennych do obiektów zawierających wzór Python (formula, obliczany przez backend) i opcjonalny obliczony result. Zebrane odpowiedzi znajdują się w values, kluczowane według id pytania.",
-      "repeatableHeading": "Grupa powtarzalna",
-      "repeatableBody": "Grupa powtarzalna to sekcja powtarzana ustaloną liczbę razy — na przykład „zmierz próbkę 8 razy”. W polu config może zawierać opcjonalny itemLabel oraz listę pytań podrzędnych. Obsługiwany jest tylko jeden poziom zagnieżdżenia: grupa powtarzalna nie może zawierać innej grupy powtarzalnej. Odpowiedzi są przechowywane kolumnowo: każde id pytania podrzędnego odpowiada tablicy o długości count (jeden wpis na powtórzenie).",
-      "repeatableLink": "Zobacz komponent grupy powtarzalnej →",
-      "schemaHeading": "Schemat jako źródło prawdy",
-      "schemaBody": "Poniższy schemat JSON experiment-template.schema.json jest źródłem prawdy i to z nim porównuje dane backend. Schematy Zod w @repo/forms (schema.ts), używane do walidacji w czasie wykonywania i typów we frontendzie, są pisane ręcznie, aby odzwierciedlać ten schemat JSON. Są synchronizowane ręcznie — zaakceptowany dług techniczny, ponieważ schemat rzadko się zmienia. Gdy zmieniasz jeden, zmień też drugi.",
-      "fullSchema": "Pełny schemat JSON"
+      "components": "Komponenty formularzy",
+      "staffGuides": {
+        "overview": "Przegląd",
+        "experiments": "Lista eksperymentów",
+        "checkIn": "Przyjęcie próbki",
+        "workspace": "Przestrzeń robocza",
+        "finalize": "Finalizacja i raporty",
+        "onboarding": "Rejestracja próbek",
+        "components": "Dokumentacja komponentów",
+        "templates": "Szablony i kreator",
+        "pdfReport": "Układ raportu PDF"
+      },
+      "clientGuides": {
+        "overview": "Przegląd",
+        "request": "Zamów eksperyment",
+        "track": "Śledź eksperymenty",
+        "shipping": "Wyślij próbkę",
+        "settings": "Powiadomienia"
+      },
+      "guides": "Jak korzystać"
     },
     "detail": {
       "schemaFields": "Pola schematu",
@@ -1080,6 +1091,434 @@
       "repeatable-group": {
         "label": "Grupa powtarzalna",
         "description": "Sekcja powtarzana ustaloną liczbę razy (np. „zmierz próbkę 8 razy”). Pytania podrzędne powtarzają się dokładnie `count` razy; odpowiedzi są przechowywane kolumnowo (jedna tablica na id pytania podrzędnego)."
+      }
+    },
+    "components": {
+      "title": "Dokumentacja komponentów",
+      "subtitle": "Materiał referencyjny dla techników laboratoryjnych tworzących formularze. Każdy typ pytania obsługiwany przez silnik formularzy — wybierz jeden z paska bocznego, aby dostosować jego pola JSON i zobaczyć podgląd na żywo.",
+      "componentCount": "{count, plural, one {# komponent} few {# komponenty} many {# komponentów} other {# komponentów}}.",
+      "templateHeading": "Szablon eksperymentu",
+      "templateBody": "Szablon eksperymentu to dokument najwyższego poziomu ładowany przez silnik formularzy. Łączy dwa formularze — clientForm i labForm — z których każdy jest obiektem FormDoc z polami name, opcjonalnym description oraz tablicą questions. Nazwane calculations przypisują nazwy zmiennych do obiektów zawierających wzór Python (formula, obliczany przez backend) i opcjonalny obliczony result. Zebrane odpowiedzi znajdują się w values, kluczowane według id pytania.",
+      "repeatableHeading": "Grupa powtarzalna",
+      "repeatableBody": "Grupa powtarzalna to sekcja powtarzana ustaloną liczbę razy — na przykład „zmierz próbkę 8 razy”. W polu config może zawierać opcjonalny itemLabel oraz listę pytań podrzędnych. Obsługiwany jest tylko jeden poziom zagnieżdżenia: grupa powtarzalna nie może zawierać innej grupy powtarzalnej. Odpowiedzi są przechowywane kolumnowo: każde id pytania podrzędnego odpowiada tablicy o długości count (jeden wpis na powtórzenie).",
+      "repeatableLink": "Zobacz komponent grupy powtarzalnej →",
+      "schemaHeading": "Schemat jako źródło prawdy",
+      "schemaBody": "Poniższy schemat JSON experiment-template.schema.json jest źródłem prawdy i to z nim porównuje dane backend. Schematy Zod w @repo/forms (schema.ts), używane do walidacji w czasie wykonywania i typów we frontendzie, są pisane ręcznie, aby odzwierciedlać ten schemat JSON. Są synchronizowane ręcznie — zaakceptowany dług techniczny, ponieważ schemat rzadko się zmienia. Gdy zmieniasz jeden, zmień też drugi.",
+      "fullSchema": "Pełny schemat JSON"
+    },
+    "staff": {
+      "overview": {
+        "title": "Dokumentacja dla personelu",
+        "subtitle": "Przewodniki dla techników laboratoryjnych: prowadzenie zgłoszeń przez workflow, wspólna praca nad formularzami laboratoryjnymi, wdrażanie szablonów oraz przegląd wszystkich komponentów formularzy.",
+        "sections": {
+          "contents": {
+            "heading": "W tej dokumentacji",
+            "body": "Zacznij od przewodników poniżej albo od razu przejdź do referencji komponentów, gdy tworzysz szablony."
+          },
+          "lifecycle": {
+            "heading": "Cykl życia eksperymentu",
+            "body": "Każdy eksperyment to zgłoszenie z jasną ścieżką statusów:\n\nZlecone → Próbka przyjęta → W toku → Finalizacja → Zakończone (lub Anulowane).\n\nZlecający otwierają zgłoszenia i wysyłają próbki. Personel przyjmuje próbki, wypełnia formularz laboratoryjny, finalizuje obliczenia i raport PDF, a następnie zamyka zgłoszenie."
+          }
+        },
+        "links": {
+          "experiments": "Wyszukuj, filtruj i otwieraj każde zgłoszenie eksperymentu z listy laboratoryjnej.",
+          "checkIn": "Potwierdź nadejście wysłanej próbki, skanując etykietę QR zlecającego.",
+          "workspace": "Rozpoczynaj eksperymenty i edytuj formularz laboratoryjny na żywo z innymi technikami.",
+          "finalize": "Uruchamiaj obliczenia, generuj raport PDF i zamykaj zgłoszenie.",
+          "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
+          "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
+          "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
+          "pdfReport": "Projektuj układ raportu PDF dla szablonu ze zmiennymi i podglądem."
+        }
+      },
+      "experiments": {
+        "title": "Lista eksperymentów",
+        "subtitle": "Strona Eksperymenty to Twoja kolejka wszystkich zgłoszeń z usługi ticketingu.",
+        "sections": {
+          "find": {
+            "heading": "Znajdź eksperyment",
+            "body": "Użyj pola wyszukiwania, aby dopasować tytuły eksperymentów, imiona lub e-maile zlecających albo context ID. Zawęź listę filtrami grup cyklu życia (Wszystkie, Aktywne, Oczekujące, Zamknięte) oraz listą rozwijaną statusu.",
+            "steps": [
+              "Otwórz Eksperymenty z nawigacji personelu.",
+              "Wpisz fragment tytułu, zlecającego lub context ID w polu wyszukiwania.",
+              "Opcjonalnie filtruj według grupy cyklu życia lub konkretnego statusu.",
+              "Sortuj dowolną kolumnę, klikając jej nagłówek."
+            ]
+          },
+          "open": {
+            "heading": "Otwórz przestrzeń roboczą",
+            "body": "Kliknij wiersz, aby otworzyć przestrzeń roboczą eksperymentu dla danego kontekstu. Kopiowalny context ID w tabeli (oraz w nagłówkach przestrzeni roboczej) prowadzi do diagnostycznego widoku surowego JSON, gdy potrzebujesz zbadać payloady."
+          },
+          "filters": {
+            "heading": "Grupy cyklu życia",
+            "body": "Oczekujące obejmuje Zlecone i Próbka przyjęta. Aktywne obejmuje W toku i Finalizacja. Zamknięte obejmuje Zakończone i Anulowane. Używaj tych grup, gdy chcesz krótką kolejkę pracy, którą wykonujesz właśnie teraz."
+          }
+        }
+      },
+      "checkIn": {
+        "title": "Przyjęcie próbki",
+        "subtitle": "Przyjęcie potwierdza, że fizyczne pudełko z próbką dotarło, i przenosi zgłoszenie ze statusu Zlecone do Próbka przyjęta.",
+        "sections": {
+          "when": {
+            "heading": "Kiedy przyjmować",
+            "body": "Zrób to, gdy oznaczone pudełko dotrze do laboratorium. Zlecający drukują etykietę QR próbki, gdy zgłoszenie ma jeszcze status Zlecone; ten QR otwiera stronę przyjęcia dla pasującego kontekstu."
+          },
+          "how": {
+            "heading": "Jak przyjąć próbkę",
+            "body": "Zeskanuj QR (lub otwórz URL przyjęcia) będąc zalogowanym jako personel laboratoryjny. Przejrzyj podsumowanie zgłoszenia oraz szczegóły eksperymentu tylko do odczytu, a następnie wybierz Przyjmij próbkę.",
+            "steps": [
+              "Zeskanuj QR na etykiecie wysyłkowej (lub wklej link przyjęcia).",
+              "Potwierdź, że tytuł eksperymentu i zlecający wyglądają poprawnie.",
+              "Wybierz Przyjmij próbkę, aby oznaczyć próbkę jako przyjętą.",
+              "Przejdź do przestrzeni roboczej, gdy będziesz gotowy rozpocząć pracę laboratoryjną."
+            ]
+          },
+          "after": {
+            "heading": "Już przyjęte",
+            "body": "Jeśli próbka została już przyjęta, strona o tym informuje i zamiast ponownie oferować przycisk prowadzi do przestrzeni roboczej. Z przestrzeni roboczej nadal możesz przejść do przyjęcia, gdy zgłoszenie ma status Zlecone."
+          }
+        }
+      },
+      "workspace": {
+        "title": "Przestrzeń robocza laboratorium",
+        "subtitle": "Przestrzeń robocza to miejsce, w którym personel rozpoczyna eksperyment i wypełnia wspólny formularz laboratoryjny.",
+        "sections": {
+          "stages": {
+            "heading": "Co możesz zrobić na każdym etapie",
+            "body": "Zlecone — próbki jeszcze nie ma; skorzystaj z linku do przyjęcia.\n\nPróbka przyjęta — użyj Rozpocznij eksperyment, aby przejść do W toku i odblokować edycję.\n\nW toku — formularz laboratoryjny jest edytowalny; Prześlij do etapu finalizacji przenosi zgłoszenie do Finalizacja.\n\nPóźniejsze etapy pozostawiają formularz laboratoryjny do odczytu, ale bez wspólnej edycji."
+          },
+          "collab": {
+            "heading": "Wspólna edycja",
+            "body": "Gdy zgłoszenie ma status W toku, kilku techników może jednocześnie edytować formularz laboratoryjny. Widzisz, kto jeszcze jest obecny (awatar i nazwa po najechaniu). Gdy ktoś skupi pole, jest ono miękko zablokowane dla innych — podświetlone i wyłączone, żebyście nie nadpisywali sobie wpisów — ale wartości pozostają czytelne i aktualizują się na żywo.\n\nEdycje są przesyłane między otwartymi kartami i automatycznie zapisywane w Experiment Manager. Wyczyszczenie pola jest celowe: opróżnij kontrolkę, aby usunąć zapisaną wartość. Tożsamość jest per karta przeglądarki, więc dwie karty tej samej osoby nie kradną sobie blokad."
+          },
+          "tabs": {
+            "heading": "Formularz laboratoryjny, przyjęcie klienta i obliczenia",
+            "body": "Przestrzeń robocza pokazuje trzy karty: Formularz laboratoryjny (edytowalny w toku), Przyjęcie klienta (odpowiedzi zlecającego, zawsze tylko do odczytu) oraz Obliczenia (formuły i wyniki obliczone z szablonu).\n\nUżyj Prześlij do etapu finalizacji dopiero, gdy wprowadzanie danych laboratoryjnych jest zakończone. To przechodzi W toku → Finalizacja."
+          }
+        }
+      },
+      "finalize": {
+        "title": "Finalizacja i raporty",
+        "subtitle": "W statusie Finalizacja uruchom obliczenia (gdy szablon je definiuje), wygeneruj raport PDF, a następnie zamknij zgłoszenie.",
+        "sections": {
+          "flow": {
+            "heading": "Zalecana kolejność",
+            "body": "Zakończ wspólną edycję laboratoryjną przed przesłaniem do Finalizacja. Następnie:",
+            "steps": [
+              "Otwórz panel Finalizacja w przestrzeni roboczej.",
+              "Jeśli szablon ma obliczenia, uruchom Oblicz (możesz przeliczyć później, gdy wartości się zmienią).",
+              "Wygeneruj raport, gdy obliczenia są gotowe (lub od razu, jeśli ich nie ma).",
+              "Gdy status raportu to Gotowe, wyświetl lub pobierz PDF.",
+              "Zamknij zgłoszenie, gdy raport jest gotowy — zamknięcie blokuje dalsze obliczenia i generowanie raportu."
+            ]
+          },
+          "report": {
+            "heading": "Status raportu",
+            "body": "Generowanie jest asynchroniczne. Status przechodzi przez W kolejce i Generowanie do Gotowe, albo Niepowodzenie, jeśli coś poszło nie tak. Możesz wygenerować ponownie po niepowodzeniu lub gdy potrzebujesz świeżego PDF. Zlecający mogą wyświetlić i pobrać ten sam raport ze szczegółów swojego eksperymentu, gdy będzie gotowy."
+          },
+          "close": {
+            "heading": "Zamykanie zgłoszenia",
+            "body": "Zamknij zgłoszenie oznacza eksperyment jako Zakończone. Interfejs prosi o potwierdzenie, ponieważ potem akcje obliczeń i raportów przestają być dostępne. Upewnij się, że obliczenia (jeśli są) i raport są gotowe przed zamknięciem."
+          }
+        }
+      },
+      "onboarding": {
+        "title": "Wdrażanie próbek",
+        "subtitle": "Rejestruj typy próbek i zarządzaj szablonami eksperymentów, które każda próbka oferuje zlecającym.",
+        "sections": {
+          "samples": {
+            "heading": "Przeglądaj próbki",
+            "body": "Otwórz Wdrażanie z nawigacji personelu. Każda karta to typ próbki (np. Węgiel lub Jabłko) z krótkim opisem i liczbą aktualnych szablonów. Otwórz próbkę, aby zarządzać jej szablonami.",
+            "steps": [
+              "Przejdź do Wdrażanie w nawigacji personelu.",
+              "Przejrzyj karty próbek lub użyj strony, aby znaleźć potrzebny typ próbki.",
+              "Otwórz próbkę, aby zobaczyć jej szablony, albo najpierw zarejestruj nowy typ próbki."
+            ]
+          },
+          "register": {
+            "heading": "Zarejestruj próbkę",
+            "body": "Próbka to typ materiału, a nie pojedyncze fizyczne pudełko. Zarejestruj próbkę otwiera modal, w którym podajesz nazwę (wymagana) i opcjonalny opis. Po utworzeniu trafiasz na listę szablonów tej próbki.",
+            "steps": [
+              "Wybierz Zarejestruj próbkę.",
+              "Podaj czytelną nazwę typu próbki (np. Węgiel).",
+              "Opcjonalnie dodaj opis widoczny dla zlecających i personelu.",
+              "Utwórz, a następnie dodaj co najmniej jeden szablon eksperymentu, zanim klienci będą mogli go zlecić."
+            ]
+          },
+          "templates": {
+            "heading": "Szablony w ramach próbki",
+            "body": "Strona próbki wymienia każdy szablon dla tego typu materiału. Kliknij wiersz, aby edytować go w builderze, albo wybierz Nowy szablon, aby rozpocząć pusty szkic powiązany z tą próbką."
+          },
+          "next": {
+            "heading": "Co dalej",
+            "body": "Przygotuj formularze przyjęcia klienta i laboratoryjne w builderze szablonów, dodaj obliczenia, gdy wyniki mają być wyliczane, a następnie zaprojektuj układ raportu PDF, jeśli laboratorium wydaje raporty PDF. Korzystaj z Referencji komponentów przy wyborze typów pytań."
+          }
+        }
+      },
+      "templates": {
+        "title": "Tworzenie i edycja szablonów",
+        "subtitle": "Szablon eksperymentu definiuje formularz przyjęcia klienta, formularz laboratoryjny, obliczenia oraz (opcjonalnie) układ raportu PDF współdzielony przez zlecających i personel.",
+        "sections": {
+          "create": {
+            "heading": "Rozpocznij nowy szablon",
+            "body": "Ze strony próbki wybierz Nowy szablon. Builder otwiera się z metadanymi (nazwa, opis) oraz pustymi sekcjami Client form i Lab form. Identyfikator szablonu jest nadawany przy utworzeniu.",
+            "steps": [
+              "Otwórz Wdrażanie → wybierz próbkę (np. Węgiel).",
+              "Wybierz Nowy szablon.",
+              "Uzupełnij metadane: nazwę i opcjonalny opis.",
+              "Dodaj pytania do formularza klienta i/lub formularza laboratoryjnego.",
+              "Utwórz szablon, gdy szkic jest poprawny."
+            ]
+          },
+          "forms": {
+            "heading": "Client form i lab form",
+            "body": "Client form to to, co wypełniają zlecający przy zlecaniu eksperymentu. Lab form to to, co wypełniają technicy w statusie W toku we wspólnej przestrzeni roboczej.\n\nDla każdej sekcji możesz ustawić nazwę i opis sekcji, a następnie dodać pytania. Każde pytanie potrzebuje stabilnego ID w snake_case (używanego przy zapisie odpowiedzi i w formułach), typu, etykiety oraz opcjonalnej konfiguracji, takiej jak required, placeholder, min/max lub options.\n\nDobrym rzeczywistym przykładem jest Total Moisture Determination (Wtr) w ramach Węgiel — pokazuje pełny formularz laboratoryjny z powtarzalnymi pomiarami naczynek."
+          },
+          "calculations": {
+            "heading": "Obliczenia",
+            "body": "Nazwane obliczenia to ciągi formuł Python oceniane przez backend. Wyniki są tylko do wyświetlenia w podglądzie buildera i pojawiają się na karcie Obliczenia w przestrzeni roboczej, gdy istnieją wartości.\n\nUżywaj values['question_id'] dla odpowiedzi. Inne nazwy obliczeń zdefiniowane powyżej można wskazywać bezpośrednio. Otwórz edytor kodu, gdy formuła jest długa."
+          },
+          "preview": {
+            "heading": "Podgląd na żywo",
+            "body": "Builder pokazuje podgląd formularzy na żywo podczas edycji. Napraw błędy walidacji, zanim polegasz na podglądzie lub zapiszesz — niepoprawne szkice blokują utworzenie/zapis."
+          },
+          "save": {
+            "heading": "Zapisz, usuń i otwórz projektanta PDF",
+            "body": "Użyj Utwórz szablon (nowy) lub Zapisz zmiany (edycja), gdy szkic jest poprawny. Projektuj raport PDF otwiera edytor układu PDF dla tej wersji szablonu. Usuń usuwa szablon po potwierdzeniu — rób to tylko, gdy jesteś pewien, że żadna aktywna praca od niego nie zależy."
+          },
+          "pdf": {
+            "heading": "Układ raportu PDF",
+            "body": "Jeśli laboratorium wydaje raport PDF dla tego typu eksperymentu, otwórz Projektuj raport PDF z buildera. Ten edytor jest opisany w przewodniku Układ raportu PDF."
+          },
+          "components": {
+            "heading": "Referencja komponentów",
+            "body": "Każdy obsługiwany typ pytania jest udokumentowany w Formularze — komponenty w tej sekcji dokumentacji — z podglądem na żywo i wygenerowanymi polami schematu. Preferuj te typy, aby renderer frontendu i Experiment Manager pozostały zsynchronizowane."
+          }
+        }
+      },
+      "pdfReport": {
+        "title": "Układ raportu PDF",
+        "subtitle": "Zaprojektuj raport PDF dla szablonu: umieść tekst i kształty, wstaw zmienne formularza, podejrzyj z rzeczywistymi danymi eksperymentu, a następnie zapisz.",
+        "sections": {
+          "open": {
+            "heading": "Otwórz edytor PDF",
+            "body": "Z istniejącego szablonu w builderze wybierz Projektuj raport PDF. Możesz też otworzyć trasę /pdf w ramach tego szablonu. Brak układu po prostu zaczyna od pustego płótna — to normalne do pierwszego zapisu.",
+            "steps": [
+              "Otwórz Wdrażanie → próbka → szablon (np. Total Moisture Determination w ramach Węgiel).",
+              "Wybierz Projektuj raport PDF.",
+              "Użyj Wstecz, aby wrócić do buildera formularzy po zakończeniu."
+            ]
+          },
+          "canvas": {
+            "heading": "Zbuduj układ",
+            "body": "Dodawaj komponenty Tekst lub Kształt na płótno. Przesuwaj i zmieniaj ich rozmiar, używaj przyciągania, gdy pomaga, i zarządzaj stronami z karty Strony. Inspektor edytuje wybrany komponent: pozycję, treść, czcionkę, kolor oraz opcje kształtu.\n\nTekst obsługuje zmienne w składni '{{'name'}}', dzięki czemu wartości raportu wypełniają się w momencie generowania."
+          },
+          "variables": {
+            "heading": "Zmienne",
+            "body": "Panel Zmienne wymienia pola z client form, lab form oraz obliczeń. Kliknij zmienną, aby wstawić ją do zaznaczonego pola tekstowego, albo skopiuj token. Przeszukaj listę, gdy szablony są duże."
+          },
+          "preview": {
+            "heading": "Tryby podglądu",
+            "body": "Pokaż placeholdery pozostawia tokeny zmiennych widoczne. Użyj wartości domyślnych wypełnia przykładowe wartości domyślne z szablonu. Z eksperymentu pozwala wybrać rzeczywisty kontekst eksperymentu do podglądu z żywymi wartościami. Otwórz prawdziwy PDF zapisuje, renderuje i otwiera wygenerowany PDF dla tego eksperymentu, gdy potrzebujesz prawdziwej kontroli wyniku."
+          },
+          "save": {
+            "heading": "Zapisz układ",
+            "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizacja, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
+          }
+        }
+      }
+    },
+    "client": {
+      "overview": {
+        "title": "Jak korzystać z Harper Anslitics",
+        "subtitle": "Zamów badania laboratoryjne, wyślij próbkę z etykietą QR i śledź postęp, aż certyfikowany raport będzie gotowy.",
+        "sections": {
+          "contents": {
+            "heading": "W tej pomocy",
+            "body": "Te krótkie przewodniki obejmują ścieżkę zleceniodawcy — od pierwszego wniosku aż po gotowy raport."
+          },
+          "lifecycle": {
+            "heading": "Co dzieje się po złożeniu wniosku",
+            "body": "Twoje badanie przechodzi przez następujące etapy:\n\nZgłoszone — złożyłeś wniosek; wydrukuj etykietę próbki i wyślij paczkę.\n\nPróbka przyjęta — laboratorium przyjęło Twoją próbkę.\n\nW toku — technicy wykonują badanie.\n\nFinalizacja — laboratorium oblicza wyniki i przygotowuje raport.\n\nZakończone — zgłoszenie jest zamknięte; pobierz raport, gdy będzie dostępny.\n\nAnulowane badania kończą się poza normalną ścieżką ukończenia."
+          }
+        },
+        "links": {
+          "request": "Przeglądaj obsługiwane typy próbek i złóż formularz przyjęcia dla wybranego szablonu.",
+          "track": "W Moje badania zobaczysz ścieżki statusów i otworzysz szczegóły tylko do odczytu.",
+          "shipping": "Wydrukuj etykietę QR i przyklej ją, aby laboratorium mogło przyjąć Twoją próbkę.",
+          "settings": "Na stronie Ustawienia wybierz, o których etapach cyklu życia chcesz otrzymywać e-maile."
+        }
+      },
+      "request": {
+        "title": "Zamów badanie",
+        "subtitle": "Zacznij od katalogu próbek i szablonów, które Twoja organizacja może zamawiać.",
+        "sections": {
+          "catalog": {
+            "heading": "Przeglądaj katalog",
+            "body": "Otwórz Zamów badanie w nawigacji. Próbki są pogrupowane w rozwijane sekcje; każda grupa zawiera aktualne szablony dla danego typu próbki. Wyszukaj po nazwie próbki lub badania, a następnie wybierz Zamów przy potrzebnym szablonie.",
+            "steps": [
+              "Przejdź do Zamów badanie.",
+              "Znajdź typ próbki (rozwiń grupę lub skorzystaj z wyszukiwania).",
+              "Wybierz Zamów przy szablonie odpowiadającym potrzebnej pracy.",
+              "Musisz należeć do organizacji, zanim będzie można złożyć wniosek."
+            ]
+          },
+          "intake": {
+            "heading": "Wypełnij formularz przyjęcia",
+            "body": "Niektóre szablony wymagają danych od klienta przed rozpoczęciem pracy w laboratorium. Wypełnij wszystkie wymagane pola, a następnie wyślij. Jeśli szablon nie wymaga formularza przyjęcia, możesz od razu wysłać wniosek."
+          },
+          "after": {
+            "heading": "Po wysłaniu",
+            "body": "Zostaniesz przeniesiony na stronę szczegółów badania w Moje badania. Dopóki status to Zgłoszone, wydrukuj etykietę próbki i wyślij materiał. Laboratorium nie może rozpocząć pracy, dopóki próbka nie zostanie przyjęta."
+          }
+        }
+      },
+      "track": {
+        "title": "Śledź swoje badania",
+        "subtitle": "Moje badania pokazuje każde Twoje zlecenie, pogrupowane według miejsca w procesie laboratoryjnym.",
+        "sections": {
+          "board": {
+            "heading": "Tablica",
+            "body": "Karty znajdują się w ścieżkach takich jak Zgłoszone, Próbka przyjęta, W toku, Finalizacja, Zamknięte i Anulowane. Wyszukuj po tytule badania lub identyfikatorze kontekstu. Otwórz kartę, aby zobaczyć pełną stronę szczegółów."
+          },
+          "detail": {
+            "heading": "Szczegóły badania",
+            "body": "Strona szczegółów jest tylko do odczytu dla zleceniodawców. Widzisz oś czasu cyklu życia, odpowiedzi z formularza przyjęcia, wartości laboratoryjne w miarę ich uzupełniania, obliczenia (gdy są dostępne) oraz status. Tylko Ty możesz otwierać badania, które zleciłeś."
+          },
+          "report": {
+            "heading": "Raporty",
+            "body": "Gdy laboratorium wygeneruje raport PDF, na stronie szczegółów pojawią się opcje Zobacz raport i Pobierz PDF. Raporty są dostępne po etapie Finalizacja; jeśli ich jeszcze nie widać, laboratorium nadal przygotowuje wyniki."
+          }
+        }
+      },
+      "shipping": {
+        "title": "Wyślij próbkę",
+        "subtitle": "Dopóki badanie ma status Zgłoszone, wydrukuj etykietę QR i przyklej ją do paczki wysyłanej do laboratorium.",
+        "sections": {
+          "label": {
+            "heading": "Dlaczego etykieta jest ważna",
+            "body": "Kod QR prowadzi do strony przyjęcia próbki przez personel dla Twojego badania. Gdy paczka dotrze, personel laboratorium skanuje ją, aby oznaczyć próbkę jako przyjętą i kontynuować proces. Bez etykiety (lub linku do przyjęcia) laboratorium może nie szybko powiązać paczki z Twoim zgłoszeniem."
+          },
+          "print": {
+            "heading": "Drukuj i przyklej",
+            "body": "Na stronie szczegółów badania użyj opcji Drukuj etykietę. Przyklej wydrukowaną etykietę na zewnątrz paczki. Możesz też skopiować adres URL przyjęcia, jeśli chcesz przekazać go laboratorium inną drogą.",
+            "steps": [
+              "Otwórz badanie w Moje badania, dopóki ma status Zgłoszone.",
+              "W sekcji Wyślij próbkę wybierz Drukuj etykietę.",
+              "Przyklej etykietę tak, aby pozostała czytelna w trakcie transportu.",
+              "Wyślij paczkę do laboratorium zwykłą ścieżką kurierską."
+            ]
+          },
+          "arrival": {
+            "heading": "Po przyjęciu przez laboratorium",
+            "body": "Status zmienia się na Próbka przyjęta, gdy personel przyjmie próbkę. Na tym etapie nie musisz nic więcej robić — śledź Moje badania (oraz e-mail, jeśli włączono) pod kątem kolejnych aktualizacji."
+          }
+        }
+      },
+      "settings": {
+        "title": "Ustawienia powiadomień",
+        "subtitle": "Wybierz, o których etapach cyklu życia zgłoszenia chcesz otrzymywać e-maile.",
+        "sections": {
+          "where": {
+            "heading": "Gdzie zmienić preferencje",
+            "body": "Otwórz Ustawienia z menu użytkownika (lub przejdź do strony ustawień w obszarze klienta). Powiadomienia e-mail wymieniają każdy etap cyklu życia z przełącznikiem."
+          },
+          "stages": {
+            "heading": "Do czego służą przełączniki",
+            "body": "Wyłączenie etapu pomija ten e-mail przed dodaniem go do kolejki. Pozostaw etapy włączone, gdy chcesz dostać sygnał bez otwierania aplikacji — na przykład Próbka przyjęta lub gotowość raportu. Zmiany zapisują się z formularza ustawień."
+          }
+        }
+      }
+    },
+    "figure": {
+      "placeholder": "Miejsce na zrzut ekranu — tutaj wyświetli się {filename}",
+      "pathHint": "Umieść plik w {path}",
+      "englishFallback": "(Wyświetlono angielski zrzut ekranu; nie znaleziono zlokalizowanego pliku.)"
+    },
+    "screenshots": {
+      "client-my-experiments-board": {
+        "alt": "Tablica Moje eksperymenty z kolumnami cyklu życia",
+        "caption": "Tablica Moje eksperymenty"
+      },
+      "client-request-catalog": {
+        "alt": "Katalog zamówienia eksperymentu ze okazami i szablonami",
+        "caption": "Katalog zamówienia eksperymentu"
+      },
+      "client-request-intake": {
+        "alt": "Formularz zgłoszeniowy klienta dla nowego zamówienia eksperymentu",
+        "caption": "Formularz zgłoszeniowy klienta"
+      },
+      "client-experiment-detail": {
+        "alt": "Szczegóły eksperymentu zleceniodawcy z osią czasu cyklu życia",
+        "caption": "Szczegóły eksperymentu"
+      },
+      "client-report-panel": {
+        "alt": "Panel raportu z akcjami podglądu i pobierania",
+        "caption": "Raport gotowy do podglądu lub pobrania"
+      },
+      "client-sample-label": {
+        "alt": "Etykieta QR do wysyłki próbki z przyciskiem Drukuj etykietę",
+        "caption": "Etykieta wysyłkowa próbki"
+      },
+      "client-notification-settings": {
+        "alt": "Preferencje powiadomień e-mail według etapu cyklu życia",
+        "caption": "Ustawienia powiadomień"
+      },
+      "staff-experiments-listing": {
+        "alt": "Lista eksperymentów personelu z wyszukiwaniem i filtrami",
+        "caption": "Lista eksperymentów"
+      },
+      "staff-sample-checkin": {
+        "alt": "Strona przyjęcia próbki z przyciskiem Przyjmij próbkę",
+        "caption": "Przyjęcie próbki"
+      },
+      "staff-workspace-start": {
+        "alt": "Przestrzeń robocza eksperymentu gotowa do startu po przyjęciu próbki",
+        "caption": "Uruchom eksperyment w przestrzeni roboczej"
+      },
+      "staff-lab-form-collab": {
+        "alt": "Współdzielony formularz laboratoryjny ze wskaźnikami obecności",
+        "caption": "Współedycja formularza laboratoryjnego"
+      },
+      "staff-workspace-tabs": {
+        "alt": "Karty przestrzeni roboczej: formularz lab, zgłoszenie klienta i obliczenia",
+        "caption": "Karty przestrzeni roboczej"
+      },
+      "staff-finalize-panel": {
+        "alt": "Panel finalizacji z akcjami obliczeń, raportu i zamknięcia",
+        "caption": "Finalizacja i raporty"
+      },
+      "staff-onboarding-samples": {
+        "alt": "Strona rejestracji z listą okazów próbek",
+        "caption": "Rejestracja próbek"
+      },
+      "staff-sample-templates": {
+        "alt": "Tabela szablonów dla próbki Coal",
+        "caption": "Szablony dla Coal"
+      },
+      "staff-template-builder": {
+        "alt": "Kreator szablonu dla Total Moisture Determination (Wtr)",
+        "caption": "Przykładowy szablon: Total Moisture Determination (Wtr)"
+      },
+      "staff-component-reference": {
+        "alt": "Dokumentacja komponentów formularzy z żywym podglądem",
+        "caption": "Dokumentacja komponentów"
+      },
+      "staff-register-sample": {
+        "alt": "Modal rejestracji próbki z polami nazwy i opisu",
+        "caption": "Zarejestruj nową próbkę"
+      },
+      "staff-new-template": {
+        "alt": "Kreator nowego szablonu z metadanymi i pustymi sekcjami formularza",
+        "caption": "Nowy szablon"
+      },
+      "staff-builder-calculations": {
+        "alt": "Sekcja obliczeń w kreatorze szablonów",
+        "caption": "Obliczenia szablonu"
+      },
+      "staff-pdf-editor": {
+        "alt": "Edytor układu raportu PDF z płótnem i zmiennymi",
+        "caption": "Edytor raportu PDF"
       }
     }
   },

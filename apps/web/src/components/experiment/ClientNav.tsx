@@ -11,6 +11,7 @@ import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import { BRAND } from "@/lib/brand";
+import { CLIENT_DOCS_BASE } from "@/lib/docs/routes";
 import {
   myExperimentsPath,
   requestCatalogPath,
@@ -20,6 +21,7 @@ import {
 const NAV_ITEMS = [
   { href: myExperimentsPath(), key: "myExperiments" },
   { href: requestCatalogPath(), key: "requestExperiment" },
+  { href: CLIENT_DOCS_BASE, key: "docs" },
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
@@ -27,8 +29,12 @@ function isActive(pathname: string, href: string): boolean {
     return (
       pathname === href ||
       (pathname.startsWith(`${href}/`) &&
-        !pathname.startsWith(requestCatalogPath()))
+        !pathname.startsWith(requestCatalogPath()) &&
+        !pathname.startsWith(CLIENT_DOCS_BASE))
     );
+  }
+  if (href === CLIENT_DOCS_BASE) {
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
   return pathname.startsWith("/experiment/request");
 }

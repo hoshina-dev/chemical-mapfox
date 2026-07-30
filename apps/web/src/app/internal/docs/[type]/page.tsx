@@ -19,6 +19,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { GalleryQuestionWorkbench } from "@/components/docs/GalleryQuestionWorkbench";
+import { STAFF_DOC_RESERVED_SLUGS } from "@/lib/docs/nav";
 
 type JsonSchemaObject = Record<string, unknown>;
 type DocsTranslator = Awaited<ReturnType<typeof getTranslations<"docs">>>;
@@ -67,6 +68,7 @@ interface PageProps {
 
 export default async function GalleryDetailPage({ params }: PageProps) {
   const { type } = await params;
+  if (STAFF_DOC_RESERVED_SLUGS.has(type)) notFound();
   const entry = findGalleryEntry(type);
   if (!entry) notFound();
 

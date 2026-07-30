@@ -11,6 +11,7 @@ import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
 import { BRAND } from "@/lib/brand";
+import { STAFF_DOCS_BASE } from "@/lib/docs/routes";
 import {
   experimentListingPath,
   onboardingPath,
@@ -21,7 +22,7 @@ const LISTING_PATH = experimentListingPath();
 const NAV_ITEMS = [
   { href: LISTING_PATH, key: "experiments" },
   { href: onboardingPath(), key: "onboarding" },
-  { href: "/internal/docs", key: "docs" },
+  { href: STAFF_DOCS_BASE, key: "docs" },
   { href: "/admin/users", key: "users" },
 ] as const;
 

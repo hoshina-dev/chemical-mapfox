@@ -10,7 +10,8 @@ scaffolded with `create-turbo`.
 chemical-mapfox/
 ├── apps/
 │   └── web/                      # Next.js (App Router) + Mantine app
-│                                 #   /internal/docs — component reference for form authors
+│                                 #   /experiment/docs — requester how-to
+│                                 #   /internal/docs — staff how-to + form component reference
 └── packages/
     ├── forms/                    # @repo/forms — JSON/Zod form schema + Mantine renderer
     ├── ui/                       # @repo/ui — shared React component package
@@ -27,11 +28,15 @@ truth** matched by the backend; the Zod schemas in `src/schema.ts` are
 hand-written to mirror it and kept in sync manually — accepted tech debt since
 the schema rarely changes. See [`packages/forms/README.md`](packages/forms/README.md).
 
-The web app's **`/internal/docs`** section imports the components and schema from
-`@repo/forms` to render a component reference for lab technicians building forms
-(one page per question type, with a live preview and the generated schema
-fields). It lives under `apps/web/src/app/internal/docs/` and is gated by the
-same auth middleware as the rest of the app.
+The web app ships **how-to documentation** for both audiences:
+
+- **Requesters:** `/experiment/docs` (Help/Docs in the client nav)
+- **Lab staff:** `/internal/docs` (Docs in the staff nav), including guides for
+  the experiment workflow and the **component reference**
+  (`/internal/docs/components` and `/internal/docs/[type]`) which imports
+  question types and schema from `@repo/forms` for form authors
+
+Both areas are gated by the same role middleware as the rest of each shell.
 
 ## Getting started
 
@@ -44,7 +49,7 @@ pnpm dev          # runs the web app via turbo (on :3000)
 Run a single app:
 
 ```bash
-pnpm --filter web dev   # docs are at http://localhost:3000/internal/docs
+pnpm --filter web dev   # staff docs: /internal/docs · client docs: /experiment/docs
 ```
 
 ### Redis (collaborative editing)

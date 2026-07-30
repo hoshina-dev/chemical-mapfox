@@ -1,4 +1,4 @@
-type MessageValue = string | MessageTree;
+type MessageValue = string | string[] | MessageTree;
 type MessageTree = { [key: string]: MessageValue };
 
 /** Deep-merge message trees so incomplete locales fall back to English keys. */

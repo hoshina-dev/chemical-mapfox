@@ -1,5 +1,5 @@
 Feature: Form-author documentation
-  The staff component reference under /internal/docs lists every form
+  The staff component reference under /internal/docs/components lists every form
   question type and, on each type page, shows a live preview alongside the
   generated schema fields. The whole area is admin-only.
 
@@ -9,9 +9,14 @@ Feature: Form-author documentation
       | Casey Client | client@example.com | password123 | user  |
       | Avery Admin  | admin@example.com  | password123 | admin |
 
-  Scenario: An admin sees the component reference index listing the question types
+  Scenario: An admin sees the staff docs overview and can open the component reference
     Given I am signed in as "admin@example.com" with password "password123"
     When I visit "/internal/docs"
+    Then I should see the "Staff documentation" heading
+
+  Scenario: An admin sees the component reference index listing the question types
+    Given I am signed in as "admin@example.com" with password "password123"
+    When I visit "/internal/docs/components"
     Then I should see the "Component reference" heading
     And the component reference should list "Short text"
     And the component reference should list "Number"
