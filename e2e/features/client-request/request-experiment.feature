@@ -5,8 +5,8 @@ Feature: Request an experiment
 
   Background:
     Given the following users exist:
-      | name         | email              | password    | role | organization |
-      | Casey Client | client@example.com | password123 | user | Acme Labs    |
+      | name         | email              | password    | role |
+      | Casey Client | client@example.com | password123 | user |
     And the catalog offers a sample "Coal" with experiment "Proximate analysis"
 
   Scenario: A client browses the catalogue and finds the seeded experiment
@@ -26,13 +26,3 @@ Feature: Request an experiment
     When I fill in the "Sample description" field with "Dark anthracite briquettes, 2 kg"
     And I submit the request
     Then I should land on my experiment workspace
-
-  Scenario: A client with no organization is blocked from requesting
-    Given a client "lonely@example.com" with password "password123" who belongs to no organization
-    And I am signed in as "lonely@example.com" with password "password123"
-    When I visit "/experiment/request/listing"
-    And I expand the "Coal" specimen
-    And I request the experiment "Proximate analysis"
-    And I fill in the "Sample description" field with "Loose powder sample"
-    And I submit the request
-    Then I should see the error containing "member of any organization"

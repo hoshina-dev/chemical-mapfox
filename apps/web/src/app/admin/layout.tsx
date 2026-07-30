@@ -1,7 +1,5 @@
 import { AdminNav } from "@/components/admin/AdminNav";
 import { requireAdmin } from "@/lib/auth/dal";
-import { listUserOrganizations } from "@/lib/auth/organizations";
-import { getOrganizationPortalUrl } from "@/lib/organizationPortal/config";
 
 export default async function AdminLayout({
   children,
@@ -9,7 +7,6 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }>) {
   const session = await requireAdmin();
-  const organizations = await listUserOrganizations(session.userId);
   return (
     <>
       <AdminNav
@@ -17,8 +14,6 @@ export default async function AdminLayout({
         email={session.email}
         avatarUrl={session.avatarUrl}
         role={session.role}
-        organizations={organizations}
-        organizationPortalUrl={getOrganizationPortalUrl()}
       />
       {children}
     </>

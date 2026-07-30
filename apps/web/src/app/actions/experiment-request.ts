@@ -1,12 +1,12 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
-import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { requireClient } from "@/lib/auth/dal";
-import { usersApi } from "@/lib/custapi/client";
+import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import {
   createExperiment,
   updateExperiment,
@@ -21,19 +21,6 @@ interface RequestExperimentInput {
   templateId: string;
   /** Client intake answers, keyed by question id. */
   values: Record<string, AnswerValue>;
-}
-
-async function resolveOrganizationId(
-  userId: string,
-  sessionOrgId: string | undefined,
-): Promise<string | undefined> {
-  if (sessionOrgId) return sessionOrgId;
-  try {
-    const memberships = await usersApi.usersIdIdOrganizationsGet(userId);
-    return memberships.find((m) => m.organizationId)?.organizationId;
-  } catch {
-    return undefined;
-  }
 }
 
 async function errorText(error: unknown, fallback: string): Promise<string> {
@@ -73,17 +60,6 @@ export async function requestExperimentAction(
   const session = await requireClient();
   const t = await getTranslations("experiment.request.errors");
 
-  const organizationId = await resolveOrganizationId(
-    session.userId,
-    session.organizationId,
-  );
-  if (!organizationId) {
-    return {
-      success: false,
-      error: t("noOrganization"),
-    };
-  }
-
   const resolved = await loadRequestTemplate(input.templateId, input.sampleId);
   if (!resolved) {
     return { success: false, error: t("templateGone") };
@@ -94,7 +70,7 @@ export async function requestExperimentAction(
     const ticket = await ticketsApi.apiV1TicketsPost({
       experimentTemplateId: input.templateId,
       name: resolved.template.meta.title,
-      organizationId,
+      organizationId: CHEMFOX_ORG_ID,
       userId: session.userId,
     });
     if (!ticket.id) {

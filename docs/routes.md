@@ -156,6 +156,8 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 ## Other implemented routes
 
 - `/` ✅ — landing / login (`apps/web/src/app/page.tsx`)
+- `/admin/users` ✅ — staff-only **readonly user lookup** (search via CUSTAPI
+  `GET /users/search`, detail panel). No org management. Gated like `/internal/*`.
 
 There is **no separate hub/dashboard page**. After login each role is sent
 straight to its primary workspace and navigates from there using the nav chrome
@@ -163,6 +165,9 @@ straight to its primary workspace and navigates from there using the nav chrome
 
 - lab staff (mapfox admins) → `/admin` (the staff **Experiments** listing)
 - everyone else → `/experiment/listing` (their **My experiments** board)
+
+ChemFox is not organization-aware in product UI; session/tickets always use the
+fixed dummy org id `CHEMFOX_ORG` (`apps/web/src/lib/custapi/chemfoxOrg.ts`).
 
 The single source of truth for this is `landingPathForRole()`
 (`apps/web/src/lib/auth/appRole.ts`), used by the login/register actions,

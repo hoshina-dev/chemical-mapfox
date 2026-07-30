@@ -1,45 +1,71 @@
 import assert from "node:assert/strict";
 
-import { DataTable, Then } from "@cucumber/cucumber";
+import { DataTable, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
 import type { ChemFoxWorld } from "../support/world.js";
 
 /**
- * The two headline cards (`/admin/users`) each pair a dimmed label with an
- * `<h2>` count. Scope to the only cards that contain a level-2 heading, then
- * pick the one whose label matches — avoids the ambiguity of the word "Users"
- * also appearing as the page title and the table-section heading.
+ * Fill the search box until React's controlled value sticks and the
+ * "type to search" hint disappears. A single `fill` can race Next hydration
+ * in CI (value wiped → searchUsers never fires).
  */
-function countCard(world: ChemFoxWorld, label: string): Locator {
-  return world.page
-    .locator(".mantine-Card-root")
-    .filter({ has: world.page.getByRole("heading", { level: 2 }) })
-    .filter({ hasText: label });
+async function searchUntilSettled(
+  world: ChemFoxWorld,
+  query: string,
+  attempts = 25,
+): Promise<void> {
+  const input = world.page.getByRole("textbox", { name: "Search users" });
+  await input.waitFor({ state: "visible", timeout: 15_000 });
+
+  const typeHint = world.page.getByText(
+    "Type at least 2 characters to search.",
+  );
+
+  for (let i = 0; i < attempts; i += 1) {
+    await input.click();
+    await input.fill(query);
+    if ((await input.inputValue()) !== query) continue;
+
+    try {
+      await typeHint.waitFor({ state: "hidden", timeout: 1_000 });
+      return;
+    } catch {
+      // debounce (250ms) / effect not attached yet — retry
+    }
+  }
+
+  await typeHint.waitFor({ state: "hidden", timeout: 5_000 });
 }
 
-Then(
-  "the {string} count should show {string}",
-  async function (this: ChemFoxWorld, label: string, expected: string) {
-    const heading = countCard(this, label)
-      .getByRole("heading", { level: 2 })
-      .first();
-    await heading.waitFor({ state: "visible", timeout: 15_000 });
-    assert.equal((await heading.textContent())?.trim(), expected);
+When(
+  "I search users for {string}",
+  async function (this: ChemFoxWorld, query: string) {
+    await searchUntilSettled(this, query);
+  },
+);
+
+When(
+  "I select the user {string} from search results",
+  async function (this: ChemFoxWorld, email: string) {
+    const row = this.page.getByRole("row").filter({ hasText: email });
+    await row.first().waitFor({ state: "visible", timeout: 15_000 });
+    await row.first().click();
   },
 );
 
 Then(
-  "the users table should list:",
+  "the users search results should list:",
   async function (this: ChemFoxWorld, table: DataTable) {
     for (const { name, email, role } of table.hashes()) {
-      const row = this.page.getByRole("row").filter({ hasText: email });
+      const row: Locator = this.page
+        .getByRole("row")
+        .filter({ hasText: email });
       await row.first().waitFor({ state: "visible", timeout: 15_000 });
 
       const named = await row.filter({ hasText: name }).count();
       assert.ok(named > 0, `expected the row for ${email} to show "${name}"`);
 
-      // The role renders as a Mantine Badge whose only text is the role itself.
       await row
         .getByText(role, { exact: true })
         .first()
@@ -49,11 +75,27 @@ Then(
 );
 
 Then(
-  "the organizations list should include:",
+  "the users search results should be empty",
+  async function (this: ChemFoxWorld) {
+    await this.page
+      .getByText("No users found.", { exact: true })
+      .waitFor({ state: "visible", timeout: 15_000 });
+  },
+);
+
+Then(
+  "the user detail should show:",
   async function (this: ChemFoxWorld, table: DataTable) {
-    for (const { name } of table.hashes()) {
-      await this.page
-        .getByText(name, { exact: true })
+    const detail = this.page.getByTestId("user-detail");
+    await detail.waitFor({ state: "visible", timeout: 15_000 });
+
+    for (const { field, value } of table.hashes()) {
+      await detail
+        .getByText(value, { exact: true })
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
+      await detail
+        .getByText(field, { exact: true })
         .first()
         .waitFor({ state: "visible", timeout: 15_000 });
     }

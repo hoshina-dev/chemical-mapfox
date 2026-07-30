@@ -38,7 +38,6 @@ export interface RegisterValidationMessages {
   nameRequired: string;
   emailInvalid: string;
   passwordMinLength: string;
-  organizationRequired: string;
 }
 
 /**
@@ -57,9 +56,6 @@ export function createRegisterFormSchema(messages: RegisterValidationMessages) {
     name: z.string().min(1, { message: messages.nameRequired }).trim(),
     email: z.email({ message: messages.emailInvalid }).trim(),
     password: z.string().min(8, { message: messages.passwordMinLength }),
-    organizationId: z
-      .uuid({ message: messages.organizationRequired })
-      .trim(),
   });
 }
 
@@ -79,7 +75,6 @@ export type RegisterFormState =
         name?: string[];
         email?: string[];
         password?: string[];
-        organizationId?: string[];
       };
       message?: string;
     }

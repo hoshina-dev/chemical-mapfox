@@ -1,9 +1,13 @@
-import { DataTable, Given, When } from "@cucumber/cucumber";
+import assert from "node:assert/strict";
+
+import { DataTable, Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
 import {
   addOrg,
   addUser,
+  CHEMFOX_ORG_ID,
+  findUserByEmail,
   type CustApiRole,
 } from "../support/fixtures.js";
 import type { ChemFoxWorld } from "../support/world.js";
@@ -108,13 +112,12 @@ Given(
 // --- registration --------------------------------------------------------
 
 When(
-  "I register as {string} with email {string} password {string} in organization {string}",
+  "I register as {string} with email {string} password {string}",
   async function (
     this: ChemFoxWorld,
     name: string,
     email: string,
     password: string,
-    organization: string,
   ) {
     await this.goto("/login");
     const form = registerForm(this);
@@ -125,16 +128,22 @@ When(
     await form.locator('input[name="name"]').fill(name);
     await form.locator('input[name="email"]').fill(email);
     await form.locator('input[name="password"]').fill(password);
-
-    const orgInput = form.getByPlaceholder("Search organizations...");
-    await orgInput.click();
-    await orgInput.fill(organization);
-    await this.page
-      .getByRole("option", { name: organization })
-      .first()
-      .click({ timeout: 15_000 });
-
     await form.getByRole("button", { name: "Create account" }).click();
+  },
+);
+
+Then(
+  "the user {string} should belong to organization {string}",
+  function (this: ChemFoxWorld, email: string, organizationId: string) {
+    const user = findUserByEmail(email);
+    assert.ok(user, `expected user ${email} to exist in the fixture store`);
+    assert.ok(
+      user.organizationIds.includes(organizationId),
+      `expected ${email} to belong to ${organizationId}, got [${user.organizationIds.join(", ")}]`,
+    );
+    if (organizationId === CHEMFOX_ORG_ID) {
+      assert.equal(user.organizationIds[0], CHEMFOX_ORG_ID);
+    }
   },
 );
 

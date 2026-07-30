@@ -10,7 +10,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import classes from "@/components/nav/nav.module.css";
 import { UserMenu } from "@/components/UserMenu";
 import type { CustApiRole } from "@/lib/auth/definitions";
-import type { UserOrganization } from "@/lib/auth/organizations";
 import { BRAND } from "@/lib/brand";
 import {
   myExperimentsPath,
@@ -39,15 +38,11 @@ export function ClientNav({
   email,
   avatarUrl,
   role,
-  organizations,
-  organizationPortalUrl,
 }: {
   name: string;
   email?: string;
   avatarUrl?: string;
   role?: CustApiRole;
-  organizations: UserOrganization[];
-  organizationPortalUrl: string;
 }) {
   const pathname = usePathname();
   const t = useTranslations("experiment.nav");
@@ -87,8 +82,6 @@ export function ClientNav({
             email={email}
             avatarUrl={avatarUrl}
             role={role}
-            organizations={organizations}
-            organizationPortalUrl={organizationPortalUrl}
             settingsHref={settingsPath()}
           />
         </Group>
