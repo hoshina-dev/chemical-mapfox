@@ -15,8 +15,8 @@ import { CLIENT_DOCS_BASE } from "@/lib/docs/routes";
 import {
   myExperimentsPath,
   requestCatalogPath,
-  settingsPath,
 } from "@/lib/experiment/routes";
+import { settingsPath } from "@/lib/settings/routes";
 
 const NAV_ITEMS = [
   { href: myExperimentsPath(), key: "myExperiments" },

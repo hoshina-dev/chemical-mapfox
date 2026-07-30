@@ -35,7 +35,5 @@ export function requestTemplatePath(templateId: string, sampleId?: string) {
     : `${BASE}/request/${templateId}`;
 }
 
-/** Client notification / account settings. */
-export function settingsPath() {
-  return `${BASE}/settings`;
-}
+/** @deprecated Use `settingsPath` from `@/lib/settings/routes`. */
+export { settingsPath } from "@/lib/settings/routes";

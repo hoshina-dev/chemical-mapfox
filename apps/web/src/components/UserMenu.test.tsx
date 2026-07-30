@@ -23,16 +23,16 @@ const baseProps = {
 };
 
 describe("UserMenu", () => {
-  it("links to notification settings when settingsHref is provided", async () => {
+  it("links to settings when settingsHref is provided", async () => {
     const user = userEvent.setup();
-    render(<UserMenu {...baseProps} settingsHref="/experiment/settings" />);
+    render(<UserMenu {...baseProps} settingsHref="/settings" />);
 
     await user.click(screen.getByRole("button", { name: "User menu" }));
 
     const link = await screen.findByRole("menuitem", {
-      name: "Notification settings",
+      name: "Settings",
     });
-    expect(link).toHaveAttribute("href", "/experiment/settings");
+    expect(link).toHaveAttribute("href", "/settings");
   });
 
   it("calls logout when Log out is clicked", async () => {

@@ -10,7 +10,7 @@
       "ariaLabel": "Menu użytkownika",
       "organizations": "Organizacje",
       "noOrganizations": "Brak organizacji.",
-      "settings": "Ustawienia powiadomień",
+      "settings": "Ustawienia",
       "logout": "Wyloguj się"
     },
     "roles": {
@@ -40,9 +40,48 @@
   },
   "settings": {
     "breadcrumb": "Ustawienia",
+    "validation": {
+      "nameRequired": "Imię i nazwisko jest wymagane.",
+      "currentPasswordRequired": "Aktualne hasło jest wymagane.",
+      "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków.",
+      "confirmPasswordRequired": "Potwierdź nowe hasło.",
+      "passwordMismatch": "Nowe hasła nie są zgodne."
+    },
+    "profile": {
+      "title": "Profil",
+      "subtitle": "Zaktualizuj zdjęcie, imię i nazwisko oraz numer telefonu.",
+      "name": "Imię i nazwisko",
+      "email": "E-mail",
+      "emailReadOnly": "Adresu e-mail nie można zmienić.",
+      "phone": "Telefon",
+      "phoneOptional": "Opcjonalnie",
+      "photo": "Zdjęcie profilowe",
+      "photoHint": "JPEG, PNG lub WebP · maks. 1 MB",
+      "changePhoto": "Zmień zdjęcie profilowe",
+      "cropTitle": "Przytnij zdjęcie",
+      "cropPreviewAlt": "Podgląd przycinania",
+      "avatarInvalidType": "Nieprawidłowy typ pliku. Dozwolone są tylko JPEG, PNG i WebP.",
+      "avatarTooLarge": "Plik przekracza limit 1 MB.",
+      "avatarUploadFailed": "Nie udało się przesłać zdjęcia profilowego.",
+      "loadErrorTitle": "Nie udało się wczytać profilu",
+      "loadErrorFallback": "Nie udało się wczytać profilu.",
+      "saveErrorFallback": "Nie udało się zapisać profilu."
+    },
+    "password": {
+      "title": "Zmiana hasła",
+      "subtitle": "Potwierdź aktualne hasło, a następnie wybierz nowe.",
+      "currentPassword": "Aktualne hasło",
+      "newPassword": "Nowe hasło",
+      "newPasswordHint": "Co najmniej 8 znaków.",
+      "confirmPassword": "Potwierdź nowe hasło",
+      "submit": "Zmień hasło",
+      "success": "Hasło zaktualizowane",
+      "incorrectCurrentPassword": "Aktualne hasło jest nieprawidłowe.",
+      "saveErrorFallback": "Nie udało się zmienić hasła."
+    },
     "notifications": {
       "title": "Powiadomienia e-mail",
-      "subtitle": "Wybierz etapy cyklu życia zgłoszenia, o których chcesz dostawać e-mail. Wyłączenie etapu pomija wysyłkę zanim trafi do kolejki.",
+      "subtitle": "Wybierz etapy eksperymentu, o których chcesz dostawać e-mail. Wyłącz etap, jeśli nie chcesz powiadomienia dla tego statusu.",
       "emailForStage": "Wyślij e-mail, gdy zgłoszenie osiągnie etap {stage}",
       "loadErrorTitle": "Nie udało się wczytać preferencji powiadomień",
       "loadErrorFallback": "Nie udało się wczytać preferencji powiadomień.",
@@ -1346,7 +1385,7 @@
           "request": "Przeglądaj obsługiwane typy próbek i złóż formularz przyjęcia dla wybranego szablonu.",
           "track": "W Moje badania zobaczysz ścieżki statusów i otworzysz szczegóły tylko do odczytu.",
           "shipping": "Wydrukuj etykietę QR i przyklej ją, aby laboratorium mogło przyjąć Twoją próbkę.",
-          "settings": "Na stronie Ustawienia wybierz, o których etapach cyklu życia chcesz otrzymywać e-maile."
+          "settings": "Na stronie Ustawienia zaktualizuj profil, hasło i etapy powiadomień e-mail."
         }
       },
       "request": {
@@ -1416,16 +1455,16 @@
         }
       },
       "settings": {
-        "title": "Ustawienia powiadomień",
-        "subtitle": "Wybierz, o których etapach cyklu życia zgłoszenia chcesz otrzymywać e-maile.",
+        "title": "Ustawienia konta",
+        "subtitle": "Zaktualizuj profil, zmień hasło i wybierz, o których etapach cyklu życia chcesz otrzymywać e-maile.",
         "sections": {
           "where": {
             "heading": "Gdzie zmienić preferencje",
-            "body": "Otwórz Ustawienia z menu użytkownika (lub przejdź do strony ustawień w obszarze klienta). Powiadomienia e-mail wymieniają każdy etap cyklu życia z przełącznikiem."
+            "body": "Otwórz Ustawienia z menu użytkownika (lub przejdź do /settings). Profil i hasło dotyczą każdego konta; powiadomienia e-mail wymieniają każdy etap cyklu życia z przełącznikiem dla zlecających."
           },
           "stages": {
-            "heading": "Do czego służą przełączniki",
-            "body": "Wyłączenie etapu pomija ten e-mail przed dodaniem go do kolejki. Pozostaw etapy włączone, gdy chcesz dostać sygnał bez otwierania aplikacji — na przykład Próbka przyjęta lub gotowość raportu. Zmiany zapisują się z formularza ustawień."
+            "heading": "Do czego służą przełączniki powiadomień",
+            "body": "Wyłączenie etapu oznacza, że nie dostaniesz e-maila dla tego statusu. Pozostaw etapy włączone, gdy chcesz dostać sygnał bez otwierania aplikacji — na przykład Próbka przyjęta lub gotowość raportu. Zmiany zapisują się z formularza ustawień."
           }
         }
       }

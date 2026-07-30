@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { requireClient } from "@/lib/auth/dal";
-import { settingsPath } from "@/lib/experiment/routes";
+import { settingsPath } from "@/lib/settings/routes";
 import {
   updateNotificationPreferences,
   type StageNotificationPreference,

@@ -10,7 +10,7 @@
       "ariaLabel": "User menu",
       "organizations": "Organizations",
       "noOrganizations": "No organizations yet.",
-      "settings": "Notification settings",
+      "settings": "Settings",
       "logout": "Log out"
     },
     "roles": {
@@ -40,9 +40,48 @@
   },
   "settings": {
     "breadcrumb": "Settings",
+    "validation": {
+      "nameRequired": "Name is required.",
+      "currentPasswordRequired": "Current password is required.",
+      "passwordMinLength": "Password must be at least 8 characters.",
+      "confirmPasswordRequired": "Confirm your new password.",
+      "passwordMismatch": "New passwords do not match."
+    },
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Update your photo, name, and phone number.",
+      "name": "Name",
+      "email": "Email",
+      "emailReadOnly": "Email cannot be changed.",
+      "phone": "Phone",
+      "phoneOptional": "Optional",
+      "photo": "Profile photo",
+      "photoHint": "JPEG, PNG, or WebP · max 1 MB",
+      "changePhoto": "Change profile photo",
+      "cropTitle": "Crop photo",
+      "cropPreviewAlt": "Crop preview",
+      "avatarInvalidType": "Invalid file type. Only JPEG, PNG, and WebP are allowed.",
+      "avatarTooLarge": "File exceeds the 1 MB limit.",
+      "avatarUploadFailed": "Failed to upload profile photo.",
+      "loadErrorTitle": "Could not load profile",
+      "loadErrorFallback": "Failed to load profile.",
+      "saveErrorFallback": "Failed to save profile."
+    },
+    "password": {
+      "title": "Change password",
+      "subtitle": "Confirm your current password, then choose a new one.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordHint": "At least 8 characters.",
+      "confirmPassword": "Confirm new password",
+      "submit": "Change password",
+      "success": "Password updated",
+      "incorrectCurrentPassword": "Current password is incorrect.",
+      "saveErrorFallback": "Failed to change password."
+    },
     "notifications": {
       "title": "Email notifications",
-      "subtitle": "Choose which ticket lifecycle stages should email you. Turning a stage off skips that email before it is queued.",
+      "subtitle": "Choose which experiment stages should email you. Turn a stage off if you do not want an email for that status.",
       "emailForStage": "Email me when a ticket reaches {stage}",
       "loadErrorTitle": "Could not load notification preferences",
       "loadErrorFallback": "Failed to load notification preferences.",
@@ -1346,7 +1385,7 @@
           "request": "Browse supported specimens and submit an intake form for a template.",
           "track": "Use My experiments to see status lanes and open read-only details.",
           "shipping": "Print the QR label and attach it so the lab can check your sample in.",
-          "settings": "Choose which lifecycle stages should email you from the Settings page."
+          "settings": "Update your profile, password, and email notification stages from the Settings page."
         }
       },
       "request": {
@@ -1416,16 +1455,16 @@
         }
       },
       "settings": {
-        "title": "Notification settings",
-        "subtitle": "Choose which ticket lifecycle stages should email you.",
+        "title": "Account settings",
+        "subtitle": "Update your profile, change your password, and choose which lifecycle stages should email you.",
         "sections": {
           "where": {
             "heading": "Where to change preferences",
-            "body": "Open Settings from your user menu (or go to the settings page under your client workspace). Email notifications lists each lifecycle stage with a toggle."
+            "body": "Open Settings from your user menu (or go to /settings). Profile and password apply to every account; email notifications lists each lifecycle stage with a toggle for requesters."
           },
           "stages": {
-            "heading": "What the toggles do",
-            "body": "Turning a stage off skips that email before it is queued. Leave stages on when you want a heads-up without opening the app — for example Sample received or when a report is ready. Changes save from the settings form."
+            "heading": "What the notification toggles do",
+            "body": "Turning a stage off means you will not get an email for that status. Leave stages on when you want a heads-up without opening the app — for example Sample received or when a report is ready. Changes save from the settings form."
           }
         }
       }

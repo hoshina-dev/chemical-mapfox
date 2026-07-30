@@ -74,6 +74,21 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 
 ---
 
+## Shared — authenticated (any role)
+
+### `/settings` ✅
+
+- Account settings for **both** clients and staff: edit profile (avatar via
+  S3/R2 upload + crop, name, phone; email read-only), change password (BFF:
+  `POST /auth/verify` then `PATCH /users/id/{id}`), and — for clients only —
+  ticketing email notification preferences.
+- Layout picks `ClientNav` or `AdminNav` by session role. Path helper:
+  `apps/web/src/lib/settings/routes.ts`. Legacy `/experiment/settings`
+  redirects here.
+- Page: `apps/web/src/app/settings/page.tsx`.
+
+---
+
 ## Staff — `/internal/*` (admin only)
 
 ### `/internal/experiment/listing` ✅

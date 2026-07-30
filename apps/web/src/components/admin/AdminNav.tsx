@@ -16,6 +16,7 @@ import {
   experimentListingPath,
   onboardingPath,
 } from "@/lib/experiment-manager/routes";
+import { settingsPath } from "@/lib/settings/routes";
 
 const LISTING_PATH = experimentListingPath();
 
@@ -87,6 +88,7 @@ export function AdminNav({
             email={email}
             avatarUrl={avatarUrl}
             role={role}
+            settingsHref={settingsPath()}
             variant="dark"
           />
         </Group>
