@@ -176,8 +176,15 @@ export async function calculateExperimentAction(
   }
 
   try {
-    await calculateExperiment(contextId);
+    const exp = await calculateExperiment(contextId);
     revalidatePath(experimentWorkspacePath(contextId));
+    if (!calculationsReady(exp)) {
+      return {
+        success: false,
+        error:
+          "One or more calculations didn't produce a result. Check the formulas and values, then try again.",
+      };
+    }
     return { success: true, data: null };
   } catch (error) {
     return {
