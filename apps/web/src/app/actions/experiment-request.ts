@@ -1,6 +1,7 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
+import { findMissingRequired } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
@@ -63,6 +64,17 @@ export async function requestExperimentAction(
   const resolved = await loadRequestTemplate(input.templateId, input.sampleId);
   if (!resolved) {
     return { success: false, error: t("templateGone") };
+  }
+
+  const missing = findMissingRequired(
+    resolved.template.template.clientForm.questions,
+    input.values,
+  );
+  if (missing.length > 0) {
+    return {
+      success: false,
+      error: `${t("submitFailed")}\n${missing.map((m) => `- ${m.label}`).join("\n")}`,
+    };
   }
 
   let contextId: string;

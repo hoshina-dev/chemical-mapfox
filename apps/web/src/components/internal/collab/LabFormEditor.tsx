@@ -1,7 +1,8 @@
 "use client";
 
-import { Alert, Button, Card, Group, Stack } from "@mantine/core";
+import { Alert, Button, Card, Group, List, Stack } from "@mantine/core";
 import type { FormAnswers, FormDoc } from "@repo/forms";
+import { findMissingRequired } from "@repo/forms";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
 
@@ -58,12 +59,19 @@ export function LabFormEditor({
   const [result, setResult] = useState<{ error?: string; ok?: boolean } | null>(
     null,
   );
+  const [missing, setMissing] = useState<ReturnType<typeof findMissingRequired>>(
+    [],
+  );
 
-  const submit = () =>
+  const submit = () => {
+    const missingRequired = findMissingRequired(doc.questions, values);
+    setMissing(missingRequired);
+    if (missingRequired.length > 0) return;
     startTransition(async () => {
       const res = await submitExperimentAction(contextId);
       setResult(res.success ? { ok: true } : { error: res.error });
     });
+  };
 
   return (
     <Stack gap="md">
@@ -78,7 +86,10 @@ export function LabFormEditor({
           currentConnectionId={connectionId}
           onFocusField={focusField}
           onBlurField={blurField}
-          onEdit={edit}
+          onEdit={(field, value) => {
+            if (missing.length > 0) setMissing([]);
+            edit(field, value);
+          }}
         />
       </Card>
 
@@ -90,6 +101,15 @@ export function LabFormEditor({
       {result?.ok && (
         <Alert color="teal" variant="light" title={t("submittedTitle")}>
           {t("submittedBody")}
+        </Alert>
+      )}
+      {missing.length > 0 && (
+        <Alert color="red" variant="light" title={t("missingRequiredTitle")}>
+          <List size="sm">
+            {missing.map((m) => (
+              <List.Item key={m.path}>{m.label}</List.Item>
+            ))}
+          </List>
         </Alert>
       )}
 

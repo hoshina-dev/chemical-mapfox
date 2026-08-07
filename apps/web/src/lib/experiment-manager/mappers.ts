@@ -1,9 +1,4 @@
-import type {
-  AnswerValue,
-  ExperimentTemplate,
-  FormDoc,
-  Question,
-} from "@repo/forms";
+import type { AnswerValue, ExperimentTemplate, FormDoc } from "@repo/forms";
 import { ExperimentTemplate as ExperimentTemplateSchema } from "@repo/forms";
 
 import type {
@@ -196,37 +191,8 @@ export function experimentDetailToState(
   };
 }
 
-/**
- * experiment-manager validates the template JSON against a JSON Schema in which
- * `description` must be a string. Optional descriptions omitted by the builder
- * arrive as `null` (the backend's Pydantic models default them to None), which
- * the schema rejects. Coerce every form/question description to a string so
- * templates validate. (Question `required` is defaulted server-side, so only
- * description needs this.)
- */
 function normalizeFormDocForApi(doc: FormDoc): FormDocSnapshot {
-  const questions = doc.questions.map((question: Question) => {
-    const normalized: Record<string, unknown> = {
-      ...question,
-      description: question.description ?? "",
-    };
-    if (question.type === "repeatable-group") {
-      normalized.config = {
-        ...question.config,
-        questions: question.config.questions.map((child) => ({
-          ...child,
-          description: child.description ?? "",
-        })),
-      };
-    }
-    return normalized;
-  });
-
-  return {
-    name: doc.name,
-    description: doc.description ?? "",
-    questions,
-  } as FormDocSnapshot;
+  return doc as unknown as FormDocSnapshot;
 }
 
 export function templateToCreate(

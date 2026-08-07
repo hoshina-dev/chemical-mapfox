@@ -1,5 +1,7 @@
 "use server";
 
+import type { AnswerValue } from "@repo/forms";
+import { findMissingRequired } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
@@ -10,8 +12,15 @@ import {
   generateReport,
   getExperiment,
   getReportDownloadUrl,
+  updateExperiment,
+  updateExperimentCalculations,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
+import {
+  experimentDetailToState,
+  extractWireSnapshot,
+  templateToExperimentUpdate,
+} from "@/lib/experiment-manager/mappers";
 import {
   experimentCheckinPath,
   experimentListingPath,
@@ -85,6 +94,25 @@ export async function submitExperimentAction(
         error,
         "Couldn't save the latest values before submitting. Try again.",
       ),
+    };
+  }
+
+  try {
+    const exp = await getExperiment(contextId);
+    const state = experimentDetailToState(exp);
+    const missing = findMissingRequired(state.template.labForm.questions, state.values);
+    if (missing.length > 0) {
+      return {
+        success: false,
+        error: `Fill in all required fields before submitting:\n${missing
+          .map((m) => `- ${m.label}`)
+          .join("\n")}`,
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not verify the submitted values."),
     };
   }
 
@@ -176,13 +204,114 @@ export async function calculateExperimentAction(
   }
 
   try {
-    await calculateExperiment(contextId);
+    const exp = await calculateExperiment(contextId);
     revalidatePath(experimentWorkspacePath(contextId));
+    if (!calculationsReady(exp)) {
+      return {
+        success: false,
+        error:
+          "One or more calculations didn't produce a result. Check the formulas and values, then try again.",
+      };
+    }
     return { success: true, data: null };
   } catch (error) {
     return {
       success: false,
       error: errorMessage(error, "Could not run calculations."),
+    };
+  }
+}
+
+/**
+ * Verify `contextId` is an admin-editable, FINALIZING-stage ticket. Shared by
+ * the "fix values" and "fix formula" actions so both stay restricted to
+ * FINALIZING — never EXPERIMENTING, where the Redis-backed collaborative
+ * editor already owns writes to this experiment.
+ */
+async function requireFinalizingTicket(
+  contextId: string,
+): Promise<{ error: string } | null> {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { error: "You aren't allowed to edit this experiment." };
+  }
+  try {
+    const ticket = await ticketsApi.apiV1TicketsIdGet(contextId);
+    if (ticket.status !== "FINALIZING") {
+      return {
+        error: "This can only be fixed while the ticket is in the Finalizing stage.",
+      };
+    }
+    return null;
+  } catch (error) {
+    return { error: await errorText(error, "Could not verify this ticket's stage.") };
+  }
+}
+
+/**
+ * Fix the lab-form values of a FINALIZING-stage experiment (e.g. a bad reading
+ * caused a calculation error). Writes straight to experiment-manager — no
+ * ticket status change, since ticketing-service has no transition back out of
+ * FINALIZING. Clears any stale calculation results (they were computed from
+ * the old values) so the UI correctly asks for a fresh "Calculate" run.
+ */
+export async function updateExperimentValuesAction(
+  contextId: string,
+  labFormValues: Record<string, AnswerValue>,
+): Promise<ActionResult<null>> {
+  const gate = await requireFinalizingTicket(contextId);
+  if (gate) return { success: false, error: gate.error };
+
+  try {
+    const exp = await getExperiment(contextId);
+    const snapshot = extractWireSnapshot(exp);
+    const calculations = Object.fromEntries(
+      Object.entries(snapshot.calculations).map(([name, calc]) => [
+        name,
+        typeof calc === "string" ? { formula: calc } : { formula: calc.formula },
+      ]),
+    );
+    const values: Record<string, AnswerValue> = {
+      ...(exp.values as Record<string, AnswerValue> | undefined),
+      ...labFormValues,
+    };
+    await updateExperiment(contextId, {
+      ...templateToExperimentUpdate(snapshot, values),
+      calculations,
+    });
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: null };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not save the fixed values."),
+    };
+  }
+}
+
+/**
+ * Fix a FINALIZING-stage experiment's own calculation formula (e.g. a formula
+ * bug like an unguarded division). Scoped to this one experiment via
+ * `PUT /api/experiments/{exp_id}/calculations` — doesn't touch template_id,
+ * doesn't fork a new template version, doesn't affect any other experiment on
+ * the same lineage. The endpoint resets the formula's result server-side, so
+ * (unlike updateExperimentValuesAction) there's no need to strip it here.
+ */
+export async function fixExperimentFormulaAction(
+  contextId: string,
+  calculations: Record<string, { formula: string }>,
+): Promise<ActionResult<null>> {
+  const gate = await requireFinalizingTicket(contextId);
+  if (gate) return { success: false, error: gate.error };
+
+  try {
+    await updateExperimentCalculations(contextId, calculations);
+    revalidatePath(experimentWorkspacePath(contextId));
+    return { success: true, data: null };
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not save the fixed formula."),
     };
   }
 }

@@ -348,7 +348,8 @@
         "outOfDateBody": "Zapisany szablon nie w pełni pasuje do bieżącego schematu formularza; poniższy formularz jest przybliżeniem.",
         "errorTitle": "Nie udało się przesłać zgłoszenia",
         "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
-        "submit": "Prześlij zgłoszenie"
+        "submit": "Prześlij zgłoszenie",
+        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
       },
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
@@ -478,7 +479,8 @@
       "submittedBody": "Eksperyment przesłany do etapu końcowego.",
       "submitToFinalStage": "Prześlij do etapu końcowego",
       "noOneEditing": "Nikt inny obecnie nie edytuje.",
-      "editingNow": "Teraz edytują:"
+      "editingNow": "Teraz edytują:",
+      "missingRequiredTitle": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
     },
     "finalize": {
       "title": "Finalizacja",
@@ -507,7 +509,24 @@
       "genErrorTitle": "Nie udało się wygenerować raportu",
       "closeErrorTitle": "Nie udało się zamknąć zgłoszenia",
       "closeModalTitle": "Zamknąć zgłoszenie?",
-      "closeModalBody": "Spowoduje to oznaczenie zgłoszenia jako zamknięte. Po zamknięciu obliczenia i generowanie raportów nie będą już dostępne."
+      "closeModalBody": "Spowoduje to oznaczenie zgłoszenia jako zamknięte. Po zamknięciu obliczenia i generowanie raportów nie będą już dostępne.",
+      "fixValues": "Popraw wartości",
+      "fixChoiceTitle": "Co wymaga poprawy?",
+      "fixChoiceBody": "Błąd obliczeń może wynikać z błędnej wartości wejściowej albo z błędu w samej formule. Wybierz, co dotyczy tego przypadku.",
+      "fixChoiceValuesTitle": "Wartości wejściowe są błędne",
+      "fixChoiceValuesBody": "Popraw wartości formularza laboratoryjnego tego zgłoszenia (np. błędnie wpisany pomiar). Dotyczy tylko tego eksperymentu.",
+      "editValues": "Edytuj wartości",
+      "fixChoiceFormulaTitle": "Formuła jest błędna",
+      "fixChoiceFormulaBody": "Edytuj formułę(-y) obliczeń tego zgłoszenia bezpośrednio. Dotyczy tylko tego eksperymentu — nie wpływa na współdzielony szablon ani inne eksperymenty.",
+      "editFormula": "Edytuj formułę",
+      "fixValuesModalTitle": "Popraw wartości laboratoryjne",
+      "fixValuesModalBody": "Edytuj poniższe wartości formularza laboratoryjnego i zapisz. Wszelkie istniejące wyniki obliczeń zostaną wyczyszczone, ponieważ zostały obliczone na podstawie starych wartości — uruchom ponownie obliczenia po zapisaniu.",
+      "fixValuesErrorTitle": "Nie udało się zapisać wartości",
+      "saveValues": "Zapisz wartości",
+      "fixFormulaModalTitle": "Popraw formułę obliczeń",
+      "fixFormulaModalBody": "Edytuj poniższą formułę(-y) i zapisz. Zmienia to tylko obliczenia tego eksperymentu — uruchom ponownie obliczenia po zapisaniu, aby zobaczyć nowy wynik.",
+      "fixFormulaErrorTitle": "Nie udało się zapisać formuły",
+      "saveFormula": "Zapisz formułę"
     },
     "actions": {
       "notAllowedSubmit": "Nie masz uprawnień do przesłania tego eksperymentu.",

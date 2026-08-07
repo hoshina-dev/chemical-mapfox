@@ -134,7 +134,12 @@ When(
 
 Then(
   "the user {string} should belong to organization {string}",
-  function (this: ChemFoxWorld, email: string, organizationId: string) {
+  function (this: ChemFoxWorld, email: string, organizationName: string) {
+    // "CHEMFOX_ORG" is a human-readable alias for the fixture's real
+    // CHEMFOX_ORG_ID (a UUID) — keeps the Gherkin spec readable without
+    // hardcoding a UUID that'd go stale if the fixture id ever changes.
+    const organizationId =
+      organizationName === "CHEMFOX_ORG" ? CHEMFOX_ORG_ID : organizationName;
     const user = findUserByEmail(email);
     assert.ok(user, `expected user ${email} to exist in the fixture store`);
     assert.ok(

@@ -211,7 +211,7 @@ describe("experimentDetailToState", () => {
 });
 
 describe("templateToCreate / templateToUpdate", () => {
-  it("coerces null descriptions to empty strings for the API", () => {
+  it("passes null/omitted descriptions through unchanged (backend now accepts them)", () => {
     const withNullDescriptions: ExperimentTemplate = {
       clientForm: {
         name: "Client",
@@ -257,10 +257,10 @@ describe("templateToCreate / templateToUpdate", () => {
       withNullDescriptions,
     );
     expect(create.description).toBeNull();
-    expect(create.clientForm.description).toBe("");
-    expect(create.clientForm.questions[0]?.description).toBe("");
+    expect(create.clientForm.description).toBeNull();
+    expect(create.clientForm.questions[0]?.description).toBeNull();
     const group = create.labForm.questions[0];
-    expect(group?.config?.questions[0]?.description).toBe("");
+    expect(group?.config?.questions[0]?.description).toBeNull();
 
     expect(templateToUpdate({ title: "Ash" }, withNullDescriptions)).toEqual(create);
   });

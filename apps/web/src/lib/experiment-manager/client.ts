@@ -155,6 +155,23 @@ export async function calculateExperiment(expId: string) {
 }
 
 /**
+ * Replace an experiment's own calculation formulas in place — scoped to this
+ * experiment only (doesn't touch template_id/version, doesn't fork a new
+ * template version, doesn't affect other experiments on the same lineage).
+ * Resets each formula's `result` to "" server-side; call `calculateExperiment`
+ * afterward to recompute.
+ */
+export async function updateExperimentCalculations(
+  expId: string,
+  calculations: Record<string, { formula: string }>,
+) {
+  return emFetch<ExperimentDetail>(`/api/experiments/${expId}/calculations`, {
+    method: "PUT",
+    body: JSON.stringify({ calculations }),
+  });
+}
+
+/**
  * Queue PDF report generation (async; returns the queued status). The worker
  * renders from the experiment context and uploads to R2. Rejects with 409 while
  * a generation is already pending/processing.

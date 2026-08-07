@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
   ColorInput,
   Group,
+  List,
   MultiSelect,
   NumberInput,
   PasswordInput,
@@ -32,6 +34,7 @@ import type {
   QuestionId,
   RepeatableGroupQuestion,
 } from "./schema";
+import { findMissingRequired, type MissingRequired } from "./validation";
 
 interface FormRendererProps {
   doc: { name: string; description?: string; questions: Question[] };
@@ -47,6 +50,8 @@ interface FormRendererProps {
   fillDefaults?: boolean;
   submitLabel?: string;
   saveDraftLabel?: string;
+  /** Title of the alert shown when required fields are missing on submit. */
+  missingRequiredTitle?: string;
   onSubmit?: (answers: FormAnswers) => void;
   onSaveDraft?: (answers: FormAnswers) => void;
 }
@@ -144,6 +149,7 @@ export function FormRenderer({
   fillDefaults = true,
   submitLabel = "Submit",
   saveDraftLabel = "Save draft",
+  missingRequiredTitle = "Fill in all required fields",
   onSubmit,
   onSaveDraft,
 }: FormRendererProps) {
@@ -171,11 +177,18 @@ export function FormRenderer({
   }, [doc, lockedValues, initialValues, fillDefaults]);
 
   const [answers, setAnswers] = useState<FormAnswers>(initialAnswers);
+  const [missing, setMissing] = useState<MissingRequired[]>([]);
 
   const [seen, setSeen] = useState(doc);
   if (seen !== doc) {
     setSeen(doc);
     setAnswers(initialAnswers);
+    setMissing([]);
+  }
+
+  function updateAnswers(updater: (prev: FormAnswers) => FormAnswers) {
+    setAnswers(updater);
+    if (missing.length > 0) setMissing([]);
   }
 
   return (
@@ -184,6 +197,9 @@ export function FormRenderer({
       gap="md"
       onSubmit={(e) => {
         e.preventDefault();
+        const missingRequired = findMissingRequired(doc.questions, answers);
+        setMissing(missingRequired);
+        if (missingRequired.length > 0) return;
         onSubmit?.(answers);
       }}
     >
@@ -204,7 +220,7 @@ export function FormRenderer({
             values={answers}
             disabled={readOnly}
             onChange={(childId, idx, v) =>
-              setAnswers((prev) => {
+              updateAnswers((prev) => {
                 const existing = prev[childId];
                 const arr: RepeatableColumn = Array.isArray(existing)
                   ? [...(existing as RepeatableColumn)]
@@ -221,10 +237,20 @@ export function FormRenderer({
             value={answers[q.id]}
             disabled={readOnly || q.id in lockedValues}
             onChange={(value) =>
-              setAnswers((prev) => ({ ...prev, [q.id]: value }))
+              updateAnswers((prev) => ({ ...prev, [q.id]: value }))
             }
           />
         ),
+      )}
+
+      {missing.length > 0 && (
+        <Alert color="red" variant="light" title={missingRequiredTitle}>
+          <List size="sm">
+            {missing.map((m) => (
+              <List.Item key={m.path}>{m.label}</List.Item>
+            ))}
+          </List>
+        </Alert>
       )}
 
       {!readOnly && (
