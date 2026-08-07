@@ -348,7 +348,8 @@
         "outOfDateBody": "Zapisany szablon nie w pełni pasuje do bieżącego schematu formularza; poniższy formularz jest przybliżeniem.",
         "errorTitle": "Nie udało się przesłać zgłoszenia",
         "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
-        "submit": "Prześlij zgłoszenie"
+        "submit": "Prześlij zgłoszenie",
+        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
       },
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
@@ -478,7 +479,8 @@
       "submittedBody": "Eksperyment przesłany do etapu końcowego.",
       "submitToFinalStage": "Prześlij do etapu końcowego",
       "noOneEditing": "Nikt inny obecnie nie edytuje.",
-      "editingNow": "Teraz edytują:"
+      "editingNow": "Teraz edytują:",
+      "missingRequiredTitle": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
     },
     "finalize": {
       "title": "Finalizacja",

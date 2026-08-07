@@ -1,6 +1,7 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
+import { findMissingRequired } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
+  experimentDetailToState,
   extractWireSnapshot,
   templateToExperimentUpdate,
 } from "@/lib/experiment-manager/mappers";
@@ -92,6 +94,25 @@ export async function submitExperimentAction(
         error,
         "Couldn't save the latest values before submitting. Try again.",
       ),
+    };
+  }
+
+  try {
+    const exp = await getExperiment(contextId);
+    const state = experimentDetailToState(exp);
+    const missing = findMissingRequired(state.template.labForm.questions, state.values);
+    if (missing.length > 0) {
+      return {
+        success: false,
+        error: `Fill in all required fields before submitting:\n${missing
+          .map((m) => `- ${m.label}`)
+          .join("\n")}`,
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: errorMessage(error, "Could not verify the submitted values."),
     };
   }
 

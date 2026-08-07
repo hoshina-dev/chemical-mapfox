@@ -348,7 +348,8 @@
         "outOfDateBody": "The stored template didn't fully match the current form schema; the form below is best-effort.",
         "errorTitle": "Could not submit your request",
         "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
-        "submit": "Submit request"
+        "submit": "Submit request",
+        "missingRequired": "Fill in all required fields before submitting"
       },
       "errors": {
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
@@ -478,7 +479,8 @@
       "submittedBody": "Experiment submitted to the final stage.",
       "submitToFinalStage": "Submit to final stage",
       "noOneEditing": "No one else is editing right now.",
-      "editingNow": "Editing now:"
+      "editingNow": "Editing now:",
+      "missingRequiredTitle": "Fill in all required fields before submitting"
     },
     "finalize": {
       "title": "Finalize",
