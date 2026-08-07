@@ -3,14 +3,20 @@
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Card,
+  Drawer,
   Group,
+  Input,
+  LoadingOverlay,
   Modal,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
+import type { Calculations, FormAnswers, FormDoc } from "@repo/forms";
+import { FormRenderer } from "@repo/forms";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -18,14 +24,19 @@ import { useEffect, useState, useTransition } from "react";
 import {
   calculateExperimentAction,
   closeTicketAction,
+  fixExperimentFormulaAction,
   generateReportAction,
   getReportStatusAction,
+  updateExperimentValuesAction,
 } from "@/app/actions/experiment";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import {
   experimentReportDownloadPath,
   experimentReportViewPath,
 } from "@/lib/experiment-manager/routes";
+
+import { CompactFormulaEditor } from "@/components/experiment/builder/CompactFormulaEditor";
+import { MonacoFormulaEditor } from "@/components/experiment/builder/MonacoFormulaEditor";
 
 /** While in one of these the report worker is still running — poll, don't act. */
 function isInFlight(status: string | null): boolean {
@@ -64,6 +75,11 @@ export interface FinalizingActionsProps {
   calculationsReady: boolean;
   initialReportStatus: string | null;
   reportGeneratedAt: string | null;
+  /** Lab-form doc + current values, so a failed calculation's inputs can be fixed in place. */
+  labForm: FormDoc;
+  labValues: FormAnswers;
+  /** This experiment's own calculations, so a broken formula can be fixed in place. */
+  calculations: Calculations;
 }
 
 /**
@@ -79,6 +95,9 @@ export function FinalizingActions({
   calculationsReady,
   initialReportStatus,
   reportGeneratedAt,
+  labForm,
+  labValues,
+  calculations,
 }: FinalizingActionsProps) {
   const t = useTranslations("staff.finalize");
   const tCommon = useTranslations("common");
@@ -94,6 +113,17 @@ export function FinalizingActions({
   const [closePending, startClose] = useTransition();
   const [closeError, setCloseError] = useState<string | null>(null);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
+
+  const [fixChoiceModalOpen, setFixChoiceModalOpen] = useState(false);
+  const [fixValuesModalOpen, setFixValuesModalOpen] = useState(false);
+  const [fixValuesPending, startFixValues] = useTransition();
+  const [fixValuesError, setFixValuesError] = useState<string | null>(null);
+
+  const [fixFormulaModalOpen, setFixFormulaModalOpen] = useState(false);
+  const [fixFormulaPending, startFixFormula] = useTransition();
+  const [fixFormulaError, setFixFormulaError] = useState<string | null>(null);
+  const [formulaDrafts, setFormulaDrafts] = useState<Record<string, string>>({});
+  const [activeFormulaName, setActiveFormulaName] = useState<string | null>(null);
 
   const inFlight = isInFlight(reportStatus);
   // Report generation depends on calculations: allowed once they've been run
@@ -182,6 +212,51 @@ export function FinalizingActions({
     });
   };
 
+  const onFixValues = (answers: FormAnswers) =>
+    startFixValues(async () => {
+      setFixValuesError(null);
+      const res = await updateExperimentValuesAction(contextId, answers);
+      if (!res.success) {
+        setFixValuesError(res.error);
+        return;
+      }
+      // The saved values invalidate any prior calculation results, so drop the
+      // client's optimistic "done" flag too — Calculate must run again.
+      setCalcDoneThisSession(false);
+      setCalcError(null);
+      setFixValuesModalOpen(false);
+      router.refresh();
+    });
+
+  const openFixFormula = () => {
+    setFormulaDrafts(
+      Object.fromEntries(
+        Object.entries(calculations).map(([name, calc]) => [name, calc.formula]),
+      ),
+    );
+    setFixFormulaError(null);
+    setFixChoiceModalOpen(false);
+    setFixFormulaModalOpen(true);
+  };
+
+  const onFixFormula = () =>
+    startFixFormula(async () => {
+      setFixFormulaError(null);
+      const payload = Object.fromEntries(
+        Object.entries(formulaDrafts).map(([name, formula]) => [name, { formula }]),
+      );
+      const res = await fixExperimentFormulaAction(contextId, payload);
+      if (!res.success) {
+        setFixFormulaError(res.error);
+        return;
+      }
+      // The result was reset server-side; drop the optimistic "done" flag too.
+      setCalcDoneThisSession(false);
+      setCalcError(null);
+      setFixFormulaModalOpen(false);
+      router.refresh();
+    });
+
   const generateLabel =
     isReady(reportStatus) || isFailed(reportStatus)
       ? t("regenerateReport")
@@ -251,6 +326,17 @@ export function FinalizingActions({
           >
             {t("closeTicket")}
           </Button>
+          {calcError && labForm.questions.length > 0 && (
+            <Button
+              variant="subtle"
+              color="orange"
+              onClick={() => setFixChoiceModalOpen(true)}
+              disabled={closePending}
+              size="sm"
+            >
+              {t("fixValues")}
+            </Button>
+          )}
         </Group>
 
         <Text size="xs" c="dimmed">
@@ -330,6 +416,159 @@ export function FinalizingActions({
           </Group>
         </Stack>
       </Modal>
+      <Modal
+        opened={fixChoiceModalOpen}
+        onClose={() => setFixChoiceModalOpen(false)}
+        title={t("fixChoiceTitle")}
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm" c="dimmed">
+            {t("fixChoiceBody")}
+          </Text>
+          <Card withBorder radius="md" padding="sm">
+            <Stack gap={4}>
+              <Text size="sm" fw={500}>
+                {t("fixChoiceValuesTitle")}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {t("fixChoiceValuesBody")}
+              </Text>
+              <Button
+                mt="xs"
+                size="sm"
+                onClick={() => {
+                  setFixChoiceModalOpen(false);
+                  setFixValuesModalOpen(true);
+                }}
+              >
+                {t("editValues")}
+              </Button>
+            </Stack>
+          </Card>
+          {Object.keys(calculations).length > 0 && (
+            <Card withBorder radius="md" padding="sm">
+              <Stack gap={4}>
+                <Text size="sm" fw={500}>
+                  {t("fixChoiceFormulaTitle")}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {t("fixChoiceFormulaBody")}
+                </Text>
+                <Button mt="xs" size="sm" variant="light" onClick={openFixFormula}>
+                  {t("editFormula")}
+                </Button>
+              </Stack>
+            </Card>
+          )}
+        </Stack>
+      </Modal>
+      <Modal
+        opened={fixValuesModalOpen}
+        onClose={() => setFixValuesModalOpen(false)}
+        title={t("fixValuesModalTitle")}
+        centered
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text size="sm" c="dimmed">
+            {t("fixValuesModalBody")}
+          </Text>
+          {fixValuesError && (
+            <Alert
+              color="red"
+              variant="light"
+              title={t("fixValuesErrorTitle")}
+              style={{ whiteSpace: "pre-line" }}
+            >
+              {fixValuesError}
+            </Alert>
+          )}
+          <Box pos="relative">
+            <LoadingOverlay visible={fixValuesPending} zIndex={1000} />
+            <FormRenderer
+              doc={labForm}
+              initialValues={labValues}
+              submitLabel={t("saveValues")}
+              onSubmit={onFixValues}
+            />
+          </Box>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={fixFormulaModalOpen}
+        onClose={() => setFixFormulaModalOpen(false)}
+        title={t("fixFormulaModalTitle")}
+        centered
+        size="lg"
+      >
+        <Stack gap="md">
+          <Text size="sm" c="dimmed">
+            {t("fixFormulaModalBody")}
+          </Text>
+          {fixFormulaError && (
+            <Alert
+              color="red"
+              variant="light"
+              title={t("fixFormulaErrorTitle")}
+              style={{ whiteSpace: "pre-line" }}
+            >
+              {fixFormulaError}
+            </Alert>
+          )}
+          <Box pos="relative">
+            <LoadingOverlay visible={fixFormulaPending} zIndex={1000} />
+            <Stack gap="sm">
+              {Object.keys(formulaDrafts).map((name) => (
+                <Input.Wrapper key={name} label={name}>
+                  <CompactFormulaEditor
+                    value={formulaDrafts[name] ?? ""}
+                    onChange={(value) =>
+                      setFormulaDrafts((prev) => ({ ...prev, [name]: value }))
+                    }
+                    onExpand={() => setActiveFormulaName(name)}
+                  />
+                </Input.Wrapper>
+              ))}
+            </Stack>
+          </Box>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="subtle"
+              onClick={() => setFixFormulaModalOpen(false)}
+              disabled={fixFormulaPending}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button onClick={onFixFormula} loading={fixFormulaPending}>
+              {t("saveFormula")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <Drawer
+        opened={activeFormulaName !== null}
+        onClose={() => setActiveFormulaName(null)}
+        position="right"
+        size="lg"
+        title={activeFormulaName}
+      >
+        {activeFormulaName !== null && (
+          <Stack gap="sm">
+            <MonacoFormulaEditor
+              value={formulaDrafts[activeFormulaName] ?? ""}
+              onChange={(value) =>
+                setFormulaDrafts((prev) => ({ ...prev, [activeFormulaName]: value }))
+              }
+            />
+            <Group justify="flex-end">
+              <Button onClick={() => setActiveFormulaName(null)}>
+                {tCommon("done")}
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Drawer>
     </Card>
   );
 }

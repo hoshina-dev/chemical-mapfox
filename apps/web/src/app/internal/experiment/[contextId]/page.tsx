@@ -153,6 +153,9 @@ export default async function ExperimentWorkspacePage({
                   calculationsReady={calculationsReady}
                   initialReportStatus={state.reportStatus}
                   reportGeneratedAt={state.reportGeneratedAt}
+                  labForm={state.template.labForm}
+                  labValues={state.values}
+                  calculations={state.template.calculations}
                 />
               )}
 
