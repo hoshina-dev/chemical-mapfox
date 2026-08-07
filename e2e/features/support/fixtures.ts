@@ -32,8 +32,14 @@ export interface Database {
 
 export const db: Database = { users: [], orgs: [] };
 
-/** Fixed ChemFox org id — CUSTAPI is org-aware; ChemFox uses one dummy org. */
-export const CHEMFOX_ORG_ID = "CHEMFOX_ORG";
+/**
+ * Fixed ChemFox org id — CUSTAPI is org-aware; ChemFox uses one dummy org.
+ * Must match `CHEMFOX_ORG_ID` in apps/web/src/lib/custapi/chemfoxOrg.ts —
+ * that's the real id the app sends when assigning a new user to an org, and
+ * the stub server (modules/custapi.ts) 404s on `POST /organizations/{id}/members`
+ * for anything it hasn't seeded, so a mismatch here silently breaks registration.
+ */
+export const CHEMFOX_ORG_ID = "daef78e7-6251-4b51-92cd-c8fc16fb6cb7";
 
 let idCounter = 0;
 function nextId(prefix: string): string {
