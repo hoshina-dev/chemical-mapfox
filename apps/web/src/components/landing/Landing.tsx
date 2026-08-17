@@ -451,7 +451,7 @@ export function Landing({
                   icon={<PhoneIcon />}
                   label={t("contact.phone")}
                   value={t("contact.phoneValue")}
-                  href="tel:+48220000000"
+                  href="tel:+48537848861"
                 />
                 <ContactRow
                   icon={<PinIcon />}
