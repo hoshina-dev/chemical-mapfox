@@ -204,12 +204,12 @@
       "phone": "Telefon",
       "phoneValue": "+48 537 848 861",
       "laboratory": "Laboratorium",
-      "laboratoryValue": "ul. Laboratoryjna 1, 00-001 Warszawa",
       "hours": "Godziny otwarcia",
-      "hoursValue": "Pon–Pt, 8:00–16:00"
+      "hoursValue": "6:00–18:00 (GMT+2)"
     },
     "footer": {
-      "rights": "© {year} {legalName}. Wszelkie prawa zastrzeżone."
+      "rights": "© {year} {legalName}. Wszelkie prawa zastrzeżone.",
+      "termsPdf": "Warunki Swiadczenia Uslug - Pobierz Plik"
     }
   },
   "auth": {
@@ -891,10 +891,10 @@
   },
   "docs": {
     "layout": {
-      "description": "Jak prowadzić eksperymenty w Harper Anslitics — przewodniki dla personelu i dokumentacja komponentów formularzy.",
+      "description": "Jak prowadzić eksperymenty w Harper Analytics — przewodniki dla personelu i dokumentacja komponentów formularzy.",
       "navAriaLabel": "Dokumentacja dla personelu",
       "clientTitle": "Pomoc",
-      "clientDescription": "Jak zamawiać eksperymenty, śledzić postęp i wysyłać próbki z Harper Anslitics.",
+      "clientDescription": "Jak zamawiać eksperymenty, śledzić postęp i wysyłać próbki z Harper Analytics.",
       "clientNavAriaLabel": "Dokumentacja pomocy"
     },
     "sidebar": {
@@ -1388,7 +1388,7 @@
     },
     "client": {
       "overview": {
-        "title": "Jak korzystać z Harper Anslitics",
+        "title": "Jak korzystać z Harper Analytics",
         "subtitle": "Zamów badania laboratoryjne, wyślij próbkę z etykietą QR i śledź postęp, aż certyfikowany raport będzie gotowy.",
         "sections": {
           "contents": {

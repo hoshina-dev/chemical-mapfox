@@ -11,7 +11,7 @@ Feature: Requester help documentation
   Scenario: A client sees the help overview
     Given I am signed in as "client@example.com" with password "password123"
     When I visit "/experiment/docs"
-    Then I should see the "How to use Harper Anslitics" heading
+    Then I should see the "How to use Harper Analytics" heading
 
   Scenario: A client can open a how-to guide
     Given I am signed in as "client@example.com" with password "password123"

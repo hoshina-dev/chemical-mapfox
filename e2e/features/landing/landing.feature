@@ -1,5 +1,5 @@
 Feature: Landing page
-  The public homepage at "/" introduces Harper Anslitics laboratory services to
+  The public homepage at "/" introduces Harper Analytics laboratory services to
   visitors. It is reachable without signing in; call-to-action controls send
   unauthenticated visitors to sign-in.
 
@@ -42,3 +42,15 @@ Feature: Landing page
     Then I should be on the landing page
     And I should see the "Go to your workspace" call to action
     And I should not see the "Sign in" link
+
+  Scenario: The homepage shows laboratory contact details and the terms PDF
+    Given I am not signed in
+    When I visit "/"
+    Then I should see the contact details:
+      | Email      | laboratorium@harperanalytics.com |
+      | Laboratory | ul. Dojazdowa 23                 |
+      | Hours      | 6:00 to 18:00 (GMT+2)            |
+    And I should see "Harper Analytics Sp. z o.o."
+    And I should see "43-100 Tychy"
+    And I should see a link "laboratorium@harperanalytics.com" pointing to "mailto:laboratorium@harperanalytics.com"
+    And I should see a link "Warunki Swiadczenia Uslug - Pobierz Plik" pointing to "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf"

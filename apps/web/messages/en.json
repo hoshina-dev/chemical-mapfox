@@ -204,12 +204,12 @@
       "phone": "Phone",
       "phoneValue": "+48 537 848 861",
       "laboratory": "Laboratory",
-      "laboratoryValue": "ul. Laboratoryjna 1, 00-001 Warszawa",
       "hours": "Hours",
-      "hoursValue": "Mon–Fri, 8:00–16:00"
+      "hoursValue": "6:00 to 18:00 (GMT+2)"
     },
     "footer": {
-      "rights": "© {year} {legalName}. All rights reserved."
+      "rights": "© {year} {legalName}. All rights reserved.",
+      "termsPdf": "Warunki Swiadczenia Uslug - Pobierz Plik"
     }
   },
   "auth": {
@@ -891,10 +891,10 @@
   },
   "docs": {
     "layout": {
-      "description": "How to run experiments in Harper Anslitics — staff guides and the form component reference.",
+      "description": "How to run experiments in Harper Analytics — staff guides and the form component reference.",
       "navAriaLabel": "Staff documentation",
       "clientTitle": "Help",
-      "clientDescription": "How to request experiments, track progress, and ship samples with Harper Anslitics.",
+      "clientDescription": "How to request experiments, track progress, and ship samples with Harper Analytics.",
       "clientNavAriaLabel": "Help documentation"
     },
     "sidebar": {
@@ -1388,7 +1388,7 @@
     },
     "client": {
       "overview": {
-        "title": "How to use Harper Anslitics",
+        "title": "How to use Harper Analytics",
         "subtitle": "Request lab experiments, ship your sample with a QR label, and follow progress until the certified report is ready.",
         "sections": {
           "contents": {

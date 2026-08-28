@@ -204,12 +204,12 @@
       "phone": "โทรศัพท์",
       "phoneValue": "+48 537 848 861",
       "laboratory": "ห้องปฏิบัติการ",
-      "laboratoryValue": "ul. Laboratoryjna 1, 00-001 Warszawa",
       "hours": "เวลาทำการ",
-      "hoursValue": "จันทร์–ศุกร์, 8:00–16:00"
+      "hoursValue": "6:00–18:00 (GMT+2)"
     },
     "footer": {
-      "rights": "© {year} {legalName} สงวนลิขสิทธิ์"
+      "rights": "© {year} {legalName} สงวนลิขสิทธิ์",
+      "termsPdf": "Warunki Swiadczenia Uslug - Pobierz Plik"
     }
   },
   "auth": {
@@ -891,10 +891,10 @@
   },
   "docs": {
     "layout": {
-      "description": "วิธีดำเนินการทดลองใน Harper Anslitics — คู่มือสำหรับเจ้าหน้าที่และข้อมูลอ้างอิงคอมโพเนนต์แบบฟอร์ม",
+      "description": "วิธีดำเนินการทดลองใน Harper Analytics — คู่มือสำหรับเจ้าหน้าที่และข้อมูลอ้างอิงคอมโพเนนต์แบบฟอร์ม",
       "navAriaLabel": "เอกสารสำหรับเจ้าหน้าที่",
       "clientTitle": "ช่วยเหลือ",
-      "clientDescription": "วิธีขอทำการทดลอง ติดตามความคืบหน้า และส่งตัวอย่างกับ Harper Anslitics",
+      "clientDescription": "วิธีขอทำการทดลอง ติดตามความคืบหน้า และส่งตัวอย่างกับ Harper Analytics",
       "clientNavAriaLabel": "เอกสารช่วยเหลือ"
     },
     "sidebar": {
@@ -1388,7 +1388,7 @@
     },
     "client": {
       "overview": {
-        "title": "วิธีใช้ Harper Anslitics",
+        "title": "วิธีใช้ Harper Analytics",
         "subtitle": "ขอทำการทดลองในห้องปฏิบัติการ จัดส่งตัวอย่างพร้อมฉลาก QR และติดตามความคืบหน้าจนกว่ารายงานที่ได้รับการรับรองจะพร้อม",
         "sections": {
           "contents": {

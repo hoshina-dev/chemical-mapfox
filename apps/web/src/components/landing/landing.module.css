@@ -388,12 +388,24 @@
   letter-spacing: 0.06em;
 }
 
+.contactValue {
+  white-space: pre-line;
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
   padding: 28px 0;
   border-top: 1px solid var(--border);
   background: #fff;
+}
+
+.footerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
 }
 
 /* ---------- Hero artwork ---------- */

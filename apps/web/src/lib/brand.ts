@@ -1,11 +1,16 @@
 /** User-facing product / company identity. */
 export const BRAND = {
   /** Short wordmark for nav, metadata, and compact chrome. */
-  name: "Harper Anslitics",
+  name: "Harper Analytics",
   /** Legal entity (Spółka z o.o.). */
-  legalName: "Harper Anslitics Sp. z o.o.",
+  legalName: "Harper Analytics Sp. z o.o.",
   /** Optional tag beside the wordmark on marketing surfaces. */
   tagline: "Sp. z o.o.",
-  email: "hello@harperanslitics.pl",
-  docsTitle: "Harper Anslitics Docs",
+  email: "laboratorium@harperanalytics.com",
+  /** Postal address; not translated. */
+  address: "Harper Analytics Sp. z o.o.\nul. Dojazdowa 23\n43-100 Tychy",
+  docsTitle: "Harper Analytics Docs",
+  /** Sample-preparation conditions PDF on the public landing page. */
+  termsPdfUrl:
+    "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf",
 } as const;

@@ -456,7 +456,7 @@ export function Landing({
                 <ContactRow
                   icon={<PinIcon />}
                   label={t("contact.laboratory")}
-                  value={t("contact.laboratoryValue")}
+                  value={BRAND.address}
                 />
                 <ContactRow
                   icon={<ClockIcon />}
@@ -471,20 +471,21 @@ export function Landing({
 
       <footer className={classes.footer}>
         <Container size="xl">
-          <Group justify="space-between" align="center" wrap="wrap" gap="md">
+          <div className={classes.footerInner}>
             <Group gap="xs">
               <BrandIcon size={18} className={classes.brandIcon} />
               <Text fw={700} fz="sm">
                 {BRAND.name}
               </Text>
             </Group>
+            <TermsPdfLink label={t("footer.termsPdf")} />
             <Text fz="xs" c="dimmed">
               {t("footer.rights", {
                 year: new Date().getFullYear(),
                 legalName: BRAND.legalName,
               })}
             </Text>
-          </Group>
+          </div>
         </Container>
       </footer>
     </div>
@@ -536,6 +537,21 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
+function TermsPdfLink({ label }: { label: string }) {
+  return (
+    <Anchor
+      href={BRAND.termsPdfUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      fz="sm"
+      fw={500}
+      c="green.8"
+    >
+      {label}
+    </Anchor>
+  );
+}
+
 function ContactRow({
   icon,
   label,
@@ -557,11 +573,13 @@ function ContactRow({
           {label}
         </Text>
         {href ? (
-          <Anchor href={href} c="dark" fw={500}>
+          <Anchor href={href} c="dark" fw={500} className={classes.contactValue}>
             {value}
           </Anchor>
         ) : (
-          <Text fw={500}>{value}</Text>
+          <Text fw={500} className={classes.contactValue}>
+            {value}
+          </Text>
         )}
       </div>
     </div>

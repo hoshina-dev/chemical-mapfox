@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { Then, When } from "@cucumber/cucumber";
+import { DataTable, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
 import type { ChemFoxWorld } from "../support/world.js";
@@ -148,5 +148,29 @@ Then(
       .getByText(new RegExp(escapeRegExp(experimentName)))
       .first()
       .waitFor({ state: "visible", timeout: 15_000 });
+  },
+);
+
+Then(
+  "I should see the contact details:",
+  async function (this: ChemFoxWorld, table: DataTable) {
+    const section = this.page.locator("#contact");
+    await section.waitFor({ state: "visible", timeout: 15_000 });
+    for (const [label, value] of Object.entries(table.rowsHash())) {
+      const row = section
+        .locator("div")
+        .filter({ has: this.page.getByText(label, { exact: true }) })
+        .filter({ hasText: value });
+      await row.first().waitFor({ state: "visible", timeout: 15_000 });
+    }
+  },
+);
+
+Then(
+  "I should see a link {string} pointing to {string}",
+  async function (this: ChemFoxWorld, label: string, href: string) {
+    const link = this.page.getByRole("link", { name: label, exact: true });
+    await link.waitFor({ state: "visible", timeout: 15_000 });
+    assert.equal(await link.getAttribute("href"), href);
   },
 );
