@@ -38,12 +38,11 @@ any other function prop, that element belongs in a `"use client"` component.
 ## Internationalization (i18n)
 
 The web app uses **`next-intl`** with **no locale URL prefixes**. Locales:
-`en`, `pl`. Polish is the **default UI language** when `NEXT_LOCALE` is unset
-(browser `Accept-Language` is ignored). English is the **message catalog
-source of truth** and deep-merge fallback. Preference is the `NEXT_LOCALE`
-cookie (set to `pl` by `apps/web/src/proxy.ts` on first visit; changed via
-`setLocaleAction` + `LanguageSwitcher`). Config: `apps/web/src/i18n/`
-(`config.ts`, `request.ts`, `mergeMessages.ts`).
+`en`, `pl`. English is the **message catalog source of truth**, merge fallback,
+and default when `Accept-Language` matches nothing. Preference is the
+`NEXT_LOCALE` cookie (set by `apps/web/src/proxy.ts` from `Accept-Language` on
+first visit; changed via `setLocaleAction` + `LanguageSwitcher`). Config:
+`apps/web/src/i18n/` (`config.ts`, `request.ts`, `mergeMessages.ts`).
 
 ### Message catalogs
 
@@ -103,10 +102,10 @@ messages. Prefer that helper for component tests. Mock
 (Gherkin steps and Playwright locators use `en.json` strings). Do not write
 locale-parameterized scenarios or assert Polish labels in e2e — **except**
 the dedicated language-switch feature (`e2e/features/i18n/`), which must verify
-localized copy, the Polish site default, and the `NEXT_LOCALE` cookie. Locale
-coverage for PL otherwise is via message catalogs + manual/spot checks. Hooks
-set `NEXT_LOCALE=en` so the rest of the suite stays English; tag default-locale
-scenarios `@site-default-locale` so they skip that cookie.
+localized copy and the `NEXT_LOCALE` cookie. Locale coverage for PL otherwise
+is via message catalogs + manual/spot checks. Hooks set `NEXT_LOCALE=en` so the
+rest of the suite stays English (Playwright `Accept-Language` is typically
+English too).
 
 ## Schema source of truth
 

@@ -23,8 +23,6 @@ import { startWebServer, stopWebServer } from "./web-server.js";
 import type { ChemFoxWorld } from "./world.js";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
-/** Skip the English cookie so scenarios can observe the Polish site default. */
-const SITE_DEFAULT_LOCALE_TAG = "@site-default-locale";
 
 // Booting a dev server + navigating on-demand-compiled routes is slow.
 setDefaultTimeout(60_000);
@@ -52,26 +50,17 @@ AfterAll(async function () {
   await stopStubServer();
 });
 
-Before(async function (this: ChemFoxWorld, { pickle }) {
+Before(async function (this: ChemFoxWorld) {
   resetDb();
   resetStubs();
-  const useSiteDefault = pickle.tags.some(
-    (tag) => tag.name === SITE_DEFAULT_LOCALE_TAG,
-  );
-  this.context = await browser.newContext(
-    useSiteDefault
-      ? { extraHTTPHeaders: { "Accept-Language": "en-US,en;q=0.9" } }
-      : {},
-  );
-  if (!useSiteDefault) {
-    await this.context.addCookies([
-      {
-        name: LOCALE_COOKIE,
-        value: "en",
-        url: runtime.baseUrl,
-      },
-    ]);
-  }
+  this.context = await browser.newContext();
+  await this.context.addCookies([
+    {
+      name: LOCALE_COOKIE,
+      value: "en",
+      url: runtime.baseUrl,
+    },
+  ]);
   this.page = await this.context.newPage();
 });
 

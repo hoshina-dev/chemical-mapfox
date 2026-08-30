@@ -1,14 +1,12 @@
-/** Supported UI locales. English is the message-catalog fallback. */
+/** Supported UI locales. English is the default and message fallback. */
 export const locales = ["en", "pl"] as const;
 
 export type AppLocale = (typeof locales)[number];
 
-/** First-visit UI locale when `NEXT_LOCALE` is unset or unsupported. */
-export const defaultLocale: AppLocale = "pl";
+export const defaultLocale: AppLocale = "en";
 
 /**
  * Locale used as the message-catalog merge base and docs-screenshot fallback.
- * Independent of {@link defaultLocale} (the UI default is Polish).
  */
 export const messageFallbackLocale: AppLocale = "en";
 
@@ -19,9 +17,28 @@ export function isAppLocale(value: string | undefined | null): value is AppLocal
   return value != null && (locales as readonly string[]).includes(value);
 }
 
-/** Cookie wins; otherwise Polish. Browser `Accept-Language` is ignored. */
-export function localeFromCookie(
-  value: string | undefined | null,
-): AppLocale {
-  return isAppLocale(value) ? value : defaultLocale;
+/**
+ * Pick the best supported locale from an Accept-Language header value.
+ * Falls back to English when nothing matches.
+ */
+export function negotiateLocale(acceptLanguage: string | null): AppLocale {
+  if (!acceptLanguage) return defaultLocale;
+
+  const preferred = acceptLanguage.split(",").map((part) => {
+    const [tag, ...params] = part.trim().split(";");
+    const qParam = params.find((p) => p.trim().startsWith("q="));
+    const q = qParam ? Number(qParam.trim().slice(2)) : 1;
+    return { tag: (tag ?? "").trim().toLowerCase(), q: Number.isFinite(q) ? q : 1 };
+  });
+
+  preferred.sort((a, b) => b.q - a.q);
+
+  for (const { tag } of preferred) {
+    if (!tag) continue;
+    if (isAppLocale(tag)) return tag;
+    const base = tag.split("-")[0];
+    if (isAppLocale(base)) return base;
+  }
+
+  return defaultLocale;
 }

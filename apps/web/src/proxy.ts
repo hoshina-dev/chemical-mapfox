@@ -5,16 +5,17 @@ import { SESSION_COOKIE, SESSION_DURATION_MS } from "@/lib/auth/constants";
 import { sessionCookieOptions } from "@/lib/auth/cookieOptions";
 import { decryptSession } from "@/lib/auth/sessionCrypto";
 import {
-  defaultLocale,
   isAppLocale,
   LOCALE_COOKIE,
+  negotiateLocale,
 } from "@/i18n/config";
 
 function withLocaleCookie(req: NextRequest, res: NextResponse): NextResponse {
   const existing = req.cookies.get(LOCALE_COOKIE)?.value;
   if (isAppLocale(existing)) return res;
 
-  res.cookies.set(LOCALE_COOKIE, defaultLocale, {
+  const locale = negotiateLocale(req.headers.get("accept-language"));
+  res.cookies.set(LOCALE_COOKIE, locale, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
     sameSite: "lax",

@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { localeFromCookie } from "@/i18n/config";
+import { negotiateLocale } from "@/i18n/config";
 import { mergeMessages } from "@/i18n/mergeMessages";
 
-describe("localeFromCookie", () => {
-  it("honours a supported NEXT_LOCALE cookie", () => {
-    expect(localeFromCookie("en")).toBe("en");
-    expect(localeFromCookie("pl")).toBe("pl");
+describe("negotiateLocale", () => {
+  it("prefers an exact supported locale", () => {
+    expect(negotiateLocale("en,pl;q=0.8")).toBe("en");
+    expect(negotiateLocale("pl-PL,en;q=0.5")).toBe("pl");
   });
 
-  it("defaults to Polish when the cookie is missing or unsupported", () => {
-    expect(localeFromCookie(null)).toBe("pl");
-    expect(localeFromCookie(undefined)).toBe("pl");
-    expect(localeFromCookie("th")).toBe("pl");
-    expect(localeFromCookie("de")).toBe("pl");
+  it("falls back to English when nothing matches", () => {
+    expect(negotiateLocale(null)).toBe("en");
+    expect(negotiateLocale("de-DE,fr;q=0.9")).toBe("en");
+    expect(negotiateLocale("th")).toBe("en");
   });
 });
 

@@ -1,10 +1,11 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
 import {
+  isAppLocale,
   LOCALE_COOKIE,
-  localeFromCookie,
   messageFallbackLocale,
+  negotiateLocale,
   type AppLocale,
 } from "./config";
 import "./global";
@@ -20,7 +21,11 @@ async function loadMessages(locale: AppLocale) {
 
 export default getRequestConfig(async () => {
   const store = await cookies();
-  const locale = localeFromCookie(store.get(LOCALE_COOKIE)?.value);
+  const cookieLocale = store.get(LOCALE_COOKIE)?.value;
+  const headerStore = await headers();
+  const locale: AppLocale = isAppLocale(cookieLocale)
+    ? cookieLocale
+    : negotiateLocale(headerStore.get("accept-language"));
 
   return {
     locale,
