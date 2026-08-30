@@ -33,7 +33,8 @@ function generateUniqueFilename(originalFilename: string): string {
 /**
  * Uploads a file to S3/R2 and returns the public URL.
  * Env: S3_BUCKET_NAME, S3_ENDPOINT, S3_REGION, S3_ACCESS_KEY, S3_SECRET_KEY,
- *      S3_PUBLIC_URL (preferred) or S3_ENDPOINT for the public base.
+ *      S3_PUBLIC_URL (preferred, e.g. CloudFront) or S3_ENDPOINT for the
+ *      public base.
  *
  * For AWS execution-role auth, leave S3_ACCESS_KEY and S3_SECRET_KEY unset so
  * the SDK can use its default credential provider chain.
