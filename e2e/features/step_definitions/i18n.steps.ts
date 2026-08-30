@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { Then, When } from "@cucumber/cucumber";
+import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator, Page } from "playwright";
 
 import type { ChemFoxWorld } from "../support/world.js";
