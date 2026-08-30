@@ -24,7 +24,7 @@ function resolvePublicFile(publicPath: string): string | null {
     join(process.cwd(), "apps/web/public", relative),
   ];
   for (const candidate of candidates) {
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(/* turbopackIgnore: true */ candidate)) return candidate;
   }
   return null;
 }
