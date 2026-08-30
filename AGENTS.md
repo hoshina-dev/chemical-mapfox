@@ -38,19 +38,21 @@ any other function prop, that element belongs in a `"use client"` component.
 ## Internationalization (i18n)
 
 The web app uses **`next-intl`** with **no locale URL prefixes**. Locales:
-`en` (default + message fallback), `pl`, `th`. Preference is the `NEXT_LOCALE`
-cookie (set by `apps/web/src/proxy.ts` from `Accept-Language` on first visit;
-changed via `setLocaleAction` + `LanguageSwitcher`). Config:
-`apps/web/src/i18n/` (`config.ts`, `request.ts`, `mergeMessages.ts`).
+`en`, `pl`. Polish is the **default UI language** when `NEXT_LOCALE` is unset
+(browser `Accept-Language` is ignored). English is the **message catalog
+source of truth** and deep-merge fallback. Preference is the `NEXT_LOCALE`
+cookie (set to `pl` by `apps/web/src/proxy.ts` on first visit; changed via
+`setLocaleAction` + `LanguageSwitcher`). Config: `apps/web/src/i18n/`
+(`config.ts`, `request.ts`, `mergeMessages.ts`).
 
 ### Message catalogs
 
 - **Source of truth:** `apps/web/messages/en.json` — every user-facing string
   belongs here first.
-- **Translations:** `apps/web/messages/pl.json` and `th.json` must mirror the
-  **same nested key tree**. Incomplete locales are deep-merged onto English at
-  runtime (`mergeMessages`), but **do not rely on that** — when you add or
-  change a key, update **all three** files in the same change.
+- **Translations:** `apps/web/messages/pl.json` must mirror the **same nested
+  key tree**. Incomplete locales are deep-merged onto English at runtime
+  (`mergeMessages`), but **do not rely on that** — when you add or change a
+  key, update **both** files in the same change.
 - Top-level namespaces (pick the closest; add a nested group rather than a new
   top-level unless nothing fits): `meta`, `common`, `landing`, `auth`, `status`,
   `experiment`, `staff`, `builder`, `pdfEditor`, `docs`, `forms`.
@@ -59,7 +61,7 @@ changed via `setLocaleAction` + `LanguageSwitcher`). Config:
 
 1. **No hardcoded English** in JSX, alerts, buttons, placeholders, `aria-label`s,
    `confirm()`, Zod/`message:` validation, or server-action user errors.
-2. Add the key to `en.json`, then accurate `pl` / `th` translations (same
+2. Add the key to `en.json`, then an accurate `pl` translation (same
    placeholders and ICU shape).
 3. Wire the UI:
    - Client components: `useTranslations("namespace")` from `next-intl`.
@@ -74,8 +76,7 @@ changed via `setLocaleAction` + `LanguageSwitcher`). Config:
   identical across locales.
 - Counts: use ICU plurals, e.g.
   `"{count, plural, one {# method} other {# methods}}"`. Polish may use
-  `one`/`few`/`many`/`other`; Thai may keep `one`/`other` or collapse to
-  `other` — preserve a valid plural block.
+  `one`/`few`/`many`/`other` — preserve a valid plural block.
 - Embedding React (e.g. `<LocalDateTime />`): use **rich-text tags** in the
   message (`"… <date></date> …"`) and `t.rich("key", { date: () => <… /> })`.
   Do **not** pass a raw React element as a `{date}` value.
@@ -100,11 +101,12 @@ messages. Prefer that helper for component tests. Mock
 
 **Acceptance / Cucumber e2e (`e2e/`):** assert against **English** UI copy only
 (Gherkin steps and Playwright locators use `en.json` strings). Do not write
-locale-parameterized scenarios or assert Polish/Thai labels in e2e — **except**
+locale-parameterized scenarios or assert Polish labels in e2e — **except**
 the dedicated language-switch feature (`e2e/features/i18n/`), which must verify
-localized copy and the `NEXT_LOCALE` cookie. Locale coverage for PL/TH otherwise
-is via message catalogs + manual/spot checks. Ensure other scenarios resolve to
-English (default `Accept-Language` / `NEXT_LOCALE=en` is fine).
+localized copy, the Polish site default, and the `NEXT_LOCALE` cookie. Locale
+coverage for PL otherwise is via message catalogs + manual/spot checks. Hooks
+set `NEXT_LOCALE=en` so the rest of the suite stays English; tag default-locale
+scenarios `@site-default-locale` so they skip that cookie.
 
 ## Schema source of truth
 

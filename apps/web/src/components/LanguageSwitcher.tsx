@@ -11,7 +11,6 @@ import { locales, type AppLocale } from "@/i18n/config";
 const LOCALE_NATIVE_NAMES: Record<AppLocale, string> = {
   en: "English",
   pl: "Polski",
-  th: "ไทย",
 };
 
 export interface LanguageSwitcherProps {

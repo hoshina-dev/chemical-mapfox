@@ -1,9 +1,9 @@
 /**
- * Capture docs screenshots for pl + th by switching the navbar language.
+ * Capture docs screenshots for pl by switching the navbar language.
  *
  * Env: DOCS_BASE_URL, DOCS_CLIENT_EMAIL, DOCS_CLIENT_PASSWORD,
  *      DOCS_STAFF_EMAIL, DOCS_STAFF_PASSWORD
- * Optional: DOCS_LOCALES=pl,th
+ * Optional: DOCS_LOCALES=pl
  */
 import { mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -23,7 +23,7 @@ const STAFF = {
   email: process.env.DOCS_STAFF_EMAIL ?? "",
   password: process.env.DOCS_STAFF_PASSWORD ?? "",
 };
-const LOCALES = (process.env.DOCS_LOCALES ?? "pl,th")
+const LOCALES = (process.env.DOCS_LOCALES ?? "pl")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -63,7 +63,7 @@ async function login(page, user) {
   });
   await form.locator('input[name="email"]').fill(user.email);
   await form.locator('input[name="password"]').fill(user.password);
-  await form.getByRole("button", { name: /sign in|log in|zaloguj|เข้าสู่ระบบ/i }).click();
+  await form.getByRole("button", { name: /sign in|log in|zaloguj/i }).click();
   await page.waitForURL((u) => !u.pathname.includes("/login"), {
     timeout: 30_000,
   });
@@ -74,7 +74,7 @@ async function login(page, user) {
  * Falls back to setting the NEXT_LOCALE cookie + reload if needed.
  */
 async function switchLocale(page, locale) {
-  const select = page.getByLabel(/language|język|ภาษา/i).or(
+  const select = page.getByLabel(/language|język/i).or(
     page.locator('nav select, header select, [aria-label] >> select').first(),
   );
 
@@ -122,7 +122,7 @@ async function contextIdsOnPage(page) {
 async function captureClientLocale(browser, locale) {
   const context = await browser.newContext({
     viewport: VIEWPORT,
-    locale: locale === "th" ? "th-TH" : locale === "pl" ? "pl-PL" : "en-US",
+    locale: locale === "pl" ? "pl-PL" : "en-US",
   });
   const page = await context.newPage();
   await login(page, CLIENT);
@@ -145,7 +145,7 @@ async function captureClientLocale(browser, locale) {
   // open the known Density Calculation template directly (labels differ by locale).
   const panelRequest = page
     .locator(".mantine-Accordion-panel")
-    .getByRole("button", { name: /^(Request|Zamów|ขอทำการทดลอง)$/i })
+    .getByRole("button", { name: /^(Request|Zamów)$/i })
     .first();
   if ((await panelRequest.count()) > 0) {
     await Promise.all([
@@ -176,7 +176,7 @@ async function captureClientLocale(browser, locale) {
 async function captureStaffLocale(browser, locale) {
   const context = await browser.newContext({
     viewport: VIEWPORT,
-    locale: locale === "th" ? "th-TH" : locale === "pl" ? "pl-PL" : "en-US",
+    locale: locale === "pl" ? "pl-PL" : "en-US",
   });
   const page = await context.newPage();
   await login(page, STAFF);
@@ -191,7 +191,7 @@ async function captureStaffLocale(browser, locale) {
   const ids = await contextIdsOnPage(page);
   let checkinId = STAFF_CHECKED_IN;
   // Try filter button — labels vary by locale
-  for (const label of ["Requested", "Zgłoszono", "ร้องขอแล้ว"]) {
+  for (const label of ["Requested", "Zgłoszono"]) {
     const btn = page.getByRole("button", { name: label, exact: true });
     if ((await btn.count()) > 0) {
       await btn.first().click();

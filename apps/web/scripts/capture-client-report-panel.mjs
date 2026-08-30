@@ -1,5 +1,5 @@
 /**
- * Capture client-report-panel.webp for en/pl/th from a known detail page.
+ * Capture client-report-panel.webp for en/pl from a known detail page.
  *
  * Env overrides:
  *   DOCS_BASE_URL, DOCS_CLIENT_EMAIL, DOCS_CLIENT_PASSWORD, DOCS_LOCALES
@@ -19,7 +19,7 @@ const DETAIL =
   "/experiment/listing/159c7177-885f-4b80-848e-4407d93c638e";
 const EMAIL = process.env.DOCS_CLIENT_EMAIL ?? "";
 const PASSWORD = process.env.DOCS_CLIENT_PASSWORD ?? "";
-const LOCALES = (process.env.DOCS_LOCALES ?? "en,pl,th")
+const LOCALES = (process.env.DOCS_LOCALES ?? "en,pl")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -53,7 +53,7 @@ async function login(page) {
   await form.locator('input[name="email"]').fill(EMAIL);
   await form.locator('input[name="password"]').fill(PASSWORD);
   await form
-    .getByRole("button", { name: /sign in|log in|zaloguj|เข้าสู่ระบบ/i })
+    .getByRole("button", { name: /sign in|log in|zaloguj/i })
     .click();
   await page.waitForURL((u) => !u.pathname.includes("/login"), {
     timeout: 30_000,
@@ -83,7 +83,7 @@ try {
     console.log(`\n=== ${locale} ===`);
     const ctx = await browser.newContext({
       viewport: VIEWPORT,
-      locale: locale === "th" ? "th-TH" : locale === "pl" ? "pl-PL" : "en-US",
+      locale: locale === "pl" ? "pl-PL" : "en-US",
     });
     const page = await ctx.newPage();
     await login(page);

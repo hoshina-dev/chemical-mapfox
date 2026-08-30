@@ -11,7 +11,7 @@ import {
   screenshotPublicPath,
   screenshotRepoPath,
 } from "@/lib/docs/screenshots";
-import { defaultLocale, isAppLocale } from "@/i18n/config";
+import { isAppLocale, messageFallbackLocale } from "@/i18n/config";
 
 import classes from "./docsFigure.module.css";
 
@@ -38,15 +38,19 @@ export async function DocsFigure({ id }: { id: DocsScreenshotId }) {
   const t = await getTranslations("docs.figure");
   const tShot = await getTranslations("docs.screenshots");
   const localeRaw = await getLocale();
-  const locale = isAppLocale(localeRaw) ? localeRaw : defaultLocale;
+  const locale = isAppLocale(localeRaw) ? localeRaw : messageFallbackLocale;
   const meta = DOCS_SCREENSHOTS[id];
   const filename = screenshotFilename(id);
 
   let publicPath = screenshotPublicPath(id, locale);
   let usedFallback = false;
 
-  if (!resolvePublicFile(publicPath) && meta.localized && locale !== defaultLocale) {
-    const enPath = screenshotPublicPath(id, defaultLocale);
+  if (
+    !resolvePublicFile(publicPath) &&
+    meta.localized &&
+    locale !== messageFallbackLocale
+  ) {
+    const enPath = screenshotPublicPath(id, messageFallbackLocale);
     if (resolvePublicFile(enPath)) {
       publicPath = enPath;
       usedFallback = true;

@@ -86,7 +86,12 @@ Given(
 );
 
 Given("I am not signed in", async function (this: ChemFoxWorld) {
+  const cookies = await this.context.cookies();
   await this.context.clearCookies();
+  const localeCookies = cookies.filter((cookie) => cookie.name === "NEXT_LOCALE");
+  if (localeCookies.length > 0) {
+    await this.context.addCookies(localeCookies);
+  }
 });
 
 // --- login ---------------------------------------------------------------

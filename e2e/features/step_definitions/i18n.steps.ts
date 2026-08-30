@@ -5,7 +5,7 @@ import type { Locator, Page } from "playwright";
 
 import type { ChemFoxWorld } from "../support/world.js";
 
-type UiLocale = "en" | "pl" | "th";
+type UiLocale = "en" | "pl";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
 
@@ -13,18 +13,16 @@ const LOCALE_COOKIE = "NEXT_LOCALE";
 const LANDING_HERO: Record<UiLocale, string> = {
   en: "Chemical experiments, from request to certified results.",
   pl: "Eksperymenty chemiczne — od zgłoszenia do certyfikowanych wyników.",
-  th: "การทดลองทางเคมี ตั้งแต่การร้องขอจนถึงผลลัพธ์ที่ได้รับการรับรอง",
 };
 
 /** Auth card subtitle per locale (`auth.card.subtitle`). */
 const AUTH_SUBTITLE: Record<UiLocale, string> = {
   en: "Sign in or create an account to continue.",
   pl: "Zaloguj się lub utwórz konto, aby kontynuować.",
-  th: "เข้าสู่ระบบหรือสร้างบัญชีเพื่อดำเนินการต่อ",
 };
 
 function isUiLocale(value: string): value is UiLocale {
-  return value === "en" || value === "pl" || value === "th";
+  return value === "en" || value === "pl";
 }
 
 /**
@@ -36,8 +34,6 @@ function languageSwitcher(page: Page): Locator {
     has: page.locator('option[value="en"]'),
   }).filter({
     has: page.locator('option[value="pl"]'),
-  }).filter({
-    has: page.locator('option[value="th"]'),
   }).first();
 }
 
@@ -53,11 +49,7 @@ When(
       () => {
         const select = [...document.querySelectorAll("select")].find((el) => {
           const values = [...el.options].map((o) => o.value);
-          return (
-            values.includes("en") &&
-            values.includes("pl") &&
-            values.includes("th")
-          );
+          return values.includes("en") && values.includes("pl");
         });
         return select instanceof HTMLSelectElement && !select.disabled;
       },
