@@ -53,4 +53,4 @@ Feature: Landing page
     And I should see "Harper Analytics Sp. z o.o."
     And I should see "43-100 Tychy"
     And I should see a link "laboratorium@harperanalytics.com" pointing to "mailto:laboratorium@harperanalytics.com"
-    And I should see a link "Warunki Swiadczenia Uslug - Pobierz Plik" pointing to "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf"
+    And I should see a link "Terms of Service — Download file" pointing to "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf"
