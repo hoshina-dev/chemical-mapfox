@@ -8,7 +8,6 @@ import {
   Button,
   Container,
   Group,
-  SimpleGrid,
   Stack,
   Text,
   ThemeIcon,
@@ -38,38 +37,9 @@ export type { OfferSample } from "@/lib/landing/offer";
 
 const NAV_LINKS = [
   { id: "offer", key: "labOffer" },
-  { id: "certifications", key: "certifications" },
   { id: "about", key: "about" },
   { id: "contact", key: "contact" },
 ] as const;
-
-const CERTIFICATION_KEYS = [
-  "iso17025",
-  "iso9001",
-  "iso17043",
-  "glp",
-  "haccp",
-  "iso14001",
-] as const;
-
-function ShieldIcon() {
-  return (
-    <svg
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -201,12 +171,6 @@ export function Landing({
                 </Button>
               </Group>
               <Group gap="lg" mt="xl" className={classes.heroTrust}>
-                <Text fz="sm" c="dimmed">
-                  <strong className={classes.trustNum}>
-                    {t("hero.accreditedLabel")}
-                  </strong>{" "}
-                  {t("hero.accredited")}
-                </Text>
                 <Text fz="sm" c="dimmed">
                   <strong className={classes.trustNum}>{sampleCount}</strong>{" "}
                   {t("hero.specimenTypes")}
@@ -346,52 +310,13 @@ export function Landing({
           </Container>
         </section>
 
-        {/* Certifications */}
-        <section id="certifications" className={classes.section}>
-          <Container size="xl">
-            <SectionHeading
-              step={2}
-              kicker={t("certifications.kicker")}
-              title={t("certifications.title")}
-              lead={t("certifications.lead")}
-            />
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-              {CERTIFICATION_KEYS.map((key) => (
-                <div key={key} className={classes.certCard}>
-                  <Group gap="sm" wrap="nowrap" mb="xs">
-                    <ThemeIcon
-                      variant="light"
-                      color="green"
-                      radius="md"
-                      size={38}
-                    >
-                      <ShieldIcon />
-                    </ThemeIcon>
-                    <div>
-                      <Text fw={700} className={classes.certCode}>
-                        {t(`certifications.items.${key}.code`)}
-                      </Text>
-                      <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>
-                        {t(`certifications.items.${key}.title`)}
-                      </Text>
-                    </div>
-                  </Group>
-                  <Text fz="sm" c="dimmed">
-                    {t(`certifications.items.${key}.description`)}
-                  </Text>
-                </div>
-              ))}
-            </SimpleGrid>
-          </Container>
-        </section>
-
         {/* About */}
         <section id="about" className={`${classes.sectionMuted} ${classes.hexBg}`}>
           <Container size="xl">
             <div className={classes.about}>
               <div className={classes.aboutCopy}>
                 <SectionHeading
-                  step={3}
+                  step={2}
                   kicker={t("about.kicker")}
                   title={t("about.title")}
                   lead={t("about.lead", { brand: BRAND.name })}
@@ -403,11 +328,7 @@ export function Landing({
               </div>
               <div className={classes.statGrid}>
                 <Stat value={`${sampleCount}`} label={t("about.statSpecimenTypes")} />
-                <Stat value={`${methodCount}`} label={t("about.statAccreditedMethods")} />
-                <Stat
-                  value={t("about.statActiveAccreditationsValue")}
-                  label={t("about.statActiveAccreditations")}
-                />
+                <Stat value={`${methodCount}`} label={t("about.statMethods")} />
                 <Stat
                   value={t("about.statSampleIntakeValue")}
                   label={t("about.statSampleIntake")}
@@ -423,7 +344,7 @@ export function Landing({
             <div className={classes.contact}>
               <div>
                 <SectionHeading
-                  step={4}
+                  step={3}
                   kicker={t("contact.kicker")}
                   title={t("contact.title")}
                   lead={t("contact.lead")}
@@ -492,7 +413,7 @@ export function Landing({
   );
 }
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 function SectionHeading({
   kicker,

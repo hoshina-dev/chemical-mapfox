@@ -91,7 +91,6 @@
   "landing": {
     "nav": {
       "labOffer": "Laboratory offer",
-      "certifications": "Certifications",
       "about": "About us",
       "contact": "Contact",
       "primaryAriaLabel": "Primary",
@@ -100,12 +99,10 @@
       "goToWorkspace": "Go to your workspace"
     },
     "hero": {
-      "eyebrow": "Accredited laboratory services",
-      "title": "Chemical experiments, from request to certified results.",
-      "lead": "{brand} runs your samples through an accredited workflow — intake, lab execution and reporting in one place. Track every specimen, see exactly where it is, and receive results you can trust.",
+      "eyebrow": "Laboratory testing services",
+      "title": "Chemical experiments, from request to results.",
+      "lead": "{brand} runs your samples through a structured workflow — intake, lab execution and reporting in one place. Track every specimen, see exactly where it is, and receive results you can trust.",
       "exploreOffer": "Explore our offer",
-      "accreditedLabel": "ISO/IEC 17025",
-      "accredited": "accredited",
       "specimenTypes": "specimen types",
       "testMethods": "test methods"
     },
@@ -121,9 +118,9 @@
     },
     "howItWorks": {
       "kicker": "How it works",
-      "title": "From request to certified results",
+      "title": "From request to results",
       "lead": "One accountable pipeline. You always know which stage your sample is in and what happens next.",
-      "diagramAriaLabel": "Experiment lifecycle: request, sample received, in progress, finalizing, certified report.",
+      "diagramAriaLabel": "Experiment lifecycle: request, sample received, in progress, finalizing, final report.",
       "stages": {
         "request": {
           "label": "Request",
@@ -141,58 +138,19 @@
           "label": "Finalizing",
           "caption": "Results reviewed"
         },
-        "certifiedReport": {
-          "label": "Certified report",
+        "finalReport": {
+          "label": "Final report",
           "caption": "Signed PDF ready"
-        }
-      }
-    },
-    "certifications": {
-      "kicker": "Accreditations",
-      "title": "Certifications & accreditations",
-      "lead": "Our results carry recognised accreditation. Every method runs under a quality system audited against international standards.",
-      "items": {
-        "iso17025": {
-          "code": "ISO/IEC 17025",
-          "title": "Testing competence",
-          "description": "Accredited for the general competence to carry out tests and calibrations, including sampling."
-        },
-        "iso9001": {
-          "code": "ISO 9001",
-          "title": "Quality management",
-          "description": "Certified quality management system covering every step from intake to reporting."
-        },
-        "iso17043": {
-          "code": "ISO 17043",
-          "title": "Proficiency testing",
-          "description": "Authorised provider of proficiency testing and inter-laboratory comparison schemes."
-        },
-        "glp": {
-          "code": "GLP",
-          "title": "Good Laboratory Practice",
-          "description": "Compliant with GLP principles for the integrity and traceability of study data."
-        },
-        "haccp": {
-          "code": "HACCP",
-          "title": "Food safety",
-          "description": "Hazard analysis and critical control points applied across food and feed testing."
-        },
-        "iso14001": {
-          "code": "ISO 14001",
-          "title": "Environmental management",
-          "description": "Environmental management system governing safe handling and disposal of reagents."
         }
       }
     },
     "about": {
       "kicker": "About us",
       "title": "A laboratory built around your samples",
-      "lead": "{brand} brings together sample intake, collaborative lab execution and accredited reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.",
+      "lead": "{brand} brings together sample intake, collaborative lab execution and reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.",
       "body": "We pair experienced analysts with a modern workflow so that every result is traceable, reproducible and delivered on time. From a single water sample to a full production-hygiene programme, the process is the same: clear, accountable and quality-assured.",
       "statSpecimenTypes": "Specimen types",
-      "statAccreditedMethods": "Accredited methods",
-      "statActiveAccreditations": "Active accreditations",
-      "statActiveAccreditationsValue": "6",
+      "statMethods": "Test methods",
       "statSampleIntake": "Sample intake",
       "statSampleIntakeValue": "24h"
     },

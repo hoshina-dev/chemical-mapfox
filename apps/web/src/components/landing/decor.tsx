@@ -62,7 +62,7 @@ type StageKey =
   | "sampleReceived"
   | "inProgress"
   | "finalizing"
-  | "certifiedReport";
+  | "finalReport";
 
 interface Stage {
   /** Lifecycle accent colour (matches the product status board). */
@@ -130,7 +130,7 @@ const STAGES: Stage[] = [
   },
   {
     color: STAGE_COLOR,
-    key: "certifiedReport",
+    key: "finalReport",
     status: "COMPLETED",
     glyph: (
       <>

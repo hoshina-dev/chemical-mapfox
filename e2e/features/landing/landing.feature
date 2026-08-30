@@ -14,7 +14,6 @@ Feature: Landing page
     Then I should be on the landing page
     And I should see the landing hero
     And I should see the primary navigation link "Laboratory offer"
-    And I should see the primary navigation link "Certifications"
     And I should see the "Get started" call to action
 
   Scenario: Get started sends an unauthenticated visitor to sign-in

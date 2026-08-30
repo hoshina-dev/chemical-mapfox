@@ -11,8 +11,8 @@ const LOCALE_COOKIE = "NEXT_LOCALE";
 
 /** Landing H1 hero title per locale (`landing.hero.title`). */
 const LANDING_HERO: Record<UiLocale, string> = {
-  en: "Chemical experiments, from request to certified results.",
-  pl: "Eksperymenty chemiczne — od zgłoszenia do certyfikowanych wyników.",
+  en: "Chemical experiments, from request to results.",
+  pl: "Eksperymenty chemiczne — od zgłoszenia do wyników.",
 };
 
 /** Auth card subtitle per locale (`auth.card.subtitle`). */

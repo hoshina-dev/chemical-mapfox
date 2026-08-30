@@ -91,7 +91,6 @@
   "landing": {
     "nav": {
       "labOffer": "Oferta laboratorium",
-      "certifications": "Certyfikaty",
       "about": "O nas",
       "contact": "Kontakt",
       "primaryAriaLabel": "Główna",
@@ -100,12 +99,10 @@
       "goToWorkspace": "Przejdź do obszaru roboczego"
     },
     "hero": {
-      "eyebrow": "Akredytowane usługi laboratoryjne",
-      "title": "Eksperymenty chemiczne — od zgłoszenia do certyfikowanych wyników.",
-      "lead": "{brand} prowadzi Twoje próbki przez akredytowany proces — przyjęcie, wykonanie badań i raportowanie w jednym miejscu. Śledź każdą próbkę, sprawdzaj dokładnie, na jakim jest etapie, i otrzymuj wyniki, którym możesz zaufać.",
+      "eyebrow": "Usługi laboratoryjne",
+      "title": "Eksperymenty chemiczne — od zgłoszenia do wyników.",
+      "lead": "{brand} prowadzi Twoje próbki przez uporządkowany proces — przyjęcie, wykonanie badań i raportowanie w jednym miejscu. Śledź każdą próbkę, sprawdzaj dokładnie, na jakim jest etapie, i otrzymuj wyniki, którym możesz zaufać.",
       "exploreOffer": "Poznaj naszą ofertę",
-      "accreditedLabel": "ISO/IEC 17025",
-      "accredited": "akredytacja",
       "specimenTypes": "rodzaje próbek",
       "testMethods": "metody badawcze"
     },
@@ -121,9 +118,9 @@
     },
     "howItWorks": {
       "kicker": "Jak to działa",
-      "title": "Od zgłoszenia do certyfikowanych wyników",
+      "title": "Od zgłoszenia do wyników",
       "lead": "Jeden przejrzysty proces. Zawsze wiesz, na jakim etapie jest Twoja próbka i co wydarzy się dalej.",
-      "diagramAriaLabel": "Cykl życia eksperymentu: zgłoszenie, próbka przyjęta, w toku, finalizowanie, certyfikowany raport.",
+      "diagramAriaLabel": "Cykl życia eksperymentu: zgłoszenie, próbka przyjęta, w toku, finalizowanie, raport końcowy.",
       "stages": {
         "request": {
           "label": "Zgłoszenie",
@@ -141,58 +138,19 @@
           "label": "Finalizowanie",
           "caption": "Wyniki weryfikowane"
         },
-        "certifiedReport": {
-          "label": "Certyfikowany raport",
+        "finalReport": {
+          "label": "Raport końcowy",
           "caption": "Podpisany PDF gotowy"
-        }
-      }
-    },
-    "certifications": {
-      "kicker": "Akredytacje",
-      "title": "Certyfikaty i akredytacje",
-      "lead": "Nasze wyniki są objęte uznaną akredytacją. Każda metoda działa w ramach systemu jakości audytowanego zgodnie z normami międzynarodowymi.",
-      "items": {
-        "iso17025": {
-          "code": "ISO/IEC 17025",
-          "title": "Kompetencje badawcze",
-          "description": "Akredytacja w zakresie ogólnych kompetencji do wykonywania badań i wzorcowań, w tym pobierania próbek."
-        },
-        "iso9001": {
-          "code": "ISO 9001",
-          "title": "Zarządzanie jakością",
-          "description": "Certyfikowany system zarządzania jakością obejmujący każdy etap — od przyjęcia próbki po raportowanie."
-        },
-        "iso17043": {
-          "code": "ISO 17043",
-          "title": "Badania biegłości",
-          "description": "Uprawniony organizator badań biegłości i porównań międzylaboratoryjnych."
-        },
-        "glp": {
-          "code": "GLP",
-          "title": "Dobra Praktyka Laboratoryjna",
-          "description": "Zgodność z zasadami GLP w zakresie integralności i identyfikowalności danych z badań."
-        },
-        "haccp": {
-          "code": "HACCP",
-          "title": "Bezpieczeństwo żywności",
-          "description": "Analiza zagrożeń i krytyczne punkty kontroli stosowane w badaniach żywności i pasz."
-        },
-        "iso14001": {
-          "code": "ISO 14001",
-          "title": "Zarządzanie środowiskowe",
-          "description": "System zarządzania środowiskowego regulujący bezpieczne obchodzenie się z odczynnikami i ich utylizację."
         }
       }
     },
     "about": {
       "kicker": "O nas",
       "title": "Laboratorium zbudowane wokół Twoich próbek",
-      "lead": "{brand} łączy przyjmowanie próbek, wspólne wykonywanie badań i akredytowane raportowanie. Zlecający zawsze wiedzą, gdzie znajduje się próbka, a nasi technicy posuwają pracę naprzód, nie walcząc z narzędziami.",
+      "lead": "{brand} łączy przyjmowanie próbek, wspólne wykonywanie badań i raportowanie. Zlecający zawsze wiedzą, gdzie znajduje się próbka, a nasi technicy posuwają pracę naprzód, nie walcząc z narzędziami.",
       "body": "Łączymy doświadczonych analityków z nowoczesnym procesem pracy, aby każdy wynik był identyfikowalny, powtarzalny i dostarczony na czas. Od pojedynczej próbki wody po pełny program higieny produkcji — proces pozostaje ten sam: przejrzysty, odpowiedzialny i objęty kontrolą jakości.",
       "statSpecimenTypes": "Rodzaje próbek",
-      "statAccreditedMethods": "Akredytowane metody",
-      "statActiveAccreditations": "Aktywne akredytacje",
-      "statActiveAccreditationsValue": "6",
+      "statMethods": "Metody badawcze",
       "statSampleIntake": "Przyjęcie próbki",
       "statSampleIntakeValue": "24h"
     },

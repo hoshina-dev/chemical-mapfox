@@ -40,7 +40,7 @@ Then("I should be on the landing page", async function (this: ChemFoxWorld) {
 Then("I should see the landing hero", async function (this: ChemFoxWorld) {
   await this.page
     .getByRole("heading", {
-      name: "Chemical experiments, from request to certified results.",
+      name: "Chemical experiments, from request to results.",
       level: 1,
     })
     .waitFor({ state: "visible", timeout: 15_000 });
