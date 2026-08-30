@@ -10,6 +10,7 @@ import {
   type LoadedTemplate,
   templateDetailToLoaded,
 } from "@/lib/experiment-manager/mappers";
+import { logHandledError } from "@/lib/log/handled";
 import { ticketsApi } from "@/lib/ticketing/client";
 import { type ExperimentTicket, toExperimentTicket } from "@/lib/ticketing/tickets";
 
@@ -53,8 +54,13 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
             description: tpl.description ?? null,
           }))
           .sort((a, b) => a.title.localeCompare(b.title));
-      } catch {
+      } catch (error) {
         // A single specimen's templates failing shouldn't blank the catalogue.
+        logHandledError(error, {
+          op: "listRequestCatalog.templates",
+          sampleId: sample.id,
+          level: "warn",
+        });
         templates = [];
       }
       return {
@@ -100,8 +106,12 @@ export async function loadRequestTemplate(
         const detail = await getExperimentTemplate(sample.id, templateId);
         return { sampleId: sample.id, template: templateDetailToLoaded(detail) };
       }
-    } catch {
-      // Keep scanning the remaining specimens.
+    } catch (error) {
+      logHandledError(error, {
+        op: "loadRequestTemplate.scan",
+        sampleId: sample.id,
+        level: "warn",
+      });
     }
   }
   return null;

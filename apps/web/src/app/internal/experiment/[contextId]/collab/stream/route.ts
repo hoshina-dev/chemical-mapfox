@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth/dal";
 import type { ServerMessage } from "@/lib/collab/events";
 import { getSnapshot, handleDisconnect, hydrate } from "@/lib/collab/room";
 import { addWriter } from "@/lib/collab/sse-hub";
+import { logHandledError } from "@/lib/log/handled";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export async function GET(
   try {
     await hydrate(contextId);
   } catch (err) {
-    console.error(`[collab] hydrate ${contextId} failed`, err);
+    logHandledError(err, { op: "collab.hydrate", contextId });
     return new Response("experiment unavailable", { status: 502 });
   }
 

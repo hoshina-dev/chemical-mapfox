@@ -2,6 +2,9 @@ import "server-only";
 
 import { getSession } from "@/lib/auth/dal";
 import { getReportDownloadUrl } from "@/lib/experiment-manager/client";
+import { loggedFetch } from "@/lib/log/downstream";
+import { levelForStatus, logHandledError } from "@/lib/log/handled";
+import { httpStatus } from "@/lib/log/serialize";
 import { ticketsApi } from "@/lib/ticketing/client";
 
 type ReportAccess = "admin" | "ticket-owner";
@@ -21,7 +24,12 @@ async function canAccessReport(
   try {
     const ticket = await ticketsApi.apiV1TicketsIdGet(contextId);
     return ticket.userId === session.userId;
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      op: "report.canAccess",
+      contextId,
+      level: "warn",
+    });
     return false;
   }
 }
@@ -40,7 +48,7 @@ export async function reportPdfResponse(
 
   try {
     const { url } = await getReportDownloadUrl(contextId);
-    const upstream = await fetch(url, { cache: "no-store" });
+    const upstream = await loggedFetch("s3", url, { cache: "no-store" });
 
     if (!upstream.ok) {
       return new Response("Could not load report PDF.", {
@@ -56,7 +64,16 @@ export async function reportPdfResponse(
         "Content-Type": upstream.headers.get("content-type") ?? "application/pdf",
       },
     });
-  } catch {
+  } catch (error) {
+    // Only a real 404 ("report not generated yet") is expected here; a 5xx or
+    // network failure is a genuine EM/S3 outage and must not be logged as info.
+    const status = httpStatus(error);
+    logHandledError(error, {
+      op: "report.download",
+      contextId,
+      expected: status === 404,
+      level: status === 404 ? "info" : levelForStatus(status),
+    });
     return new Response("The report is not ready yet.", { status: 404 });
   }
 }

@@ -24,12 +24,16 @@ export function isAppLocale(value: string | undefined | null): value is AppLocal
 export function negotiateLocale(acceptLanguage: string | null): AppLocale {
   if (!acceptLanguage) return defaultLocale;
 
-  const preferred = acceptLanguage.split(",").map((part) => {
-    const [tag, ...params] = part.trim().split(";");
-    const qParam = params.find((p) => p.trim().startsWith("q="));
-    const q = qParam ? Number(qParam.trim().slice(2)) : 1;
-    return { tag: (tag ?? "").trim().toLowerCase(), q: Number.isFinite(q) ? q : 1 };
-  });
+  const preferred = acceptLanguage
+    .split(",")
+    .map((part) => {
+      const [tag, ...params] = part.trim().split(";");
+      const qParam = params.find((p) => /^q=/i.test(p.trim()));
+      const q = qParam ? Number(qParam.trim().slice(2)) : 1;
+      return { tag: (tag ?? "").trim().toLowerCase(), q: Number.isFinite(q) ? q : 1 };
+    })
+    // q=0 is an explicit "do not use this language" per RFC 7231 §5.3.1.
+    .filter((entry) => entry.q > 0);
 
   preferred.sort((a, b) => b.q - a.q);
 

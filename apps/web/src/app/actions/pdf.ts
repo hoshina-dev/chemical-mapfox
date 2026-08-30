@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { requireAdmin } from "@/lib/auth/dal";
+import { logHandledError } from "@/lib/log/handled";
 import {
   getExperiment,
   upsertPdfTemplate,
@@ -46,6 +47,10 @@ export async function savePdfTemplateAction(
     }
     return { success: true, data: { templateId: pdf.template_id } };
   } catch (error) {
+    logHandledError(error, {
+      action: "savePdfTemplateAction",
+      sampleId,
+    });
     return {
       success: false,
       error: errorMessage(error, "Could not save the PDF layout."),
@@ -80,7 +85,11 @@ export async function listTemplateExperimentsAction(
         )}`,
       }));
     return { success: true, data: experiments };
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      action: "listTemplateExperimentsAction",
+      level: "warn",
+    });
     return { success: true, data: [] };
   }
 }
@@ -126,6 +135,10 @@ export async function getExperimentPreviewContextAction(
 
     return { success: true, data: context };
   } catch (error) {
+    logHandledError(error, {
+      action: "getExperimentPreviewContextAction",
+      contextId,
+    });
     return {
       success: false,
       error: errorMessage(error, "Could not load the experiment for preview."),

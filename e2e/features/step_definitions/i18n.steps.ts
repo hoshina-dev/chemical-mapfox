@@ -25,6 +25,17 @@ function isUiLocale(value: string): value is UiLocale {
   return value === "en" || value === "pl";
 }
 
+Given(
+  "my browser prefers the language {string}",
+  async function (this: ChemFoxWorld, acceptLanguage: string) {
+    // Before() pre-sets NEXT_LOCALE=en for every scenario (deterministic
+    // English UI by default); clear it here so the upcoming navigation hits
+    // proxy.ts with no cookie and actually negotiates from Accept-Language.
+    await this.context.clearCookies({ name: LOCALE_COOKIE });
+    await this.context.setExtraHTTPHeaders({ "Accept-Language": acceptLanguage });
+  },
+);
+
 /**
  * Locate the language <select> by its option values (stable across locales),
  * not by aria-label (which itself is translated).

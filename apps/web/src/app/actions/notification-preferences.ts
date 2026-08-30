@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 import { requireClient } from "@/lib/auth/dal";
+import { logHandledError } from "@/lib/log/handled";
 import { settingsPath } from "@/lib/settings/routes";
 import {
   updateNotificationPreferences,
@@ -28,6 +29,11 @@ export async function saveNotificationPreferencesAction(
     revalidatePath(settingsPath());
     return { success: true, preferences: data.preferences };
   } catch (error) {
+    logHandledError(error, {
+      action: "saveNotificationPreferencesAction",
+      service: "ticketing",
+      userId: session.userId,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : t("saveErrorFallback"),

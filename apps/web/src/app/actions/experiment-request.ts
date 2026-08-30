@@ -15,6 +15,7 @@ import {
 import { templateToExperimentUpdate } from "@/lib/experiment-manager/mappers";
 import { loadRequestTemplate } from "@/lib/experiment/data";
 import { myExperimentsPath } from "@/lib/experiment/routes";
+import { logHandledError } from "@/lib/log/handled";
 import { ticketsApi } from "@/lib/ticketing/client";
 
 interface RequestExperimentInput {
@@ -93,6 +94,7 @@ export async function requestExperimentAction(
     }
     contextId = ticket.id;
   } catch (error) {
+    logHandledError(error, { action: "requestExperimentAction", service: "ticketing" });
     return {
       success: false,
       error: await errorText(error, t("submitFailed")),
@@ -107,15 +109,27 @@ export async function requestExperimentAction(
       sample_id: resolved.sampleId,
       lineage_id: resolved.template.lineageId,
     });
-  } catch {
+  } catch (error) {
     // The context may already be created by the ticketing backend; ignore.
+    logHandledError(error, {
+      action: "requestExperimentAction",
+      op: "createExperiment",
+      contextId,
+      expected: true,
+    });
   }
   try {
     await updateExperiment(
       contextId,
       templateToExperimentUpdate(resolved.template.wireSnapshot, input.values),
     );
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      action: "requestExperimentAction",
+      op: "saveIntake",
+      contextId,
+      level: "warn",
+    });
     warning = t("intakeNotSaved");
   }
 

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { loggedFetch } from "@/lib/log/downstream";
+
 import { getTicketingUrl } from "./config";
 
 export type StageNotificationPreference = {
@@ -48,7 +50,8 @@ async function readError(response: Response): Promise<string> {
 export async function getNotificationPreferences(
   userId: string,
 ): Promise<NotificationPreferences> {
-  const response = await fetch(
+  const response = await loggedFetch(
+    "ticketing",
     `${getTicketingUrl()}/api/v1/users/${encodeURIComponent(userId)}/notification-preferences`,
     { cache: "no-store" },
   );
@@ -62,7 +65,8 @@ export async function updateNotificationPreferences(
   userId: string,
   preferences: StageNotificationPreference[],
 ): Promise<NotificationPreferences> {
-  const response = await fetch(
+  const response = await loggedFetch(
+    "ticketing",
     `${getTicketingUrl()}/api/v1/users/${encodeURIComponent(userId)}/notification-preferences`,
     {
       method: "PUT",

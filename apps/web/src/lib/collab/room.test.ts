@@ -18,6 +18,7 @@ import {
   getExperiment,
   updateExperiment,
 } from "@/lib/experiment-manager/client";
+import { logger } from "@/lib/log/logger";
 import { getRedis } from "@/lib/redis/client";
 
 import * as room from "./room";
@@ -145,7 +146,7 @@ describe("scheduleFlush", () => {
 
   it("logs when a scheduled flush fails", async () => {
     vi.useFakeTimers();
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
     vi.mocked(updateExperiment).mockRejectedValueOnce(new Error("network down"));
     try {
       await room.hydrate(ctx);
@@ -153,8 +154,12 @@ describe("scheduleFlush", () => {
       room.scheduleFlush(ctx);
       await vi.advanceTimersByTimeAsync(10_000);
       expect(errorSpy).toHaveBeenCalledWith(
-        `[collab] flush ${ctx} failed`,
-        expect.any(Error),
+        expect.objectContaining({
+          err: expect.any(Error),
+          op: "collab.flush",
+          contextId: ctx,
+        }),
+        "handled error",
       );
     } finally {
       errorSpy.mockRestore();

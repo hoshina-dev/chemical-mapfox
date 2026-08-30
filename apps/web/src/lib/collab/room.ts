@@ -2,6 +2,7 @@ import "server-only";
 
 import type { AnswerValue } from "@repo/forms";
 
+import { logHandledError } from "@/lib/log/handled";
 import {
   getExperiment,
   updateExperiment,
@@ -146,7 +147,7 @@ export function scheduleFlush(ctx: string): void {
   const timer = setTimeout(() => {
     flushTimers.delete(ctx);
     void flushNow(ctx).catch((err) =>
-      console.error(`[collab] flush ${ctx} failed`, err),
+      logHandledError(err, { op: "collab.flush", contextId: ctx }),
     );
   }, FLUSH_DEBOUNCE_MS);
   if (typeof timer.unref === "function") timer.unref();

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
+import { logHandledError } from "@/lib/log/handled";
 import {
   createExperimentTemplate,
   createSample,
@@ -45,6 +46,7 @@ export async function createSampleAction(
     revalidatePath("/internal/experiment/onboarding");
     return { success: true, data: { id: sample.id, name: sample.name } };
   } catch (error) {
+    logHandledError(error, { action: "createSampleAction" });
     const t = await getTranslations("builder.errors");
     return { success: false, error: errorMessage(error, t("createSample")) };
   }
@@ -66,6 +68,7 @@ export async function createTemplateAction(
       data: { id: detail.id, lineageId: detail.lineage_id },
     };
   } catch (error) {
+    logHandledError(error, { action: "createTemplateAction", sampleId });
     const t = await getTranslations("builder.errors");
     return {
       success: false,
@@ -95,6 +98,10 @@ export async function updateTemplateAction(
       data: { id: detail.id, lineageId: detail.lineage_id },
     };
   } catch (error) {
+    logHandledError(error, {
+      action: "updateTemplateAction",
+      sampleId: ref.sampleId,
+    });
     const t = await getTranslations("builder.errors");
     return {
       success: false,
@@ -112,6 +119,10 @@ export async function deleteTemplateAction(
     revalidatePath("/internal/experiment/onboarding");
     return { success: true, data: null };
   } catch (error) {
+    logHandledError(error, {
+      action: "deleteTemplateAction",
+      sampleId: ref.sampleId,
+    });
     const t = await getTranslations("builder.errors");
     return {
       success: false,

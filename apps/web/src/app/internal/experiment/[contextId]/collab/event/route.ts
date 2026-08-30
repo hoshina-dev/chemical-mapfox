@@ -15,6 +15,7 @@ import {
   scheduleFlush,
   setPresence,
 } from "@/lib/collab/room";
+import { logHandledError } from "@/lib/log/handled";
 import { ticketsApi } from "@/lib/ticketing/client";
 import { toExperimentTicket } from "@/lib/ticketing/tickets";
 
@@ -65,7 +66,7 @@ export async function POST(
   try {
     await hydrate(contextId);
   } catch (err) {
-    console.error(`[collab] hydrate ${contextId} failed`, err);
+    logHandledError(err, { op: "collab.hydrate", contextId });
     return NextResponse.json({ error: "experiment unavailable" }, { status: 502 });
   }
 
@@ -101,7 +102,7 @@ export async function POST(
       // (the client's read-only page) reflect it without the 10s debounce.
       // Guarded by a single-flight lock + dirty flag inside flushNow.
       void flushNow(contextId).catch((err) =>
-        console.error(`[collab] blur flush ${contextId} failed`, err),
+        logHandledError(err, { op: "collab.blurFlush", contextId }),
       );
       return NextResponse.json({ ok: true });
     }
@@ -114,7 +115,7 @@ export async function POST(
         );
         status = ticket.status;
       } catch (err) {
-        console.error(`[collab] edit status check ${contextId} failed`, err);
+        logHandledError(err, { op: "collab.editStatus", contextId });
         return NextResponse.json(
           { error: "experiment unavailable" },
           { status: 502 },

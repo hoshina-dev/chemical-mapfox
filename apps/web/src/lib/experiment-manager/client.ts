@@ -2,6 +2,8 @@ import "server-only";
 
 import type { ExperimentManager } from "@repo/api-client";
 
+import { loggedFetch } from "@/lib/log/downstream";
+
 import { getExperimentManagerUrl } from "./config";
 
 export class ExperimentManagerError extends Error {
@@ -23,7 +25,7 @@ async function parseJson<T>(res: Response): Promise<T> {
 
 export async function emFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${getExperimentManagerUrl()}${path}`;
-  const res = await fetch(url, {
+  const res = await loggedFetch("experiment-manager", url, {
     ...init,
     headers: {
       Accept: "application/json",
@@ -44,16 +46,6 @@ export async function emFetch<T>(path: string, init?: RequestInit): Promise<T> {
       } catch {
         body = text;
       }
-    }
-    // Log the raw response so the detail is visible in server logs even if the
-    // UI can't format the body shape. A 404 is an expected "not found" (e.g. an
-    // experiment context that hasn't been created yet) — surface it via the
-    // thrown error, but don't spam the server logs as if it were a failure.
-    if (res.status !== 404) {
-      console.error(
-        `[experiment-manager] ${init?.method ?? "GET"} ${path} -> ${res.status}`,
-        body ?? "(no body)",
-      );
     }
     throw new ExperimentManagerError(
       `Experiment Manager ${init?.method ?? "GET"} ${path} failed (${res.status})`,

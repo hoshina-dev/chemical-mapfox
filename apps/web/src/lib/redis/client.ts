@@ -2,6 +2,8 @@ import "server-only";
 
 import Redis from "ioredis";
 
+import { logger } from "@/lib/log/logger";
+
 import { getRedisUrl } from "./config";
 import { getMockRedisClient, getMockRedisSubscriber } from "./mock-client";
 
@@ -31,7 +33,7 @@ function create(): Redis {
     lazyConnect: false,
   });
   redis.on("error", (err) => {
-    console.error("[redis] connection error", err);
+    logger.error({ err, service: "redis" }, "redis connection error");
   });
   return redis;
 }

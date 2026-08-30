@@ -15,6 +15,8 @@ import { landingPathForRole } from "@/lib/auth/appRole";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
+import { levelForStatus, logHandledError } from "@/lib/log/handled";
+import { httpStatus } from "@/lib/log/serialize";
 
 async function custApiErrorMessage(
   error: unknown,
@@ -54,11 +56,21 @@ export async function login(
 
   // Credentials are verified inside custapi (POST /auth/verify) so the bcrypt
   // hash never crosses the service boundary. custapi returns the user on
-  // success and 401 on a bad email/password; treat any failure uniformly.
+  // success and 401 on a bad email/password — that 4xx path is expected and
+  // logged at info; a 5xx/network failure here is a real custapi outage and
+  // must still page, not get swallowed behind the generic "wrong password"
+  // message shown to the user.
   let user;
   try {
     user = await usersApi.authVerifyPost({ email, password });
-  } catch {
+  } catch (error) {
+    const status = httpStatus(error);
+    logHandledError(error, {
+      action: "login",
+      service: "custapi",
+      expected: status !== undefined && status < 500,
+      level: levelForStatus(status),
+    });
     const tErrors = await getTranslations("auth.errors");
     return { message: tErrors("invalidCredentials") };
   }
@@ -103,6 +115,15 @@ export async function register(
   try {
     created = await usersApi.usersPost({ email, name, password });
   } catch (error) {
+    // A 4xx here (most commonly a duplicate-email conflict) is a routine user
+    // error, not an outage — log it at info like the analogous case in login().
+    const status = httpStatus(error);
+    logHandledError(error, {
+      action: "register",
+      service: "custapi",
+      expected: status !== undefined && status < 500,
+      level: levelForStatus(status),
+    });
     return {
       message: await custApiErrorMessage(
         error,
@@ -116,7 +137,12 @@ export async function register(
       userId: created.id,
       role: MemberRole.RoleMember,
     });
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      action: "register",
+      op: "assignOrganization",
+      service: "custapi",
+    });
     return {
       message: tErrors("organizationAssignFailed"),
     };

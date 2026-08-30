@@ -8,6 +8,7 @@ import { z } from "zod";
 import { requireSession } from "@/lib/auth/dal";
 import { createSession } from "@/lib/auth/session";
 import { usersApi } from "@/lib/custapi/client";
+import { logHandledError } from "@/lib/log/handled";
 import { uploadImageToS3 } from "@/lib/s3/client";
 import { settingsPath } from "@/lib/settings/routes";
 
@@ -95,6 +96,12 @@ export async function updateProfile(
         "user-avatar",
       );
     } catch (error) {
+      logHandledError(error, {
+        action: "updateProfile",
+        op: "avatarUpload",
+        service: "s3",
+        userId: session.userId,
+      });
       return {
         success: false,
         error:
@@ -122,6 +129,11 @@ export async function updateProfile(
     revalidatePath(settingsPath());
     return { success: true };
   } catch (error) {
+    logHandledError(error, {
+      action: "updateProfile",
+      service: "custapi",
+      userId: session.userId,
+    });
     return {
       success: false,
       error: await custApiErrorMessage(error, t("saveErrorFallback")),
@@ -170,7 +182,13 @@ export async function changePassword(
       email: session.email,
       password: currentPassword,
     });
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      action: "changePassword",
+      op: "verifyCurrent",
+      expected: true,
+      userId: session.userId,
+    });
     return { success: false, error: t("incorrectCurrentPassword") };
   }
 
@@ -192,6 +210,11 @@ export async function changePassword(
 
     return { success: true };
   } catch (error) {
+    logHandledError(error, {
+      action: "changePassword",
+      service: "custapi",
+      userId: session.userId,
+    });
     return {
       success: false,
       error: await custApiErrorMessage(error, t("saveErrorFallback")),

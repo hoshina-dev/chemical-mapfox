@@ -26,6 +26,8 @@ import {
   experimentListingPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
+import { levelForStatus, logHandledError } from "@/lib/log/handled";
+import { httpStatus } from "@/lib/log/serialize";
 import { ticketsApi } from "@/lib/ticketing/client";
 
 function reportReady(status: string | null | undefined): boolean {
@@ -88,6 +90,7 @@ export async function submitExperimentAction(
     await hydrate(contextId);
     await persistNow(contextId);
   } catch (error) {
+    logHandledError(error, { action: "submitExperimentAction", op: "persist", contextId });
     return {
       success: false,
       error: await errorText(
@@ -110,6 +113,7 @@ export async function submitExperimentAction(
       };
     }
   } catch (error) {
+    logHandledError(error, { action: "submitExperimentAction", op: "verifyValues", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not verify the submitted values."),
@@ -123,6 +127,7 @@ export async function submitExperimentAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: { status: ticket.status ?? "FINALIZING" } };
   } catch (error) {
+    logHandledError(error, { action: "submitExperimentAction", service: "ticketing", contextId });
     return {
       success: false,
       error: await errorText(error, "Could not submit to the final stage."),
@@ -152,6 +157,7 @@ export async function checkInSampleAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: { status: ticket.status ?? "PENDING" } };
   } catch (error) {
+    logHandledError(error, { action: "checkInSampleAction", service: "ticketing", contextId });
     return {
       success: false,
       error: await errorText(error, "Could not check in this sample."),
@@ -182,6 +188,7 @@ export async function startExperimentAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: { status: ticket.status ?? "EXPERIMENTING" } };
   } catch (error) {
+    logHandledError(error, { action: "startExperimentAction", service: "ticketing", contextId });
     return {
       success: false,
       error: await errorText(error, "Could not start this experiment."),
@@ -215,6 +222,7 @@ export async function calculateExperimentAction(
     }
     return { success: true, data: null };
   } catch (error) {
+    logHandledError(error, { action: "calculateExperimentAction", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not run calculations."),
@@ -244,6 +252,7 @@ async function requireFinalizingTicket(
     }
     return null;
   } catch (error) {
+    logHandledError(error, { op: "requireFinalizingTicket", service: "ticketing", contextId });
     return { error: await errorText(error, "Could not verify this ticket's stage.") };
   }
 }
@@ -282,6 +291,7 @@ export async function updateExperimentValuesAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: null };
   } catch (error) {
+    logHandledError(error, { action: "updateExperimentValuesAction", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not save the fixed values."),
@@ -309,6 +319,7 @@ export async function fixExperimentFormulaAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: null };
   } catch (error) {
+    logHandledError(error, { action: "fixExperimentFormulaAction", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not save the fixed formula."),
@@ -334,6 +345,7 @@ export async function generateReportAction(
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: { status: res.status } };
   } catch (error) {
+    logHandledError(error, { action: "generateReportAction", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not start report generation."),
@@ -363,6 +375,7 @@ export async function getReportStatusAction(
       },
     };
   } catch (error) {
+    logHandledError(error, { action: "getReportStatusAction", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not check the report status."),
@@ -386,6 +399,15 @@ export async function getReportDownloadUrlAction(
     const res = await getReportDownloadUrl(contextId);
     return { success: true, data: { url: res.url } };
   } catch (error) {
+    // Only a real 404 ("report not generated yet") is expected here; a 5xx or
+    // network failure is a genuine EM outage and must not be logged as info.
+    const status = httpStatus(error);
+    logHandledError(error, {
+      action: "getReportDownloadUrlAction",
+      contextId,
+      expected: status === 404,
+      level: status === 404 ? "info" : levelForStatus(status),
+    });
     return {
       success: false,
       error: errorMessage(error, "The report isn't ready to download yet."),
@@ -410,6 +432,7 @@ export async function closeTicketAction(
   try {
     exp = await getExperiment(contextId);
   } catch (error) {
+    logHandledError(error, { action: "closeTicketAction", op: "loadExperiment", contextId });
     return {
       success: false,
       error: errorMessage(error, "Could not verify this experiment is ready to close."),
@@ -438,6 +461,7 @@ export async function closeTicketAction(
     revalidatePath(experimentListingPath());
     return { success: true, data: { status: ticket.status ?? "CLOSED" } };
   } catch (error) {
+    logHandledError(error, { action: "closeTicketAction", service: "ticketing", contextId });
     return {
       success: false,
       error: await errorText(error, "Could not close this ticket."),

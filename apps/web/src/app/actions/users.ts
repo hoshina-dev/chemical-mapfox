@@ -4,6 +4,8 @@ import type { UserDetailResponse, UserResponse } from "@repo/api-client";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
+import { levelForStatus, logHandledError } from "@/lib/log/handled";
+import { httpStatus } from "@/lib/log/serialize";
 
 const SEARCH_LIMIT = 50;
 
@@ -21,7 +23,13 @@ export async function searchUsers(query: string): Promise<UserResponse[]> {
 
   try {
     return await usersApi.usersSearchGet(q, SEARCH_LIMIT);
-  } catch {
+  } catch (error) {
+    const status = httpStatus(error);
+    logHandledError(error, {
+      action: "searchUsers",
+      service: "custapi",
+      level: levelForStatus(status),
+    });
     return [];
   }
 }
@@ -34,7 +42,15 @@ export async function getUserById(
 
   try {
     return await usersApi.usersIdIdGet(userId);
-  } catch {
+  } catch (error) {
+    const status = httpStatus(error);
+    logHandledError(error, {
+      action: "getUserById",
+      service: "custapi",
+      userId,
+      expected: status === 404,
+      level: status === 404 ? "info" : levelForStatus(status),
+    });
     return null;
   }
 }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { usersApi } from "@/lib/custapi/client";
+import { logHandledError } from "@/lib/log/handled";
 import {
   ExperimentManagerError,
   getExperiment,
@@ -101,7 +102,12 @@ export async function listExperimentsForStaff(): Promise<{
   let requesterIndex: Map<string, Requester> | null = null;
   try {
     requesterIndex = await loadRequesterIndex();
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      op: "listExperimentsForStaff.requesters",
+      service: "custapi",
+      level: "warn",
+    });
     requesterIndex = null;
   }
 
@@ -136,7 +142,13 @@ export interface ExperimentWorkspace {
 async function loadRequester(userId: string): Promise<Requester | null> {
   try {
     return toRequester(await usersApi.usersIdIdGet(userId));
-  } catch {
+  } catch (error) {
+    logHandledError(error, {
+      op: "loadRequester",
+      service: "custapi",
+      userId,
+      level: "warn",
+    });
     return null;
   }
 }
@@ -163,6 +175,10 @@ export async function getExperimentWorkspace(
   if (ticketResult.status === "fulfilled") {
     ticket = toExperimentTicket(ticketResult.value);
   } else {
+    logHandledError(ticketResult.reason, {
+      op: "getExperimentWorkspace.ticket",
+      contextId,
+    });
     errors.ticket =
       ticketResult.reason instanceof Error
         ? ticketResult.reason.message
@@ -180,6 +196,10 @@ export async function getExperimentWorkspace(
     // ticket whose experiment hasn't been created. Leave `state` null without
     // recording an error so the page shows the friendly empty state.
   } else {
+    logHandledError(stateResult.reason, {
+      op: "getExperimentWorkspace.state",
+      contextId,
+    });
     errors.state =
       stateResult.reason instanceof Error
         ? stateResult.reason.message
@@ -188,6 +208,13 @@ export async function getExperimentWorkspace(
 
   const templateIndex =
     tplResult.status === "fulfilled" ? tplResult.value : null;
+  if (tplResult.status === "rejected") {
+    logHandledError(tplResult.reason, {
+      op: "getExperimentWorkspace.templates",
+      contextId,
+      level: "warn",
+    });
+  }
   const templateId = state?.templateId ?? ticket?.templateId ?? null;
   const info = templateId ? (templateIndex?.get(templateId) ?? null) : null;
 
