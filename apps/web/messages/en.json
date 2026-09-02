@@ -682,7 +682,7 @@
     },
     "calculations": {
       "title": "Calculations",
-      "subtitle": "Each calculation is a Python formula string evaluated by the backend; results are display-only here.",
+      "subtitle": "Each calculation is a Python formula string evaluated by the backend. Use Live preview to run them against trial values before saving.",
       "formulaCount": "{count, plural, one {# formula} other {# formulas}}",
       "none": "No calculations yet.",
       "name": "Name",
@@ -738,6 +738,27 @@
       "capturedClient": "Captured client values",
       "capturedLab": "Captured lab values"
     },
+    "calculationTester": {
+      "title": "Test calculations",
+      "subtitle": "Runs your formulas through the real calculation engine using the values captured above, or each question's default where no value was captured. Nothing is saved.",
+      "run": "Run calculations",
+      "runAgain": "Run again",
+      "none": "This template has no calculations to test.",
+      "name": "Name",
+      "status": "Status",
+      "result": "Result",
+      "statusOk": "OK",
+      "statusError": "Error",
+      "statusSkipped": "Skipped",
+      "allPassed": "{count, plural, one {# formula evaluated successfully} other {All # formulas evaluated successfully}}",
+      "someFailed": "{count, plural, one {# formula needs attention} other {# formulas need attention}}",
+      "failedTitle": "Could not run calculations",
+      "missingTitle": "Formulas expect values that were not supplied",
+      "missingBody": "These question ids are read by a formula but no answer or default was found. A likely cause is a typo in the id.",
+      "duplicateTitle": "Duplicate question ids",
+      "duplicateBody": "These ids are used by more than one question across the client and lab forms. Answers will overwrite each other.",
+      "valuesUsed": "Values used"
+    },
     "editPage": {
       "legacyTitle": "Legacy / invalid template",
       "legacyBody": "This template does not match the current schema. Saving will rewrite it in the current format.",
@@ -752,7 +773,8 @@
       "createSample": "Could not create sample.",
       "createTemplate": "Could not create template.",
       "saveTemplate": "Could not save template.",
-      "deleteTemplate": "Could not delete template."
+      "deleteTemplate": "Could not delete template.",
+      "testCalculations": "Could not run calculations."
     }
   },
   "pdfEditor": {

@@ -183,6 +183,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/experiments/{exp_id}/calculations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Experiment Calculations */
+        put: operations["update_experiment_calculations_api_experiments__exp_id__calculations_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/experiments/{exp_id}/calculate": {
         parameters: {
             query?: never;
@@ -194,6 +211,23 @@ export interface paths {
         put?: never;
         /** Calculate Experiment */
         post: operations["calculate_experiment_api_experiments__exp_id__calculate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/calculations/evaluate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate Calculations */
+        post: operations["evaluate_calculations_api_calculations_evaluate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -234,6 +268,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health Check */
+        get: operations["health_check_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ready Check */
+        get: operations["ready_check_ready_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -246,6 +314,111 @@ export interface components {
             result?: unknown;
         } & {
             [key: string]: unknown;
+        };
+        /**
+         * CalculationDryRunRequest
+         * @description A draft template plus trial answers, evaluated without persisting.
+         * @example {
+         *       "calculations": {
+         *         "moisture_loss": {
+         *           "formula": "values['crucible_mass'] + values['sample_mass'] - values['mass_after_moisture']"
+         *         },
+         *         "moisture_pct": {
+         *           "formula": "round(1000 * moisture_loss / values['sample_mass']) / 10"
+         *         }
+         *       },
+         *       "labForm": {
+         *         "name": "Proximate Analysis Form",
+         *         "questions": [
+         *           {
+         *             "config": {
+         *               "default": 20
+         *             },
+         *             "id": "crucible_mass",
+         *             "label": "Crucible mass (g)",
+         *             "type": "number"
+         *           }
+         *         ]
+         *       },
+         *       "values": {
+         *         "mass_after_moisture": 20.9,
+         *         "sample_mass": 1.001
+         *       }
+         *     }
+         */
+        CalculationDryRunRequest: {
+            clientForm?: components["schemas"]["FormDoc"] | null;
+            labForm?: components["schemas"]["FormDoc"] | null;
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["Calculation"];
+            };
+            /** Values */
+            values?: {
+                [key: string]: unknown;
+            };
+        };
+        /** CalculationDryRunResponse */
+        CalculationDryRunResponse: {
+            /** Values */
+            values: {
+                [key: string]: unknown;
+            };
+            /** Order */
+            order: string[];
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["CalculationOutcome"];
+            };
+            /** Missing Values */
+            missing_values: string[];
+            /** Duplicate Question Ids */
+            duplicate_question_ids: string[];
+        };
+        /** CalculationError */
+        CalculationError: {
+            /** Kind */
+            kind: string;
+            /** Message */
+            message: string;
+            /** Names */
+            names?: string[];
+        };
+        /** CalculationOutcome */
+        CalculationOutcome: {
+            /** Formula */
+            formula: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "error" | "skipped";
+            /** Result */
+            result?: unknown;
+            error?: components["schemas"]["CalculationError"] | null;
+        };
+        /**
+         * ExperimentCalculationsUpdate
+         * @description Replaces an experiment's own calculation formulas in place.
+         *
+         *     Scoped to a single experiment: does not touch ``template_id``/version and
+         *     does not affect any other experiment on the same lineage. Existing
+         *     ``clientForm``/``labForm``/``values`` are left untouched; call
+         *     ``POST /api/experiments/{exp_id}/calculate`` afterward to recompute
+         *     results with the new formulas.
+         * @example {
+         *       "calculations": {
+         *         "apple_density": {
+         *           "formula": "values['a'] / values['b'] if values['b'] != 0 else None"
+         *         }
+         *       }
+         *     }
+         */
+        ExperimentCalculationsUpdate: {
+            /** Calculations */
+            calculations: {
+                [key: string]: components["schemas"]["Calculation"];
+            };
         };
         /**
          * ExperimentCreate
@@ -1406,6 +1579,41 @@ export interface operations {
             };
         };
     };
+    update_experiment_calculations_api_experiments__exp_id__calculations_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exp_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExperimentCalculationsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     calculate_experiment_api_experiments__exp_id__calculate_post: {
         parameters: {
             query?: never;
@@ -1424,6 +1632,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExperimentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluate_calculations_api_calculations_evaluate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalculationDryRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalculationDryRunResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1495,6 +1736,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    health_check_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    ready_check_ready_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

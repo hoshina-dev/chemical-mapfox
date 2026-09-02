@@ -95,6 +95,7 @@ e2e/
 │       ├── runtime.ts               # resolved ports + base URL (per run)
 │       ├── ports.ts                 # free-port picker (parallel-safe)
 │       ├── fixtures.ts              # in-memory users/orgs + wire serializers
+│       ├── interactions.ts          # shared: clickUntil / setInput (hydration-safe)
 │       ├── web-server.ts            # spawns + tears down `next dev`
 │       ├── world.ts                 # Playwright-backed Cucumber World
 │       ├── hooks.ts                 # Before/After/BeforeAll/AfterAll
@@ -116,7 +117,12 @@ shared file, which keeps parallel branches conflict-free:
 2. **Steps** — add `features/step_definitions/<area>.steps.ts`. Reuse the shared
    steps in `navigation.steps.ts` (`I visit …`, `I should be on the … page`,
    `I should see the error …`) and the auth steps (`the following users exist:`,
-   `I am signed in as …`).
+   `I am signed in as …`). Step phrases are global across every file, so a
+   duplicate wording fails the run as ambiguous — check before naming one.
+   For clicks and inputs use `clickUntil` / `setInput` from
+   `support/interactions.ts`: under `next dev`, a click or fill that lands
+   before React hydration is silently discarded, and these retry until it
+   takes.
 3. **Backend stub** — if the flow hits a backend endpoint not yet modelled, drop
    a new file `features/support/stub/modules/<area>.ts` that calls
    `registerStub({ name, reset, handle })`. The stub server **auto-loads every

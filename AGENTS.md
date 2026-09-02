@@ -136,6 +136,23 @@ experiment-manager types (`experiment-manager.d.ts`, used as the
 `pnpm --filter @repo/api-client codegen` (runs via `pnpm dlx`; skips services
 that are unreachable). Generated dirs are committed and excluded from eslint.
 
+## Testing formulas during onboarding
+
+The template builder's Live preview drawer ends with a calculation tester
+(`CalculationTester.tsx`) that runs the draft's formulas through
+experiment-manager's real calculation engine via the stateless
+`POST /api/calculations/evaluate` — no template or experiment has to exist and
+nothing is persisted. It reports each formula's own status, so a typo'd
+`values['question_id']` surfaces during authoring instead of after a technician
+has entered real measurements.
+
+Because the endpoint never fails on a bad formula, `testCalculationsAction`
+returning `success: false` means the *request* failed; per-formula problems
+arrive inside a successful response. The e2e double lives in
+`e2e/features/support/stub/modules/calculation-dry-run.ts` and mirrors the
+contract, not Python semantics — engine behaviour is experiment-manager's own
+test suite's job.
+
 ## Collaborative editing (staff workspace)
 
 The lab-form tab of `/internal/experiment/{contextId}` is a live multi-staff editor

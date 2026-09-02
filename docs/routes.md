@@ -163,6 +163,11 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
   - `onboarding/new/page.tsx` — create a new template; accepts `?sampleId=` to
     pre-select the sample and jump straight to the builder
   - `onboarding/[sampleId]/[templateId]/page.tsx` — template builder/editor
+- The builder's **Live preview** drawer renders both forms interactively and
+  ends with a calculation tester that runs the draft's formulas against the
+  captured answers (experiment-manager `POST /api/calculations/evaluate`,
+  stateless — nothing is saved), so formula mistakes surface before the
+  template is.
 
 > Path helpers live in `apps/web/src/lib/experiment-manager/routes.ts`
 > (`sampleOnboardingPath`, `newTemplatePath(sampleId?)`, …).
