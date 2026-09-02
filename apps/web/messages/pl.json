@@ -682,7 +682,7 @@
     },
     "calculations": {
       "title": "Obliczenia",
-      "subtitle": "Każde obliczenie to ciąg wzoru Python obliczany przez backend; wyniki są tu tylko do wyświetlenia.",
+      "subtitle": "Każde obliczenie to ciąg wzoru Python obliczany przez backend. Użyj podglądu na żywo, aby uruchomić je na wartościach próbnych przed zapisaniem.",
       "formulaCount": "{count, plural, one {# wzór} few {# wzory} many {# wzorów} other {# wzorów}}",
       "none": "Brak obliczeń.",
       "name": "Nazwa",
@@ -738,6 +738,27 @@
       "capturedClient": "Przechwycone wartości klienta",
       "capturedLab": "Przechwycone wartości laboratoryjne"
     },
+    "calculationTester": {
+      "title": "Przetestuj obliczenia",
+      "subtitle": "Uruchamia Twoje formuły w prawdziwym silniku obliczeniowym, korzystając z wartości przechwyconych powyżej lub z wartości domyślnej pytania, gdy nic nie przechwycono. Nic nie jest zapisywane.",
+      "run": "Uruchom obliczenia",
+      "runAgain": "Uruchom ponownie",
+      "none": "Ten szablon nie ma obliczeń do przetestowania.",
+      "name": "Nazwa",
+      "status": "Status",
+      "result": "Wynik",
+      "statusOk": "OK",
+      "statusError": "Błąd",
+      "statusSkipped": "Pominięto",
+      "allPassed": "{count, plural, one {# formuła obliczona poprawnie} few {Wszystkie # formuły obliczone poprawnie} many {Wszystkie # formuł obliczonych poprawnie} other {Wszystkie # formuł obliczonych poprawnie}}",
+      "someFailed": "{count, plural, one {# formuła wymaga uwagi} few {# formuły wymagają uwagi} many {# formuł wymaga uwagi} other {# formuł wymaga uwagi}}",
+      "failedTitle": "Nie udało się uruchomić obliczeń",
+      "missingTitle": "Formuły oczekują wartości, które nie zostały podane",
+      "missingBody": "Te identyfikatory pytań są odczytywane przez formułę, ale nie znaleziono dla nich odpowiedzi ani wartości domyślnej. Prawdopodobną przyczyną jest literówka w identyfikatorze.",
+      "duplicateTitle": "Zduplikowane identyfikatory pytań",
+      "duplicateBody": "Te identyfikatory są używane przez więcej niż jedno pytanie w formularzach klienta i laboratorium. Odpowiedzi będą się wzajemnie nadpisywać.",
+      "valuesUsed": "Użyte wartości"
+    },
     "editPage": {
       "legacyTitle": "Przestarzały / nieprawidłowy szablon",
       "legacyBody": "Ten szablon nie pasuje do bieżącego schematu. Zapisanie przepisze go w bieżącym formacie.",
@@ -752,7 +773,8 @@
       "createSample": "Nie udało się utworzyć próbki.",
       "createTemplate": "Nie udało się utworzyć szablonu.",
       "saveTemplate": "Nie udało się zapisać szablonu.",
-      "deleteTemplate": "Nie udało się usunąć szablonu."
+      "deleteTemplate": "Nie udało się usunąć szablonu.",
+      "testCalculations": "Nie udało się uruchomić obliczeń."
     }
   },
   "pdfEditor": {
