@@ -304,6 +304,8 @@
       "form": {
         "outOfDateTitle": "Szablon może być nieaktualny",
         "outOfDateBody": "Zapisany szablon nie w pełni pasuje do bieżącego schematu formularza; poniższy formularz jest przybliżeniem.",
+        "noReportLayoutTitle": "Nie skonfigurowano układu raportu",
+        "noReportLayoutBody": "Ten eksperyment nie ma jeszcze zdefiniowanego układu raportu, więc nie można go zamówić. Sprawdź ponownie później.",
         "errorTitle": "Nie udało się przesłać zgłoszenia",
         "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
         "submit": "Prześlij zgłoszenie",
@@ -312,6 +314,7 @@
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
         "templateGone": "Ten szablon eksperymentu już nie istnieje.",
+        "noReportLayout": "Tego eksperymentu nie można jeszcze zamówić — nie skonfigurowano jego układu raportu.",
         "noTicketId": "Usługa zgłoszeń zwróciła zgłoszenie bez identyfikatora.",
         "submitFailed": "Nie udało się przesłać zgłoszenia eksperymentu.",
         "intakeNotSaved": "Twoje zgłoszenie zostało przesłane, ale zapisanie odpowiedzi wstępnych się nie powiodło. Laboratorium może poprosić o ich ponowne wprowadzenie."
@@ -577,7 +580,8 @@
     "templatesTable": {
       "template": "Szablon",
       "description": "Opis",
-      "editTooltip": "Kliknij, aby edytować „{title}”"
+      "editTooltip": "Kliknij, aby edytować „{title}”",
+      "noReportLayout": "Brak układu raportu"
     }
   },
   "builder": {
@@ -845,7 +849,9 @@
     },
     "unavailableTitle": "Edytor PDF niedostępny",
     "loadTemplateError": "Nie udało się załadować szablonu eksperymentu.",
-    "loadLayoutError": "Nie udało się załadować układu PDF."
+    "loadLayoutError": "Nie udało się załadować układu PDF.",
+    "reportRequiredTitle": "Wymagany układ raportu",
+    "reportRequiredBody": "Tego szablonu nie można zamówić ani użyć, dopóki nie ma układu raportu. Zaprojektuj go poniżej i zapisz przed opuszczeniem tej strony."
   },
   "docs": {
     "layout": {

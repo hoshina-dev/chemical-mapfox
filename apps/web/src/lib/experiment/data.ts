@@ -45,7 +45,8 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
       try {
         const { experiments } = await listExperimentTemplates(sample.id);
         templates = experiments
-          .filter((tpl) => tpl.is_current)
+          // A template without a report layout can't be requested
+          .filter((tpl) => tpl.is_current && tpl.has_pdf_template)
           .map((tpl) => ({
             sampleId: sample.id,
             templateId: tpl.id,

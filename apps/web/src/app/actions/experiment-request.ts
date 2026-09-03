@@ -66,6 +66,9 @@ export async function requestExperimentAction(
   if (!resolved) {
     return { success: false, error: t("templateGone") };
   }
+  if (!resolved.template.hasPdfTemplate) {
+    return { success: false, error: t("noReportLayout") };
+  }
 
   const missing = findMissingRequired(
     resolved.template.template.clientForm.questions,

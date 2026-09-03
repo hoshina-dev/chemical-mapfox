@@ -48,6 +48,12 @@ export default async function RequestExperimentPage({
           </Alert>
         )}
 
+        {loaded.template.valid && !loaded.template.hasPdfTemplate && (
+          <Alert color="orange" variant="light" title={t("form.noReportLayoutTitle")}>
+            {t("form.noReportLayoutBody")}
+          </Alert>
+        )}
+
         <Card withBorder radius="md" padding="lg">
           <RequestExperimentForm
             sampleId={loaded.sampleId}

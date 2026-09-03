@@ -304,6 +304,8 @@
       "form": {
         "outOfDateTitle": "Template may be out of date",
         "outOfDateBody": "The stored template didn't fully match the current form schema; the form below is best-effort.",
+        "noReportLayoutTitle": "Report layout not set up",
+        "noReportLayoutBody": "This experiment has no report layout defined yet, so it can't be requested. Please check back later.",
         "errorTitle": "Could not submit your request",
         "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
         "submit": "Submit request",
@@ -312,6 +314,7 @@
       "errors": {
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
         "templateGone": "That experiment template no longer exists.",
+        "noReportLayout": "This experiment can't be requested yet — its report layout hasn't been set up.",
         "noTicketId": "The ticketing service returned a request without an id.",
         "submitFailed": "Could not submit your experiment request.",
         "intakeNotSaved": "Your request was submitted, but saving your intake answers didn't go through. The lab may ask you to re-enter them."
@@ -577,7 +580,8 @@
     "templatesTable": {
       "template": "Template",
       "description": "Description",
-      "editTooltip": "Click to edit \"{title}\""
+      "editTooltip": "Click to edit \"{title}\"",
+      "noReportLayout": "No report layout"
     }
   },
   "builder": {
@@ -845,7 +849,9 @@
     },
     "unavailableTitle": "PDF editor unavailable",
     "loadTemplateError": "Could not load the experiment template.",
-    "loadLayoutError": "Could not load the PDF layout."
+    "loadLayoutError": "Could not load the PDF layout.",
+    "reportRequiredTitle": "Report layout required",
+    "reportRequiredBody": "This template can't be requested or used until it has a report layout. Design one below and save before leaving this page."
   },
   "docs": {
     "layout": {
