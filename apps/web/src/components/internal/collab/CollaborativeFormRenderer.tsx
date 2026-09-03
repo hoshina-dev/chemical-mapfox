@@ -18,6 +18,11 @@ export interface CollaborativeFormRendererProps {
   editorsByConnection: Map<string, PresenceEntry>;
   /** This tab's connection id — a field locked by any *other* connection is read-only. */
   currentConnectionId: string;
+  /**
+   * Validation messages keyed by `AnswerIssue.path` (the question id, or
+   * `groupId.childId[index]` inside a repeatable group).
+   */
+  errors?: Record<string, string>;
   onFocusField: (field: string) => void;
   onBlurField: (field: string) => void;
   onEdit: (field: string, value: AnswerValue) => void;
@@ -37,6 +42,7 @@ export function CollaborativeFormRenderer({
   locks,
   editorsByConnection,
   currentConnectionId,
+  errors,
   onFocusField,
   onBlurField,
   onEdit,
@@ -70,6 +76,7 @@ export function CollaborativeFormRenderer({
               question={q}
               values={values}
               disabled={lockedByOther}
+              errors={errors}
               onChange={(childId, index, value) => {
                 const existing = values[childId];
                 const arr: AnswerValue[] = Array.isArray(existing)
@@ -84,6 +91,7 @@ export function CollaborativeFormRenderer({
               question={q}
               value={values[q.id]}
               disabled={lockedByOther}
+              error={errors?.[q.id]}
               onChange={(value) => onEdit(q.id, value)}
             />
           );

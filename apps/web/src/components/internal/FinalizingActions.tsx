@@ -34,6 +34,7 @@ import {
   experimentReportDownloadPath,
   experimentReportViewPath,
 } from "@/lib/experiment-manager/routes";
+import { formatAnswerIssue } from "@/lib/forms/answerIssues";
 
 import { CompactFormulaEditor } from "@/components/experiment/builder/CompactFormulaEditor";
 import { MonacoFormulaEditor } from "@/components/experiment/builder/MonacoFormulaEditor";
@@ -101,6 +102,7 @@ export function FinalizingActions({
 }: FinalizingActionsProps) {
   const t = useTranslations("staff.finalize");
   const tCommon = useTranslations("common");
+  const tIssue = useTranslations("forms.validation");
   const router = useRouter();
 
   const [calcPending, startCalc] = useTransition();
@@ -490,6 +492,8 @@ export function FinalizingActions({
               doc={labForm}
               initialValues={labValues}
               submitLabel={t("saveValues")}
+              invalidTitle={tIssue("invalidTitle")}
+              formatIssue={(issue) => formatAnswerIssue(tIssue, issue)}
               onSubmit={onFixValues}
             />
           </Box>

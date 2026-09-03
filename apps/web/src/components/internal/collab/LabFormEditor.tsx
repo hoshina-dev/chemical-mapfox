@@ -1,14 +1,15 @@
 "use client";
 
 import { Alert, Button, Card, Group, List, Stack } from "@mantine/core";
-import type { FormAnswers, FormDoc } from "@repo/forms";
-import { findMissingRequired } from "@repo/forms";
+import type { AnswerIssue, FormAnswers, FormDoc } from "@repo/forms";
+import { validateAnswers } from "@repo/forms";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
 
 import { submitExperimentAction } from "@/app/actions/experiment";
 import type { SessionUser } from "@/lib/auth/definitions";
 import type { PresenceEntry } from "@/lib/collab/events";
+import { formatAnswerIssue } from "@/lib/forms/answerIssues";
 
 import { CollaborativeFormRenderer } from "./CollaborativeFormRenderer";
 import { PresenceBar } from "./PresenceBar";
@@ -36,6 +37,7 @@ export function LabFormEditor({
   canSubmit,
 }: LabFormEditorProps) {
   const t = useTranslations("staff.collab");
+  const tIssue = useTranslations("forms.validation");
   const { values, presence, locks, connectionId, focusField, blurField, edit } =
     useCollab(contextId, initialValues);
 
@@ -59,14 +61,30 @@ export function LabFormEditor({
   const [result, setResult] = useState<{ error?: string; ok?: boolean } | null>(
     null,
   );
-  const [missing, setMissing] = useState<ReturnType<typeof findMissingRequired>>(
-    [],
+  const [issues, setIssues] = useState<AnswerIssue[]>([]);
+
+  // Live feedback while typing, limited to the constraints a half-entered
+  // answer can't legitimately violate (the same set the collab event route
+  // enforces) — a field still being filled in shouldn't read as an error.
+  const liveIssues = useMemo(
+    () => validateAnswers(doc.questions, values, { mode: "live" }),
+    [doc.questions, values],
   );
 
+  // Submit-time issues win over the live ones (they're a superset for the
+  // fields they cover); first message per field, so each input shows one error.
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    for (const issue of [...issues, ...liveIssues]) {
+      errors[issue.path] ??= formatAnswerIssue(tIssue, issue);
+    }
+    return errors;
+  }, [issues, liveIssues, tIssue]);
+
   const submit = () => {
-    const missingRequired = findMissingRequired(doc.questions, values);
-    setMissing(missingRequired);
-    if (missingRequired.length > 0) return;
+    const found = validateAnswers(doc.questions, values);
+    setIssues(found);
+    if (found.length > 0) return;
     startTransition(async () => {
       const res = await submitExperimentAction(contextId);
       setResult(res.success ? { ok: true } : { error: res.error });
@@ -84,10 +102,11 @@ export function LabFormEditor({
           locks={locks}
           editorsByConnection={editorsByConnection}
           currentConnectionId={connectionId}
+          errors={fieldErrors}
           onFocusField={focusField}
           onBlurField={blurField}
           onEdit={(field, value) => {
-            if (missing.length > 0) setMissing([]);
+            if (issues.length > 0) setIssues([]);
             edit(field, value);
           }}
         />
@@ -103,11 +122,23 @@ export function LabFormEditor({
           {t("submittedBody")}
         </Alert>
       )}
-      {missing.length > 0 && (
-        <Alert color="red" variant="light" title={t("missingRequiredTitle")}>
+      {issues.length > 0 && (
+        <Alert
+          color="red"
+          variant="light"
+          title={
+            issues.every((issue) => issue.code === "required")
+              ? t("missingRequiredTitle")
+              : tIssue("invalidTitle")
+          }
+        >
           <List size="sm">
-            {missing.map((m) => (
-              <List.Item key={m.path}>{m.label}</List.Item>
+            {issues.map((issue) => (
+              <List.Item key={`${issue.path}:${issue.code}`}>
+                {issue.code === "required"
+                  ? issue.label
+                  : formatAnswerIssue(tIssue, issue)}
+              </List.Item>
             ))}
           </List>
         </Alert>

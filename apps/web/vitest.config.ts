@@ -36,6 +36,7 @@ export default defineConfig({
         "src/lib/collab/events.ts",
         "src/lib/collab/room.ts",
         "src/lib/experiment-manager/mappers.ts",
+        "src/lib/forms/answerIssues.ts",
         "src/lib/log/serialize.ts",
         "src/lib/log/logger.ts",
         "src/lib/log/downstream.ts",

@@ -10,5 +10,26 @@ export {
 export type { GalleryEntry } from "./gallery";
 export { findGalleryEntry, GALLERY } from "./gallery";
 export * from "./schema";
-export type { MissingRequired } from "./validation";
-export { findMissingRequired } from "./validation";
+export type {
+  AnswerIssue,
+  AnswerIssueCode,
+  MissingRequired,
+  ValidateAnswersOptions,
+  ValidationMode,
+} from "./validation";
+export {
+  ANSWER_ISSUE_CODES,
+  answerFieldIds,
+  DEFAULT_MAX_PASSWORD_LENGTH,
+  DEFAULT_MAX_STRING_LENGTH,
+  DEFAULT_MAX_TAG_LENGTH,
+  DEFAULT_MAX_TAGS,
+  DEFAULT_MAX_TEXTAREA_LENGTH,
+  defaultMaxLength,
+  describeAnswerIssue,
+  findMissingRequired,
+  isHardIssue,
+  MAX_SAFE_ANSWER_NUMBER,
+  validateAnswers,
+  validateField,
+} from "./validation";

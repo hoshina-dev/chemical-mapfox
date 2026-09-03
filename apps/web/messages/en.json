@@ -1541,6 +1541,23 @@
   "forms": {
     "submit": "Submit",
     "saveDraft": "Save draft",
-    "item": "Item"
+    "item": "Item",
+    "validation": {
+      "invalidTitle": "Fix the highlighted fields before submitting",
+      "invalidPayload": "Those answers weren't in the expected format. Reload the page and try again.",
+      "required": "{label} is required.",
+      "type": "{label} has an unexpected value.",
+      "minLength": "{label} must be at least {limit} characters.",
+      "maxLength": "{label} must be at most {limit} characters.",
+      "min": "{label} must be at least {limit}.",
+      "max": "{label} must be at most {limit}.",
+      "notFinite": "{label} must be a finite number.",
+      "tooLarge": "{label} is too large — the maximum is {limit}.",
+      "option": "{label} must be one of the offered options.",
+      "maxItems": "{label} allows at most {limit} entries.",
+      "format": "{label} is not in the expected format.",
+      "extraRepetitions": "{label} has more entries than the {limit} repetitions allowed.",
+      "unknownField": "{label} is not a question in this form."
+    }
   }
 }

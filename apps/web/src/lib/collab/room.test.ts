@@ -111,6 +111,19 @@ describe("buffer + flush", () => {
   });
 });
 
+describe("readTemplate", () => {
+  it("returns the hydrated template the edit route validates against", async () => {
+    await room.hydrate(ctx);
+    expect(await room.readTemplate(ctx)).toMatchObject({
+      labForm: detail.labForm,
+    });
+  });
+
+  it("returns null for a room that was never hydrated", async () => {
+    expect(await room.readTemplate("missing-room")).toBeNull();
+  });
+});
+
 describe("persistNow", () => {
   it("persists values even when the room is not dirty", async () => {
     await room.hydrate(ctx);

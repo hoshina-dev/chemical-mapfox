@@ -1541,6 +1541,23 @@
   "forms": {
     "submit": "Prześlij",
     "saveDraft": "Zapisz wersję roboczą",
-    "item": "Element"
+    "item": "Element",
+    "validation": {
+      "invalidTitle": "Popraw zaznaczone pola przed przesłaniem",
+      "invalidPayload": "Te odpowiedzi nie miały oczekiwanego formatu. Odśwież stronę i spróbuj ponownie.",
+      "required": "Pole {label} jest wymagane.",
+      "type": "Pole {label} ma nieoczekiwaną wartość.",
+      "minLength": "Pole {label} musi mieć co najmniej {limit} znaków.",
+      "maxLength": "Pole {label} może mieć najwyżej {limit} znaków.",
+      "min": "Pole {label} musi wynosić co najmniej {limit}.",
+      "max": "Pole {label} może wynosić najwyżej {limit}.",
+      "notFinite": "Pole {label} musi być liczbą skończoną.",
+      "tooLarge": "Wartość pola {label} jest za duża — maksimum to {limit}.",
+      "option": "Pole {label} musi zawierać jedną z dostępnych opcji.",
+      "maxItems": "Pole {label} dopuszcza najwyżej {limit} wpisów.",
+      "format": "Pole {label} ma nieprawidłowy format.",
+      "extraRepetitions": "Pole {label} ma więcej wpisów niż dozwolone {limit} powtórzeń.",
+      "unknownField": "{label} nie jest pytaniem w tym formularzu."
+    }
   }
 }

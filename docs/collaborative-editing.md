@@ -26,7 +26,11 @@ debounced flush ──> updateExperiment() (experiment-manager)
   the connection alive through Cloudflare's ~100s idle timeout; headers include
   `Cache-Control: no-cache, no-transform`.
 - **POST** (`collab/event/route.ts`): applies focus/blur/edit/heartbeat to Redis and
-  publishes to `room:{id}`.
+  publishes to `room:{id}`. An `edit` is validated against the room's cached
+  template (`readTemplate` → `validateField`, `live` mode) before it enters the
+  buffer, so a hand-rolled POST can't park a foreign field or an out-of-range
+  value in the experiment; the editor runs the same check locally and shows it
+  inline, so an honest client never hits the 400.
 - **Fan-out** (`lib/collab/sse-hub.ts`): one Redis subscriber per pod routes messages
   to that pod's local SSE connections. Pods hold only connections (rebuilt on
   reconnect), never authoritative state — so single-pod today, scale-ready tomorrow.
@@ -91,6 +95,10 @@ broadcast `value:null` → others clear live, and the flush PUT omits the field.
   instead of fabricated defaults, and use the same `readable` styling.
 
 ## Submit to final stage
+
+Submit runs the **full** rule set (`validateAnswers` in `submit` mode) — the
+required fields plus the minimums the live checks deliberately let pass while
+typing — both in `LabFormEditor` and again in the action.
 
 `submitExperimentAction` (`app/actions/experiment.ts`) force-flushes the buffer to EM,
 then transitions the ticket **`EXPERIMENTING → FINALIZING`** (the calc/PDF stage) via

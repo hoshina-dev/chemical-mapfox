@@ -1,7 +1,7 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
-import { findMissingRequired } from "@repo/forms";
+import { FormAnswers, validateAnswers } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
@@ -15,6 +15,7 @@ import {
 import { templateToExperimentUpdate } from "@/lib/experiment-manager/mappers";
 import { loadRequestTemplate } from "@/lib/experiment/data";
 import { myExperimentsPath } from "@/lib/experiment/routes";
+import { formatAnswerIssues } from "@/lib/forms/answerIssues";
 import { logHandledError } from "@/lib/log/handled";
 import { ticketsApi } from "@/lib/ticketing/client";
 
@@ -61,20 +62,33 @@ export async function requestExperimentAction(
 ): Promise<ActionResult<{ contextId: string; warning?: string }>> {
   const session = await requireClient();
   const t = await getTranslations("experiment.request.errors");
+  const tIssue = await getTranslations("forms.validation");
 
   const resolved = await loadRequestTemplate(input.templateId, input.sampleId);
   if (!resolved) {
     return { success: false, error: t("templateGone") };
   }
 
-  const missing = findMissingRequired(
+  // A server action's arguments are client-controlled: re-check the answer bag
+  // is even shaped like answers before validating it question by question.
+  const values = FormAnswers.safeParse(input.values);
+  if (!values.success) {
+    return { success: false, error: tIssue("invalidPayload") };
+  }
+
+  // Full enforcement of the template's own data types and ranges — the client
+  // renderer checks the same rules, but the BFF is the one that must hold.
+  // `rejectUnknownFields` is safe here because the intake payload may only
+  // answer this template's client form.
+  const issues = validateAnswers(
     resolved.template.template.clientForm.questions,
-    input.values,
+    values.data,
+    { rejectUnknownFields: true },
   );
-  if (missing.length > 0) {
+  if (issues.length > 0) {
     return {
       success: false,
-      error: `${t("submitFailed")}\n${missing.map((m) => `- ${m.label}`).join("\n")}`,
+      error: `${t("submitFailed")}\n${formatAnswerIssues(tIssue, issues)}`,
     };
   }
 
@@ -121,7 +135,7 @@ export async function requestExperimentAction(
   try {
     await updateExperiment(
       contextId,
-      templateToExperimentUpdate(resolved.template.wireSnapshot, input.values),
+      templateToExperimentUpdate(resolved.template.wireSnapshot, values.data),
     );
   } catch (error) {
     logHandledError(error, {

@@ -34,7 +34,14 @@ import type {
   QuestionId,
   RepeatableGroupQuestion,
 } from "./schema";
-import { findMissingRequired, type MissingRequired } from "./validation";
+import type { AnswerIssue } from "./validation";
+import {
+  DEFAULT_MAX_TAG_LENGTH,
+  defaultMaxLength,
+  describeAnswerIssue,
+  MAX_SAFE_ANSWER_NUMBER,
+  validateAnswers,
+} from "./validation";
 
 interface FormRendererProps {
   doc: { name: string; description?: string; questions: Question[] };
@@ -50,8 +57,15 @@ interface FormRendererProps {
   fillDefaults?: boolean;
   submitLabel?: string;
   saveDraftLabel?: string;
-  /** Title of the alert shown when required fields are missing on submit. */
+  /** Title of the alert shown when only required fields are missing on submit. */
   missingRequiredTitle?: string;
+  /** Title of the alert shown when an answer violates its question's constraints. */
+  invalidTitle?: string;
+  /**
+   * Renders one validation issue as a message. Defaults to English
+   * (`describeAnswerIssue`); localized apps pass a translated formatter.
+   */
+  formatIssue?: (issue: AnswerIssue) => string;
   onSubmit?: (answers: FormAnswers) => void;
   onSaveDraft?: (answers: FormAnswers) => void;
 }
@@ -81,6 +95,8 @@ export interface RepeatableGroupFieldProps {
   question: RepeatableGroupQuestion;
   values: FormAnswers;
   disabled?: boolean;
+  /** Validation messages keyed by `AnswerIssue.path` (`groupId.childId[index]`). */
+  errors?: Record<string, string>;
   onChange: (childId: string, index: number, value: AnswerValue) => void;
 }
 
@@ -88,6 +104,7 @@ export function RepeatableGroupField({
   question,
   values,
   disabled,
+  errors,
   onChange,
 }: RepeatableGroupFieldProps) {
   const { count, itemLabel, questions: childQuestions } = question.config;
@@ -130,6 +147,7 @@ export function RepeatableGroupField({
                     (values[child.id] as RepeatableColumn | undefined)?.[i]
                   }
                   disabled={disabled}
+                  error={errors?.[`${question.id}.${child.id}[${i}]`]}
                   onChange={(v) => onChange(child.id, i, v)}
                 />
               ))}
@@ -150,6 +168,8 @@ export function FormRenderer({
   submitLabel = "Submit",
   saveDraftLabel = "Save draft",
   missingRequiredTitle = "Fill in all required fields",
+  invalidTitle = "Fix the highlighted fields",
+  formatIssue = describeAnswerIssue,
   onSubmit,
   onSaveDraft,
 }: FormRendererProps) {
@@ -177,18 +197,24 @@ export function FormRenderer({
   }, [doc, lockedValues, initialValues, fillDefaults]);
 
   const [answers, setAnswers] = useState<FormAnswers>(initialAnswers);
-  const [missing, setMissing] = useState<MissingRequired[]>([]);
+  const [issues, setIssues] = useState<AnswerIssue[]>([]);
 
   const [seen, setSeen] = useState(doc);
   if (seen !== doc) {
     setSeen(doc);
     setAnswers(initialAnswers);
-    setMissing([]);
+    setIssues([]);
   }
 
   function updateAnswers(updater: (prev: FormAnswers) => FormAnswers) {
     setAnswers(updater);
-    if (missing.length > 0) setMissing([]);
+    if (issues.length > 0) setIssues([]);
+  }
+
+  // First message per field, so each input shows exactly one error.
+  const fieldErrors: Record<string, string> = {};
+  for (const issue of issues) {
+    fieldErrors[issue.path] ??= formatIssue(issue);
   }
 
   return (
@@ -197,9 +223,9 @@ export function FormRenderer({
       gap="md"
       onSubmit={(e) => {
         e.preventDefault();
-        const missingRequired = findMissingRequired(doc.questions, answers);
-        setMissing(missingRequired);
-        if (missingRequired.length > 0) return;
+        const found = validateAnswers(doc.questions, answers);
+        setIssues(found);
+        if (found.length > 0) return;
         onSubmit?.(answers);
       }}
     >
@@ -219,6 +245,7 @@ export function FormRenderer({
             question={q}
             values={answers}
             disabled={readOnly}
+            errors={fieldErrors}
             onChange={(childId, idx, v) =>
               updateAnswers((prev) => {
                 const existing = prev[childId];
@@ -236,6 +263,7 @@ export function FormRenderer({
             question={q}
             value={answers[q.id]}
             disabled={readOnly || q.id in lockedValues}
+            error={fieldErrors[q.id]}
             onChange={(value) =>
               updateAnswers((prev) => ({ ...prev, [q.id]: value }))
             }
@@ -243,11 +271,21 @@ export function FormRenderer({
         ),
       )}
 
-      {missing.length > 0 && (
-        <Alert color="red" variant="light" title={missingRequiredTitle}>
+      {issues.length > 0 && (
+        <Alert
+          color="red"
+          variant="light"
+          title={
+            issues.every((issue) => issue.code === "required")
+              ? missingRequiredTitle
+              : invalidTitle
+          }
+        >
           <List size="sm">
-            {missing.map((m) => (
-              <List.Item key={m.path}>{m.label}</List.Item>
+            {issues.map((issue) => (
+              <List.Item key={`${issue.path}:${issue.code}`}>
+                {issue.code === "required" ? issue.label : formatIssue(issue)}
+              </List.Item>
             ))}
           </List>
         </Alert>
@@ -275,6 +313,8 @@ export interface QuestionFieldProps {
   question: Question;
   value: AnswerValue;
   disabled?: boolean;
+  /** Validation message to show under the field. */
+  error?: string;
   onChange: (value: AnswerValue) => void;
 }
 
@@ -292,10 +332,25 @@ function asNumber(value: AnswerValue, fallback: number): number {
   return typeof value === "number" ? value : fallback;
 }
 
+/**
+ * Validation message for the field types rendered in a bare `Stack`
+ * (segmented / slider / rating) — they have no Mantine `error` prop of their
+ * own, so it is styled to match one.
+ */
+function FieldError({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <Text size="xs" c="red">
+      {error}
+    </Text>
+  );
+}
+
 export function QuestionField({
   question,
   value,
   disabled,
+  error,
   onChange,
 }: QuestionFieldProps) {
   switch (question.type) {
@@ -307,8 +362,9 @@ export function QuestionField({
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           minLength={question.config?.minLength}
-          maxLength={question.config?.maxLength}
+          maxLength={question.config?.maxLength ?? defaultMaxLength(question.type)}
           value={asString(value)}
           onChange={(event) => {
             const next = event.currentTarget.value;
@@ -325,8 +381,9 @@ export function QuestionField({
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           minLength={question.config?.minLength}
-          maxLength={question.config?.maxLength}
+          maxLength={question.config?.maxLength ?? defaultMaxLength(question.type)}
           autosize
           minRows={question.config?.minRows ?? 2}
           maxRows={question.config?.maxRows ?? 8}
@@ -346,8 +403,9 @@ export function QuestionField({
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           minLength={question.config?.minLength}
-          maxLength={question.config?.maxLength}
+          maxLength={question.config?.maxLength ?? defaultMaxLength(question.type)}
           value={asString(value)}
           onChange={(event) => {
             const next = event.currentTarget.value;
@@ -358,14 +416,18 @@ export function QuestionField({
 
     case "number":
       return (
+        // Falling back to the safe-integer bound makes the input clamp values
+        // that JSON can no longer round-trip exactly, even with no configured
+        // range — `validateAnswers` rejects them server-side either way.
         <NumberInput
           label={question.label}
           description={question.description}
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
-          min={question.config?.min}
-          max={question.config?.max}
+          error={error}
+          min={question.config?.min ?? -MAX_SAFE_ANSWER_NUMBER}
+          max={question.config?.max ?? MAX_SAFE_ANSWER_NUMBER}
           step={question.config?.step}
           value={typeof value === "number" ? value : ""}
           onChange={(next) => {
@@ -386,6 +448,7 @@ export function QuestionField({
           placeholder={question.config.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           data={question.config.options.map((o) => ({
             value: o.value,
             label: o.label,
@@ -403,6 +466,7 @@ export function QuestionField({
           placeholder={question.config.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           data={question.config.options.map((o) => ({
             value: String(o.value),
             label: o.label,
@@ -422,6 +486,7 @@ export function QuestionField({
           placeholder={question.config.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           maxValues={question.config.maxValues}
           data={question.config.options.map((o) => ({
             value: o.value,
@@ -438,6 +503,7 @@ export function QuestionField({
           label={question.label}
           description={question.description}
           required={question.required}
+          error={error}
           value={typeof value === "string" ? value : null}
           onChange={(next) => onChange(next || undefined)}
         >
@@ -460,6 +526,7 @@ export function QuestionField({
           label={question.label}
           description={question.description}
           required={question.required}
+          error={error}
           value={asStringArray(value)}
           onChange={(next) => onChange(next)}
         >
@@ -482,6 +549,7 @@ export function QuestionField({
           label={question.label}
           description={question.description}
           disabled={disabled}
+          error={error}
           checked={value === true}
           onChange={(event) => onChange(event.currentTarget.checked)}
         />
@@ -512,6 +580,7 @@ export function QuestionField({
             value={asString(value)}
             onChange={(next) => onChange(next || undefined)}
           />
+          <FieldError error={error} />
         </Stack>
       );
 
@@ -543,6 +612,7 @@ export function QuestionField({
             )}
             onChange={(next) => onChange(next)}
           />
+          <FieldError error={error} />
         </Stack>
       );
 
@@ -569,6 +639,7 @@ export function QuestionField({
             value={asNumber(value, 0)}
             onChange={(next) => onChange(next === 0 ? undefined : next)}
           />
+          <FieldError error={error} />
         </Stack>
       );
 
@@ -580,6 +651,7 @@ export function QuestionField({
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           swatches={question.config?.swatches}
           format={question.config?.format ?? "hex"}
           value={asString(value)}
@@ -595,6 +667,7 @@ export function QuestionField({
           description={question.description}
           required={question.required}
           disabled={disabled}
+          error={error}
           min={question.config?.min}
           max={question.config?.max}
           value={asString(value)}
@@ -613,6 +686,7 @@ export function QuestionField({
           description={question.description}
           required={question.required}
           disabled={disabled}
+          error={error}
           step={question.config?.step}
           value={asString(value)}
           onChange={(event) => {
@@ -630,6 +704,7 @@ export function QuestionField({
           description={question.description}
           required={question.required}
           disabled={disabled}
+          error={error}
           value={asString(value)}
           onChange={(event) => {
             const next = event.currentTarget.value;
@@ -646,7 +721,9 @@ export function QuestionField({
           placeholder={question.config?.placeholder}
           required={question.required}
           disabled={disabled}
+          error={error}
           maxTags={question.config?.maxTags}
+          maxLength={DEFAULT_MAX_TAG_LENGTH}
           data={question.config?.suggestions}
           value={asStringArray(value)}
           onChange={(next) => onChange(next)}

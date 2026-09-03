@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AnswerValue } from "@repo/forms";
+import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
 
 import { logHandledError } from "@/lib/log/handled";
 import {
@@ -66,6 +66,18 @@ export async function hydrate(ctx: string): Promise<void> {
     multi.expire(kValues(ctx), ROOM_TTL_S);
   }
   await multi.exec();
+}
+
+/**
+ * The room's cached template (seeded by `hydrate`). The event route validates
+ * incoming edits against its `labForm`, so the buffer can only ever hold
+ * answers the template actually allows.
+ */
+export async function readTemplate(
+  ctx: string,
+): Promise<ExperimentTemplate | null> {
+  const raw = await getRedis().get(kTemplate(ctx));
+  return raw ? (JSON.parse(raw) as ExperimentTemplate) : null;
 }
 
 async function readRawSnapshot(ctx: string): Promise<TemplateWireSnapshot | null> {

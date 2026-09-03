@@ -115,6 +115,18 @@ are hand-written to mirror it and kept in sync **manually** (accepted tech debt
 — the schema rarely changes). Change one, change the other. See
 `packages/forms/README.md`.
 
+## Answer validation
+
+Every question type's `config` (ranges, lengths, option lists) is enforced in
+**one** place — `packages/forms/src/validation.ts` — and applied at every write
+path: the renderer before submit, the server actions before writing to
+experiment-manager, and the collab event route before a keystroke enters the
+buffer. Add a constraint there, not in a component. Issues are reported as
+codes and translated via `forms.validation.*`
+(`apps/web/src/lib/forms/answerIssues.ts`). See
+[`packages/forms/README.md`](packages/forms/README.md#answer-validation) for the
+rule set and the `submit` vs `live` distinction.
+
 ## Routes (current & planned)
 
 The full route map — client-facing and staff (`/internal/*`), with what's

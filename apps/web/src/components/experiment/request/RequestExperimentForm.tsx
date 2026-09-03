@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { requestExperimentAction } from "@/app/actions/experiment-request";
+import { formatAnswerIssue } from "@/lib/forms/answerIssues";
 import { myExperimentDetailPath } from "@/lib/experiment/routes";
 
 interface RequestExperimentFormProps {
@@ -23,6 +24,7 @@ export function RequestExperimentForm({
   submitLabel,
 }: RequestExperimentFormProps) {
   const t = useTranslations("experiment.request.form");
+  const tIssue = useTranslations("forms.validation");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +77,8 @@ export function RequestExperimentForm({
           doc={clientForm}
           submitLabel={submitLabel ?? t("submit")}
           missingRequiredTitle={t("missingRequired")}
+          invalidTitle={tIssue("invalidTitle")}
+          formatIssue={(issue) => formatAnswerIssue(tIssue, issue)}
           onSubmit={handleSubmit}
         />
       </Box>

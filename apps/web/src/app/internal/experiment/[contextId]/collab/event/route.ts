@@ -1,4 +1,5 @@
 import type { AnswerValue } from "@repo/forms";
+import { validateField } from "@repo/forms";
 import { NextResponse } from "next/server";
 
 import { getSession } from "@/lib/auth/dal";
@@ -11,6 +12,7 @@ import {
   hydrate,
   publish,
   readPresence,
+  readTemplate,
   releaseLock,
   scheduleFlush,
   setPresence,
@@ -127,7 +129,28 @@ export async function POST(
           { status: 409 },
         );
       }
-      const value = event.value as AnswerValue;
+      const value = (event.value ?? null) as AnswerValue;
+
+      // Enforce the question's own data type before the value enters the
+      // buffer — otherwise a POST straight to this route (bypassing the
+      // renderer) could park an out-of-range number or a foreign field in the
+      // experiment record. `live` mode only rejects what a partially-typed
+      // answer can never be (wrong type, over a maximum, not an offered
+      // option); `submitExperimentAction` applies the full rule set.
+      const template = await readTemplate(contextId);
+      const issues = template
+        ? validateField(template.labForm.questions, event.field, value)
+        : null;
+      if (issues === null) {
+        return NextResponse.json({ error: "unknown field" }, { status: 400 });
+      }
+      if (issues.length > 0) {
+        return NextResponse.json(
+          { error: "invalid value", issues: issues.map((issue) => issue.code) },
+          { status: 400 },
+        );
+      }
+
       await applyEdit(contextId, event.field, value);
       scheduleFlush(contextId);
       await publish(contextId, {

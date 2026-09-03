@@ -1,8 +1,9 @@
 "use server";
 
 import type { AnswerValue } from "@repo/forms";
-import { findMissingRequired } from "@repo/forms";
+import { FormAnswers, validateAnswers } from "@repo/forms";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { getSession } from "@/lib/auth/dal";
@@ -16,9 +17,9 @@ import {
   updateExperimentCalculations,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
+import { formatAnswerIssues } from "@/lib/forms/answerIssues";
 import {
   experimentDetailToState,
-  extractWireSnapshot,
   templateToExperimentUpdate,
 } from "@/lib/experiment-manager/mappers";
 import {
@@ -103,13 +104,15 @@ export async function submitExperimentAction(
   try {
     const exp = await getExperiment(contextId);
     const state = experimentDetailToState(exp);
-    const missing = findMissingRequired(state.template.labForm.questions, state.values);
-    if (missing.length > 0) {
+    // Last gate before the values become the experiment record: the live editor
+    // only enforces the constraints a half-typed answer can't violate, so the
+    // full set (required, minimums, ranges) is checked here.
+    const issues = validateAnswers(state.template.labForm.questions, state.values);
+    if (issues.length > 0) {
+      const tIssue = await getTranslations("forms.validation");
       return {
         success: false,
-        error: `Fill in all required fields before submitting:\n${missing
-          .map((m) => `- ${m.label}`)
-          .join("\n")}`,
+        error: `${tIssue("invalidTitle")}\n${formatAnswerIssues(tIssue, issues)}`,
       };
     }
   } catch (error) {
@@ -271,9 +274,27 @@ export async function updateExperimentValuesAction(
   const gate = await requireFinalizingTicket(contextId);
   if (gate) return { success: false, error: gate.error };
 
+  const parsedInput = FormAnswers.safeParse(labFormValues);
+  if (!parsedInput.success) {
+    const tIssue = await getTranslations("forms.validation");
+    return { success: false, error: tIssue("invalidPayload") };
+  }
+
   try {
     const exp = await getExperiment(contextId);
-    const snapshot = extractWireSnapshot(exp);
+    const state = experimentDetailToState(exp);
+    const issues = validateAnswers(
+      state.template.labForm.questions,
+      parsedInput.data,
+    );
+    if (issues.length > 0) {
+      const tIssue = await getTranslations("forms.validation");
+      return {
+        success: false,
+        error: `${tIssue("invalidTitle")}\n${formatAnswerIssues(tIssue, issues)}`,
+      };
+    }
+    const snapshot = state.wireSnapshot;
     const calculations = Object.fromEntries(
       Object.entries(snapshot.calculations).map(([name, calc]) => [
         name,
@@ -282,7 +303,7 @@ export async function updateExperimentValuesAction(
     );
     const values: Record<string, AnswerValue> = {
       ...(exp.values as Record<string, AnswerValue> | undefined),
-      ...labFormValues,
+      ...parsedInput.data,
     };
     await updateExperiment(contextId, {
       ...templateToExperimentUpdate(snapshot, values),
