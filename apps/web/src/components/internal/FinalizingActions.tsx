@@ -135,6 +135,12 @@ export function FinalizingActions({
     !hasCalculations || calculationsReady || calcDoneThisSession;
   const reportIsReady = isReady(reportStatus);
   const canClose = calcSatisfied && reportIsReady && !inFlight;
+  // The fix affordance is offered for the whole FINALIZING stage, not just
+  // after a failed Calculate: a formula can produce a plausible-but-wrong
+  // number, and a mistyped reading calculates cleanly. Gated only on there
+  // being something to fix at all.
+  const hasFixableInputs =
+    labForm.questions.length > 0 || Object.keys(calculations).length > 0;
   const meta = (() => {
     const normalized = normalizeStatus(reportStatus);
     if (!normalized) return { label: t("status.notGenerated"), color: "gray" };
@@ -328,7 +334,7 @@ export function FinalizingActions({
           >
             {t("closeTicket")}
           </Button>
-          {calcError && labForm.questions.length > 0 && (
+          {hasFixableInputs && (
             <Button
               variant="subtle"
               color="orange"
@@ -428,26 +434,28 @@ export function FinalizingActions({
           <Text size="sm" c="dimmed">
             {t("fixChoiceBody")}
           </Text>
-          <Card withBorder radius="md" padding="sm">
-            <Stack gap={4}>
-              <Text size="sm" fw={500}>
-                {t("fixChoiceValuesTitle")}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {t("fixChoiceValuesBody")}
-              </Text>
-              <Button
-                mt="xs"
-                size="sm"
-                onClick={() => {
-                  setFixChoiceModalOpen(false);
-                  setFixValuesModalOpen(true);
-                }}
-              >
-                {t("editValues")}
-              </Button>
-            </Stack>
-          </Card>
+          {labForm.questions.length > 0 && (
+            <Card withBorder radius="md" padding="sm">
+              <Stack gap={4}>
+                <Text size="sm" fw={500}>
+                  {t("fixChoiceValuesTitle")}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {t("fixChoiceValuesBody")}
+                </Text>
+                <Button
+                  mt="xs"
+                  size="sm"
+                  onClick={() => {
+                    setFixChoiceModalOpen(false);
+                    setFixValuesModalOpen(true);
+                  }}
+                >
+                  {t("editValues")}
+                </Button>
+              </Stack>
+            </Card>
+          )}
           {Object.keys(calculations).length > 0 && (
             <Card withBorder radius="md" padding="sm">
               <Stack gap={4}>
