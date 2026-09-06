@@ -2,6 +2,7 @@ import type { AnswerValue, ExperimentTemplate, FormDoc } from "@repo/forms";
 import { ExperimentTemplate as ExperimentTemplateSchema } from "@repo/forms";
 
 import type {
+  CalculationDryRunRequest,
   CalculationSnapshot,
   ExperimentDetail,
   ExperimentTemplateCreate,
@@ -213,6 +214,30 @@ export function templateToUpdate(
   template: ExperimentTemplate,
 ): ExperimentTemplateUpdate {
   return templateToCreate(meta, template);
+}
+
+/**
+ * Build the stateless dry-run body from an unsaved builder draft plus the
+ * answers captured in the preview. Sends the same normalized forms a save
+ * would, so a formula that evaluates here evaluates the same way once the
+ * template is saved. Any previously computed `result` is stripped — the point
+ * of the request is what the formulas produce now.
+ */
+export function templateToCalculationDryRun(
+  template: ExperimentTemplate,
+  values: Record<string, AnswerValue>,
+): CalculationDryRunRequest {
+  return {
+    clientForm: normalizeFormDocForApi(template.clientForm),
+    labForm: normalizeFormDocForApi(template.labForm),
+    calculations: Object.fromEntries(
+      Object.entries(template.calculations).map(([name, { formula }]) => [
+        name,
+        { formula },
+      ]),
+    ),
+    values,
+  };
 }
 
 /**

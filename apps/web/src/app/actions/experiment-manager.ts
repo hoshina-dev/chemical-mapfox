@@ -1,19 +1,22 @@
 "use server";
 
-import type { ExperimentTemplate } from "@repo/forms";
+import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import { logHandledError } from "@/lib/log/handled";
 import {
+  type CalculationDryRunResponse,
   createExperimentTemplate,
   createSample,
   deleteExperimentTemplate,
+  evaluateCalculations,
   updateExperimentTemplate,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
+  templateToCalculationDryRun,
   templateToCreate,
   templateToUpdate,
   type TemplateRef,
@@ -127,6 +130,35 @@ export async function deleteTemplateAction(
     return {
       success: false,
       error: errorMessage(error, t("deleteTemplate")),
+    };
+  }
+}
+
+/**
+ * Run the draft template's formulas against trial answers. Persists nothing, so
+ * there is no path to revalidate — a failed result here means the request
+ * itself failed, not that a formula was wrong (per-formula errors come back
+ * inside a successful response).
+ */
+export async function testCalculationsAction(
+  template: ExperimentTemplate,
+  values: Record<string, AnswerValue>,
+): Promise<ActionResult<CalculationDryRunResponse>> {
+  await requireAdmin();
+  try {
+    const result = await evaluateCalculations(
+      templateToCalculationDryRun(template, values),
+    );
+    return { success: true, data: result };
+  } catch (error) {
+    logHandledError(error, {
+      action: "testCalculationsAction",
+      service: "experiment-manager",
+    });
+    const t = await getTranslations("builder.errors");
+    return {
+      success: false,
+      error: errorMessage(error, t("testCalculations")),
     };
   }
 }

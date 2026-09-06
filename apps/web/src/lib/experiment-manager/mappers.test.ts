@@ -11,6 +11,7 @@ import {
   mapCalculationsToApi,
   normalizeCalculations,
   templateDetailToLoaded,
+  templateToCalculationDryRun,
   templateToCreate,
   templateToExperimentUpdate,
   templateToUpdate,
@@ -263,6 +264,32 @@ describe("templateToCreate / templateToUpdate", () => {
     expect(group?.config?.questions[0]?.description).toBeNull();
 
     expect(templateToUpdate({ title: "Ash" }, withNullDescriptions)).toEqual(create);
+  });
+});
+
+describe("templateToCalculationDryRun", () => {
+  it("sends both forms, formula-only calculations, and the trial values", () => {
+    const body = templateToCalculationDryRun(template, { reading: [1, 2] });
+
+    expect(body.clientForm).toEqual(baseForm);
+    expect(body.labForm).toEqual(labForm);
+    expect(body.values).toEqual({ reading: [1, 2] });
+    // `withResult` carries a stored result; a dry run asks what the formulas
+    // produce now, so results must not be echoed back as inputs.
+    expect(body.calculations).toEqual({
+      avg: { formula: "mean(values['reading'])" },
+      withResult: { formula: "1 + 1" },
+    });
+  });
+
+  it("accepts a template with no calculations and no captured values", () => {
+    const body = templateToCalculationDryRun(
+      { ...template, calculations: {} },
+      {},
+    );
+
+    expect(body.calculations).toEqual({});
+    expect(body.values).toEqual({});
   });
 });
 

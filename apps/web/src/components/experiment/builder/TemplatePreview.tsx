@@ -6,6 +6,8 @@ import { Code, Divider, Stack, Text } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { CalculationTester } from "./CalculationTester";
+
 interface TemplatePreviewProps {
   template: ExperimentTemplate;
 }
@@ -13,13 +15,15 @@ interface TemplatePreviewProps {
 /**
  * Interactive preview of both forms in a template — fields are editable so the
  * author can try dropdowns, switches, sliders, etc. "Capture values" surfaces
- * the answers the form would collect. (The real experiment working flow is a
- * separate, deferred feature.)
+ * the answers the form would collect, and those answers feed the calculation
+ * tester below so formulas can be checked against them. (The real experiment
+ * working flow is a separate, deferred feature.)
  */
 export function TemplatePreview({ template }: TemplatePreviewProps) {
   const t = useTranslations("builder.preview");
   const [clientAnswers, setClientAnswers] = useState<FormAnswers | null>(null);
   const [labAnswers, setLabAnswers] = useState<FormAnswers | null>(null);
+  const capturedValues = { ...(clientAnswers ?? {}), ...(labAnswers ?? {}) };
 
   return (
     <Stack gap="xl">
@@ -62,6 +66,10 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           </div>
         )}
       </Stack>
+
+      <Divider />
+
+      <CalculationTester template={template} values={capturedValues} />
     </Stack>
   );
 }

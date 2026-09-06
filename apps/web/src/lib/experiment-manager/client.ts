@@ -73,6 +73,10 @@ export type ReportStatusResponse = Em["ReportStatusResponse"];
 export type ReportDownloadResponse = Em["ReportDownloadResponse"];
 export type PdfTemplateBody = Em["PdfTemplateBody"];
 export type PdfTemplateResponse = Em["PdfTemplateResponse"];
+export type CalculationDryRunRequest = Em["CalculationDryRunRequest"];
+export type CalculationDryRunResponse = Em["CalculationDryRunResponse"];
+export type CalculationOutcome = Em["CalculationOutcome"];
+export type CalculationErrorDetail = Em["CalculationError"];
 
 /**
  * Fields merged from the experiment template JSONB. OpenAPI types the detail
@@ -160,6 +164,24 @@ export async function updateExperimentCalculations(
   return emFetch<ExperimentDetail>(`/api/experiments/${expId}/calculations`, {
     method: "PUT",
     body: JSON.stringify({ calculations }),
+  });
+}
+
+// --- Calculations (stateless dry run) ---
+
+/**
+ * Run a draft template's formulas against trial values without saving
+ * anything — neither a template nor an experiment has to exist. Used by the
+ * onboarding builder so an author can check their formulas before saving.
+ *
+ * Unlike `calculateExperiment`, a broken formula does not fail the request:
+ * the response reports each calculation's own `status` (`ok` / `error` /
+ * `skipped`), so all mistakes surface in one round trip.
+ */
+export async function evaluateCalculations(body: CalculationDryRunRequest) {
+  return emFetch<CalculationDryRunResponse>("/api/calculations/evaluate", {
+    method: "POST",
+    body: JSON.stringify(body),
   });
 }
 
