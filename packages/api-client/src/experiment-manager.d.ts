@@ -633,6 +633,8 @@ export interface components {
             version: number;
             /** Is Current */
             is_current: boolean;
+            /** Has Pdf Template */
+            has_pdf_template: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -666,6 +668,8 @@ export interface components {
             version: number;
             /** Is Current */
             is_current: boolean;
+            /** Has Pdf Template */
+            has_pdf_template: boolean;
         };
         /**
          * ExperimentTemplateUpdate

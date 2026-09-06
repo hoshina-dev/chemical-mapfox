@@ -25,6 +25,7 @@ export interface TemplateSummary {
   lineageId: string;
   title: string;
   description?: string;
+  hasPdfTemplate: boolean;
 }
 
 /** Raw clientForm/labForm/calculations JSON from experiment-manager. */
@@ -42,6 +43,8 @@ export interface LoadedTemplate {
   /** Verbatim API snapshot — use for experiment PUT to pass drift validation. */
   wireSnapshot: TemplateWireSnapshot;
   valid: boolean;
+  /** Whether this template has a non-empty PDF report layout defined. */
+  hasPdfTemplate: boolean;
 }
 
 type CalculationWire = CalculationSnapshot | string;
@@ -149,6 +152,7 @@ export function templateDetailToLoaded(
     template: parsed.success ? parsed.data : (candidate as ExperimentTemplate),
     wireSnapshot,
     valid: parsed.success,
+    hasPdfTemplate: detail.has_pdf_template,
   };
 }
 
@@ -267,5 +271,6 @@ export function toTemplateSummary(
     lineageId: row.lineage_id,
     title: row.name,
     description: row.description ?? undefined,
+    hasPdfTemplate: row.has_pdf_template,
   };
 }

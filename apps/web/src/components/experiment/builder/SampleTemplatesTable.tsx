@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Badge,
+  Group,
   Table,
   TableTbody,
   TableTd,
@@ -46,7 +48,14 @@ export function SampleTemplatesTable({
               style={{ cursor: "pointer" }}
             >
               <TableTd>
-                <Text fw={500}>{tpl.title}</Text>
+                <Group gap="xs" wrap="nowrap">
+                  <Text fw={500}>{tpl.title}</Text>
+                  {!tpl.hasPdfTemplate && (
+                    <Badge color="yellow" variant="light" size="sm">
+                      {t("noReportLayout")}
+                    </Badge>
+                  )}
+                </Group>
               </TableTd>
               <TableTd>
                 <Text size="sm" c="dimmed">

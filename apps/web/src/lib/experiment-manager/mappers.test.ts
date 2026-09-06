@@ -125,6 +125,7 @@ describe("templateDetailToLoaded", () => {
       clientForm: baseForm,
       labForm,
       calculations: { avg: "mean(values['reading'])" },
+      has_pdf_template: true,
     } satisfies ExperimentTemplateDetail;
 
     const loaded = templateDetailToLoaded(detail);
@@ -316,6 +317,7 @@ describe("toTemplateSummary", () => {
         lineage_id: "line-1",
         name: "Ash",
         description: null,
+        has_pdf_template: false,
       }),
     ).toEqual({
       sampleId: "sample-1",
@@ -323,6 +325,7 @@ describe("toTemplateSummary", () => {
       lineageId: "line-1",
       title: "Ash",
       description: undefined,
+      hasPdfTemplate: false,
     });
 
     expect(
@@ -331,7 +334,20 @@ describe("toTemplateSummary", () => {
         lineage_id: "line-2",
         name: "Moisture",
         description: "Moisture content",
+        has_pdf_template: true,
       }).description,
     ).toBe("Moisture content");
+  });
+
+  it("carries through has_pdf_template", () => {
+    expect(
+      toTemplateSummary("sample-1", {
+        id: "tpl-3",
+        lineage_id: "line-3",
+        name: "Calorific",
+        description: null,
+        has_pdf_template: true,
+      }).hasPdfTemplate,
+    ).toBe(true);
   });
 });

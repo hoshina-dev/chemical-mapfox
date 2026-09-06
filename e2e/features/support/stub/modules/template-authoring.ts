@@ -47,6 +47,7 @@ export interface StubTemplate {
   clientForm: FormDocLike;
   labForm: FormDocLike;
   calculations: Record<string, unknown>;
+  pdfComponents: unknown[] | null;
 }
 
 const samples: StubSample[] = [];
@@ -110,6 +111,9 @@ export function seedTemplate(
     clientForm: emptyForm("Client form"),
     labForm: emptyForm("Lab form"),
     calculations: {},
+    // Seeded templates already have a report layout — scenarios that care
+    // about the "no report layout yet" gating seed it explicitly.
+    pdfComponents: [{ type: "text", x: 10, y: 20, content: "Report" }],
   };
   templates.push(template);
   return template;
@@ -129,6 +133,7 @@ function templateSummaryWire(t: StubTemplate) {
     description: t.description,
     version: t.version,
     is_current: t.isCurrent,
+    has_pdf_template: Boolean(t.pdfComponents && t.pdfComponents.length > 0),
   };
 }
 
@@ -209,6 +214,9 @@ async function handle(ctx: StubContext): Promise<boolean> {
         clientForm: body.clientForm ?? emptyForm("Client form"),
         labForm: body.labForm ?? emptyForm("Lab form"),
         calculations: body.calculations ?? {},
+        // Freshly created templates have no report layout yet — matches the
+        // real backend, which never creates a PdfTemplate on template create.
+        pdfComponents: null,
       };
       templates.push(template);
       return ctx.json(201, templateDetailWire(template));
@@ -255,6 +263,41 @@ async function handle(ctx: StubContext): Promise<boolean> {
       if (idx < 0) return ctx.json(404, { detail: "template not found" });
       templates.splice(idx, 1);
       return ctx.json(204, {});
+    }
+    return false;
+  }
+
+  // /api/samples/{id}/experiments/{templateId}/pdf (GET) or
+  // /api/samples/{id}/experiments/{lineageId}/pdf (PUT)
+  if (rest.length === 4 && rest[1] === "experiments" && rest[3] === "pdf") {
+    const ref = decodeURIComponent(rest[2]);
+    if (method === "GET") {
+      const t = templates.find(
+        (x) => x.sampleId === sampleId && x.id === ref,
+      );
+      if (!t || !t.pdfComponents) {
+        return ctx.json(404, { detail: "no pdf template" });
+      }
+      return ctx.json(200, {
+        template_id: t.id,
+        is_current: t.isCurrent,
+        components: t.pdfComponents,
+        updated_at: new Date().toISOString(),
+      });
+    }
+    if (method === "PUT") {
+      const t = templates.find(
+        (x) => x.sampleId === sampleId && x.lineageId === ref,
+      );
+      if (!t) return ctx.json(404, { detail: "template not found" });
+      const body = (await ctx.readBody()) as { components?: unknown[] };
+      t.pdfComponents = body.components ?? [];
+      return ctx.json(200, {
+        template_id: t.id,
+        is_current: t.isCurrent,
+        components: t.pdfComponents,
+        updated_at: new Date().toISOString(),
+      });
     }
     return false;
   }

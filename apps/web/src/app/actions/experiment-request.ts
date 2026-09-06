@@ -68,6 +68,9 @@ export async function requestExperimentAction(
   if (!resolved) {
     return { success: false, error: t("templateGone") };
   }
+  if (!resolved.template.hasPdfTemplate) {
+    return { success: false, error: t("noReportLayout") };
+  }
 
   // A server action's arguments are client-controlled: re-check the answer bag
   // is even shaped like answers before validating it question by question.

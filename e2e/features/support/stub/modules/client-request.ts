@@ -154,6 +154,9 @@ function templateSummary(tpl: SeededTemplate) {
     description: tpl.description,
     version: 1,
     is_current: true,
+    // Seeded catalogue templates always have a report layout — the
+    // "no report layout" gating has its own dedicated scenarios.
+    has_pdf_template: true,
   };
 }
 
