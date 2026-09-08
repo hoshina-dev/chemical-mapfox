@@ -6,10 +6,33 @@ import { RequestExperimentForm } from "@/components/experiment/request/RequestEx
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { loadRequestTemplate } from "@/lib/experiment/data";
 import { requestCatalogPath } from "@/lib/experiment/routes";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestExperimentPage({
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the content component, under
+ * `AsyncPanel`.
+ */
+export default function RequestExperimentPage(props: Parameters<typeof RequestExperimentPageContent>[0]) {
+  return (
+    <AsyncPanel
+      fallback={
+        <Container size="md" py="xl">
+          <PanelSkeleton lines={8} />
+        </Container>
+      }
+    >
+      <RequestExperimentPageContent {...props} />
+    </AsyncPanel>
+  );
+}
+
+async function RequestExperimentPageContent({
   params,
   searchParams,
 }: {

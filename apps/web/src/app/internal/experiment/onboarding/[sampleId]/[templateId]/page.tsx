@@ -10,6 +10,8 @@ import {
   getSample,
 } from "@/lib/experiment-manager/client";
 import { templateDetailToLoaded } from "@/lib/experiment-manager/mappers";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +19,28 @@ interface PageProps {
   params: Promise<{ sampleId: string; templateId: string }>;
 }
 
-export default async function EditTemplatePage({ params }: PageProps) {
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the content component, under
+ * `AsyncPanel`.
+ */
+export default function EditTemplatePage(props: Parameters<typeof EditTemplatePageContent>[0]) {
+  return (
+    <AsyncPanel
+      fallback={
+        <Container size="xl" py="xl">
+          <PanelSkeleton lines={8} />
+        </Container>
+      }
+    >
+      <EditTemplatePageContent {...props} />
+    </AsyncPanel>
+  );
+}
+
+async function EditTemplatePageContent({ params }: PageProps) {
   const { sampleId, templateId } = await params;
   const t = await getTranslations("builder.editPage");
 

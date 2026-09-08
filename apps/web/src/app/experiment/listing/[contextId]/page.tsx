@@ -17,6 +17,8 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
@@ -35,7 +37,27 @@ import { getExperimentWorkspace } from "@/lib/internal/experiments";
 
 export const dynamic = "force-dynamic";
 
-export default async function MyExperimentDetailPage({
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the child below, under
+ * `AsyncPanel`.
+ */
+export default function MyExperimentDetailPage({
+  params,
+}: {
+  params: Promise<{ contextId: string }>;
+}) {
+  return (
+    <Container size="xl" py="xl">
+      <AsyncPanel fallback={<PanelSkeleton lines={10} />}>
+        <MyExperimentDetailContent params={params} />
+      </AsyncPanel>
+    </Container>
+  );
+}
+
+async function MyExperimentDetailContent({
   params,
 }: {
   params: Promise<{ contextId: string }>;
@@ -73,7 +95,7 @@ export default async function MyExperimentDetailPage({
     state?.reportStatus?.toLowerCase() === "succeeded";
 
   return (
-    <Container size="xl" py="xl">
+    <>
       <Stack gap="lg">
         <Breadcrumbs
           items={[
@@ -177,7 +199,7 @@ export default async function MyExperimentDetailPage({
           </GridCol>
         </Grid>
       </Stack>
-    </Container>
+    </>
   );
 }
 

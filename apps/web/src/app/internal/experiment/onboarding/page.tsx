@@ -19,6 +19,8 @@ import {
   listSamples,
 } from "@/lib/experiment-manager/client";
 import { sampleOnboardingPath } from "@/lib/experiment-manager/routes";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +53,28 @@ async function loadSamples(): Promise<SampleCard[]> {
   );
 }
 
-export default async function OnboardingPage() {
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the content component, under
+ * `AsyncPanel`.
+ */
+export default function OnboardingPage() {
+  return (
+    <AsyncPanel
+      fallback={
+        <Container size="xl" py="xl">
+          <PanelSkeleton lines={8} />
+        </Container>
+      }
+    >
+      <OnboardingPageContent />
+    </AsyncPanel>
+  );
+}
+
+async function OnboardingPageContent() {
   const t = await getTranslations("staff.onboarding");
   const tCommon = await getTranslations("common");
 

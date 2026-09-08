@@ -8,10 +8,33 @@ import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
 import { getNotificationPreferences } from "@/lib/ticketing/notification-preferences";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the content component, under
+ * `AsyncPanel`.
+ */
+export default function SettingsPage() {
+  return (
+    <AsyncPanel
+      fallback={
+        <Container size="sm" py="xl">
+          <PanelSkeleton lines={8} />
+        </Container>
+      }
+    >
+      <SettingsPageContent />
+    </AsyncPanel>
+  );
+}
+
+async function SettingsPageContent() {
   const session = await requireSession();
   const t = await getTranslations("settings");
   const tNotifications = await getTranslations("settings.notifications");
