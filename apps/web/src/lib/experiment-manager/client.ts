@@ -2,7 +2,11 @@ import "server-only";
 
 import type { ExperimentManager } from "@repo/api-client";
 
-import { loggedFetch } from "@/lib/log/downstream";
+import {
+  type DownstreamInit,
+  DownstreamTimeoutError,
+  loggedFetch,
+} from "@/lib/log/downstream";
 
 import { getExperimentManagerUrl } from "./config";
 
@@ -23,17 +27,34 @@ async function parseJson<T>(res: Response): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export async function emFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function emFetch<T>(
+  path: string,
+  init?: DownstreamInit,
+): Promise<T> {
   const url = `${getExperimentManagerUrl()}${path}`;
-  const res = await loggedFetch("experiment-manager", url, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-      ...init?.headers,
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await loggedFetch("experiment-manager", url, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...init?.headers,
+      },
+      cache: "no-store",
+    });
+  } catch (error) {
+    // Surface a stalled backend as a gateway timeout so callers render the
+    // normal error path instead of awaiting a response that never comes.
+    if (error instanceof DownstreamTimeoutError) {
+      throw new ExperimentManagerError(
+        `Experiment Manager ${init?.method ?? "GET"} ${path} timed out`,
+        504,
+        { detail: error.message },
+      );
+    }
+    throw error;
+  }
 
   if (!res.ok) {
     // Read the body once, keeping the raw text if it isn't JSON, so the failure

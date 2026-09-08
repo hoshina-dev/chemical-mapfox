@@ -101,20 +101,66 @@ export async function peekBody(res: Response): Promise<unknown> {
   }
 }
 
+export interface DownstreamInit extends RequestInit {
+  /**
+   * Abort the request after this many ms. Defaults per service (see
+   * `DEFAULT_TIMEOUT_MS`). Pass a larger value for a call that legitimately
+   * takes longer; there is deliberately no way to opt out entirely.
+   */
+  timeoutMs?: number;
+}
+
 /**
- * fetch() wrapper used by every BFF → backend client. Logs unexpected
- * statuses and network throws; leaves the Response intact for the caller.
+ * Every downstream request gets a deadline. Without one, a backend that
+ * accepts the connection and then never answers — a wedged event loop, a
+ * half-open socket — leaves the server action pending forever, and the page
+ * that awaited it never renders. The failure is not the caller's to detect:
+ * `fetch` will wait indefinitely by default.
+ *
+ * The interactive budget is short because these calls happen during a render
+ * or a user action; s3 is generous because report downloads stream a whole
+ * PDF through this wrapper and the deadline covers the body, not just the
+ * response headers.
+ */
+const DEFAULT_TIMEOUT_MS: Record<DownstreamService, number> = {
+  custapi: 10_000,
+  ticketing: 10_000,
+  "experiment-manager": 10_000,
+  s3: 120_000,
+};
+
+/** A downstream that did not answer within its deadline. */
+export class DownstreamTimeoutError extends Error {
+  constructor(
+    readonly service: DownstreamService,
+    readonly timeoutMs: number,
+  ) {
+    super(`${service} did not respond within ${timeoutMs}ms`);
+    this.name = "DownstreamTimeoutError";
+  }
+}
+
+/**
+ * fetch() wrapper used by every BFF → backend client. Applies the service's
+ * deadline, logs unexpected statuses and network throws; leaves the Response
+ * intact for the caller.
  */
 export async function loggedFetch(
   service: DownstreamService,
   input: RequestInfo | URL,
-  init?: RequestInit,
+  init?: DownstreamInit,
 ): Promise<Response> {
   const method = init?.method ?? "GET";
   const url = requestUrl(input);
 
+  const { timeoutMs = DEFAULT_TIMEOUT_MS[service], signal, ...rest } = init ?? {};
+  const deadline = AbortSignal.timeout(timeoutMs);
+  // Honour a caller's own signal (route cancellation, React aborts) alongside
+  // the deadline — whichever fires first wins.
+  const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
+
   try {
-    const res = await fetch(input, init);
+    const res = await fetch(input, { ...rest, signal: combined });
     const level = classifyDownstream(service, url, res.status);
     if (level) {
       logger[level](
@@ -130,6 +176,17 @@ export async function loggedFetch(
     }
     return res;
   } catch (err) {
+    // The deadline fired: report it as a timeout rather than a bare AbortError,
+    // so callers can map it to a gateway-timeout response and the log says what
+    // actually happened.
+    if (deadline.aborted && !signal?.aborted) {
+      const timeout = new DownstreamTimeoutError(service, timeoutMs);
+      logger.error(
+        { err: timeout, service, method, url: safeUrl(url), timeoutMs },
+        "downstream request timed out",
+      );
+      throw timeout;
+    }
     logger.error(
       { err, service, method, url: safeUrl(url) },
       "downstream request threw",
