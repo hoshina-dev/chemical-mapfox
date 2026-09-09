@@ -36,7 +36,12 @@
     "unknown": "Unknown",
     "notGenerated": "Not generated",
     "untitledExperiment": "Untitled experiment",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "asyncPanel": {
+      "title": "Could not load this section",
+      "body": "The service did not respond in time. The rest of the page still works.",
+      "retry": "Retry"
+    }
   },
   "settings": {
     "breadcrumb": "Settings",

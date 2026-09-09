@@ -14,6 +14,8 @@ import {
   getExperimentTemplate,
   getPdfTemplate,
 } from "@/lib/experiment-manager/client";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +50,27 @@ function expandSourceVars(
   return vars;
 }
 
-export default async function PdfEditorPage({ params }: PdfEditorPageProps) {
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the shell off screen while a
+ * backend stalls. The awaits live in the content component, under `AsyncPanel`.
+ */
+export default function PdfEditorPage(props: Parameters<typeof PdfEditorPageContent>[0]) {
+  return (
+    <AsyncPanel
+      fallback={
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
+          <PanelSkeleton lines={8} />
+        </div>
+      }
+    >
+      <PdfEditorPageContent {...props} />
+    </AsyncPanel>
+  );
+}
+
+async function PdfEditorPageContent({ params }: PdfEditorPageProps) {
   await requireAdmin();
   const { sampleId, templateId } = await params;
   const t = await getTranslations("pdfEditor");

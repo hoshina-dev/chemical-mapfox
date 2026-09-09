@@ -36,7 +36,12 @@
     "unknown": "Nieznane",
     "notGenerated": "Nie wygenerowano",
     "untitledExperiment": "Eksperyment bez tytułu",
-    "loading": "Ładowanie…"
+    "loading": "Ładowanie…",
+    "asyncPanel": {
+      "title": "Nie udało się załadować tej sekcji",
+      "body": "Usługa nie odpowiedziała na czas. Reszta strony nadal działa.",
+      "retry": "Ponów"
+    }
   },
   "settings": {
     "breadcrumb": "Ustawienia",

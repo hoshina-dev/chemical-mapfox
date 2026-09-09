@@ -16,6 +16,8 @@ import { getTranslations } from "next-intl/server";
 
 import type { ReactNode } from "react";
 
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -38,7 +40,27 @@ import { getExperimentWorkspace } from "@/lib/internal/experiments";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExperimentWorkspacePage({
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting the workspace here would keep the nav and
+ * chrome off screen while a backend stalls. The awaits live in the child
+ * below, under `AsyncPanel`.
+ */
+export default function ExperimentWorkspacePage({
+  params,
+}: {
+  params: Promise<{ contextId: string }>;
+}) {
+  return (
+    <Container size="xl" py="xl">
+      <AsyncPanel fallback={<PanelSkeleton lines={10} />}>
+        <ExperimentWorkspaceContent params={params} />
+      </AsyncPanel>
+    </Container>
+  );
+}
+
+async function ExperimentWorkspaceContent({
   params,
 }: {
   params: Promise<{ contextId: string }>;
@@ -88,7 +110,7 @@ export default async function ExperimentWorkspacePage({
   const reachedCount = stages.filter((s) => s.at).length;
 
   return (
-    <Container size="xl" py="xl">
+    <>
       <Stack gap="lg">
         <Breadcrumbs
           items={[
@@ -275,7 +297,7 @@ export default async function ExperimentWorkspacePage({
           </GridCol>
         </Grid>
       </Stack>
-    </Container>
+    </>
   );
 }
 

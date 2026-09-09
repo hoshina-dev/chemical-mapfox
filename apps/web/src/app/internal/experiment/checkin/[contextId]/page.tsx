@@ -24,10 +24,33 @@ import {
 } from "@/lib/experiment-manager/routes";
 import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
+import { AsyncPanel } from "@/components/async/AsyncPanel";
+import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
 export const dynamic = "force-dynamic";
 
-export default async function SampleCheckInPage({
+
+/**
+ * Synchronous by design: Next withholds a route's entire HTML until the page
+ * function returns, so awaiting here would keep the nav and chrome off screen
+ * while a backend stalls. The awaits live in the content component, under
+ * `AsyncPanel`.
+ */
+export default function SampleCheckInPage(props: Parameters<typeof SampleCheckInPageContent>[0]) {
+  return (
+    <AsyncPanel
+      fallback={
+        <Container size="md" py="xl">
+          <PanelSkeleton lines={8} />
+        </Container>
+      }
+    >
+      <SampleCheckInPageContent {...props} />
+    </AsyncPanel>
+  );
+}
+
+async function SampleCheckInPageContent({
   params,
 }: {
   params: Promise<{ contextId: string }>;
