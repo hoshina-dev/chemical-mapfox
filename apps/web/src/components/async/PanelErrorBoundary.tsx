@@ -15,6 +15,24 @@ interface PanelErrorBoundaryState {
   /** Bumped on retry to remount children, discarding the failed subtree. */
   key: number;
   failed: boolean;
+  error: unknown;
+}
+
+/**
+ * Next signals control flow by throwing: `notFound()` and `redirect()` raise
+ * errors carrying a `NEXT_*` digest that the framework is meant to catch.
+ * A boundary that swallows them turns "not found" into "could not load", and —
+ * because `requireSession()` redirects the same way — turns "log in again"
+ * into a dead panel. These must always be re-thrown.
+ */
+function isFrameworkSignal(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_")
+  );
 }
 
 /**
@@ -33,18 +51,25 @@ export class PanelErrorBoundary extends Component<
   PanelErrorBoundaryProps,
   PanelErrorBoundaryState
 > {
-  state: PanelErrorBoundaryState = { key: 0, failed: false };
+  state: PanelErrorBoundaryState = { key: 0, failed: false, error: null };
 
-  static getDerivedStateFromError(): Partial<PanelErrorBoundaryState> {
-    return { failed: true };
+  static getDerivedStateFromError(
+    error: unknown,
+  ): Partial<PanelErrorBoundaryState> {
+    return { failed: true, error };
   }
 
   private retry = () => {
-    this.setState((s) => ({ key: s.key + 1, failed: false }));
+    this.setState((s) => ({ key: s.key + 1, failed: false, error: null }));
   };
 
   render() {
     if (this.state.failed) {
+      // Re-thrown from render so it propagates to the framework's own
+      // boundary, which is the only thing that can serve a 404 or a redirect.
+      if (isFrameworkSignal(this.state.error)) {
+        throw this.state.error;
+      }
       return (
         <Alert color="yellow" variant="light" title={this.props.title}>
           <Stack gap="sm">
