@@ -261,6 +261,16 @@ export function templateToExperimentUpdate(
   };
 }
 
+/**
+ * Whether a template may be offered to clients
+ * it must be the current version *and* have a PDF report layout
+ */
+export function isRequestableTemplate(
+  tpl: Pick<ExperimentTemplateSummary, "is_current" | "has_pdf_template">,
+): boolean {
+  return tpl.is_current && tpl.has_pdf_template;
+}
+
 export function toTemplateSummary(
   sampleId: string,
   row: ExperimentTemplateSummary,
