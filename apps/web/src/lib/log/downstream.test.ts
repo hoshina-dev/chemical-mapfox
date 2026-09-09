@@ -142,3 +142,29 @@ describe("loggedFetch", () => {
     });
   });
 });
+
+describe("loggedFetch deadline", () => {
+  it("honours a caller's own signal alongside the deadline", async () => {
+    // A route that cancels its work (navigation away, a React abort) must be
+    // able to abort the request itself, not only wait out the deadline.
+    const controller = new AbortController();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () =>
+              reject(new DOMException("aborted", "AbortError")),
+            );
+          }),
+      ),
+    );
+
+    const inFlight = loggedFetch("custapi", "https://api.example/slow", {
+      signal: controller.signal,
+    });
+    controller.abort();
+
+    await expect(inFlight).rejects.toThrow();
+  });
+});
