@@ -118,15 +118,16 @@ export interface DownstreamInit extends RequestInit {
  * `fetch` will wait indefinitely by default.
  *
  * The interactive budget is short because these calls happen during a render
- * or a user action; s3 is generous because report downloads stream a whole
- * PDF through this wrapper and the deadline covers the body, not just the
- * response headers.
+ * or a user action. s3 gets longer because report downloads stream a whole PDF
+ * through this wrapper and the deadline covers the body, not just the response
+ * headers — but it stays under a typical 60s reverse-proxy read timeout, so a
+ * stalled download surfaces as our own error rather than the proxy's.
  */
 const DEFAULT_TIMEOUT_MS: Record<DownstreamService, number> = {
   custapi: 10_000,
   ticketing: 10_000,
   "experiment-manager": 10_000,
-  s3: 120_000,
+  s3: 45_000,
 };
 
 /** A downstream that did not answer within its deadline. */
