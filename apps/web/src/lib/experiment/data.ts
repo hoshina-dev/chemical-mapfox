@@ -7,6 +7,7 @@ import {
   listSamples,
 } from "@/lib/experiment-manager/client";
 import {
+  isRequestableTemplate,
   type LoadedTemplate,
   templateDetailToLoaded,
 } from "@/lib/experiment-manager/mappers";
@@ -46,7 +47,7 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
         const { experiments } = await listExperimentTemplates(sample.id);
         templates = experiments
           // A template without a report layout can't be requested
-          .filter((tpl) => tpl.is_current && tpl.has_pdf_template)
+          .filter(isRequestableTemplate)
           .map((tpl) => ({
             sampleId: sample.id,
             templateId: tpl.id,

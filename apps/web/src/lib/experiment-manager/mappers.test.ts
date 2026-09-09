@@ -8,6 +8,7 @@ import type {
 import {
   experimentDetailToState,
   extractWireSnapshot,
+  isRequestableTemplate,
   mapCalculationsToApi,
   normalizeCalculations,
   templateDetailToLoaded,
@@ -349,5 +350,22 @@ describe("toTemplateSummary", () => {
         has_pdf_template: true,
       }).hasPdfTemplate,
     ).toBe(true);
+  });
+});
+
+describe("isRequestableTemplate", () => {
+  it("requires both the current version and a report layout", () => {
+    expect(
+      isRequestableTemplate({ is_current: true, has_pdf_template: true }),
+    ).toBe(true);
+    expect(
+      isRequestableTemplate({ is_current: true, has_pdf_template: false }),
+    ).toBe(false);
+    expect(
+      isRequestableTemplate({ is_current: false, has_pdf_template: true }),
+    ).toBe(false);
+    expect(
+      isRequestableTemplate({ is_current: false, has_pdf_template: false }),
+    ).toBe(false);
   });
 });

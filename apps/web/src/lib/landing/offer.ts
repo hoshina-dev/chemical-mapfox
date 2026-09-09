@@ -4,6 +4,7 @@ import {
   listExperimentTemplates,
   listSamples,
 } from "@/lib/experiment-manager/client";
+import { isRequestableTemplate } from "@/lib/experiment-manager/mappers";
 
 /**
  * Laboratory-offer data for the public landing page: every specimen type the
@@ -39,11 +40,13 @@ export async function getLabOffer(): Promise<OfferSample[] | null> {
           const { experiments: templates } = await listExperimentTemplates(
             sample.id,
           );
-          experiments = templates.map((t) => ({
-            id: t.id,
-            name: t.name,
-            description: t.description ?? undefined,
-          }));
+          experiments = templates
+            .filter(isRequestableTemplate)
+            .map((t) => ({
+              id: t.id,
+              name: t.name,
+              description: t.description ?? undefined,
+            }));
         } catch {
           experiments = [];
         }
