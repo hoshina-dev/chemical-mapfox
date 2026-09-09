@@ -11,6 +11,11 @@ import { isRequestableTemplate } from "@/lib/experiment-manager/mappers";
  * labs support, each with the experiment methods (templates) defined for it.
  */
 
+/**
+ * Specimen names kept off the public homepage.
+ */
+const HIDDEN_SAMPLE_NAMES = new Set(["dev test only"]);
+
 export interface OfferExperiment {
   id: string;
   name: string;
@@ -33,8 +38,12 @@ export interface OfferSample {
 export async function getLabOffer(): Promise<OfferSample[] | null> {
   try {
     const { samples } = await listSamples();
+    // Drop hidden specimens before the fan-out.
+    const visible = samples.filter(
+      (sample) => !HIDDEN_SAMPLE_NAMES.has(sample.name.trim().toLowerCase()),
+    );
     return await Promise.all(
-      samples.map(async (sample): Promise<OfferSample> => {
+      visible.map(async (sample): Promise<OfferSample> => {
         let experiments: OfferExperiment[] = [];
         try {
           const { experiments: templates } = await listExperimentTemplates(
