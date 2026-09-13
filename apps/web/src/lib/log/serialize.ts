@@ -54,13 +54,29 @@ export function redact(value: unknown, depth = 0, seen?: WeakSet<object>): unkno
   return out;
 }
 
+export interface SerializeErrorOptions {
+  /**
+   * Include `stack` (and cause stacks). Default true. Expected domain
+   * failures (wrong password, missing resource) omit it — the frames are
+   * OpenAPI-client + Next internals and drown the useful `status`/`url`.
+   */
+  includeStack?: boolean;
+}
+
+interface SerializeErrorState extends SerializeErrorOptions {
+  depth?: number;
+  seen?: WeakSet<object>;
+}
+
 export function serializeError(
   error: unknown,
-  depth = 0,
-  seen?: WeakSet<object>,
+  options: SerializeErrorState = {},
 ): Record<string, unknown> {
+  const includeStack = options.includeStack ?? true;
+  const depth = options.depth ?? 0;
+
   if (error instanceof Error) {
-    const seenSet = seen ?? new WeakSet<object>();
+    const seenSet = options.seen ?? new WeakSet<object>();
     if (seenSet.has(error)) return { message: "[Circular]" };
     if (depth > MAX_DEPTH) return { message: "[Truncated]" };
     seenSet.add(error);
@@ -69,7 +85,7 @@ export function serializeError(
       name: error.name,
       message: error.message,
     };
-    if (error.stack) serialized.stack = error.stack;
+    if (includeStack && error.stack) serialized.stack = error.stack;
 
     const status = httpStatus(error);
     if (status !== undefined) serialized.status = status;
@@ -83,7 +99,11 @@ export function serializeError(
     }
 
     if (error.cause !== undefined) {
-      serialized.cause = serializeError(error.cause, depth + 1, seenSet);
+      serialized.cause = serializeError(error.cause, {
+        includeStack,
+        depth: depth + 1,
+        seen: seenSet,
+      });
     }
 
     return serialized;

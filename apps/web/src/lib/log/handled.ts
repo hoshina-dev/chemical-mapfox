@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logger, type LogLevel } from "./logger";
+import { serializeError } from "./serialize";
 
 export interface HandledErrorContext {
   /** Server action name, e.g. `login`. */
@@ -34,7 +35,11 @@ export function logHandledError(
   const level: LogLevel =
     levelOverride ?? (expected ? "info" : "error");
   logger[level](
-    { err: error, ...fields, expected: expected ?? false },
+    {
+      err: serializeError(error, { includeStack: !expected }),
+      ...fields,
+      expected: expected ?? false,
+    },
     expected ? "handled expected error" : "handled error",
   );
 }

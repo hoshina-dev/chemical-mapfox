@@ -15,7 +15,7 @@ import { landingPathForRole } from "@/lib/auth/appRole";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
-import { levelForStatus, logHandledError } from "@/lib/log/handled";
+import { logHandledError } from "@/lib/log/handled";
 import { httpStatus } from "@/lib/log/serialize";
 
 async function custApiErrorMessage(
@@ -68,8 +68,8 @@ export async function login(
     logHandledError(error, {
       action: "login",
       service: "custapi",
+      status,
       expected: status !== undefined && status < 500,
-      level: levelForStatus(status),
     });
     const tErrors = await getTranslations("auth.errors");
     return { message: tErrors("invalidCredentials") };
@@ -121,8 +121,8 @@ export async function register(
     logHandledError(error, {
       action: "register",
       service: "custapi",
+      status,
       expected: status !== undefined && status < 500,
-      level: levelForStatus(status),
     });
     return {
       message: await custApiErrorMessage(

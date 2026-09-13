@@ -24,21 +24,30 @@ describe("logHandledError", () => {
     const stderr = vi.spyOn(process.stderr, "write").mockReturnValue(true);
 
     logHandledError(new Error("boom"), { action: "login" });
-    expect(parseLast(stderr)).toMatchObject({
+    const unexpected = parseLast(stderr);
+    expect(unexpected).toMatchObject({
       level: "error",
       action: "login",
       expected: false,
       msg: "handled error",
     });
+    expect((unexpected.err as { stack?: string }).stack).toEqual(
+      expect.any(String),
+    );
 
     logHandledError(new Error("bad password"), {
       action: "login",
       expected: true,
     });
-    expect(parseLast(stdout)).toMatchObject({
+    const expectedRecord = parseLast(stdout);
+    expect(expectedRecord).toMatchObject({
       level: "info",
       expected: true,
       msg: "handled expected error",
+    });
+    expect(expectedRecord.err).toEqual({
+      name: "Error",
+      message: "bad password",
     });
   });
 

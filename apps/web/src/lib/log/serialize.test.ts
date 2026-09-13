@@ -113,6 +113,16 @@ describe("serializeError", () => {
     });
   });
 
+  it("omits stack when includeStack is false", () => {
+    const error = new Error("wrong password") as Error & { status: number };
+    error.status = 401;
+    expect(serializeError(error, { includeStack: false })).toEqual({
+      name: "Error",
+      message: "wrong password",
+      status: 401,
+    });
+  });
+
   it("redacts plain objects and stringifies primitives", () => {
     expect(serializeError({ secret: "x", ok: 1 })).toEqual({
       secret: "[Redacted]",
