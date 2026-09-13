@@ -168,9 +168,14 @@ describe("scheduleFlush", () => {
       await vi.advanceTimersByTimeAsync(10_000);
       expect(errorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          err: expect.any(Error),
+          err: expect.objectContaining({
+            name: "Error",
+            message: "network down",
+            stack: expect.any(String),
+          }),
           op: "collab.flush",
           contextId: ctx,
+          expected: false,
         }),
         "handled error",
       );
