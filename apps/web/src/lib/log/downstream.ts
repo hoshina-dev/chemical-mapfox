@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cloudflareAccessHeaders } from "@/lib/http/cloudflareAccess";
+
 import { logger, type LogLevel } from "./logger";
 import { redact, safeUrl } from "./serialize";
 
@@ -160,8 +162,13 @@ export async function loggedFetch(
   // the deadline — whichever fires first wins.
   const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
 
+  const accessHeaders = cloudflareAccessHeaders(service);
+  const headers = accessHeaders
+    ? mergeHeaders(rest.headers, accessHeaders)
+    : rest.headers;
+
   try {
-    const res = await fetch(input, { ...rest, signal: combined });
+    const res = await fetch(input, { ...rest, headers, signal: combined });
     const level = classifyDownstream(service, url, res.status);
     if (level) {
       logger[level](
@@ -200,4 +207,15 @@ export function createLoggedFetch(
   service: DownstreamService,
 ): typeof fetch {
   return (input, init) => loggedFetch(service, input, init);
+}
+
+function mergeHeaders(
+  existing: HeadersInit | undefined,
+  extra: Record<string, string>,
+): Headers {
+  const headers = new Headers(existing);
+  for (const [name, value] of Object.entries(extra)) {
+    headers.set(name, value);
+  }
+  return headers;
 }

@@ -104,6 +104,20 @@ cp apps/web/.env.example apps/web/.env.local
 pnpm --filter web dev
 ```
 
+To point the local BFF at **production** backends (Cloudflare-tunneled), set
+the three `*_URL` vars to the public tunnel hostnames and add a Cloudflare
+Access service token in `apps/web/.env.local`:
+
+```bash
+# CF_ACCESS_CLIENT_ID=...
+# CF_ACCESS_CLIENT_SECRET=...
+```
+
+Those credentials are a `next dev` escape hatch only. They are ignored unless
+both are set, never attached to S3/R2 fetches, and **must not be present when
+`NODE_ENV=production`** — startup and every backend fetch throw if they leak
+into a production process (the Docker image sets `NODE_ENV=production`).
+
 ## Deployment
 
 `.github/workflows/deploy.yml` builds `apps/web/Dockerfile` from the repository

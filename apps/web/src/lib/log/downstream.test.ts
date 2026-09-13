@@ -141,6 +141,85 @@ describe("loggedFetch", () => {
       status: 200,
     });
   });
+
+  it("attaches Cloudflare Access headers to backend fetches in development", async () => {
+    const previous = {
+      NODE_ENV: process.env.NODE_ENV,
+      CF_ACCESS_CLIENT_ID: process.env.CF_ACCESS_CLIENT_ID,
+      CF_ACCESS_CLIENT_SECRET: process.env.CF_ACCESS_CLIENT_SECRET,
+    };
+    process.env.NODE_ENV = "development";
+    process.env.CF_ACCESS_CLIENT_ID = "dev-client-id";
+    process.env.CF_ACCESS_CLIENT_SECRET = "dev-client-secret";
+
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    try {
+      await loggedFetch("custapi", "https://custapi/ok", {
+        headers: { Accept: "application/json" },
+      });
+      await loggedFetch("s3", "https://bucket/file");
+
+      const backendHeaders = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
+      expect(backendHeaders.get("Accept")).toBe("application/json");
+      expect(backendHeaders.get("CF-Access-Client-Id")).toBe("dev-client-id");
+      expect(backendHeaders.get("CF-Access-Client-Secret")).toBe(
+        "dev-client-secret",
+      );
+
+      const s3Init = fetchMock.mock.calls[1]?.[1];
+      const s3Headers = new Headers(s3Init?.headers);
+      expect(s3Headers.get("CF-Access-Client-Id")).toBeNull();
+    } finally {
+      if (previous.NODE_ENV === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previous.NODE_ENV;
+      if (previous.CF_ACCESS_CLIENT_ID === undefined) {
+        delete process.env.CF_ACCESS_CLIENT_ID;
+      } else {
+        process.env.CF_ACCESS_CLIENT_ID = previous.CF_ACCESS_CLIENT_ID;
+      }
+      if (previous.CF_ACCESS_CLIENT_SECRET === undefined) {
+        delete process.env.CF_ACCESS_CLIENT_SECRET;
+      } else {
+        process.env.CF_ACCESS_CLIENT_SECRET = previous.CF_ACCESS_CLIENT_SECRET;
+      }
+    }
+  });
+
+  it("refuses to send Cloudflare Access headers in production", async () => {
+    const previous = {
+      NODE_ENV: process.env.NODE_ENV,
+      CF_ACCESS_CLIENT_ID: process.env.CF_ACCESS_CLIENT_ID,
+      CF_ACCESS_CLIENT_SECRET: process.env.CF_ACCESS_CLIENT_SECRET,
+    };
+    process.env.NODE_ENV = "production";
+    process.env.CF_ACCESS_CLIENT_ID = "prod-leak-id";
+    process.env.CF_ACCESS_CLIENT_SECRET = "prod-leak-secret";
+
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    try {
+      await expect(loggedFetch("custapi", "https://custapi/ok")).rejects.toThrow(
+        /must not be set when NODE_ENV=production/,
+      );
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally {
+      if (previous.NODE_ENV === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previous.NODE_ENV;
+      if (previous.CF_ACCESS_CLIENT_ID === undefined) {
+        delete process.env.CF_ACCESS_CLIENT_ID;
+      } else {
+        process.env.CF_ACCESS_CLIENT_ID = previous.CF_ACCESS_CLIENT_ID;
+      }
+      if (previous.CF_ACCESS_CLIENT_SECRET === undefined) {
+        delete process.env.CF_ACCESS_CLIENT_SECRET;
+      } else {
+        process.env.CF_ACCESS_CLIENT_SECRET = previous.CF_ACCESS_CLIENT_SECRET;
+      }
+    }
+  });
 });
 
 describe("loggedFetch deadline", () => {

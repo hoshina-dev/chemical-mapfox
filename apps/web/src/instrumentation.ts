@@ -19,8 +19,16 @@ function header(
 
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const { assertCloudflareAccessNotInProduction, cloudflareAccessConfigured } =
+    await import("./lib/http/cloudflareAccess");
+  assertCloudflareAccessNotInProduction();
   const { logger } = await import("./lib/log/logger");
   logger.info("web bff started");
+  if (cloudflareAccessConfigured()) {
+    logger.info(
+      "cloudflare access service token attached to downstream backend requests",
+    );
+  }
 }
 
 export async function onRequestError(

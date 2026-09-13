@@ -21,6 +21,11 @@ function childEnv(): NodeJS.ProcessEnv {
     JWT_SECRET,
     SESSION_COOKIE_SECURE: "false",
     NODE_ENV: "development",
+    // Blank so a developer's .env.local Cloudflare Access token cannot ride
+    // along on stub-bound requests (Next will not overlay .env.local on
+    // already-set process env).
+    CF_ACCESS_CLIENT_ID: "",
+    CF_ACCESS_CLIENT_SECRET: "",
     PORT: String(runtime.webPort),
     NODE_OPTIONS: "--max-old-space-size=8192",
   };
