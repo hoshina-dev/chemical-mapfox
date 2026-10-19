@@ -25,7 +25,9 @@ async function loadModules(): Promise<void> {
   const dir = path.join(here, "modules");
   const files = fs
     .readdirSync(dir)
-    .filter((f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.endsWith(".d.ts"))
+    .filter(
+      (f) => (f.endsWith(".ts") || f.endsWith(".js")) && !f.endsWith(".d.ts"),
+    )
     .sort();
   for (const file of files) {
     await import(pathToFileURL(path.join(dir, file)).href);
@@ -77,7 +79,10 @@ function makeContext(
   };
 }
 
-export async function startStubServer(port: number): Promise<void> {
+export async function startStubServer(
+  port: number,
+  host = "127.0.0.1",
+): Promise<void> {
   await loadModules();
   return new Promise((resolve, reject) => {
     server = http.createServer((req, res) => {
@@ -95,7 +100,7 @@ export async function startStubServer(port: number): Promise<void> {
         });
     });
     server.on("error", reject);
-    server.listen(port, "127.0.0.1", () => resolve());
+    server.listen(port, host, () => resolve());
   });
 }
 

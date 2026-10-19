@@ -13,7 +13,10 @@ import {
 } from "@/lib/experiment-manager/mappers";
 import { logHandledError } from "@/lib/log/handled";
 import { ticketsApi } from "@/lib/ticketing/client";
-import { type ExperimentTicket, toExperimentTicket } from "@/lib/ticketing/tickets";
+import {
+  type ExperimentTicket,
+  toExperimentTicket,
+} from "@/lib/ticketing/tickets";
 
 /** A requestable template within a specimen (sample) group. */
 export interface CatalogTemplate {
@@ -36,7 +39,7 @@ export interface CatalogGroup {
  * The full catalogue of requestable experiments, grouped by specimen. Only the
  * **current** version of each template is offered; groups with no current
  * template are kept (with an empty list) so the lab's specimen coverage is
- * visible. Sorted by specimen name for a stable, browsable listing.
+ * visible. Uses the persisted catalogue order returned by Experiment Manager.
  */
 export async function listRequestCatalog(): Promise<CatalogGroup[]> {
   const { samples } = await listSamples();
@@ -54,8 +57,7 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
             lineageId: tpl.lineage_id,
             title: tpl.name,
             description: tpl.description ?? null,
-          }))
-          .sort((a, b) => a.title.localeCompare(b.title));
+          }));
       } catch (error) {
         // A single specimen's templates failing shouldn't blank the catalogue.
         logHandledError(error, {
@@ -73,7 +75,7 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
       };
     }),
   );
-  return groups.sort((a, b) => a.sampleName.localeCompare(b.sampleName));
+  return groups;
 }
 
 /**
@@ -90,10 +92,7 @@ export async function loadRequestTemplate(
       const detail = await getExperimentTemplate(sampleId, templateId);
       return { sampleId, template: templateDetailToLoaded(detail) };
     } catch (error) {
-      if (
-        error instanceof ExperimentManagerError &&
-        error.status === 404
-      ) {
+      if (error instanceof ExperimentManagerError && error.status === 404) {
         return null;
       }
       throw error;
@@ -106,7 +105,10 @@ export async function loadRequestTemplate(
       const { experiments } = await listExperimentTemplates(sample.id);
       if (experiments.some((tpl) => tpl.id === templateId)) {
         const detail = await getExperimentTemplate(sample.id, templateId);
-        return { sampleId: sample.id, template: templateDetailToLoaded(detail) };
+        return {
+          sampleId: sample.id,
+          template: templateDetailToLoaded(detail),
+        };
       }
     } catch (error) {
       logHandledError(error, {
@@ -126,7 +128,9 @@ export type MyExperiment = ExperimentTicket;
  * Every experiment the given user has requested, newest first. Ticketing owns
  * the display name so this listing does not fan out to Experiment Manager.
  */
-export async function listMyExperiments(userId: string): Promise<MyExperiment[]> {
+export async function listMyExperiments(
+  userId: string,
+): Promise<MyExperiment[]> {
   const rows = await ticketsApi.apiV1TicketsGet(
     userId,
     undefined,

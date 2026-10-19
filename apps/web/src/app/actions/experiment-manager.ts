@@ -13,6 +13,10 @@ import {
   deleteExperimentTemplate,
   evaluateCalculations,
   updateExperimentTemplate,
+  setSampleWebVisibility,
+  setSamplesWebOrder,
+  setTemplateWebVisibility,
+  setTemplatesWebOrder,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
@@ -160,5 +164,50 @@ export async function testCalculationsAction(
       success: false,
       error: errorMessage(error, t("testCalculations")),
     };
+  }
+}
+
+function refreshCatalogues(sampleId?: string) {
+  revalidatePath("/");
+  revalidatePath("/experiment/request/listing");
+  revalidatePath("/internal/experiment/onboarding");
+  if (sampleId) revalidatePath(`/internal/experiment/onboarding/${sampleId}`);
+}
+
+export async function setCatalogueVisibilityAction(
+  id: string,
+  visible: boolean,
+  sampleId?: string,
+): Promise<ActionResult<null>> {
+  await requireAdmin();
+  const t = await getTranslations("staff.catalogue");
+  try {
+    if (sampleId) await setTemplateWebVisibility(sampleId, id, visible);
+    else await setSampleWebVisibility(id, visible);
+    refreshCatalogues(sampleId);
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, {
+      action: "setCatalogueVisibilityAction",
+      sampleId,
+    });
+    return { success: false, error: t("saveError") };
+  }
+}
+
+export async function setCatalogueOrderAction(
+  ids: string[],
+  sampleId?: string,
+): Promise<ActionResult<null>> {
+  await requireAdmin();
+  const t = await getTranslations("staff.catalogue");
+  try {
+    if (sampleId) await setTemplatesWebOrder(sampleId, ids);
+    else await setSamplesWebOrder(ids);
+    refreshCatalogues(sampleId);
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, { action: "setCatalogueOrderAction", sampleId });
+    return { success: false, error: t("saveError") };
   }
 }

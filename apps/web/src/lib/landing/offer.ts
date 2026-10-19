@@ -4,19 +4,14 @@ import {
   listExperimentTemplates,
   listSamples,
 } from "@/lib/experiment-manager/client";
-import { isRequestableTemplate } from "@/lib/experiment-manager/mappers";
 
 /**
  * Laboratory-offer data for the public landing page: every specimen type the
  * labs support, each with the experiment methods (templates) defined for it.
  */
 
-/**
- * Specimen names kept off the public homepage.
- */
-const HIDDEN_SAMPLE_NAMES = new Set(["dev test only"]);
-
 export interface OfferExperiment {
+  canRequest: boolean;
   id: string;
   name: string;
   description?: string;
@@ -38,10 +33,7 @@ export interface OfferSample {
 export async function getLabOffer(): Promise<OfferSample[] | null> {
   try {
     const { samples } = await listSamples();
-    // Drop hidden specimens before the fan-out.
-    const visible = samples.filter(
-      (sample) => !HIDDEN_SAMPLE_NAMES.has(sample.name.trim().toLowerCase()),
-    );
+    const visible = samples.filter((sample) => sample.is_visible_on_web);
     return await Promise.all(
       visible.map(async (sample): Promise<OfferSample> => {
         let experiments: OfferExperiment[] = [];
@@ -50,9 +42,12 @@ export async function getLabOffer(): Promise<OfferSample[] | null> {
             sample.id,
           );
           experiments = templates
-            .filter(isRequestableTemplate)
+            .filter(
+              (template) => template.is_current && template.is_visible_on_web,
+            )
             .map((t) => ({
               id: t.id,
+              canRequest: t.has_pdf_template,
               name: t.name,
               description: t.description ?? undefined,
             }));

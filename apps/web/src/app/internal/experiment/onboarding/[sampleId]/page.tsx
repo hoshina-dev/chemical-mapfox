@@ -39,14 +39,15 @@ async function loadSample(sampleId: string): Promise<SampleTemplates> {
   };
 }
 
-
 /**
  * Synchronous by design: Next withholds a route's entire HTML until the page
  * function returns, so awaiting here would keep the nav and chrome off screen
  * while a backend stalls. The awaits live in the content component, under
  * `AsyncPanel`.
  */
-export default function SampleOnboardingPage(props: Parameters<typeof SampleOnboardingPageContent>[0]) {
+export default function SampleOnboardingPage(
+  props: Parameters<typeof SampleOnboardingPageContent>[0],
+) {
   return (
     <AsyncPanel
       fallback={
@@ -111,7 +112,10 @@ async function SampleOnboardingPageContent({
         )}
 
         {data && data.templates.length > 0 && (
-          <SampleTemplatesTable templates={data.templates} />
+          <SampleTemplatesTable
+            templates={data.templates}
+            sampleId={sampleId}
+          />
         )}
       </Stack>
     </Container>

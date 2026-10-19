@@ -1,17 +1,7 @@
-import {
-  Alert,
-  Badge,
-  Card,
-  Container,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Alert, Container, Group, Stack, Text, Title } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 
+import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEditor";
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import {
@@ -30,6 +20,7 @@ interface SampleCard {
   description?: string;
   /** Template count, or null if it couldn't be loaded for this sample. */
   templateCount: number | null;
+  isVisibleOnWeb: boolean;
 }
 
 async function loadSamples(): Promise<SampleCard[]> {
@@ -45,6 +36,7 @@ async function loadSamples(): Promise<SampleCard[]> {
       }
       return {
         id: sample.id,
+        isVisibleOnWeb: sample.is_visible_on_web,
         name: sample.name,
         description: sample.description ?? undefined,
         templateCount,
@@ -52,7 +44,6 @@ async function loadSamples(): Promise<SampleCard[]> {
     }),
   );
 }
-
 
 /**
  * Synchronous by design: Next withholds a route's entire HTML until the page
@@ -76,7 +67,6 @@ export default function OnboardingPage() {
 
 async function OnboardingPageContent() {
   const t = await getTranslations("staff.onboarding");
-  const tCommon = await getTranslations("common");
 
   let samples: SampleCard[] | null = null;
   let loadError: string | null = null;
@@ -110,49 +100,16 @@ async function OnboardingPageContent() {
         )}
 
         {samples && samples.length > 0 && (
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-            {samples.map((sample) => (
-              <Link
-                key={sample.id}
-                href={sampleOnboardingPath(sample.id)}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                }}
-              >
-                <Card
-                  withBorder
-                  radius="md"
-                  padding="lg"
-                  h="100%"
-                  className="bold-card"
-                >
-                  <Stack gap="xs" h="100%">
-                    <Group
-                      justify="space-between"
-                      align="flex-start"
-                      wrap="nowrap"
-                    >
-                      <Text fw={600}>{sample.name}</Text>
-                      <Badge variant="light" color="grape" radius="sm">
-                        {sample.templateCount == null
-                          ? tCommon("emDash")
-                          : t("templateCount", { count: sample.templateCount })}
-                      </Badge>
-                    </Group>
-                    <Text size="sm" c="dimmed" lineClamp={2}>
-                      {sample.description ?? t("noDescription")}
-                    </Text>
-                    <Text size="sm" c="green.8" fw={600} mt="auto">
-                      {t("manageTemplates")}{" "}
-                      <span className="bold-card-arrow">→</span>
-                    </Text>
-                  </Stack>
-                </Card>
-              </Link>
-            ))}
-          </SimpleGrid>
+          <CatalogueEditor
+            items={samples.map((sample) => ({
+              id: sample.id,
+              name: sample.name,
+              description: sample.description,
+              visible: sample.isVisibleOnWeb,
+              count: sample.templateCount,
+              href: sampleOnboardingPath(sample.id),
+            }))}
+          />
         )}
       </Stack>
     </Container>

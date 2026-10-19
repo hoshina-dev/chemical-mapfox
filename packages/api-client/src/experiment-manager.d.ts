@@ -22,6 +22,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/samples/web-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Samples Web Order */
+        put: operations["update_samples_web_order_api_samples_web_order_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/samples/{sample_id}": {
         parameters: {
             query?: never;
@@ -57,6 +74,57 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/samples/{sample_id}/experiments/web-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Templates Web Order */
+        put: operations["update_templates_web_order_api_samples__sample_id__experiments_web_order_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/samples/{sample_id}/web-visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Sample Web Visibility */
+        patch: operations["update_sample_web_visibility_api_samples__sample_id__web_visibility_patch"];
+        trace?: never;
+    };
+    "/api/samples/{sample_id}/experiments/{lineage_id}/web-visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Template Web Visibility */
+        patch: operations["update_template_web_visibility_api_samples__sample_id__experiments__lineage_id__web_visibility_patch"];
         trace?: never;
     };
     "/api/samples/{sample_id}/experiments/{template_id}": {
@@ -635,6 +703,10 @@ export interface components {
             is_current: boolean;
             /** Has Pdf Template */
             has_pdf_template: boolean;
+            /** Is Visible On Web */
+            is_visible_on_web: boolean;
+            /** Display Order */
+            display_order: number;
         } & {
             [key: string]: unknown;
         };
@@ -670,6 +742,10 @@ export interface components {
             is_current: boolean;
             /** Has Pdf Template */
             has_pdf_template: boolean;
+            /** Is Visible On Web */
+            is_visible_on_web: boolean;
+            /** Display Order */
+            display_order: number;
         };
         /**
          * ExperimentTemplateUpdate
@@ -952,6 +1028,10 @@ export interface components {
             name: string;
             /** Description */
             description?: string | null;
+            /** Is Visible On Web */
+            is_visible_on_web: boolean;
+            /** Display Order */
+            display_order: number;
         };
         /**
          * SampleUpdate
@@ -966,10 +1046,20 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** SampleWebOrder */
+        SampleWebOrder: {
+            /** Sample Ids */
+            sample_ids: string[];
+        };
         /** SamplesListResponse */
         SamplesListResponse: {
             /** Samples */
             samples: components["schemas"]["SampleSummary"][];
+        };
+        /** TemplateWebOrder */
+        TemplateWebOrder: {
+            /** Lineage Ids */
+            lineage_ids: string[];
         };
         /** ValidationError */
         ValidationError: {
@@ -983,6 +1073,11 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WebVisibilityUpdate */
+        WebVisibilityUpdate: {
+            /** Is Visible On Web */
+            is_visible_on_web: boolean;
         };
     };
     responses: never;
@@ -1033,6 +1128,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SampleSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_samples_web_order_api_samples_web_order_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SampleWebOrder"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SamplesListResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1194,6 +1322,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExperimentTemplateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_templates_web_order_api_samples__sample_id__experiments_web_order_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateWebOrder"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplatesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_sample_web_visibility_api_samples__sample_id__web_visibility_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebVisibilityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SampleSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_template_web_visibility_api_samples__sample_id__experiments__lineage_id__web_visibility_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sample_id: string;
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebVisibilityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperimentTemplateSummary"];
                 };
             };
             /** @description Validation Error */

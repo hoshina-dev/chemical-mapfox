@@ -13,7 +13,8 @@ Feature: Landing page
     When I visit "/"
     Then I should be on the landing page
     And I should see the landing hero
-    And I should see the primary navigation link "Laboratory offer"
+    And I should see the primary navigation link "Test list"
+    And I should see the primary navigation link "Accreditations and certificates"
     And I should see the "Get started" call to action
 
   Scenario: Get started sends an unauthenticated visitor to sign-in
@@ -52,4 +53,4 @@ Feature: Landing page
     And I should see "Harper Analytics Sp. z o.o."
     And I should see "43-100 Tychy"
     And I should see a link "laboratorium@harperanalytics.com" pointing to "mailto:laboratorium@harperanalytics.com"
-    And I should see a link "Terms of Service — Download file" pointing to "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf"
+    And I should see a link "Terms of Service — Download file" pointing to "/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf"

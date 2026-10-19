@@ -1,0 +1,74 @@
+# Isolated local catalogue testing in OrbStack. See docs/catalogue-local-testing.md.
+name: chemfox-catalogue
+services:
+  postgres:
+    extends:
+      file: ../experiment-manager/docker-compose.observability.yml
+      service: postgres
+
+  object-storage:
+    image: motoserver/moto:5.1.15
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  storage-init:
+    build: ../experiment-manager
+    entrypoint: ["python", "-c", "import boto3; boto3.client('s3', endpoint_url='http://object-storage:5000', aws_access_key_id='local-test', aws_secret_access_key='local-test', region_name='us-east-1').create_bucket(Bucket='experiment-reports')"]
+    depends_on:
+      object-storage:
+        condition: service_healthy
+
+  experiment-manager:
+    build: ../experiment-manager
+    ports:
+      - "127.0.0.1:55440:8000"
+    environment:
+      DATA_SOURCE_NAME: host=postgres user=postgres password=postgres dbname=expman port=5432 sslmode=disable
+      CORS_ORIGINS: http://localhost:55441,http://localhost:3000
+      S3_ENDPOINT: http://object-storage:5000
+      S3_ACCESS_KEY: local-test
+      S3_SECRET_KEY: local-test
+      S3_BUCKET: experiment-reports
+      S3_REGION: us-east-1
+      OTEL_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+
+  test-services:
+    build:
+      context: .
+      dockerfile: e2e/catalogue-preview.Dockerfile
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "127.0.0.1:55441:3000"
+    environment:
+      EXPERIMENT_MANAGER_URL: http://experiment-manager:8000
+      CUSTAPI_URL: http://test-services:3100/api/v1
+      TICKETING_URL: http://test-services:3100
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: local-catalogue-testing-secret-do-not-use-outside-this-preview
+      SESSION_COOKIE_SECURE: "false"
+      APP_ORIGIN: http://localhost:55441
+    depends_on:
+      - experiment-manager
+      - test-services
+      - redis
+
+volumes:
+  postgres-data:
+  redis-data:

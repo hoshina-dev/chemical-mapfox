@@ -11,8 +11,8 @@ const LOCALE_COOKIE = "NEXT_LOCALE";
 
 /** Landing H1 hero title per locale (`landing.hero.title`). */
 const LANDING_HERO: Record<UiLocale, string> = {
-  en: "Chemical experiments, from request to results.",
-  pl: "Eksperymenty chemiczne — od zgłoszenia do wyników.",
+  en: "Accredited chemical testing laboratory – from request to test report",
+  pl: "Akredytowane laboratorium badań chemicznych – kompleksowo, od zlecenia po sprawozdanie z badań",
 };
 
 /** Auth card subtitle per locale (`auth.card.subtitle`). */
@@ -32,7 +32,9 @@ Given(
     // English UI by default); clear it here so the upcoming navigation hits
     // proxy.ts with no cookie and actually negotiates from Accept-Language.
     await this.context.clearCookies({ name: LOCALE_COOKIE });
-    await this.context.setExtraHTTPHeaders({ "Accept-Language": acceptLanguage });
+    await this.context.setExtraHTTPHeaders({
+      "Accept-Language": acceptLanguage,
+    });
   },
 );
 
@@ -41,11 +43,15 @@ Given(
  * not by aria-label (which itself is translated).
  */
 function languageSwitcher(page: Page): Locator {
-  return page.locator("select").filter({
-    has: page.locator('option[value="en"]'),
-  }).filter({
-    has: page.locator('option[value="pl"]'),
-  }).first();
+  return page
+    .locator("select")
+    .filter({
+      has: page.locator('option[value="en"]'),
+    })
+    .filter({
+      has: page.locator('option[value="pl"]'),
+    })
+    .first();
 }
 
 When(
@@ -125,5 +131,32 @@ Then(
     const match = cookies.find((cookie) => cookie.name === LOCALE_COOKIE);
     assert.ok(match, `Missing ${LOCALE_COOKIE} cookie`);
     assert.equal(match.value, locale);
+  },
+);
+
+When(
+  "I reorder catalogue test {string} with Polish keyboard announcements",
+  async function (this: ChemFoxWorld, name: string) {
+    const handle = this.page.getByRole("button", {
+      name: `Zmień kolejność: ${name}`,
+      exact: true,
+    });
+    await handle.focus();
+    await handle.press("Space");
+    await handle.press("ArrowDown");
+    await handle.press("Space");
+    await this.page
+      .getByRole("status")
+      .filter({ hasText: /^Zapisano$/ })
+      .waitFor({ state: "visible" });
+  },
+);
+Then(
+  "the catalogue drag announcement should be {string}",
+  async function (this: ChemFoxWorld, announcement: string) {
+    await this.page
+      .getByRole("status")
+      .filter({ hasText: announcement })
+      .waitFor({ state: "visible" });
   },
 );

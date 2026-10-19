@@ -8,6 +8,7 @@ export function registerStub(module: StubModule): void {
     throw new Error(`duplicate stub module "${module.name}"`);
   }
   modules.push(module);
+  modules.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 }
 
 /** Reset every registered module's local state (called per scenario). */
