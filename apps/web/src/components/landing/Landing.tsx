@@ -537,7 +537,14 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function TermsPdfLink({ label }: { label: string }) {
   return (
-    <Anchor href={BRAND.termsPdfUrl} download fz="sm" fw={500} c="green.8">
+    <Anchor
+      href={BRAND.termsPdfUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      fz="sm"
+      fw={500}
+      c="green.8"
+    >
       {label}
     </Anchor>
   );

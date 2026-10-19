@@ -11,7 +11,7 @@ Experiment Manager. Catalogue contents and counts reflect the local test data.
 | [Homepage](01-landing-brand.png) | Harper Analytics identity, laboratory subtitle and Lista Badań navigation |
 | [Public test list](02-public-test-list.png) | Backend catalogue, saved visibility/order and per-test request/contact actions |
 | [About and counts](03-about-and-counts.png) | Laboratory introduction and visible catalogue counts |
-| [Accreditation](04-accreditation-and-pdf.png) | AB 1981 mark, PCA scope link and Polish terms PDF download |
+| [Accreditation](04-accreditation-and-pdf.png) | AB 1981 mark, PCA scope link and existing Cloudflare R2 terms PDF |
 | [Contact](05-contact-details.png) | Updated contact information and footer |
 | [Specimen onboarding](06-staff-specimens.png) | Drag handles, landing-page visibility and automatic saving |
 | [Experiment onboarding](07-staff-experiments.png) | Drag-only ordering within a specimen and independent template visibility |

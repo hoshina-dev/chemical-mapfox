@@ -14,5 +14,6 @@ export const BRAND = {
   accreditationScopeUrl:
     "https://www.pca.gov.pl/akredytowane-podmioty/akredytacje-aktywne/laboratoria-badawcze/AB%201981,podmiot.html",
   /** Public download of the original general terms of service. */
-  termsPdfUrl: "/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf",
+  termsPdfUrl:
+    "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf",
 } as const;
