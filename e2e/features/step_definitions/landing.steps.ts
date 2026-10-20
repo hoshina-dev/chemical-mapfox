@@ -40,7 +40,7 @@ Then("I should be on the landing page", async function (this: ChemFoxWorld) {
 Then("I should see the landing hero", async function (this: ChemFoxWorld) {
   await this.page
     .getByRole("heading", {
-      name: "Chemical experiments, from request to results.",
+      name: "Accredited chemical testing laboratory – from request to test report",
       level: 1,
     })
     .waitFor({ state: "visible", timeout: 15_000 });
@@ -133,10 +133,12 @@ When(
       .filter({ hasText: sampleName });
     await clickUntilVisible(
       control.first(),
-      offerSection(this).getByRole("link", {
-        name: "Request this experiment",
-        exact: true,
-      }),
+      offerSection(this)
+        .getByRole("link", {
+          name: "Request this experiment",
+          exact: true,
+        })
+        .first(),
     );
   },
 );

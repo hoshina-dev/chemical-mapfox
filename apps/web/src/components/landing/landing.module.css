@@ -22,21 +22,39 @@
 
 .headerInner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 24px;
-  height: 64px;
+  gap: 12px 24px;
+  min-height: 76px;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 14px 24px;
 }
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   text-decoration: none;
   color: var(--ink);
   flex-shrink: 0;
+}
+
+.brandText {
+  display: grid;
+  gap: 5px;
+}
+
+.brandName {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.brandSubtitle {
+  color: #495057;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .brandIcon {
@@ -59,10 +77,12 @@
 }
 
 .nav {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: auto;
+  order: 3;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .navLink {
@@ -72,7 +92,10 @@
   font-weight: 500;
   color: #495057;
   text-decoration: none;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  white-space: nowrap;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .navLink:hover {
@@ -84,29 +107,59 @@
   white-space: nowrap;
 }
 
-@media (min-width: 62em) {
+@media (min-width: 80em) {
   .nav {
-    display: flex;
+    order: initial;
+    width: auto;
+    margin-left: auto;
+    overflow: visible;
+  }
+  .navLink {
+    padding: 8px;
   }
 }
 
 @media (max-width: 36em) {
-  .brandTag,
   .signIn {
     display: none;
   }
   .headerInner {
     gap: 12px;
-    padding: 0 16px;
+    padding: 12px 16px;
+  }
+  .brand {
+    flex: 1;
+    min-width: 0;
+  }
+  .brandText {
+    min-width: 0;
+  }
+  .brandName {
+    flex-wrap: wrap;
+    gap: 3px 6px;
+  }
+  .brandLabel {
+    font-size: 15px;
+  }
+  .brandTag {
+    font-size: 10px;
+  }
+  .header .headerInner > :last-child {
+    gap: 6px;
+  }
+  .header .headerInner > :last-child > :first-child {
+    width: 78px;
+  }
+  .header .headerInner > :last-child > :last-child {
+    display: none;
   }
 }
 
-/* The Group holding sign-in + CTA should sit at the right edge. With the nav
-   hidden (small screens) push the actions over with auto margin. */
+/* Keep the language and sign-in controls on the right above the mobile nav. */
 .header .headerInner > :last-child {
   margin-left: auto;
 }
-@media (min-width: 62em) {
+@media (min-width: 80em) {
   .header .headerInner > :last-child {
     margin-left: 0;
   }
@@ -187,6 +240,18 @@
   padding: 72px 0;
 }
 
+.section,
+.sectionMuted {
+  scroll-margin-top: 150px;
+}
+
+@media (min-width: 80em) {
+  .section,
+  .sectionMuted {
+    scroll-margin-top: 96px;
+  }
+}
+
 .sectionMuted {
   padding: 72px 0;
   background: var(--muted);
@@ -234,7 +299,9 @@
 .offerItem {
   border: 1px solid var(--border) !important;
   background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .offerItem[data-active] {
@@ -324,6 +391,47 @@
   color: var(--green);
 }
 
+/* ---------- Accreditations ---------- */
+
+.accreditationBody {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: center;
+  gap: 48px;
+  max-width: 46rem;
+  margin: 0 auto;
+}
+
+.accreditationMark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pcaLogo {
+  display: block;
+  width: 120px;
+  height: auto;
+}
+
+.accreditationCopy {
+  line-height: 1.6;
+}
+
+.termsDownload {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 8px;
+}
+
+@media (max-width: 36em) {
+  .accreditationBody {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
 /* ---------- Contact ---------- */
 
 .contact {
@@ -403,18 +511,12 @@
 }
 
 .layerMid {
-  transform: translate(
-    calc(var(--px, 0) * 12px),
-    calc(var(--py, 0) * 12px)
-  );
+  transform: translate(calc(var(--px, 0) * 12px), calc(var(--py, 0) * 12px));
   transition: transform 0.25s ease-out;
 }
 
 .layerFront {
-  transform: translate(
-    calc(var(--px, 0) * 28px),
-    calc(var(--py, 0) * 28px)
-  );
+  transform: translate(calc(var(--px, 0) * 28px), calc(var(--py, 0) * 28px));
   transition: transform 0.25s ease-out;
 }
 
@@ -712,7 +814,11 @@
   background-image: url("data:image/svg+xml,%3Csvg width='30' height='26' viewBox='0 0 30 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 1 L28 8.5 L28 18.5 L15 26 L2 18.5 L2 8.5 Z' fill='none' stroke='%232f9e44' stroke-width='0.9'/%3E%3C/svg%3E");
   opacity: 0.05;
   pointer-events: none;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 80%);
+  -webkit-mask-image: radial-gradient(
+    120% 90% at 50% 0%,
+    #000 35%,
+    transparent 80%
+  );
   mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 80%);
 }
 

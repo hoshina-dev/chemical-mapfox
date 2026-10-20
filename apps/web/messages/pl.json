@@ -95,31 +95,35 @@
   },
   "landing": {
     "nav": {
-      "labOffer": "Oferta laboratorium",
+      "labOffer": "Lista Badań",
       "about": "O nas",
       "contact": "Kontakt",
       "primaryAriaLabel": "Główna",
       "signIn": "Zaloguj się",
       "getStarted": "Rozpocznij",
-      "goToWorkspace": "Przejdź do obszaru roboczego"
+      "goToWorkspace": "Przejdź do obszaru roboczego",
+      "laboratory": "Laboratorium Badawcze",
+      "accreditations": "Akredytacje i certyfikaty"
     },
     "hero": {
       "eyebrow": "Usługi laboratoryjne",
-      "title": "Eksperymenty chemiczne — od zgłoszenia do wyników.",
-      "lead": "{brand} prowadzi Twoje próbki przez uporządkowany proces — przyjęcie, wykonanie badań i raportowanie w jednym miejscu. Śledź każdą próbkę, sprawdzaj dokładnie, na jakim jest etapie, i otrzymuj wyniki, którym możesz zaufać.",
+      "title": "Akredytowane laboratorium badań chemicznych – kompleksowo, od zlecenia po sprawozdanie z badań",
+      "lead": "Analizy chemiczne zgodne z PN-EN ISO/IEC 17025",
       "exploreOffer": "Poznaj naszą ofertę",
       "specimenTypes": "rodzaje próbek",
       "testMethods": "metody badawcze"
     },
     "offer": {
-      "kicker": "Oferta laboratorium",
-      "title": "Co badamy",
+      "kicker": "Lista Badań",
+      "title": "Lista Badań",
       "lead": "Przeglądaj próbki obsługiwane przez nasze laboratoria. Otwórz dowolną, aby zobaczyć dostępne dla niej metody badawcze.",
       "fallbackTitle": "Nasza oferta jest aktualizowana",
       "fallbackBody": "Katalog jest chwilowo niedostępny. Zajrzyj ponownie za chwilę lub skontaktuj się z nami, a przedstawimy zakres naszych badań.",
       "methodCount": "{count, plural, one {# metoda} few {# metody} many {# metod} other {# metody}}",
       "methodsBeingAdded": "Metody dla tej próbki są właśnie dodawane.",
-      "requestThisExperiment": "Zamów ten eksperyment"
+      "requestThisExperiment": "Zamów ten eksperyment",
+      "empty": "Obecnie nie ma badań na liście. Skontaktuj się z naszym laboratorium, aby uzyskać szczegółowe informacje.",
+      "contactLaboratory": "Skontaktuj się z laboratorium"
     },
     "howItWorks": {
       "kicker": "Jak to działa",
@@ -152,8 +156,8 @@
     "about": {
       "kicker": "O nas",
       "title": "Laboratorium zbudowane wokół Twoich próbek",
-      "lead": "{brand} łączy przyjmowanie próbek, wspólne wykonywanie badań i raportowanie. Zlecający zawsze wiedzą, gdzie znajduje się próbka, a nasi technicy posuwają pracę naprzód, nie walcząc z narzędziami.",
-      "body": "Łączymy doświadczonych analityków z nowoczesnym procesem pracy, aby każdy wynik był identyfikowalny, powtarzalny i dostarczony na czas. Od pojedynczej próbki wody po pełny program higieny produkcji — proces pozostaje ten sam: przejrzysty, odpowiedzialny i objęty kontrolą jakości.",
+      "lead": "Harper Analytics to laboratorium badawcze akredytowane przez Polskie Centrum Akredytacji (PCA). Nasz zespół tworzą doświadczeni analitycy, którzy łączą praktyczną wiedzę laboratoryjną z nowoczesnym, uporządkowanym systemem pracy. Dzięki temu zapewniamy pełną identyfikowalność każdej próbki na wszystkich etapach badania, a wyniki są wiarygodne, powtarzalne, rzetelnie udokumentowane i przekazywane w uzgodnionym terminie.",
+      "body": "Niezależnie od tego, czy wykonujemy analizę pojedynczej próbki, czy realizujemy kompleksowy program badań, stosujemy te same standardy: rzetelność, kontrolę jakości i przejrzystość na każdym etapie współpracy.",
       "statSpecimenTypes": "Rodzaje próbek",
       "statMethods": "Metody badawcze",
       "statSampleIntake": "Przyjęcie próbki",
@@ -173,6 +177,16 @@
     "footer": {
       "rights": "© {year} {legalName}. Wszelkie prawa zastrzeżone.",
       "termsPdf": "Warunki świadczenia usług — Pobierz plik"
+    },
+    "accreditations": {
+      "kicker": "PCA · AB 1981",
+      "title": "Akredytacje i certyfikaty",
+      "lead": "Kompetencje laboratorium {legalName} potwierdza akredytacja Polskiego Centrum Akredytacji (PCA).",
+      "logoAlt": "Symbol akredytacji Polskiego Centrum Akredytacji – badania, AB 1981",
+      "scope": "Zakres",
+      "body": "Nasze laboratorium badawcze posiada akredytację AB 1981 zgodnie z normą PN-EN ISO/IEC 17025. Aktualny zakres akredytacji jest dostępny na stronie Polskiego Centrum Akredytacji.",
+      "terms": "Ogólne Warunki Świadczenia Usług {legalName}",
+      "termsFormat": "Pobierz PDF w języku polskim · 01.08.2026"
     }
   },
   "auth": {
@@ -587,6 +601,29 @@
       "description": "Opis",
       "editTooltip": "Kliknij, aby edytować „{title}”",
       "noReportLayout": "Brak układu raportu"
+    },
+    "catalogue": {
+      "help": "Przeciągaj elementy za uchwyty, aby zmienić kolejność w obu katalogach. Zmiany zapisują się automatycznie. Widoczność dotyczy tylko strony głównej. Nowe elementy są początkowo ukryte.",
+      "visibility": "Pokaż na stronie głównej",
+      "visibilityFor": "Pokaż {name} na stronie głównej",
+      "reorder": "Zmień kolejność",
+      "dragHandle": "Zmień kolejność: {name}",
+      "experiment": "Badanie",
+      "description": "Opis",
+      "noReportLayout": "Brak układu raportu",
+      "noDescription": "Brak opisu",
+      "templateCount": "{count, plural, one {# szablon} few {# szablony} many {# szablonów} other {# szablonu}}",
+      "countUnavailable": "Liczba szablonów niedostępna",
+      "manageTemplates": "Zarządzaj szablonami",
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano",
+      "saveFailed": "Zapis nie powiódł się",
+      "saveError": "Nie udało się zapisać ustawień katalogu. Odśwież stronę i spróbuj ponownie.",
+      "keyboardInstructions": "Naciśnij spację, aby podnieść element, użyj strzałek, aby go przesunąć, i ponownie naciśnij spację, aby go upuścić. Naciśnij Escape, aby anulować.",
+      "dragStart": "Podniesiono {name}.",
+      "dragPosition": "{name} znajduje się na pozycji {position}.",
+      "dragCancelled": "Anulowano zmianę kolejności.",
+      "dragFinished": "Upuszczono element."
     }
   },
   "builder": {
@@ -1277,7 +1314,7 @@
         "sections": {
           "samples": {
             "heading": "Przeglądaj próbki",
-            "body": "Otwórz Wdrażanie z nawigacji personelu. Każda karta to typ próbki (np. Węgiel lub Jabłko) z krótkim opisem i liczbą aktualnych szablonów. Otwórz próbkę, aby zarządzać jej szablonami.",
+            "body": "Otwórz Wdrażanie z nawigacji personelu. Każda karta to typ próbki (np. Węgiel lub Jabłko) z krótkim opisem i liczbą aktualnych szablonów. Otwórz próbkę, aby zarządzać jej szablonami.\n\nUżyj uchwytu przeciągania, aby zmienić kolejność rodzajów próbek. Ta sama kolejność obowiązuje na stronie głównej i w katalogu zleceń klienta. Zmiany zapisują się automatycznie; przed opuszczeniem strony poczekaj na komunikat Zapisano. Ukryte elementy zachowują swoją pozycję.",
             "steps": [
               "Przejdź do Wdrażanie w nawigacji personelu.",
               "Przejrzyj karty próbek lub użyj strony, aby znaleźć potrzebny typ próbki.",
@@ -1296,11 +1333,11 @@
           },
           "templates": {
             "heading": "Szablony w ramach próbki",
-            "body": "Strona próbki wymienia każdy szablon dla tego typu materiału. Kliknij wiersz, aby edytować go w kreatorze, albo wybierz Nowy szablon, aby rozpocząć pusty szkic powiązany z tą próbką."
+            "body": "Strona próbki zawiera wszystkie aktualne szablony badań dla danego materiału. Otwórz nazwę szablonu, aby go edytować, lub wybierz Nowy szablon. Uchwyt przeciągania zmienia kolejność badań w obrębie próbki. Możesz też nacisnąć spację, przesunąć element strzałkami i ponownie nacisnąć spację, aby go upuścić.\n\nPokaż na stronie głównej dotyczy wyłącznie publicznej Listy Badań. Aby badania były widoczne, odpowiedni rodzaj próbki również musi być widoczny. Ukrycie próbki nie zmienia ustawień jej badań. Nowe próbki i badania są początkowo ukryte; włącz ich widoczność, gdy będą gotowe. Istniejące elementy katalogu zostały oznaczone jako widoczne przy wprowadzeniu tej funkcji."
           },
           "next": {
             "heading": "Co dalej",
-            "body": "Przygotuj formularze przyjęcia klienta i laboratoryjne w kreatorze szablonów, dodaj obliczenia, gdy wyniki mają być wyliczane, a następnie zaprojektuj układ raportu PDF, jeśli laboratorium wydaje raporty PDF. Korzystaj z dokumentacji komponentów przy wyborze typów pytań."
+            "body": "Przygotuj formularze przyjęcia klienta i laboratoryjne w kreatorze szablonów, dodaj obliczenia, gdy wyniki mają być wyliczane, a następnie zaprojektuj układ raportu PDF, jeśli laboratorium wydaje raporty PDF. Korzystaj z dokumentacji komponentów przy wyborze typów pytań.\n\nNiepusty układ raportu PDF jest wymagany do zlecenia badania online. Badania bez układu raportu mogą pojawiać się na stronie głównej z odnośnikiem do kontaktu. Ukrycie badania z gotowym raportem PDF nie usuwa go z katalogu zleceń zalogowanego klienta. Zmiany widoczności i kolejności nie tworzą wersji szablonu i nie zmieniają istniejących kontekstów badań."
           }
         }
       },

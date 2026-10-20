@@ -26,6 +26,8 @@ export interface TemplateSummary {
   title: string;
   description?: string;
   hasPdfTemplate: boolean;
+  isVisibleOnWeb: boolean;
+  displayOrder: number;
 }
 
 /** Raw clientForm/labForm/calculations JSON from experiment-manager. */
@@ -282,5 +284,7 @@ export function toTemplateSummary(
     title: row.name,
     description: row.description ?? undefined,
     hasPdfTemplate: row.has_pdf_template,
+    isVisibleOnWeb: row.is_visible_on_web,
+    displayOrder: row.display_order,
   };
 }

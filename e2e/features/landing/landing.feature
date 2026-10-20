@@ -13,7 +13,8 @@ Feature: Landing page
     When I visit "/"
     Then I should be on the landing page
     And I should see the landing hero
-    And I should see the primary navigation link "Laboratory offer"
+    And I should see the primary navigation link "Test list"
+    And I should see the primary navigation link "Accreditations and certificates"
     And I should see the "Get started" call to action
 
   Scenario: Get started sends an unauthenticated visitor to sign-in

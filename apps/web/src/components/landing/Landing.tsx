@@ -14,11 +14,13 @@ import {
   Title,
 } from "@mantine/core";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 
 import { BrandIcon } from "@/components/brand/BrandMark";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { BRAND } from "@/lib/brand";
+import { requestTemplatePath } from "@/lib/experiment/routes";
 
 import { HeadingMark, WorkflowDiagram } from "./decor";
 import {
@@ -38,6 +40,7 @@ export type { OfferSample } from "@/lib/landing/offer";
 const NAV_LINKS = [
   { id: "offer", key: "labOffer" },
   { id: "about", key: "about" },
+  { id: "accreditations", key: "accreditations" },
   { id: "contact", key: "contact" },
 ] as const;
 
@@ -72,9 +75,7 @@ export function Landing({
 }) {
   const t = useTranslations("landing");
   const ctaHref = workspaceHref ?? "/login";
-  const ctaLabel = workspaceHref
-    ? t("nav.goToWorkspace")
-    : t("nav.getStarted");
+  const ctaLabel = workspaceHref ? t("nav.goToWorkspace") : t("nav.getStarted");
 
   const sampleCount = offer?.length ?? 0;
   const methodCount =
@@ -93,8 +94,15 @@ export function Landing({
             }}
           >
             <BrandIcon size={22} className={classes.brandIcon} />
-            <span className={classes.brandLabel}>{BRAND.name}</span>
-            <span className={classes.brandTag}>{BRAND.tagline}</span>
+            <span className={classes.brandText}>
+              <span className={classes.brandName}>
+                <span className={classes.brandLabel}>{BRAND.name}</span>
+                <span className={classes.brandTag}>{BRAND.tagline}</span>
+              </span>
+              <span className={classes.brandSubtitle}>
+                {t("nav.laboratory")}
+              </span>
+            </span>
           </a>
 
           <nav className={classes.nav} aria-label={t("nav.primaryAriaLabel")}>
@@ -127,12 +135,7 @@ export function Landing({
                 {t("nav.signIn")}
               </Anchor>
             )}
-            <Button
-              component={Link}
-              href={ctaHref}
-              color="green"
-              radius="sm"
-            >
+            <Button component={Link} href={ctaHref} color="green" radius="sm">
               {ctaLabel}
             </Button>
           </Group>
@@ -148,9 +151,7 @@ export function Landing({
               <Title order={1} className={classes.heroTitle}>
                 {t("hero.title")}
               </Title>
-              <Text className={classes.heroLead}>
-                {t("hero.lead", { brand: BRAND.name })}
-              </Text>
+              <Text className={classes.heroLead}>{t("hero.lead")}</Text>
               <Group gap="md" mt="lg">
                 <Button
                   component={Link}
@@ -202,6 +203,10 @@ export function Landing({
                   {t("offer.fallbackBody")}
                 </Text>
               </Box>
+            ) : offer.length === 0 ? (
+              <Text c="dimmed" ta="center">
+                {t("offer.empty")}
+              </Text>
             ) : (
               <Accordion
                 variant="separated"
@@ -260,7 +265,10 @@ export function Landing({
                           {sample.experiments.map((exp) => (
                             <div key={exp.id} className={classes.method}>
                               <Group gap="xs" wrap="nowrap" align="flex-start">
-                                <span className={classes.methodDot} aria-hidden />
+                                <span
+                                  className={classes.methodDot}
+                                  aria-hidden
+                                />
                                 <div>
                                   <Text fw={500} fz="sm">
                                     {exp.name}
@@ -270,23 +278,33 @@ export function Landing({
                                       {exp.description}
                                     </Text>
                                   )}
+                                  <Anchor
+                                    component={Link}
+                                    href={
+                                      exp.canRequest
+                                        ? requestTemplatePath(exp.id, sample.id)
+                                        : "#contact"
+                                    }
+                                    fz="sm"
+                                    fw={600}
+                                    c="green.8"
+                                    mt={4}
+                                  >
+                                    <Group
+                                      gap={6}
+                                      wrap="nowrap"
+                                      component="span"
+                                    >
+                                      {exp.canRequest
+                                        ? t("offer.requestThisExperiment")
+                                        : t("offer.contactLaboratory")}
+                                      <ArrowRightIcon size={16} />
+                                    </Group>
+                                  </Anchor>
                                 </div>
                               </Group>
                             </div>
                           ))}
-                          <Anchor
-                            component={Link}
-                            href={ctaHref}
-                            fz="sm"
-                            fw={600}
-                            c="green.8"
-                            mt={4}
-                          >
-                            <Group gap={6} wrap="nowrap" component="span">
-                              {t("offer.requestThisExperiment")}
-                              <ArrowRightIcon size={16} />
-                            </Group>
-                          </Anchor>
                         </Stack>
                       )}
                     </Accordion.Panel>
@@ -311,7 +329,10 @@ export function Landing({
         </section>
 
         {/* About */}
-        <section id="about" className={`${classes.sectionMuted} ${classes.hexBg}`}>
+        <section
+          id="about"
+          className={`${classes.sectionMuted} ${classes.hexBg}`}
+        >
           <Container size="xl">
             <div className={classes.about}>
               <div className={classes.aboutCopy}>
@@ -319,7 +340,7 @@ export function Landing({
                   step={2}
                   kicker={t("about.kicker")}
                   title={t("about.title")}
-                  lead={t("about.lead", { brand: BRAND.name })}
+                  lead={t("about.lead")}
                   align="left"
                 />
                 <Text c="dimmed" mt="md">
@@ -327,7 +348,10 @@ export function Landing({
                 </Text>
               </div>
               <div className={classes.statGrid}>
-                <Stat value={`${sampleCount}`} label={t("about.statSpecimenTypes")} />
+                <Stat
+                  value={`${sampleCount}`}
+                  label={t("about.statSpecimenTypes")}
+                />
                 <Stat value={`${methodCount}`} label={t("about.statMethods")} />
                 <Stat
                   value={t("about.statSampleIntakeValue")}
@@ -338,13 +362,65 @@ export function Landing({
           </Container>
         </section>
 
+        {/* Accreditations and certificates */}
+        <section id="accreditations" className={classes.section}>
+          <Container size="xl">
+            <SectionHeading
+              step={3}
+              kicker={t("accreditations.kicker")}
+              title={t("accreditations.title")}
+              lead={t("accreditations.lead", { legalName: BRAND.legalName })}
+            />
+            <div className={classes.accreditationBody}>
+              <div className={classes.accreditationMark}>
+                <Image
+                  src="/certificates/ab-1981.svg"
+                  alt={t("accreditations.logoAlt")}
+                  width={203}
+                  height={359}
+                  className={classes.pcaLogo}
+                />
+                <Anchor
+                  href={BRAND.accreditationScopeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  c="green.8"
+                  fw={600}
+                >
+                  {t("accreditations.scope")}
+                </Anchor>
+              </div>
+              <Stack gap="md" className={classes.accreditationCopy}>
+                <div>
+                  <Title order={3} fz="xl">
+                    PN-EN ISO/IEC 17025
+                  </Title>
+                  <Text c="dimmed" mt="xs">
+                    {t("accreditations.body")}
+                  </Text>
+                </div>
+                <div className={classes.termsDownload}>
+                  <TermsPdfLink
+                    label={t("accreditations.terms", {
+                      legalName: BRAND.legalName,
+                    })}
+                  />
+                  <Text fz="xs" c="dimmed" mt={4}>
+                    {t("accreditations.termsFormat")}
+                  </Text>
+                </div>
+              </Stack>
+            </div>
+          </Container>
+        </section>
+
         {/* Contact */}
         <section id="contact" className={classes.section}>
           <Container size="xl">
             <div className={classes.contact}>
               <div>
                 <SectionHeading
-                  step={3}
+                  step={4}
                   kicker={t("contact.kicker")}
                   title={t("contact.title")}
                   lead={t("contact.lead")}
@@ -413,7 +489,7 @@ export function Landing({
   );
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 function SectionHeading({
   kicker,
@@ -429,11 +505,12 @@ function SectionHeading({
   step: number;
 }) {
   return (
-    <div
-      className={classes.sectionHeading}
-      data-align={align}
-    >
-      <HeadingMark className={classes.headingMark} active={step} total={TOTAL_STEPS} />
+    <div className={classes.sectionHeading} data-align={align}>
+      <HeadingMark
+        className={classes.headingMark}
+        active={step}
+        total={TOTAL_STEPS}
+      />
       <span className={classes.eyebrow}>{kicker}</span>
       <Title order={2} className={classes.sectionTitle}>
         {title}
@@ -490,11 +567,22 @@ function ContactRow({
         {icon}
       </ThemeIcon>
       <div>
-        <Text fz="xs" tt="uppercase" fw={600} c="dimmed" className={classes.contactLabel}>
+        <Text
+          fz="xs"
+          tt="uppercase"
+          fw={600}
+          c="dimmed"
+          className={classes.contactLabel}
+        >
           {label}
         </Text>
         {href ? (
-          <Anchor href={href} c="dark" fw={500} className={classes.contactValue}>
+          <Anchor
+            href={href}
+            c="dark"
+            fw={500}
+            className={classes.contactValue}
+          >
             {value}
           </Anchor>
         ) : (

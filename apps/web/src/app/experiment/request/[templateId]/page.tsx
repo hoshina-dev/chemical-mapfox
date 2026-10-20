@@ -82,6 +82,7 @@ async function RequestExperimentPageContent({
             sampleId={loaded.sampleId}
             templateId={templateId}
             clientForm={loaded.template.template.clientForm}
+            canRequest={loaded.template.valid && loaded.template.hasPdfTemplate}
           />
         </Card>
       </Stack>

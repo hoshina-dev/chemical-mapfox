@@ -14,6 +14,7 @@ interface RequestExperimentFormProps {
   sampleId: string;
   templateId: string;
   clientForm: FormDoc;
+  canRequest: boolean;
   submitLabel?: string;
 }
 
@@ -21,6 +22,7 @@ export function RequestExperimentForm({
   sampleId,
   templateId,
   clientForm,
+  canRequest,
   submitLabel,
 }: RequestExperimentFormProps) {
   const t = useTranslations("experiment.request.form");
@@ -32,6 +34,7 @@ export function RequestExperimentForm({
   const isEmpty = clientForm.questions.length === 0;
 
   async function handleSubmit(answers: FormAnswers) {
+    if (pending || !canRequest) return;
     setPending(true);
     setError(null);
     const result = await requestExperimentAction({
@@ -73,14 +76,19 @@ export function RequestExperimentForm({
           zIndex={1000}
           overlayProps={{ blur: 1 }}
         />
-        <FormRenderer
-          doc={clientForm}
-          submitLabel={submitLabel ?? t("submit")}
-          missingRequiredTitle={t("missingRequired")}
-          invalidTitle={tIssue("invalidTitle")}
-          formatIssue={(issue) => formatAnswerIssue(tIssue, issue)}
-          onSubmit={handleSubmit}
-        />
+        <fieldset
+          disabled={pending || !canRequest}
+          style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+        >
+          <FormRenderer
+            doc={clientForm}
+            submitLabel={submitLabel ?? t("submit")}
+            missingRequiredTitle={t("missingRequired")}
+            invalidTitle={tIssue("invalidTitle")}
+            formatIssue={(issue) => formatAnswerIssue(tIssue, issue)}
+            onSubmit={handleSubmit}
+          />
+        </fieldset>
       </Box>
     </Stack>
   );

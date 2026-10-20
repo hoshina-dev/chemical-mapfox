@@ -95,31 +95,35 @@
   },
   "landing": {
     "nav": {
-      "labOffer": "Laboratory offer",
+      "labOffer": "Test list",
       "about": "About us",
       "contact": "Contact",
       "primaryAriaLabel": "Primary",
       "signIn": "Sign in",
       "getStarted": "Get started",
-      "goToWorkspace": "Go to your workspace"
+      "goToWorkspace": "Go to your workspace",
+      "laboratory": "Testing Laboratory",
+      "accreditations": "Accreditations and certificates"
     },
     "hero": {
       "eyebrow": "Laboratory testing services",
-      "title": "Chemical experiments, from request to results.",
-      "lead": "{brand} runs your samples through a structured workflow — intake, lab execution and reporting in one place. Track every specimen, see exactly where it is, and receive results you can trust.",
+      "title": "Accredited chemical testing laboratory – from request to test report",
+      "lead": "Chemical analyses in accordance with PN-EN ISO/IEC 17025",
       "exploreOffer": "Explore our offer",
       "specimenTypes": "specimen types",
       "testMethods": "test methods"
     },
     "offer": {
-      "kicker": "Laboratory offer",
-      "title": "What we test",
+      "kicker": "Test list",
+      "title": "Test list",
       "lead": "Browse the specimens our labs support. Open any one to see the individual test methods available for it.",
       "fallbackTitle": "Our offer is being updated",
       "fallbackBody": "The catalogue is briefly unavailable. Please check back shortly or get in touch and we'll walk you through what we test.",
       "methodCount": "{count, plural, one {# method} other {# methods}}",
       "methodsBeingAdded": "Methods for this specimen are being added.",
-      "requestThisExperiment": "Request this experiment"
+      "requestThisExperiment": "Request this experiment",
+      "empty": "No tests are currently listed. Please contact our laboratory for details.",
+      "contactLaboratory": "Contact laboratory"
     },
     "howItWorks": {
       "kicker": "How it works",
@@ -152,8 +156,8 @@
     "about": {
       "kicker": "About us",
       "title": "A laboratory built around your samples",
-      "lead": "{brand} brings together sample intake, collaborative lab execution and reporting. Requesters always know where a specimen is; our technicians move work forward without fighting the tools.",
-      "body": "We pair experienced analysts with a modern workflow so that every result is traceable, reproducible and delivered on time. From a single water sample to a full production-hygiene programme, the process is the same: clear, accountable and quality-assured.",
+      "lead": "Harper Analytics is a testing laboratory accredited by the Polish Centre for Accreditation (PCA). Our team of experienced analysts combines practical laboratory expertise with a modern, structured workflow. This ensures full traceability of every sample at every stage of testing, with reliable, reproducible and thoroughly documented results delivered within the agreed timeframe.",
+      "body": "Whether we analyse a single sample or carry out a comprehensive testing programme, we apply the same standards: accuracy, quality control and transparency at every stage of our work together.",
       "statSpecimenTypes": "Specimen types",
       "statMethods": "Test methods",
       "statSampleIntake": "Sample intake",
@@ -173,6 +177,16 @@
     "footer": {
       "rights": "© {year} {legalName}. All rights reserved.",
       "termsPdf": "Terms of Service — Download file"
+    },
+    "accreditations": {
+      "kicker": "PCA · AB 1981",
+      "title": "Accreditations and certificates",
+      "lead": "The laboratory competence of {legalName} is confirmed by accreditation from the Polish Centre for Accreditation (PCA).",
+      "logoAlt": "Polish Centre for Accreditation symbol for testing, AB 1981",
+      "scope": "Scope",
+      "body": "Our testing laboratory holds accreditation AB 1981 in accordance with PN-EN ISO/IEC 17025. The current scope of accreditation is available on the Polish Centre for Accreditation website.",
+      "terms": "General Terms of Service of {legalName}",
+      "termsFormat": "Download PDF in Polish · 01.08.2026"
     }
   },
   "auth": {
@@ -587,6 +601,29 @@
       "description": "Description",
       "editTooltip": "Click to edit \"{title}\"",
       "noReportLayout": "No report layout"
+    },
+    "catalogue": {
+      "help": "Drag items by their handles to reorder both catalogues. Changes save automatically. Visibility affects only the landing page. New items start hidden.",
+      "visibility": "Show on landing page",
+      "visibilityFor": "Show {name} on landing page",
+      "reorder": "Reorder",
+      "dragHandle": "Reorder {name}",
+      "experiment": "Experiment",
+      "description": "Description",
+      "noReportLayout": "No report layout",
+      "noDescription": "No description",
+      "templateCount": "{count, plural, one {# template} other {# templates}}",
+      "countUnavailable": "Template count unavailable",
+      "manageTemplates": "Manage templates",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveFailed": "Save failed",
+      "saveError": "Could not save catalogue settings. Refresh and try again.",
+      "keyboardInstructions": "Press Space to pick up an item, use the arrow keys to move it, and press Space to drop it. Press Escape to cancel.",
+      "dragStart": "Picked up {name}.",
+      "dragPosition": "{name} is at position {position}.",
+      "dragCancelled": "Reordering cancelled.",
+      "dragFinished": "Item dropped."
     }
   },
   "builder": {
@@ -1277,7 +1314,7 @@
         "sections": {
           "samples": {
             "heading": "Browse samples",
-            "body": "Open Onboarding from the staff navigation. Each card is a specimen type (for example Coal or Apple) with a short description and how many templates it currently has. Open a sample to manage its templates.",
+            "body": "Open Onboarding from the staff navigation. Each card is a specimen type (for example Coal or Apple) with a short description and how many templates it currently has. Open a sample to manage its templates.\n\nUse each drag handle to reorder specimens. The same order appears on the homepage and client request catalogue. Changes save automatically; wait for Saved before leaving. Hidden items retain their position.",
             "steps": [
               "Go to Onboarding in the staff nav.",
               "Scan the sample cards or use the page to find the specimen you need.",
@@ -1296,11 +1333,11 @@
           },
           "templates": {
             "heading": "Templates under a sample",
-            "body": "The sample page lists every template for that specimen. Click a row to edit it in the builder, or choose New template to start a blank draft associated with this sample."
+            "body": "The sample page lists every current template for that specimen. Open its name to edit it in the builder, or choose New template to start a blank draft. Use the drag handle to reorder tests within the specimen. You can also use Space, arrow keys and Space again to move an item with the keyboard.\n\nShow on landing page controls only the public Lista Badań. A visible specimen must also have this setting enabled for its tests to appear. Hiding the specimen does not change individual test settings. New specimens and tests start hidden; enable them when ready. Existing catalogue entries were made visible when this feature was introduced."
           },
           "next": {
             "heading": "What to do next",
-            "body": "Author the client intake and lab forms in the template builder, add calculations when results should be computed, then design the PDF report layout if your lab issues PDF reports. Use the Component reference while choosing question types."
+            "body": "Author the client intake and lab forms in the template builder, add calculations when results should be computed, then design the PDF report layout if your lab issues PDF reports. Use the Component reference while choosing question types.\n\nA non-empty PDF report layout is mandatory for online requests. Tests without a report layout may still be listed on the landing page with a contact link. Hiding a PDF-ready test from the homepage does not remove it from the signed-in request catalogue. Visibility and ordering changes do not create template versions or change existing experiment contexts."
           }
         }
       },

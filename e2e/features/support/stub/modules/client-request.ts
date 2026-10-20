@@ -58,6 +58,8 @@ interface SeededSample {
   id: string;
   name: string;
   description: string;
+  is_visible_on_web: boolean;
+  display_order: number;
 }
 
 interface StoredExperiment {
@@ -116,6 +118,8 @@ export function seedCatalogTemplate(input: {
     id: sampleId,
     name: input.sampleName,
     description: input.sampleDescription ?? "",
+    is_visible_on_web: true,
+    display_order: samples.length + 1,
   });
 
   const clientForm: FormDocWire = {
@@ -157,6 +161,8 @@ function templateSummary(tpl: SeededTemplate) {
     // Seeded catalogue templates always have a report layout — the
     // "no report layout" gating has its own dedicated scenarios.
     has_pdf_template: true,
+    is_visible_on_web: true,
+    display_order: templates.indexOf(tpl) + 1,
   };
 }
 

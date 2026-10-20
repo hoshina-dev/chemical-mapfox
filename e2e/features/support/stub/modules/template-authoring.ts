@@ -34,6 +34,8 @@ export interface StubSample {
   id: string;
   name: string;
   description: string | null;
+  isVisibleOnWeb: boolean;
+  displayOrder: number;
 }
 
 export interface StubTemplate {
@@ -48,11 +50,36 @@ export interface StubTemplate {
   labForm: FormDocLike;
   calculations: Record<string, unknown>;
   pdfComponents: unknown[] | null;
+  isVisibleOnWeb: boolean;
+  displayOrder: number;
 }
 
 const samples: StubSample[] = [];
 const templates: StubTemplate[] = [];
 let seq = 0;
+let failNextWrite = false;
+let catalogueWrites = 0;
+export function catalogueWriteCount() {
+  return catalogueWrites;
+}
+export function failNextCatalogueWrite() {
+  failNextWrite = true;
+}
+export function findTemplateByName(name: string) {
+  return templates.find((row) => row.name === name);
+}
+function failCatalogueWrite(ctx: StubContext) {
+  if (!failNextWrite) return false;
+  failNextWrite = false;
+  ctx.json(503, { detail: "Catalogue temporarily unavailable" });
+  return true;
+}
+function validateOrder(ids: string[], current: string[]) {
+  if (new Set(ids).size !== ids.length) return 422;
+  if (ids.some((id) => !current.includes(id))) return 404;
+  if (ids.length !== current.length) return 409;
+  return null;
+}
 
 /** A deterministic, uuid-shaped id (experiment-manager ids are uuids). */
 function uuid(seed: string): string {
@@ -88,6 +115,8 @@ export function seedSample(name: string, description?: string): StubSample {
     id: nextId("sample"),
     name,
     description: description ?? null,
+    isVisibleOnWeb: true,
+    displayOrder: samples.length + 1,
   };
   samples.push(sample);
   return sample;
@@ -108,6 +137,8 @@ export function seedTemplate(
     description: description ?? null,
     version: 1,
     isCurrent: true,
+    isVisibleOnWeb: true,
+    displayOrder: templates.filter((t) => t.sampleId === sample.id).length + 1,
     clientForm: emptyForm("Client form"),
     labForm: emptyForm("Lab form"),
     calculations: {},
@@ -122,7 +153,13 @@ export function seedTemplate(
 // --- wire serializers ------------------------------------------------------
 
 function sampleWire(s: StubSample) {
-  return { id: s.id, name: s.name, description: s.description };
+  return {
+    id: s.id,
+    name: s.name,
+    description: s.description,
+    is_visible_on_web: s.isVisibleOnWeb,
+    display_order: s.displayOrder,
+  };
 }
 
 function templateSummaryWire(t: StubTemplate) {
@@ -134,6 +171,8 @@ function templateSummaryWire(t: StubTemplate) {
     version: t.version,
     is_current: t.isCurrent,
     has_pdf_template: Boolean(t.pdfComponents && t.pdfComponents.length > 0),
+    is_visible_on_web: t.isVisibleOnWeb,
+    display_order: t.displayOrder,
   };
 }
 
@@ -152,11 +191,20 @@ async function handle(ctx: StubContext): Promise<boolean> {
   const { method, path } = ctx;
   if (path[0] !== "api" || path[1] !== "samples") return false;
   const rest = path.slice(2);
+  if (
+    (method === "PATCH" && rest.at(-1) === "web-visibility") ||
+    (method === "PUT" && rest.at(-1) === "web-order")
+  )
+    catalogueWrites += 1;
 
   // /api/samples
   if (rest.length === 0) {
     if (method === "GET") {
-      return ctx.json(200, { samples: samples.map(sampleWire) });
+      return ctx.json(200, {
+        samples: [...samples]
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map(sampleWire),
+      });
     }
     if (method === "POST") {
       const body = (await ctx.readBody()) as {
@@ -166,13 +214,85 @@ async function handle(ctx: StubContext): Promise<boolean> {
       const name = body.name?.trim();
       if (!name) return ctx.json(422, { detail: "name is required" });
       const sample = seedSample(name, body.description ?? undefined);
+      sample.isVisibleOnWeb = false;
       return ctx.json(201, sampleWire(sample));
     }
     return false;
   }
 
+  if (method === "PUT" && rest.length === 1 && rest[0] === "web-order") {
+    if (failCatalogueWrite(ctx)) return true;
+    const { sample_ids: ids } = (await ctx.readBody()) as {
+      sample_ids: string[];
+    };
+    const error = validateOrder(
+      ids,
+      samples.map((row) => row.id),
+    );
+    if (error) return ctx.json(error, { detail: "Invalid catalogue order" });
+    ids.forEach((id, index) => {
+      samples.find((row) => row.id === id)!.displayOrder = index + 1;
+    });
+    return ctx.json(200, {
+      samples: [...samples]
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map(sampleWire),
+    });
+  }
   const sampleId = decodeURIComponent(rest[0]);
   const sample = samples.find((s) => s.id === sampleId);
+
+  if (rest.length === 2 && rest[1] === "web-visibility" && method === "PATCH") {
+    if (failCatalogueWrite(ctx)) return true;
+    if (!sample) return ctx.json(404, { detail: "sample not found" });
+    const body = (await ctx.readBody()) as { is_visible_on_web: boolean };
+    sample.isVisibleOnWeb = body.is_visible_on_web;
+    return ctx.json(200, sampleWire(sample));
+  }
+  if (
+    rest.length === 3 &&
+    rest[1] === "experiments" &&
+    rest[2] === "web-order" &&
+    method === "PUT"
+  ) {
+    if (failCatalogueWrite(ctx)) return true;
+    if (!sample) return ctx.json(404, { detail: "sample not found" });
+    const { lineage_ids: ids } = (await ctx.readBody()) as {
+      lineage_ids: string[];
+    };
+    const rows = templates.filter(
+      (t) => t.sampleId === sampleId && t.isCurrent,
+    );
+    const error = validateOrder(
+      ids,
+      rows.map((row) => row.lineageId),
+    );
+    if (error) return ctx.json(error, { detail: "Invalid catalogue order" });
+    ids.forEach((id, index) => {
+      rows.find((row) => row.lineageId === id)!.displayOrder = index + 1;
+    });
+    return ctx.json(200, {
+      sample_id: sampleId,
+      experiments: rows
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map(templateSummaryWire),
+    });
+  }
+  if (
+    rest.length === 4 &&
+    rest[1] === "experiments" &&
+    rest[3] === "web-visibility" &&
+    method === "PATCH"
+  ) {
+    if (failCatalogueWrite(ctx)) return true;
+    const row = templates.find(
+      (t) => t.sampleId === sampleId && t.lineageId === rest[2] && t.isCurrent,
+    );
+    if (!sample || !row) return ctx.json(404, { detail: "template not found" });
+    const body = (await ctx.readBody()) as { is_visible_on_web: boolean };
+    row.isVisibleOnWeb = body.is_visible_on_web;
+    return ctx.json(200, templateSummaryWire(row));
+  }
 
   // /api/samples/{id}
   if (rest.length === 1) {
@@ -186,7 +306,9 @@ async function handle(ctx: StubContext): Promise<boolean> {
   // /api/samples/{id}/experiments
   if (rest.length === 2 && rest[1] === "experiments") {
     if (method === "GET") {
-      const rows = templates.filter((t) => t.sampleId === sampleId);
+      const rows = templates
+        .filter((t) => t.sampleId === sampleId && t.isCurrent)
+        .sort((a, b) => a.displayOrder - b.displayOrder);
       return ctx.json(200, {
         sample_id: sampleId,
         experiments: rows.map(templateSummaryWire),
@@ -211,6 +333,9 @@ async function handle(ctx: StubContext): Promise<boolean> {
         description: body.description ?? null,
         version: 1,
         isCurrent: true,
+        isVisibleOnWeb: false,
+        displayOrder:
+          templates.filter((t) => t.sampleId === sampleId).length + 1,
         clientForm: body.clientForm ?? emptyForm("Client form"),
         labForm: body.labForm ?? emptyForm("Lab form"),
         calculations: body.calculations ?? {},
@@ -228,9 +353,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
   if (rest.length === 3 && rest[1] === "experiments") {
     const ref = decodeURIComponent(rest[2]);
     if (method === "GET") {
-      const t = templates.find(
-        (x) => x.sampleId === sampleId && x.id === ref,
-      );
+      const t = templates.find((x) => x.sampleId === sampleId && x.id === ref);
       if (!t) return ctx.json(404, { detail: "template not found" });
       return ctx.json(200, templateDetailWire(t));
     }
@@ -272,9 +395,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
   if (rest.length === 4 && rest[1] === "experiments" && rest[3] === "pdf") {
     const ref = decodeURIComponent(rest[2]);
     if (method === "GET") {
-      const t = templates.find(
-        (x) => x.sampleId === sampleId && x.id === ref,
-      );
+      const t = templates.find((x) => x.sampleId === sampleId && x.id === ref);
       if (!t || !t.pdfComponents) {
         return ctx.json(404, { detail: "no pdf template" });
       }
@@ -307,10 +428,14 @@ async function handle(ctx: StubContext): Promise<boolean> {
 
 registerStub({
   name: "experiment-manager:template-authoring",
+  // Owns the baseline specimen collection; seeded feature modules take priority.
+  priority: -100,
   reset() {
     samples.length = 0;
     templates.length = 0;
     seq = 0;
+    failNextWrite = false;
+    catalogueWrites = 0;
     // Seed one baseline sample so scenarios have a known specimen to open.
     seedSample("Coal", "Raw coal samples for proximate analysis");
   },

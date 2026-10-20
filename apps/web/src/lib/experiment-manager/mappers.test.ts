@@ -319,6 +319,8 @@ describe("toTemplateSummary", () => {
         name: "Ash",
         description: null,
         has_pdf_template: false,
+        is_visible_on_web: true,
+        display_order: 3,
       }),
     ).toEqual({
       sampleId: "sample-1",
@@ -327,6 +329,8 @@ describe("toTemplateSummary", () => {
       title: "Ash",
       description: undefined,
       hasPdfTemplate: false,
+      isVisibleOnWeb: true,
+      displayOrder: 3,
     });
 
     expect(

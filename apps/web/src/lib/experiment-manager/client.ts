@@ -308,3 +308,47 @@ export async function deletePdfTemplate(sampleId: string, templateId: string) {
     { method: "DELETE" },
   );
 }
+
+export async function setSampleWebVisibility(
+  sampleId: string,
+  isVisibleOnWeb: boolean,
+) {
+  return emFetch<SampleSummary>(`/api/samples/${sampleId}/web-visibility`, {
+    method: "PATCH",
+    body: JSON.stringify({ is_visible_on_web: isVisibleOnWeb }),
+  });
+}
+
+export async function setSamplesWebOrder(sampleIds: string[]) {
+  return emFetch<{ samples: SampleSummary[] }>("/api/samples/web-order", {
+    method: "PUT",
+    body: JSON.stringify({ sample_ids: sampleIds }),
+  });
+}
+
+export async function setTemplateWebVisibility(
+  sampleId: string,
+  lineageId: string,
+  isVisibleOnWeb: boolean,
+) {
+  return emFetch<ExperimentTemplateSummary>(
+    `/api/samples/${sampleId}/experiments/${lineageId}/web-visibility`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ is_visible_on_web: isVisibleOnWeb }),
+    },
+  );
+}
+
+export async function setTemplatesWebOrder(
+  sampleId: string,
+  lineageIds: string[],
+) {
+  return emFetch<{
+    sample_id: string;
+    experiments: ExperimentTemplateSummary[];
+  }>(`/api/samples/${sampleId}/experiments/web-order`, {
+    method: "PUT",
+    body: JSON.stringify({ lineage_ids: lineageIds }),
+  });
+}

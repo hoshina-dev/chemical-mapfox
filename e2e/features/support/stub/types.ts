@@ -19,6 +19,8 @@ export interface StubContext {
 export interface StubModule {
   /** Unique, human-readable name (used in logs). */
   name: string;
+  /** Higher priorities run first; broad fallback modules use a negative value. */
+  priority?: number;
   /** Reset any module-local in-memory state before each scenario. */
   reset?(): void;
   /** Handle the request; return `true` if it was handled, else `false`. */
