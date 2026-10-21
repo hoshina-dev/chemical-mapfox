@@ -183,6 +183,7 @@
       "title": "Accreditations and certificates",
       "lead": "The laboratory competence of {legalName} is confirmed by accreditation from the Polish Centre for Accreditation (PCA).",
       "logoAlt": "Polish Centre for Accreditation symbol for testing, AB 1981",
+      "ilacLogoAlt": "ILAC MRA mark",
       "scope": "Scope",
       "body": "Our testing laboratory holds accreditation AB 1981 in accordance with PN-EN ISO/IEC 17025. The current scope of accreditation is available on the Polish Centre for Accreditation website.",
       "terms": "General Terms of Service of {legalName}",
