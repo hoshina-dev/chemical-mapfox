@@ -442,6 +442,10 @@
   object-fit: contain;
 }
 
+.ilacLogo {
+  height: calc(var(--accreditation-logo-height) / 2);
+}
+
 .accreditationCopy {
   line-height: 1.6;
 }

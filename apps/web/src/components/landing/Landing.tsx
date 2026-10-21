@@ -501,7 +501,7 @@ function AccreditationMarks({ compact = false }: { compact?: boolean }) {
         width={1022}
         height={1038}
         unoptimized
-        className={classes.accreditationLogo}
+        className={`${classes.accreditationLogo} ${classes.ilacLogo}`}
       />
       <Image
         src="/certificates/ab-1981.svg"
