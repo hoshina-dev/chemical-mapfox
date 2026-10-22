@@ -443,9 +443,7 @@
 }
 
 .ilacLogo {
-  /* Match the rendered width of the 203 x 359 PCA artwork. */
-  width: calc(var(--accreditation-logo-height) * 203 / 359);
-  height: auto;
+  height: calc(var(--accreditation-logo-height) * 0.95);
 }
 
 .accreditationCopy {
