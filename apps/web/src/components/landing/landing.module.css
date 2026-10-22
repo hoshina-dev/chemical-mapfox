@@ -144,6 +144,10 @@
   .brandTag {
     font-size: 10px;
   }
+  .headerAccreditations {
+    order: 2;
+    width: 100%;
+  }
   .header .headerInner > :last-child {
     gap: 6px;
   }
@@ -249,6 +253,13 @@
   .section,
   .sectionMuted {
     scroll-margin-top: 96px;
+  }
+}
+
+@media (max-width: 36em) {
+  .section,
+  .sectionMuted {
+    scroll-margin-top: 220px;
   }
 }
 
@@ -395,10 +406,10 @@
 
 .accreditationBody {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 340px minmax(0, 1fr);
   align-items: center;
   gap: 48px;
-  max-width: 46rem;
+  max-width: 62rem;
   margin: 0 auto;
 }
 
@@ -409,10 +420,30 @@
   gap: 16px;
 }
 
-.pcaLogo {
+.accreditationLogos {
+  --accreditation-logo-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.headerAccreditations {
+  --accreditation-logo-height: 56px;
+  gap: 12px;
+}
+
+.accreditationLogo {
   display: block;
-  width: 120px;
-  height: auto;
+  width: auto;
+  height: var(--accreditation-logo-height);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.ilacLogo {
+  height: calc(var(--accreditation-logo-height) * 0.95);
 }
 
 .accreditationCopy {
@@ -425,10 +456,17 @@
   margin-top: 8px;
 }
 
-@media (max-width: 36em) {
+@media (max-width: 48em) {
   .accreditationBody {
     grid-template-columns: 1fr;
     gap: 28px;
+  }
+}
+
+@media (max-width: 36em) {
+  .accreditationMark .accreditationLogos {
+    --accreditation-logo-height: 160px;
+    gap: 20px;
   }
 }
 
@@ -476,6 +514,7 @@
 
 .contactValue {
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Footer ---------- */

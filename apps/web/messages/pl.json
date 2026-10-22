@@ -103,7 +103,7 @@
       "getStarted": "Rozpocznij",
       "goToWorkspace": "Przejdź do obszaru roboczego",
       "laboratory": "Laboratorium Badawcze",
-      "accreditations": "Akredytacje i certyfikaty"
+      "accreditations": "Akredytacje i Certyfikaty"
     },
     "hero": {
       "eyebrow": "Usługi laboratoryjne",
@@ -180,9 +180,10 @@
     },
     "accreditations": {
       "kicker": "PCA · AB 1981",
-      "title": "Akredytacje i certyfikaty",
+      "title": "Akredytacje i Certyfikaty",
       "lead": "Kompetencje laboratorium {legalName} potwierdza akredytacja Polskiego Centrum Akredytacji (PCA).",
       "logoAlt": "Symbol akredytacji Polskiego Centrum Akredytacji – badania, AB 1981",
+      "ilacLogoAlt": "Znak ILAC MRA",
       "scope": "Zakres",
       "body": "Nasze laboratorium badawcze posiada akredytację AB 1981 zgodnie z normą PN-EN ISO/IEC 17025. Aktualny zakres akredytacji jest dostępny na stronie Polskiego Centrum Akredytacji.",
       "terms": "Ogólne Warunki Świadczenia Usług {legalName}",

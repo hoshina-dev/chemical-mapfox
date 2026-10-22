@@ -105,6 +105,8 @@ export function Landing({
             </span>
           </a>
 
+          <AccreditationMarks compact />
+
           <nav className={classes.nav} aria-label={t("nav.primaryAriaLabel")}>
             {NAV_LINKS.map((link) => (
               <a
@@ -373,13 +375,7 @@ export function Landing({
             />
             <div className={classes.accreditationBody}>
               <div className={classes.accreditationMark}>
-                <Image
-                  src="/certificates/ab-1981.svg"
-                  alt={t("accreditations.logoAlt")}
-                  width={203}
-                  height={359}
-                  className={classes.pcaLogo}
-                />
+                <AccreditationMarks />
                 <Anchor
                   href={BRAND.accreditationScopeUrl}
                   target="_blank"
@@ -485,6 +481,35 @@ export function Landing({
           </div>
         </Container>
       </footer>
+    </div>
+  );
+}
+
+function AccreditationMarks({ compact = false }: { compact?: boolean }) {
+  const t = useTranslations("landing.accreditations");
+  return (
+    <div
+      className={
+        compact
+          ? `${classes.accreditationLogos} ${classes.headerAccreditations}`
+          : classes.accreditationLogos
+      }
+    >
+      <Image
+        src="/certificates/ilac-mra.jpg"
+        alt={t("ilacLogoAlt")}
+        width={1022}
+        height={1038}
+        unoptimized
+        className={`${classes.accreditationLogo} ${classes.ilacLogo}`}
+      />
+      <Image
+        src="/certificates/ab-1981.svg"
+        alt={t("logoAlt")}
+        width={203}
+        height={359}
+        className={classes.accreditationLogo}
+      />
     </div>
   );
 }
