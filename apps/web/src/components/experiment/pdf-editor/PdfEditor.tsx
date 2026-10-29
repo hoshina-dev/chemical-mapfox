@@ -52,14 +52,15 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-import type {
-  PageBreakComp,
-  PdfComp,
-  PreviewMode,
-  Rect,
-  ShapeComp,
-  TextComp,
-  VariableGroup,
+import {
+  isPdfComp,
+  type PageBreakComp,
+  type PdfComp,
+  type PreviewMode,
+  type Rect,
+  type ShapeComp,
+  type TextComp,
+  type VariableGroup,
 } from "./types";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -206,15 +207,17 @@ function stripEditorFields(comps: PdfComp[]): PdfComp[] {
   });
 }
 
+const finiteOr = (v: unknown, fallback: number): number =>
+  typeof v === "number" && Number.isFinite(v) ? v : fallback;
+
+/** Output is raw SVG markup, so every interpolated value must be a number or validated color. */
 function shapeToSvg(comp: ShapeComp): string {
-  const [, , w, h] = comp.rect;
+  const w = finiteOr(comp.rect[2], 0);
+  const h = finiteOr(comp.rect[3], 0);
   const c = /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(comp.color)
     ? comp.color
     : "#000000";
-  const sw =
-    isFinite(comp.stroke_width) && comp.stroke_width > 0
-      ? comp.stroke_width
-      : 1;
+  const sw = Math.max(finiteOr(comp.stroke_width, 1), 0) || 1;
   const fill = comp.fill ? c : "none";
   const half = sw / 2;
   let inner = "";
@@ -1163,10 +1166,13 @@ export function PdfEditor({
       const text = await navigator.clipboard.readText();
       const parsed = JSON.parse(text) as {
         [CLIPBOARD_MARKER]?: boolean;
-        comps?: Array<TextComp | ShapeComp>;
+        comps?: unknown;
       };
       if (parsed?.[CLIPBOARD_MARKER] && Array.isArray(parsed.comps)) {
-        items = parsed.comps;
+        items = parsed.comps.filter(
+          (c): c is TextComp | ShapeComp =>
+            isPdfComp(c) && c.type !== "pagebreak",
+        );
       }
     } catch {
       // Not JSON / no permission — fall back to the in-memory clipboard.

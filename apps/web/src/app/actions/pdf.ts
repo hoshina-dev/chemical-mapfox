@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
+import { isPdfComp } from "@/components/experiment/pdf-editor/types";
 import { requireAdmin } from "@/lib/auth/dal";
 import { logHandledError } from "@/lib/log/handled";
 import {
@@ -32,6 +33,9 @@ export async function savePdfTemplateAction(
   currentTemplateId?: string,
 ): Promise<ActionResult<{ templateId: string }>> {
   await requireAdmin();
+  if (!Array.isArray(components) || !components.every(isPdfComp)) {
+    return { success: false, error: "Could not save the PDF layout." };
+  }
   try {
     const pdf = await upsertPdfTemplate(sampleId, lineageId, components);
     revalidatePath(`/internal/experiment/onboarding/${sampleId}`);

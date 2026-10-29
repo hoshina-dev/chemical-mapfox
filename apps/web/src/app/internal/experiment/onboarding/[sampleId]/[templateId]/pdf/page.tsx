@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 
 import { listTemplateExperimentsAction } from "@/app/actions/pdf";
 import { PdfEditor } from "@/components/experiment/pdf-editor/PdfEditor";
-import type {
-  PdfComp,
-  VariableGroup,
+import {
+  isPdfComp,
+  type PdfComp,
+  type VariableGroup,
 } from "@/components/experiment/pdf-editor/types";
 import { requireAdmin } from "@/lib/auth/dal";
 import {
@@ -93,7 +94,7 @@ async function PdfEditorPageContent({ params }: PdfEditorPageProps) {
   let initialComponents: PdfComp[] = [];
   try {
     const pdf = await getPdfTemplate(sampleId, templateId);
-    initialComponents = (pdf.components ?? []) as PdfComp[];
+    initialComponents = ((pdf.components ?? []) as unknown[]).filter(isPdfComp);
   } catch (err) {
     if (!(err instanceof ExperimentManagerError && err.status === 404)) {
       return (

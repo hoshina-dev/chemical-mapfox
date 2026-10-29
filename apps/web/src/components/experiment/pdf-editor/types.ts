@@ -44,3 +44,33 @@ export interface VariableGroup {
 }
 
 export type PreviewMode = "raw" | "defaults" | "experiment";
+
+const isFiniteNumber = (v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v);
+
+/**
+ * Runtime check for components from outside the editor (clipboard, stored
+ * layouts, the save action). Shapes are rendered as SVG markup, so a
+ * non-numeric rect or stroke would otherwise inject HTML. Deliberately loose
+ * elsewhere so older saved layouts still load.
+ */
+export function isPdfComp(v: unknown): v is PdfComp {
+  if (typeof v !== "object" || v === null) return false;
+  const c = v as Record<string, unknown>;
+  if (typeof c.id !== "string") return false;
+  if (c.type === "pagebreak") return true;
+  const rectOk =
+    Array.isArray(c.rect) && c.rect.length === 4 && c.rect.every(isFiniteNumber);
+  if (c.type === "text") {
+    return rectOk && typeof c.content === "string" && typeof c.style === "object";
+  }
+  if (c.type === "shape") {
+    return (
+      rectOk &&
+      typeof c.shape_type === "string" &&
+      typeof c.color === "string" &&
+      isFiniteNumber(c.stroke_width)
+    );
+  }
+  return false;
+}
