@@ -8,6 +8,11 @@ import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/dal";
 import type { CustApiRole } from "@/lib/auth/definitions";
+import {
+  clearLoginFailures,
+  isLoginThrottled,
+  recordLoginFailure,
+} from "@/lib/auth/loginThrottle";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import {
   revokeUserSessions,
@@ -180,6 +185,11 @@ export async function changePassword(
 
   const { currentPassword, newPassword } = parsed.data;
 
+  if (await isLoginThrottled(session.email)) {
+    const tErrors = await getTranslations("auth.errors");
+    return { success: false, error: tErrors("tooManyAttempts") };
+  }
+
   try {
     await usersApi.authVerifyPost({
       email: session.email,
@@ -192,8 +202,10 @@ export async function changePassword(
       expected: true,
       userId: session.userId,
     });
+    await recordLoginFailure(session.email);
     return { success: false, error: t("incorrectCurrentPassword") };
   }
+  await clearLoginFailures(session.email);
 
   try {
     const updated = await usersApi.usersIdIdPatch(session.userId, {

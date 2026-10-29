@@ -12,6 +12,11 @@ import {
   type RegisterFormState,
 } from "@/lib/auth/definitions";
 import { landingPathForRole } from "@/lib/auth/appRole";
+import {
+  clearLoginFailures,
+  isLoginThrottled,
+  recordLoginFailure,
+} from "@/lib/auth/loginThrottle";
 import { BRAND } from "@/lib/brand";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
@@ -56,6 +61,11 @@ export async function login(
 
   const { email, password } = parsed.data;
 
+  if (await isLoginThrottled(email)) {
+    const tErrors = await getTranslations("auth.errors");
+    return { message: tErrors("tooManyAttempts") };
+  }
+
   // Credentials are verified inside custapi (POST /auth/verify) so the bcrypt
   // hash never crosses the service boundary. custapi returns the user on
   // success and 401 on a bad email/password — that 4xx path is expected and
@@ -73,10 +83,12 @@ export async function login(
       status,
       expected: status !== undefined && status < 500,
     });
+    if (status !== undefined && status < 500) await recordLoginFailure(email);
     const tErrors = await getTranslations("auth.errors");
     return { message: tErrors("invalidCredentials") };
   }
 
+  await clearLoginFailures(email);
   await createSession({
     id: user.id,
     name: user.name,

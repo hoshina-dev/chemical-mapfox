@@ -229,6 +229,7 @@
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło.",
+      "tooManyAttempts": "Zbyt wiele nieudanych prób logowania. Odczekaj 15 minut i spróbuj ponownie.",
       "createAccountFailed": "Nie udało się utworzyć konta. Adres e-mail może być już używany.",
       "organizationAssignFailed": "Twoje konto zostało utworzone, ale przypisanie organizacji nie powiodło się. Zaloguj się i spróbuj ponownie."
     }

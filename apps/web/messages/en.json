@@ -229,6 +229,7 @@
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",
+      "tooManyAttempts": "Too many failed sign-in attempts. Please wait 15 minutes and try again.",
       "createAccountFailed": "Could not create your account. The email may already be in use.",
       "organizationAssignFailed": "Your account was created, but assigning your organization failed. Please sign in and try again."
     }
