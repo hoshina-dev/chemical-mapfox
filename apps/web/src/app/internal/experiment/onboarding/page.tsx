@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEditor";
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
+import { requireAdmin } from "@/lib/auth/dal";
 import {
   listExperimentTemplates,
   listSamples,
@@ -66,6 +67,7 @@ export default function OnboardingPage() {
 }
 
 async function OnboardingPageContent() {
+  await requireAdmin();
   const t = await getTranslations("staff.onboarding");
 
   let samples: SampleCard[] | null = null;

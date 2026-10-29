@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { RawJsonView } from "@/components/internal/RawJsonView";
+import { requireAdmin } from "@/lib/auth/dal";
 import {
   ExperimentManagerError,
   getExperiment,
@@ -49,6 +50,7 @@ async function ExperimentRawPageContent({
 }: {
   params: Promise<{ contextId: string }>;
 }) {
+  await requireAdmin();
   const { contextId } = await params;
   const t = await getTranslations("staff.raw");
   const tNav = await getTranslations("staff.nav");

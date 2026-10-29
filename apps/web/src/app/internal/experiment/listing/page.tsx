@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { AdminExperimentsView } from "@/components/admin/AdminExperimentsView";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
+import { requireAdmin } from "@/lib/auth/dal";
 import {
   type EnrichedTicket,
   listExperimentsForStaff,
@@ -31,6 +32,7 @@ export default function StaffExperimentsListingPage() {
 }
 
 async function StaffExperimentsList() {
+  await requireAdmin();
   const t = await getTranslations("staff.experiments");
   let tickets: EnrichedTicket[] | null = null;
   let degraded = false;

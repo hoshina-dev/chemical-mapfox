@@ -2,6 +2,7 @@ import { Alert, Container } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 
 import { NewTemplateFlow } from "@/components/experiment/builder/NewTemplateFlow";
+import { requireAdmin } from "@/lib/auth/dal";
 import { listSamples } from "@/lib/experiment-manager/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
@@ -34,6 +35,7 @@ async function NewTemplatePageContent({
 }: {
   searchParams: Promise<{ sampleId?: string }>;
 }) {
+  await requireAdmin();
   const { sampleId } = await searchParams;
   const t = await getTranslations("builder.newPage");
   let samples: { id: string; name: string }[] = [];

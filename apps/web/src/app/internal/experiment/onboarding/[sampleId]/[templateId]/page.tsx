@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { BuilderApp } from "@/components/experiment/builder/BuilderApp";
+import { requireAdmin } from "@/lib/auth/dal";
 import { toDraft } from "@/lib/builder";
 import {
   ExperimentManagerError,
@@ -41,6 +42,7 @@ export default function EditTemplatePage(props: Parameters<typeof EditTemplatePa
 }
 
 async function EditTemplatePageContent({ params }: PageProps) {
+  await requireAdmin();
   const { sampleId, templateId } = await params;
   const t = await getTranslations("builder.editPage");
 

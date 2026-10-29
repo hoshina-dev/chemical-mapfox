@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemplatesTable";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { LinkButton } from "@/components/links";
+import { requireAdmin } from "@/lib/auth/dal";
 import {
   getSample,
   listExperimentTemplates,
@@ -66,6 +67,7 @@ async function SampleOnboardingPageContent({
 }: {
   params: Promise<{ sampleId: string }>;
 }) {
+  await requireAdmin();
   const { sampleId } = await params;
   const t = await getTranslations("staff.onboarding");
 

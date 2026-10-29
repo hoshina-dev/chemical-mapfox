@@ -27,7 +27,7 @@ import { ReportPanel } from "@/components/experiment/ReportPanel";
 import { StartExperimentButton } from "@/components/internal/StartExperimentButton";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
-import { requireSession, toSessionUser } from "@/lib/auth/dal";
+import { requireAdmin, toSessionUser } from "@/lib/auth/dal";
 import {
   experimentCheckinPath,
   experimentListingPath,
@@ -68,7 +68,7 @@ async function ExperimentWorkspaceContent({
   const { contextId } = await params;
   const t = await getTranslations("staff.workspace");
   const tCommon = await getTranslations("common");
-  const session = await requireSession();
+  const session = await requireAdmin();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const status = ticket?.status ?? null;

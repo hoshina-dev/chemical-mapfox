@@ -129,7 +129,7 @@ export async function listSamples() {
 }
 
 export async function getSample(sampleId: string) {
-  return emFetch<SampleSummary>(`/api/samples/${sampleId}`);
+  return emFetch<SampleSummary>(`/api/samples/${encodeURIComponent(sampleId)}`);
 }
 
 export async function createSample(body: SampleCreate) {
@@ -142,7 +142,7 @@ export async function createSample(body: SampleCreate) {
 // --- Experiments (contexts) ---
 
 export async function getExperiment(expId: string) {
-  return emFetch<ExperimentDetail>(`/api/experiments/${expId}`);
+  return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}`);
 }
 
 export async function createExperiment(body: ExperimentCreate) {
@@ -153,7 +153,7 @@ export async function createExperiment(body: ExperimentCreate) {
 }
 
 export async function updateExperiment(expId: string, body: ExperimentUpdate) {
-  return emFetch<ExperimentDetail>(`/api/experiments/${expId}`, {
+  return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
@@ -166,7 +166,7 @@ export async function updateExperiment(expId: string, body: ExperimentUpdate) {
  * template defines calculations (the PDF renders `{{var}}` from these results).
  */
 export async function calculateExperiment(expId: string) {
-  return emFetch<ExperimentDetail>(`/api/experiments/${expId}/calculate`, {
+  return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}/calculate`, {
     method: "POST",
   });
 }
@@ -182,7 +182,7 @@ export async function updateExperimentCalculations(
   expId: string,
   calculations: Record<string, { formula: string }>,
 ) {
-  return emFetch<ExperimentDetail>(`/api/experiments/${expId}/calculations`, {
+  return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}/calculations`, {
     method: "PUT",
     body: JSON.stringify({ calculations }),
   });
@@ -213,7 +213,7 @@ export async function evaluateCalculations(body: CalculationDryRunRequest) {
  */
 export async function generateReport(expId: string) {
   return emFetch<ReportStatusResponse>(
-    `/api/experiments/${expId}/report/generate`,
+    `/api/experiments/${encodeURIComponent(expId)}/report/generate`,
     { method: "POST" },
   );
 }
@@ -221,7 +221,7 @@ export async function generateReport(expId: string) {
 /** A short-lived presigned URL for the generated PDF. 404 until one exists. */
 export async function getReportDownloadUrl(expId: string) {
   return emFetch<ReportDownloadResponse>(
-    `/api/experiments/${expId}/report/download`,
+    `/api/experiments/${encodeURIComponent(expId)}/report/download`,
   );
 }
 
@@ -231,7 +231,7 @@ export async function listExperimentTemplates(sampleId: string) {
   return emFetch<{
     sample_id: string;
     experiments: ExperimentTemplateSummary[];
-  }>(`/api/samples/${sampleId}/experiments`);
+  }>(`/api/samples/${encodeURIComponent(sampleId)}/experiments`);
 }
 
 export async function getExperimentTemplate(
@@ -239,7 +239,7 @@ export async function getExperimentTemplate(
   templateId: string,
 ) {
   return emFetch<ExperimentTemplateDetail>(
-    `/api/samples/${sampleId}/experiments/${templateId}`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(templateId)}`,
   );
 }
 
@@ -248,7 +248,7 @@ export async function createExperimentTemplate(
   body: ExperimentTemplateCreate,
 ) {
   return emFetch<ExperimentTemplateDetail>(
-    `/api/samples/${sampleId}/experiments`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments`,
     { method: "POST", body: JSON.stringify(body) },
   );
 }
@@ -259,7 +259,7 @@ export async function updateExperimentTemplate(
   body: ExperimentTemplateUpdate,
 ) {
   return emFetch<ExperimentTemplateDetail>(
-    `/api/samples/${sampleId}/experiments/${lineageId}`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(lineageId)}`,
     { method: "PUT", body: JSON.stringify(body) },
   );
 }
@@ -268,7 +268,7 @@ export async function deleteExperimentTemplate(
   sampleId: string,
   templateId: string,
 ) {
-  return emFetch<void>(`/api/samples/${sampleId}/experiments/${templateId}`, {
+  return emFetch<void>(`/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(templateId)}`, {
     method: "DELETE",
   });
 }
@@ -282,7 +282,7 @@ export async function deleteExperimentTemplate(
  */
 export async function getPdfTemplate(sampleId: string, templateId: string) {
   return emFetch<PdfTemplateResponse>(
-    `/api/samples/${sampleId}/experiments/${templateId}/pdf`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(templateId)}/pdf`,
   );
 }
 
@@ -297,14 +297,14 @@ export async function upsertPdfTemplate(
   components: unknown[],
 ) {
   return emFetch<PdfTemplateResponse>(
-    `/api/samples/${sampleId}/experiments/${lineageId}/pdf`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(lineageId)}/pdf`,
     { method: "PUT", body: JSON.stringify({ components }) },
   );
 }
 
 export async function deletePdfTemplate(sampleId: string, templateId: string) {
   return emFetch<void>(
-    `/api/samples/${sampleId}/experiments/${templateId}/pdf`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(templateId)}/pdf`,
     { method: "DELETE" },
   );
 }
@@ -313,7 +313,7 @@ export async function setSampleWebVisibility(
   sampleId: string,
   isVisibleOnWeb: boolean,
 ) {
-  return emFetch<SampleSummary>(`/api/samples/${sampleId}/web-visibility`, {
+  return emFetch<SampleSummary>(`/api/samples/${encodeURIComponent(sampleId)}/web-visibility`, {
     method: "PATCH",
     body: JSON.stringify({ is_visible_on_web: isVisibleOnWeb }),
   });
@@ -332,7 +332,7 @@ export async function setTemplateWebVisibility(
   isVisibleOnWeb: boolean,
 ) {
   return emFetch<ExperimentTemplateSummary>(
-    `/api/samples/${sampleId}/experiments/${lineageId}/web-visibility`,
+    `/api/samples/${encodeURIComponent(sampleId)}/experiments/${encodeURIComponent(lineageId)}/web-visibility`,
     {
       method: "PATCH",
       body: JSON.stringify({ is_visible_on_web: isVisibleOnWeb }),
@@ -347,7 +347,7 @@ export async function setTemplatesWebOrder(
   return emFetch<{
     sample_id: string;
     experiments: ExperimentTemplateSummary[];
-  }>(`/api/samples/${sampleId}/experiments/web-order`, {
+  }>(`/api/samples/${encodeURIComponent(sampleId)}/experiments/web-order`, {
     method: "PUT",
     body: JSON.stringify({ lineage_ids: lineageIds }),
   });

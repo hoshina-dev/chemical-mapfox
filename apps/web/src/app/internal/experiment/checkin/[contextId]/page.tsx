@@ -17,7 +17,7 @@ import { CopyableId } from "@/components/internal/CopyableId";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
-import { requireSession } from "@/lib/auth/dal";
+import { requireAdmin } from "@/lib/auth/dal";
 import {
   experimentListingPath,
   experimentWorkspacePath,
@@ -58,7 +58,7 @@ async function SampleCheckInPageContent({
   const { contextId } = await params;
   const t = await getTranslations("staff.checkin");
   const tNav = await getTranslations("staff.nav");
-  await requireSession();
+  await requireAdmin();
   const ws = await getExperimentWorkspace(contextId);
   const { ticket, requester, state } = ws;
   const status = ticket?.status ?? null;

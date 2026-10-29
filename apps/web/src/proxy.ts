@@ -85,6 +85,12 @@ export default async function proxy(req: NextRequest) {
   return withLocaleCookie(req, NextResponse.next());
 }
 
+// Skip only real static files by extension: a blanket "contains a dot" skip
+// let dotted /internal URLs (e.g. an encoded `..%2F` param) bypass the gate.
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpe?g|webp|gif|ico|md|txt|xml)$).*)",
+    "/internal/:path*",
+    "/admin/:path*",
+  ],
 };
