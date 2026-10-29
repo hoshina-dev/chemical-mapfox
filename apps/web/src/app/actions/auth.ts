@@ -12,10 +12,12 @@ import {
   type RegisterFormState,
 } from "@/lib/auth/definitions";
 import { landingPathForRole } from "@/lib/auth/appRole";
+import { BRAND } from "@/lib/brand";
 import { createSession, deleteSession } from "@/lib/auth/session";
 import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import { organizationsApi, usersApi } from "@/lib/custapi/client";
 import { logHandledError } from "@/lib/log/handled";
+import { logger } from "@/lib/log/logger";
 import { httpStatus } from "@/lib/log/serialize";
 
 async function custApiErrorMessage(
@@ -96,12 +98,14 @@ export async function register(
     nameRequired: tValidation("nameRequired"),
     emailInvalid: tValidation("emailInvalid"),
     passwordMinLength: tValidation("passwordMinLength"),
+    termsRequired: tValidation("termsRequired"),
   });
 
   const parsed = schema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    acceptTerms: formData.get("acceptTerms"),
   });
 
   if (!parsed.success) {
@@ -131,6 +135,12 @@ export async function register(
       ),
     };
   }
+
+  // custapi has no consent field, so the log is the acceptance record.
+  logger.info(
+    { action: "register", userId: created.id, termsVersion: BRAND.termsVersion },
+    "terms of service accepted",
+  );
 
   try {
     await organizationsApi.organizationsIdMembersPost(CHEMFOX_ORG_ID, {

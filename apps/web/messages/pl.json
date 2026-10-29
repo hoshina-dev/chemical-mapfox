@@ -210,6 +210,7 @@
       "name": "Imię i nazwisko",
       "email": "E-mail",
       "password": "Hasło",
+      "acceptTerms": "Akceptuję <link>Ogólne warunki świadczenia usług</link>.",
       "submit": "Utwórz konto"
     },
     "organization": {
@@ -223,7 +224,8 @@
       "passwordRequired": "Hasło jest wymagane.",
       "nameRequired": "Imię i nazwisko jest wymagane.",
       "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków.",
-      "organizationRequired": "Wybierz organizację."
+      "organizationRequired": "Wybierz organizację.",
+      "termsRequired": "Aby utworzyć konto, musisz zaakceptować Ogólne warunki świadczenia usług."
     },
     "errors": {
       "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło.",

@@ -210,6 +210,7 @@
       "name": "Name",
       "email": "Email",
       "password": "Password",
+      "acceptTerms": "I have read and accept the <link>Terms of Service</link> (PDF, in Polish).",
       "submit": "Create account"
     },
     "organization": {
@@ -223,7 +224,8 @@
       "passwordRequired": "Password is required.",
       "nameRequired": "Name is required.",
       "passwordMinLength": "Password must be at least 8 characters.",
-      "organizationRequired": "Please choose an organization."
+      "organizationRequired": "Please choose an organization.",
+      "termsRequired": "You must accept the Terms of Service to create an account."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",

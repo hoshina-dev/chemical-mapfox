@@ -37,6 +37,7 @@ export interface RegisterValidationMessages {
   nameRequired: string;
   emailInvalid: string;
   passwordMinLength: string;
+  termsRequired: string;
 }
 
 /**
@@ -55,6 +56,8 @@ export function createRegisterFormSchema(messages: RegisterValidationMessages) {
     name: z.string().min(1, { message: messages.nameRequired }).trim(),
     email: z.email({ message: messages.emailInvalid }).trim(),
     password: z.string().min(8, { message: messages.passwordMinLength }),
+    // Unchecked boxes are absent from FormData, so null must fail too.
+    acceptTerms: z.literal("on", { message: messages.termsRequired }),
   });
 }
 
@@ -74,6 +77,7 @@ export type RegisterFormState =
         name?: string[];
         email?: string[];
         password?: string[];
+        acceptTerms?: string[];
       };
       message?: string;
     }

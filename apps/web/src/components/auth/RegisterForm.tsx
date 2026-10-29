@@ -2,7 +2,9 @@
 
 import {
   Alert,
+  Anchor,
   Button,
+  Checkbox,
   PasswordInput,
   Stack,
   TextInput,
@@ -11,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { register } from "@/app/actions/auth";
+import { BRAND } from "@/lib/brand";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState(register, undefined);
@@ -40,6 +43,18 @@ export function RegisterForm() {
           autoComplete="new-password"
           required
           error={state?.errors?.password?.[0]}
+        />
+        <Checkbox
+          name="acceptTerms"
+          required
+          label={t.rich("acceptTerms", {
+            link: (chunks) => (
+              <Anchor href={BRAND.termsPdfUrl} target="_blank" rel="noopener">
+                {chunks}
+              </Anchor>
+            ),
+          })}
+          error={state?.errors?.acceptTerms?.[0]}
         />
 
         {state?.message && (

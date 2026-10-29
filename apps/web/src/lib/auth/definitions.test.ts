@@ -53,6 +53,7 @@ describe("createRegisterFormSchema", () => {
     nameRequired: "name-required",
     emailInvalid: "email-invalid",
     passwordMinLength: "password-min",
+    termsRequired: "terms-required",
   };
   const schema = createRegisterFormSchema(messages);
 
@@ -62,11 +63,13 @@ describe("createRegisterFormSchema", () => {
         name: " Casey ",
         email: "casey@example.com",
         password: "password1",
+        acceptTerms: "on",
       }),
     ).toEqual({
       name: "Casey",
       email: "casey@example.com",
       password: "password1",
+      acceptTerms: "on",
     });
   });
 
@@ -75,6 +78,7 @@ describe("createRegisterFormSchema", () => {
       name: "",
       email: "bad",
       password: "short",
+      acceptTerms: null,
     });
     expect(result.success).toBe(false);
     if (result.success) return;
@@ -84,5 +88,6 @@ describe("createRegisterFormSchema", () => {
     expect(byPath.name).toBe("name-required");
     expect(byPath.email).toBe("email-invalid");
     expect(byPath.password).toBe("password-min");
+    expect(byPath.acceptTerms).toBe("terms-required");
   });
 });

@@ -116,6 +116,24 @@ Given(
 
 // --- registration --------------------------------------------------------
 
+async function fillRegistration(
+  world: ChemFoxWorld,
+  name: string,
+  email: string,
+  password: string,
+): Promise<Locator> {
+  await world.goto("/login");
+  const form = registerForm(world);
+  await clickUntilVisible(
+    world.page.getByRole("tab", { name: "Register" }),
+    form.locator('input[name="name"]'),
+  );
+  await form.locator('input[name="name"]').fill(name);
+  await form.locator('input[name="email"]').fill(email);
+  await form.locator('input[name="password"]').fill(password);
+  return form;
+}
+
 When(
   "I register as {string} with email {string} password {string}",
   async function (
@@ -124,16 +142,39 @@ When(
     email: string,
     password: string,
   ) {
-    await this.goto("/login");
-    const form = registerForm(this);
-    await clickUntilVisible(
-      this.page.getByRole("tab", { name: "Register" }),
-      form.locator('input[name="name"]'),
-    );
-    await form.locator('input[name="name"]').fill(name);
-    await form.locator('input[name="email"]').fill(email);
-    await form.locator('input[name="password"]').fill(password);
+    const form = await fillRegistration(this, name, email, password);
+    await form.getByRole("checkbox", { name: /Terms of Service/ }).check();
     await form.getByRole("button", { name: "Create account" }).click();
+  },
+);
+
+When(
+  "I try to register as {string} with email {string} password {string} without accepting the terms",
+  async function (
+    this: ChemFoxWorld,
+    name: string,
+    email: string,
+    password: string,
+  ) {
+    const form = await fillRegistration(this, name, email, password);
+    await form.getByRole("button", { name: "Create account" }).click();
+  },
+);
+
+Then(
+  "the terms of service checkbox links to the terms PDF",
+  async function (this: ChemFoxWorld) {
+    const link = registerForm(this).getByRole("link", {
+      name: "Terms of Service",
+    });
+    assert.match((await link.getAttribute("href")) ?? "", /\.pdf$/);
+  },
+);
+
+Then(
+  "no account should exist for {string}",
+  function (this: ChemFoxWorld, email: string) {
+    assert.equal(findUserByEmail(email), undefined);
   },
 );
 

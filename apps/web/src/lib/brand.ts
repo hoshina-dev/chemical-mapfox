@@ -16,4 +16,6 @@ export const BRAND = {
   /** Public download of the original general terms of service. */
   termsPdfUrl:
     "https://files.harperanalytics.com/certificates/OGOLNE-WARUNKI-SWIADCZENIA-USLUG-01_08_2026.pdf",
+  /** Effective date of `termsPdfUrl`; logged when a user accepts it at sign-up. */
+  termsVersion: "2026-08-01",
 } as const;

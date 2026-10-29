@@ -15,3 +15,9 @@ Feature: Registration
     When I register as "Duplicate" with email "dup@example.com" password "password123"
     Then I should see the error containing "email"
     And I should be on the login page
+
+  Scenario: Registering requires accepting the Terms of Service
+    When I try to register as "No Consent" with email "no.consent@example.com" password "password123" without accepting the terms
+    Then I should be on the login page
+    And the terms of service checkbox links to the terms PDF
+    And no account should exist for "no.consent@example.com"
