@@ -9,7 +9,6 @@ export interface SessionPayload {
   avatarUrl?: string;
   role?: CustApiRole;
   organizationId?: string;
-  expiresAt: Date;
 }
 
 export interface SessionUser {

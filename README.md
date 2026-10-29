@@ -52,10 +52,11 @@ Run a single app:
 pnpm --filter web dev   # staff docs: /internal/docs · client docs: /experiment/docs
 ```
 
-### Redis (collaborative editing)
+### Redis (sessions and collaborative editing)
 
-The staff experiment workspace supports **live collaborative editing** of the lab
-form (presence, soft field locks, autosave) backed by Redis. `docker-compose.dev.yml`
+Redis is required: it stores login sessions ([`docs/sessions.md`](docs/sessions.md)),
+and the staff experiment workspace uses it for **live collaborative editing** of
+the lab form (presence, soft field locks, autosave). `docker-compose.dev.yml`
 provides a local Redis; set `REDIS_URL` (see `apps/web/.env.example`). Architecture:
 [`docs/collaborative-editing.md`](docs/collaborative-editing.md).
 
@@ -127,7 +128,7 @@ root for `linux/amd64` and `linux/arm64` on every push to `main` (and via
 The app runs the Next.js `output: "standalone"` Node server on port `3000`.
 
 At runtime supply the env vars from [`apps/web/.env.example`](apps/web/.env.example) —
-notably `JWT_SECRET` (required) and `REDIS_URL` (collaborative editing). Per the
+notably `REDIS_URL` (required: login sessions and collaborative editing). Per the
 BFF pattern, all backend URLs are server-side only.
 
 Build and run the image locally from the repository root:
@@ -135,7 +136,6 @@ Build and run the image locally from the repository root:
 ```bash
 docker build -f apps/web/Dockerfile -t chemical-mapfox-web .
 docker run --rm -p 3000:3000 \
-  -e JWT_SECRET=dev-secret \
   -e REDIS_URL=redis://host.docker.internal:6379 \
   chemical-mapfox-web
 ```
@@ -146,6 +146,6 @@ docker run --rm -p 3000:3000 \
 - React 19, TypeScript 5
 - Mantine 9 (`@mantine/core`, `@mantine/hooks`) wired through `postcss-preset-mantine`
 - custapi client generated with OpenAPI Generator (`typescript-fetch`)
-- Redis (`ioredis`) backing collaborative lab-form editing (SSE + pub/sub)
+- Redis (`ioredis`) for login sessions and collaborative lab-form editing (SSE + pub/sub)
 - Vitest (unit + browser mode) for the collaborative-editing layer
 - pnpm workspaces + Turborepo 2

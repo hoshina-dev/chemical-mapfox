@@ -140,6 +140,10 @@ before adding or moving a page.
 via `requireAdmin()`). App role mapping: mapfox `admin` ⇒ lab `technician`,
 everyone else ⇒ `client` (`apps/web/src/lib/auth/appRole.ts`).
 
+Sessions are server-side in Redis, keyed by an opaque cookie token. The role is
+re-read from custapi at most every 60 s, so never trust a role cached anywhere
+else. Design: [`docs/sessions.md`](docs/sessions.md).
+
 ## API clients
 
 `@repo/api-client` holds generated clients (custapi, ticketing) and

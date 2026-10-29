@@ -11,13 +11,19 @@ import type Redis from "ioredis";
 declare global {
   var __chemfoxRedisMockClient: Redis | undefined;
   var __chemfoxRedisMockSubscriber: Redis | undefined;
+  var __chemfoxRedisMockCtor: (new () => Redis) | undefined;
 }
 
 function createMock(): Redis {
-  // Loaded lazily so production bundles never pull in ioredis-mock.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const RedisMock = require("ioredis-mock") as { default: new () => Redis };
-  return new RedisMock.default();
+  // Loaded lazily so production bundles never pull in ioredis-mock. The
+  // constructor is shared via globalThis because the proxy and the app routes
+  // are separate bundles, each with its own copy of the module, and pub/sub
+  // only reaches instances created from the same copy.
+  globalThis.__chemfoxRedisMockCtor ??= (
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("ioredis-mock") as { default: new () => Redis }
+  ).default;
+  return new globalThis.__chemfoxRedisMockCtor();
 }
 
 export function getMockRedisClient(): Redis {

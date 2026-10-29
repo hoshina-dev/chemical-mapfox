@@ -9,17 +9,11 @@ import { myExperimentsPath } from "../experiment/routes";
 import { experimentListingPath } from "../experiment-manager/routes";
 import { SESSION_COOKIE } from "./constants";
 import type { SessionPayload, SessionUser } from "./definitions";
-import { decrypt } from "./session";
+import { resolveSession } from "./sessionStore";
 
 export const getSession = cache(async (): Promise<SessionPayload | null> => {
   const cookie = (await cookies()).get(SESSION_COOKIE)?.value;
-  const session = await decrypt(cookie);
-
-  if (!session?.userId) {
-    return null;
-  }
-
-  return session;
+  return resolveSession(cookie);
 });
 
 export function toSessionUser(session: SessionPayload): SessionUser {

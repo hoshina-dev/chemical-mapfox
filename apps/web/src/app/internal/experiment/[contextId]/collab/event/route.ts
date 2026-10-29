@@ -1,4 +1,3 @@
-import type { AnswerValue } from "@repo/forms";
 import { validateField } from "@repo/forms";
 import { NextResponse } from "next/server";
 
@@ -129,7 +128,7 @@ export async function POST(
           { status: 409 },
         );
       }
-      const value = (event.value ?? null) as AnswerValue;
+      const value = event.value ?? null;
 
       // Enforce the question's own data type before the value enters the
       // buffer — otherwise a POST straight to this route (bypassing the

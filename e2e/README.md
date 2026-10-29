@@ -19,8 +19,8 @@ mock them. Instead the harness:
    store directly — no network round-trip.
 2. Boots the Next.js app (`next dev`) on its own port (default **3100**, so it
    never clashes with your `pnpm dev` on 3000), with `CUSTAPI_URL` /
-   `TICKETING_URL` / `EXPERIMENT_MANAGER_URL` pointed at the stub and a fixed
-   `JWT_SECRET`.
+   `TICKETING_URL` / `EXPERIMENT_MANAGER_URL` pointed at the stub and the in-memory Redis
+   mock that holds sessions.
 3. Drives it with **Playwright** (Chromium). A fresh browser context per
    scenario; the fixture store is reset in a `Before` hook.
 
@@ -71,7 +71,6 @@ the web app; everything else is stubbed in-process.
 | `E2E_WEB_PORT`            | `3100`                   | Port the app under test listens on.                 |
 | `E2E_STUB_PORT`           | `4555`                   | Port the backend stub listens on.                   |
 | `E2E_BASE_URL`            | _(unset)_                | Point at an already-running app; harness won't spawn one (mocks then won't apply unless you wired the env yourself). |
-| `E2E_JWT_SECRET`          | `e2e-test-secret`        | Session-cookie signing secret handed to the app.    |
 | `E2E_WEB_BOOT_TIMEOUT_MS` | `180000`                 | How long to wait for the dev server to come up.     |
 
 ## Layout

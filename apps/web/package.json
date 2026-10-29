@@ -27,7 +27,6 @@
     "@repo/forms": "workspace:*",
     "@tabler/icons-react": "^3.46.0",
     "ioredis": "^5.4.1",
-    "jose": "^6.2.3",
     "next": "16.4.3",
     "next-intl": "^4.13.3",
     "prismjs": "^1.30.0",

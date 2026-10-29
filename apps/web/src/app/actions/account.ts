@@ -3,10 +3,16 @@
 import { CustApiResponseError } from "@repo/api-client";
 import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/dal";
-import { createSession } from "@/lib/auth/session";
+import type { CustApiRole } from "@/lib/auth/definitions";
+import { createSession, deleteSession } from "@/lib/auth/session";
+import {
+  revokeUserSessions,
+  updateUserSessions,
+} from "@/lib/auth/sessionStore";
 import { usersApi } from "@/lib/custapi/client";
 import { logHandledError } from "@/lib/log/handled";
 import { uploadImageToS3 } from "@/lib/s3/client";
@@ -117,13 +123,10 @@ export async function updateProfile(
       ...(avatarUrl !== undefined ? { avatarUrl } : {}),
     });
 
-    await createSession({
-      id: updated.id,
+    await updateUserSessions(session.userId, {
       name: updated.name,
       email: updated.email,
       avatarUrl: updated.avatarUrl,
-      role: session.role,
-      organizationId: session.organizationId,
     });
 
     revalidatePath(settingsPath());
@@ -197,14 +200,15 @@ export async function changePassword(
       password: newPassword,
     });
 
-    // Rotate the session cookie after a password change so a previously
-    // stolen cookie cannot keep working against the new credential.
+    // End every session, including stolen ones, then give this browser a
+    // fresh one.
+    await revokeUserSessions(session.userId);
     await createSession({
       id: updated.id,
       name: updated.name,
       email: updated.email,
       avatarUrl: updated.avatarUrl,
-      role: session.role,
+      role: updated.role as CustApiRole,
       organizationId: session.organizationId,
     });
 
@@ -220,4 +224,11 @@ export async function changePassword(
       error: await custApiErrorMessage(error, t("saveErrorFallback")),
     };
   }
+}
+
+export async function signOutEverywhere(): Promise<void> {
+  const session = await requireSession();
+  await revokeUserSessions(session.userId);
+  await deleteSession();
+  redirect("/login");
 }

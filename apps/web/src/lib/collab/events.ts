@@ -1,4 +1,4 @@
-import type { AnswerValue } from "@repo/forms";
+import { AnswerValue } from "@repo/forms";
 import { z } from "zod";
 
 /**
@@ -22,16 +22,14 @@ const ConnectionId = z.string().min(1);
 export const ClientEvent = z.discriminatedUnion("type", [
   z.object({ type: z.literal("focus"), connectionId: ConnectionId, field: FieldKey }),
   z.object({ type: z.literal("blur"), connectionId: ConnectionId, field: FieldKey }),
-  // value is arbitrary JSON (the form answer); FormRenderer already coerces
-  // shapes per question type, so we don't re-validate the value shape here.
-  // `.nullish()` is REQUIRED: clearing a field sends `null` (an explicit clear),
-  // and in Zod 4 a bare `z.unknown()` rejects a missing key — which is what
-  // `JSON.stringify` produces for `undefined`. A null/absent value = clear it.
+  // The route still runs validateField for the per-question rules. Both null
+  // (explicit clear) and a missing key (`JSON.stringify` drops `undefined`)
+  // must parse, so a clear always propagates.
   z.object({
     type: z.literal("edit"),
     connectionId: ConnectionId,
     field: FieldKey,
-    value: z.unknown().nullish(),
+    value: AnswerValue,
   }),
   z.object({ type: z.literal("heartbeat"), connectionId: ConnectionId }),
 ]);

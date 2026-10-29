@@ -169,7 +169,13 @@ function isAnswerEmpty(type: QuestionType, value: unknown): boolean {
     case "multi-select":
     case "checkbox-group":
     case "tags":
-      return !Array.isArray(value) || value.length === 0;
+      // Any other non-array must reach checkStringList and fail `type`, not
+      // pass as "no answer".
+      return (
+        value === undefined ||
+        value === null ||
+        (Array.isArray(value) && value.length === 0)
+      );
     case "number":
     case "select-number":
     case "slider":

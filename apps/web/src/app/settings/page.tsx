@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { NotificationPreferencesForm } from "@/components/settings/NotificationPreferencesForm";
 import { ProfileForm } from "@/components/settings/ProfileForm";
+import { SignOutEverywhere } from "@/components/settings/SignOutEverywhere";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
@@ -99,6 +100,10 @@ async function SettingsPageContent() {
         <Divider />
 
         <ChangePasswordForm />
+
+        <Divider />
+
+        <SignOutEverywhere />
 
         {isClient && (
           <>

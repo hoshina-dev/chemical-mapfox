@@ -84,6 +84,11 @@
       "incorrectCurrentPassword": "Aktualne hasło jest nieprawidłowe.",
       "saveErrorFallback": "Nie udało się zmienić hasła."
     },
+    "sessions": {
+      "title": "Sesje",
+      "subtitle": "Wyloguj się ze wszystkich przeglądarek i urządzeń, na których masz aktywną sesję, w tym z tego.",
+      "submit": "Wyloguj ze wszystkich urządzeń"
+    },
     "notifications": {
       "title": "Powiadomienia e-mail",
       "subtitle": "Wybierz etapy eksperymentu, o których chcesz dostawać e-mail. Wyłącz etap, jeśli nie chcesz powiadomienia dla tego statusu.",

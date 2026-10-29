@@ -4,7 +4,6 @@
   "globalEnv": [
     "NODE_ENV",
     "CUSTAPI_URL",
-    "JWT_SECRET",
     "SESSION_COOKIE_SECURE",
     "EXPERIMENT_MANAGER_URL",
     "TICKETING_URL",

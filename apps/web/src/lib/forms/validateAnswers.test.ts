@@ -67,6 +67,34 @@ describe("validateAnswers", () => {
     ).toEqual(["type", "type", "type"]);
   });
 
+  it("rejects a non-array answer to a list question instead of treating it as blank", () => {
+    const questions: Question[] = [
+      {
+        id: "flags",
+        type: "multi-select",
+        label: "Flags",
+        config: { options: [{ label: "A", value: "a" }] },
+      },
+      {
+        id: "boxes",
+        type: "checkbox-group",
+        label: "Boxes",
+        config: { options: [{ label: "A", value: "a" }] },
+      },
+      { id: "tags", type: "tags", label: "Tags" },
+    ];
+    const answers = { flags: "free text", boxes: 1, tags: { nested: true } };
+    expect(codes(validateAnswers(questions, answers as never))).toEqual([
+      "type",
+      "type",
+      "type",
+    ]);
+    expect(codes(validateField(questions, "flags", "free text"))).toEqual([
+      "type",
+    ]);
+    expect(validateAnswers(questions, { flags: [], boxes: null })).toEqual([]);
+  });
+
   it("caps text length even when the question configures no maxLength", () => {
     const questions: Question[] = [{ id: "note", type: "string", label: "Note" }];
     const long = "x".repeat(DEFAULT_MAX_STRING_LENGTH + 1);

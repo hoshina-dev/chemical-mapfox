@@ -67,6 +67,15 @@ describe("ClientEvent", () => {
     expect(ClientEvent.safeParse({ type: "nope", connectionId: cid }).success).toBe(
       false,
     );
+    // an edit value that is no possible form answer
+    expect(
+      ClientEvent.safeParse({
+        type: "edit",
+        connectionId: cid,
+        field: "q1",
+        value: { nested: true },
+      }).success,
+    ).toBe(false);
     expect(ClientEvent.safeParse({}).success).toBe(false);
     expect(ClientEvent.safeParse(null).success).toBe(false);
   });

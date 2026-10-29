@@ -61,7 +61,6 @@ services:
       CUSTAPI_URL: http://test-services:3100/api/v1
       TICKETING_URL: http://test-services:3100
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: local-catalogue-testing-secret-do-not-use-outside-this-preview
       SESSION_COOKIE_SECURE: "false"
       APP_ORIGIN: http://localhost:55441
     depends_on:

@@ -84,6 +84,11 @@
       "incorrectCurrentPassword": "Current password is incorrect.",
       "saveErrorFallback": "Failed to change password."
     },
+    "sessions": {
+      "title": "Sessions",
+      "subtitle": "Sign out of every browser and device where you are signed in, including this one.",
+      "submit": "Sign out on all devices"
+    },
     "notifications": {
       "title": "Email notifications",
       "subtitle": "Choose which experiment stages should email you. Turn a stage off if you do not want an email for that status.",

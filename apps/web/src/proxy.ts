@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { landingPathForRole } from "@/lib/auth/appRole";
-import { SESSION_COOKIE, SESSION_DURATION_MS } from "@/lib/auth/constants";
+import { SESSION_COOKIE } from "@/lib/auth/constants";
 import { sessionCookieOptions } from "@/lib/auth/cookieOptions";
-import { decryptSession } from "@/lib/auth/sessionCrypto";
+import { resolveSession } from "@/lib/auth/sessionStore";
 import {
   isAppLocale,
   LOCALE_COOKIE,
@@ -25,7 +25,7 @@ function withLocaleCookie(req: NextRequest, res: NextResponse): NextResponse {
 
 export default async function proxy(req: NextRequest) {
   const session = req.cookies.get(SESSION_COOKIE)?.value;
-  const payload = await decryptSession(session);
+  const payload = await resolveSession(session);
   const { pathname } = req.nextUrl;
   // The landing page ("/") is public to everyone; the auth page ("/login")
   // is public only to signed-out visitors.
@@ -77,13 +77,8 @@ export default async function proxy(req: NextRequest) {
 
   if (payload?.userId && session) {
     const res = NextResponse.next();
-    res.cookies.set(
-      SESSION_COOKIE,
-      session,
-      sessionCookieOptions({
-        expires: new Date(Date.now() + SESSION_DURATION_MS),
-      }),
-    );
+    // Slide the cookie with the Redis idle TTL; Redis stays the authority.
+    res.cookies.set(SESSION_COOKIE, session, sessionCookieOptions());
     return withLocaleCookie(req, res);
   }
 

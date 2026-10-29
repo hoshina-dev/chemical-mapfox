@@ -29,9 +29,6 @@ export const BASE_URL_OVERRIDE = process.env.E2E_BASE_URL?.replace(/\/$/, "");
 /** When E2E_BASE_URL is set we assume the app is managed externally. */
 export const MANAGED_WEB_SERVER = !BASE_URL_OVERRIDE;
 
-/** Shared secret handed to the app so its session cookies verify consistently. */
-export const JWT_SECRET = process.env.E2E_JWT_SECRET ?? "e2e-test-secret";
-
 export const HEADLESS = process.env.HEADLESS !== "false";
 
 /** Generous timeout for booting the (on-demand-compiling) Next dev server. */

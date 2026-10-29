@@ -1,6 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
 
-import { JWT_SECRET, REPO_ROOT, WEB_BOOT_TIMEOUT_MS } from "./config.js";
+import { REPO_ROOT, WEB_BOOT_TIMEOUT_MS } from "./config.js";
 import { runtime } from "./runtime.js";
 
 let child: ChildProcess | null = null;
@@ -13,12 +13,11 @@ function childEnv(): NodeJS.ProcessEnv {
     CUSTAPI_URL: `${stubBase}/api/v1`,
     TICKETING_URL: stubBase,
     EXPERIMENT_MANAGER_URL: stubBase,
-    // Collaborative editing uses an in-memory Redis mock in the web app — no
-    // external broker required. REDIS_URL is still set so config validation
+    // Sessions and collaborative editing use an in-memory Redis mock in the
+    // web app — no external broker required. REDIS_URL is still set so config validation
     // passes; honour an explicit override when provided.
     E2E_REDIS_MOCK: process.env.E2E_REDIS_MOCK ?? "1",
     REDIS_URL: process.env.REDIS_URL ?? "redis://mock",
-    JWT_SECRET,
     SESSION_COOKIE_SECURE: "false",
     NODE_ENV: "development",
     // Blank so a developer's .env.local Cloudflare Access token cannot ride
