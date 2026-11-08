@@ -12,6 +12,7 @@ import {
   type RegisterFormState,
 } from "@/lib/auth/definitions";
 import { landingPathForRole } from "@/lib/auth/appRole";
+import { safeReturnTo } from "@/lib/auth/returnTo";
 import {
   clearLoginFailures,
   isLoginThrottled,
@@ -98,7 +99,10 @@ export async function login(
     organizationId: CHEMFOX_ORG_ID,
   });
 
-  redirect(landingPathForRole(user.role as CustApiRole));
+  redirect(
+    safeReturnTo(formData.get("next")) ??
+      landingPathForRole(user.role as CustApiRole),
+  );
 }
 
 export async function register(

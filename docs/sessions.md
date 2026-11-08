@@ -33,6 +33,10 @@ hash, so a copy of Redis contains no usable cookies.
 - **Settings → Sign out on all devices** deletes all of the user's sessions,
   including the current one.
 
+Each of these that revokes all sessions also disconnects the user's MCP apps
+(OAuth grants, see [`mcp.md`](mcp.md)), and the role re-check above is shared
+with MCP tokens (`lib/auth/userRefresh.ts`).
+
 Session writes use `SET … XX`, so a request already in flight can't bring back a
 session that was revoked while it ran.
 

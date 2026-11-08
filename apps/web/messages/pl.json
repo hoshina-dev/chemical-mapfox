@@ -89,6 +89,17 @@
       "subtitle": "Wyloguj się ze wszystkich przeglądarek i urządzeń, na których masz aktywną sesję, w tym z tego.",
       "submit": "Wyloguj ze wszystkich urządzeń"
     },
+    "connectedApps": {
+      "title": "Połączone aplikacje",
+      "subtitle": "Asystenci AI, którym zezwoliłeś na działanie w Twoim imieniu w przestrzeni laboratorium.",
+      "empty": "Brak połączonych aplikacji. Gdy zezwolisz Claude lub ChatGPT na połączenie, pojawią się tutaj.",
+      "connectedAt": "Połączono <date></date>",
+      "lastUsedAt": "Ostatnio użyto <date></date>",
+      "disconnect": "Odłącz",
+      "confirm": "Odłączyć {client}? Aplikacja nie będzie już mogła działać w Twoim imieniu.",
+      "loadErrorTitle": "Nie udało się wczytać połączonych aplikacji",
+      "loadErrorFallback": "Nie udało się wczytać połączonych aplikacji."
+    },
     "notifications": {
       "title": "Powiadomienia e-mail",
       "subtitle": "Wybierz etapy eksperymentu, o których chcesz dostawać e-mail. Wyłącz etap, jeśli nie chcesz powiadomienia dla tego statusu.",
@@ -232,6 +243,25 @@
       "tooManyAttempts": "Zbyt wiele nieudanych prób logowania. Odczekaj 15 minut i spróbuj ponownie.",
       "createAccountFailed": "Nie udało się utworzyć konta. Adres e-mail może być już używany.",
       "organizationAssignFailed": "Twoje konto zostało utworzone, ale przypisanie organizacji nie powiodło się. Zaloguj się i spróbuj ponownie."
+    },
+    "oauth": {
+      "invalidTitle": "To żądanie połączenia jest nieprawidłowe",
+      "invalidBody": "Żądanie jest nieprawidłowe lub wygasło. Rozpocznij ponownie z aplikacji.",
+      "staffOnlyTitle": "Tylko personel laboratorium",
+      "staffOnlyBody": "Tylko personel laboratorium {brand} może łączyć asystentów AI.",
+      "returnTo": "Wróć do {host}",
+      "title": "Połączyć {client} z {brand}?",
+      "signedInAs": "Zalogowano jako {name} ({email})",
+      "unknownAppTitle": "To nie jest Claude ani ChatGPT",
+      "unknownAppBody": "Kontynuuj tylko, jeśli ufasz {host}.",
+      "intro": "{client} będzie mógł działać w Twoim imieniu w przestrzeni laboratorium:",
+      "permissionRead": "Przeglądanie eksperymentów, zleceniodawców, formularzy laboratoryjnych i raportów",
+      "permissionWrite": "Przyjmowanie próbek, rozpoczynanie eksperymentów i zapisywanie wartości laboratoryjnych",
+      "permissionReport": "Przesyłanie eksperymentów, uruchamianie obliczeń, generowanie raportów i zamykanie zgłoszeń",
+      "redirectNote": "Po udzieleniu dostępu wrócisz do {host}.",
+      "revokeNote": "Możesz odłączyć aplikację w dowolnym momencie w Ustawieniach → Połączone aplikacje.",
+      "deny": "Anuluj",
+      "approve": "Zezwól na dostęp"
     }
   },
   "status": {
@@ -945,7 +975,8 @@
         "onboarding": "Rejestracja próbek",
         "components": "Dokumentacja komponentów",
         "templates": "Szablony i kreator",
-        "pdfReport": "Układ raportu PDF"
+        "pdfReport": "Układ raportu PDF",
+        "aiAssistants": "Połącz asystenta AI"
       },
       "clientGuides": {
         "overview": "Przegląd",
@@ -1204,11 +1235,11 @@
     "staff": {
       "overview": {
         "title": "Dokumentacja dla personelu",
-        "subtitle": "Przewodniki dla techników laboratoryjnych: prowadzenie zgłoszeń przez workflow, wspólna praca nad formularzami laboratoryjnymi, wdrażanie szablonów oraz przegląd wszystkich komponentów formularzy.",
+        "subtitle": "Przewodniki dla techników laboratoryjnych: prowadzenie zgłoszeń przez workflow, wspólna praca nad formularzami laboratoryjnymi, wdrażanie szablonów, przegląd wszystkich komponentów formularzy oraz łączenie asystenta AI.",
         "sections": {
           "contents": {
             "heading": "W tej dokumentacji",
-            "body": "Zacznij od przewodników poniżej albo od razu przejdź do referencji komponentów, gdy tworzysz szablony."
+            "body": "Zacznij od przewodników poniżej albo od razu przejdź do referencji komponentów, gdy tworzysz szablony. Możesz też połączyć asystenta AI, takiego jak Claude lub ChatGPT."
           },
           "lifecycle": {
             "heading": "Cykl życia eksperymentu",
@@ -1223,7 +1254,8 @@
           "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
           "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
           "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
-          "pdfReport": "Projektuj układ raportu PDF dla szablonu ze zmiennymi i podglądem."
+          "pdfReport": "Projektuj układ raportu PDF dla szablonu ze zmiennymi i podglądem.",
+          "aiAssistants": "Połącz Claude lub ChatGPT, aby asystent mógł działać w Twoim imieniu w przestrzeni laboratorium."
         }
       },
       "experiments": {
@@ -1421,6 +1453,47 @@
             "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizowanie, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
           }
         }
+      },
+      "aiAssistants": {
+        "title": "Połącz asystenta AI",
+        "subtitle": "Użyj Claude lub ChatGPT jako łącznika niestandardowego do przestrzeni laboratorium. Asystent działa w Twoim imieniu, a każda czynność jest rejestrowana na Twoje konto.",
+        "sections": {
+          "connect": {
+            "heading": "Dodaj Claude lub ChatGPT",
+            "body": "Personel laboratorium może pracować z poziomu Claude (claude.ai) lub ChatGPT, dodając tę witrynę jako łącznik niestandardowy. Adres URL do dodania to adres tej witryny z /api/mcp na końcu.\n\nTylko personel laboratorium może się połączyć. W planie Claude Team lub Enterprise właściciel przestrzeni może dodać łącznik dla wszystkich. W ChatGPT Business lub Enterprise administrator może go opublikować.\n\nWybieraj plany, które wykluczają rozmowy z treningu modeli — dane eksperymentów to dane klienta. Nazwy menu u dostawców się zmieniają; sprawdź ich aktualną dokumentację, jeśli ścieżka poniżej nie pasuje.",
+            "steps": [
+              "W Claude otwórz Settings → Connectors → Add custom connector i wklej adres URL /api/mcp.",
+              "W ChatGPT włącz Developer mode, a następnie Settings → Apps → Create z tym samym adresem URL.",
+              "Wybierz Connect."
+            ]
+          },
+          "consent": {
+            "heading": "Sprawdź ekran zgody",
+            "body": "Po wyborze Connect zaloguj się do Harper Analytics, jeśli zostaniesz o to poproszony. Ekran zgody podaje nazwę aplikacji i wymienia, co może ona robić: przeglądać eksperymenty, przyjmować próbki, rozpoczynać eksperymenty, zapisywać wartości laboratoryjne, przesyłać eksperymenty, uruchamiać obliczenia, generować raporty i zamykać zgłoszenia.\n\nAsystent działa w Twoim imieniu. Każda czynność jest rejestrowana na Twoje konto.",
+            "steps": [
+              "Zaloguj się do Harper Analytics, jeśli zostaniesz o to poproszony.",
+              "Przeczytaj listę uprawnień.",
+              "Wybierz Zezwól na dostęp."
+            ]
+          },
+          "unknownApp": {
+            "heading": "Aplikacje, które nie są Claude ani ChatGPT",
+            "body": "Jeśli aplikacja to nie Claude ani ChatGPT, ekran zgody pokazuje pomarańczowe ostrzeżenie z hostem, do którego aplikacja Cię przekieruje. Inne aplikacje nie są blokowane, ale zezwalaj na dostęp tylko wtedy, gdy rozpoznajesz ten host — każdy może zarejestrować aplikację pod dowolną nazwą."
+          },
+          "ask": {
+            "heading": "O co poprosić",
+            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
+          },
+          "disconnect": {
+            "heading": "Odłącz aplikację",
+            "body": "Możesz odłączyć aplikację w dowolnym momencie w Ustawieniach → Połączone aplikacje. Wylogowanie ze wszystkich urządzeń oraz zmiana hasła również odłączają wszystkie połączone aplikacje.",
+            "steps": [
+              "Otwórz Ustawienia → Połączone aplikacje.",
+              "Wybierz Odłącz obok aplikacji.",
+              "Potwierdź, jeśli zostaniesz o to poproszony."
+            ]
+          }
+        }
       }
     },
     "client": {
@@ -1614,6 +1687,18 @@
       "staff-pdf-editor": {
         "alt": "Edytor układu raportu PDF z płótnem i zmiennymi",
         "caption": "Edytor raportu PDF"
+      },
+      "staff-mcp-consent": {
+        "alt": "Ekran zgody z prośbą o połączenie Claude z Harper Analytics",
+        "caption": "Zezwól Claude na połączenie"
+      },
+      "staff-mcp-consent-unknown-app": {
+        "alt": "Ekran zgody z pomarańczowym ostrzeżeniem, że aplikacja to nie Claude ani ChatGPT",
+        "caption": "Ostrzeżenie o nieznanej aplikacji na ekranie zgody"
+      },
+      "staff-connected-apps": {
+        "alt": "Sekcja Połączone aplikacje w Ustawieniach z listą asystentów AI",
+        "caption": "Połączone aplikacje w Ustawieniach"
       }
     }
   },

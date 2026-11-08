@@ -2,12 +2,15 @@ import { Alert, Container, Divider, Stack } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
+import { ConnectedApps } from "@/components/settings/ConnectedApps";
 import { NotificationPreferencesForm } from "@/components/settings/NotificationPreferencesForm";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { SignOutEverywhere } from "@/components/settings/SignOutEverywhere";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
+import { logHandledError } from "@/lib/log/handled";
+import { listUserGrants, type ConnectedApp } from "@/lib/oauth/store";
 import { getNotificationPreferences } from "@/lib/ticketing/notification-preferences";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
@@ -40,7 +43,9 @@ async function SettingsPageContent() {
   const t = await getTranslations("settings");
   const tNotifications = await getTranslations("settings.notifications");
   const tProfile = await getTranslations("settings.profile");
-  const isClient = session.role !== "admin";
+  const tConnectedApps = await getTranslations("settings.connectedApps");
+  const isAdmin = session.role === "admin";
+  const isClient = !isAdmin;
 
   let name = session.name;
   let email = session.email;
@@ -61,6 +66,22 @@ async function SettingsPageContent() {
 
   let preferences = null;
   let notificationsLoadError: string | null = null;
+
+  let connectedApps: ConnectedApp[] | null = null;
+  let connectedAppsLoadError: string | null = null;
+
+  if (isAdmin) {
+    try {
+      connectedApps = await listUserGrants(session.userId);
+    } catch (error) {
+      logHandledError(error, {
+        op: "settings.connectedApps",
+        service: "redis",
+        userId: session.userId,
+      });
+      connectedAppsLoadError = tConnectedApps("loadErrorFallback");
+    }
+  }
 
   if (isClient) {
     try {
@@ -104,6 +125,23 @@ async function SettingsPageContent() {
         <Divider />
 
         <SignOutEverywhere />
+
+        {isAdmin && (
+          <>
+            <Divider />
+            {connectedAppsLoadError ? (
+              <Alert
+                color="red"
+                variant="light"
+                title={tConnectedApps("loadErrorTitle")}
+              >
+                {connectedAppsLoadError}
+              </Alert>
+            ) : (
+              connectedApps && <ConnectedApps apps={connectedApps} />
+            )}
+          </>
+        )}
 
         {isClient && (
           <>

@@ -2,13 +2,15 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 
-import { usersApi } from "@/lib/custapi/client";
 import { logHandledError } from "@/lib/log/handled";
-import { httpStatus } from "@/lib/log/serialize";
+import { revokeUserGrants } from "@/lib/oauth/store";
 import { getRedis } from "@/lib/redis/client";
 
 import { SESSION_DURATION_MS } from "./constants";
 import type { CustApiRole, SessionPayload } from "./definitions";
+import { refreshUser, ROLE_CHECK_INTERVAL_MS } from "./userRefresh";
+
+export { ROLE_CHECK_INTERVAL_MS, ROLE_STALE_MAX_MS } from "./userRefresh";
 
 /**
  * Server-side sessions in Redis. The cookie carries only a random token; Redis
@@ -19,10 +21,6 @@ import type { CustApiRole, SessionPayload } from "./definitions";
 const IDLE_TTL_S = SESSION_DURATION_MS / 1000;
 export const ABSOLUTE_MAX_MS = 30 * 24 * 60 * 60 * 1000;
 const TOUCH_INTERVAL_MS = 5 * 60 * 1000;
-/** Longest a role revoked in custapi keeps working here. */
-export const ROLE_CHECK_INTERVAL_MS = 60 * 1000;
-/** How long a stored role is trusted while custapi is unreachable. */
-export const ROLE_STALE_MAX_MS = 60 * 60 * 1000;
 
 export interface SessionUserInput {
   id: string;
@@ -90,29 +88,20 @@ async function revalidate(
   stored: StoredSession,
   now: number,
 ): Promise<StoredSession | null> {
-  try {
-    const user = await usersApi.usersIdIdGet(stored.userId);
-    return {
-      ...stored,
-      name: user.name,
-      email: user.email,
-      avatarUrl: user.avatarUrl,
-      role: user.role as CustApiRole,
-      roleCheckedAt: now,
-    };
-  } catch (error) {
-    const status = httpStatus(error);
-    if (status === 404) {
+  const result = await refreshUser(
+    stored.userId,
+    stored.roleCheckedAt,
+    now,
+    "session.revalidate",
+  );
+  switch (result.kind) {
+    case "fresh":
+      return { ...stored, ...result.user, roleCheckedAt: now };
+    case "gone":
       await revokeUserSessions(stored.userId);
       return null;
-    }
-    logHandledError(error, {
-      op: "session.revalidate",
-      service: "custapi",
-      userId: stored.userId,
-      status,
-    });
-    return now - stored.roleCheckedAt > ROLE_STALE_MAX_MS ? null : stored;
+    case "unreachable":
+      return result.usable ? stored : null;
   }
 }
 
@@ -181,7 +170,7 @@ export async function destroySession(token: string): Promise<void> {
   await removeSession(hash, (JSON.parse(raw) as StoredSession).userId);
 }
 
-/** Signs the user out everywhere. */
+/** Signs the user out everywhere, including apps connected over MCP. */
 export async function revokeUserSessions(userId: string): Promise<void> {
   const redis = getRedis();
   const hashes = await redis.smembers(userSessionsKey(userId));
@@ -189,6 +178,7 @@ export async function revokeUserSessions(userId: string): Promise<void> {
     .multi()
     .del(...hashes.map(sessionKey), userSessionsKey(userId))
     .exec();
+  await revokeUserGrants(userId);
 }
 
 /** Copies profile edits into every live session of the user. */

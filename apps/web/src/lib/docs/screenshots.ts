@@ -27,7 +27,10 @@ export type DocsScreenshotId =
   | "staff-template-builder"
   | "staff-builder-calculations"
   | "staff-pdf-editor"
-  | "staff-component-reference";
+  | "staff-component-reference"
+  | "staff-mcp-consent"
+  | "staff-mcp-consent-unknown-app"
+  | "staff-connected-apps";
 
 export type DocsScreenshotMeta = {
   id: DocsScreenshotId;
@@ -155,6 +158,23 @@ export const DOCS_SCREENSHOTS: Record<DocsScreenshotId, DocsScreenshotMeta> = {
     capture:
       "Component reference index or a type page with live preview + schema fields.",
   },
+  "staff-mcp-consent": {
+    id: "staff-mcp-consent",
+    localized: true,
+    capture: "OAuth consent screen connecting Claude to Harper Analytics.",
+  },
+  "staff-mcp-consent-unknown-app": {
+    id: "staff-mcp-consent-unknown-app",
+    localized: true,
+    capture:
+      "Consent screen with the orange unknown-app warning (not Claude or ChatGPT).",
+  },
+  "staff-connected-apps": {
+    id: "staff-connected-apps",
+    localized: true,
+    capture:
+      "Settings → Connected apps section listing connected AI assistants.",
+  },
 };
 
 /**
@@ -213,6 +233,11 @@ export const GUIDE_SECTION_FIGURES: Record<
   },
   "docs.staff.pdfReport": {
     open: "staff-pdf-editor",
+  },
+  "docs.staff.aiAssistants": {
+    consent: "staff-mcp-consent",
+    unknownApp: "staff-mcp-consent-unknown-app",
+    disconnect: "staff-connected-apps",
   },
 };
 

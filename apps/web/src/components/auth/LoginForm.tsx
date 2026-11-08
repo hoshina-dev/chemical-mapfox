@@ -12,12 +12,13 @@ import { useActionState } from "react";
 
 import { login } from "@/app/actions/auth";
 
-export function LoginForm() {
+export function LoginForm({ returnTo = null }: { returnTo?: string | null }) {
   const [state, action, pending] = useActionState(login, undefined);
   const t = useTranslations("auth.login");
 
   return (
     <form action={action}>
+      {returnTo && <input type="hidden" name="next" value={returnTo} />}
       <Stack gap="md">
         <TextInput
           label={t("email")}

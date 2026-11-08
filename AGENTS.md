@@ -144,6 +144,15 @@ Sessions are server-side in Redis, keyed by an opaque cookie token. The role is
 re-read from custapi at most every 60 s, so never trust a role cached anywhere
 else. Design: [`docs/sessions.md`](docs/sessions.md).
 
+## MCP connector (Claude / ChatGPT)
+
+Staff can drive the lab workflow from Claude or ChatGPT through a remote MCP
+server at `/api/mcp`, protected by a built-in OAuth 2.1 server (`/oauth/*`,
+tokens hashed in Redis, revoked with sessions). Staff lifecycle logic lives in
+`apps/web/src/lib/staff/workflow.ts` and is shared by the server actions and
+the MCP tools — change it there, not in the actions. Design, tools and local
+testing: [`docs/mcp.md`](docs/mcp.md).
+
 ## API clients
 
 `@repo/api-client` holds generated clients (custapi, ticketing) and

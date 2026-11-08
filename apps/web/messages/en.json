@@ -89,6 +89,17 @@
       "subtitle": "Sign out of every browser and device where you are signed in, including this one.",
       "submit": "Sign out on all devices"
     },
+    "connectedApps": {
+      "title": "Connected apps",
+      "subtitle": "AI assistants you've allowed to act as you in the lab workspace.",
+      "empty": "No connected apps. When you allow Claude or ChatGPT to connect, they'll appear here.",
+      "connectedAt": "Connected <date></date>",
+      "lastUsedAt": "Last used <date></date>",
+      "disconnect": "Disconnect",
+      "confirm": "Disconnect {client}? It will no longer be able to act as you.",
+      "loadErrorTitle": "Could not load connected apps",
+      "loadErrorFallback": "Failed to load connected apps."
+    },
     "notifications": {
       "title": "Email notifications",
       "subtitle": "Choose which experiment stages should email you. Turn a stage off if you do not want an email for that status.",
@@ -232,6 +243,25 @@
       "tooManyAttempts": "Too many failed sign-in attempts. Please wait 15 minutes and try again.",
       "createAccountFailed": "Could not create your account. The email may already be in use.",
       "organizationAssignFailed": "Your account was created, but assigning your organization failed. Please sign in and try again."
+    },
+    "oauth": {
+      "invalidTitle": "This connection request is invalid",
+      "invalidBody": "The request is invalid or has expired. Start again from the app.",
+      "staffOnlyTitle": "Lab staff only",
+      "staffOnlyBody": "Only lab staff of {brand} can connect AI assistants.",
+      "returnTo": "Return to {host}",
+      "title": "Connect {client} to {brand}?",
+      "signedInAs": "Signed in as {name} ({email})",
+      "unknownAppTitle": "This app isn't Claude or ChatGPT",
+      "unknownAppBody": "Only continue if you trust {host}.",
+      "intro": "{client} will be able to act as you in the lab workspace:",
+      "permissionRead": "View experiments, requesters, lab forms and reports",
+      "permissionWrite": "Check in samples, start experiments and record lab values",
+      "permissionReport": "Submit experiments, run calculations, generate reports and close tickets",
+      "redirectNote": "After you allow access you'll be sent back to {host}.",
+      "revokeNote": "You can disconnect it at any time in Settings → Connected apps.",
+      "deny": "Cancel",
+      "approve": "Allow access"
     }
   },
   "status": {
@@ -946,7 +976,8 @@
         "onboarding": "Onboarding samples",
         "components": "Component reference",
         "templates": "Templates & builder",
-        "pdfReport": "PDF report layout"
+        "pdfReport": "PDF report layout",
+        "aiAssistants": "Connect an AI assistant"
       },
       "clientGuides": {
         "overview": "Overview",
@@ -1204,11 +1235,11 @@
     "staff": {
       "overview": {
         "title": "Staff documentation",
-        "subtitle": "Guides for lab technicians: move tickets through the workflow, collaborate on lab forms, onboard templates, and look up every form component.",
+        "subtitle": "Guides for lab technicians: move tickets through the workflow, collaborate on lab forms, onboard templates, look up every form component, and connect an AI assistant.",
         "sections": {
           "contents": {
             "heading": "In this documentation",
-            "body": "Start with the guides below, or jump straight to the component reference when you are authoring templates."
+            "body": "Start with the guides below, or jump straight to the component reference when you are authoring templates. You can also connect an AI assistant such as Claude or ChatGPT."
           },
           "lifecycle": {
             "heading": "Experiment lifecycle",
@@ -1223,7 +1254,8 @@
           "onboarding": "Register specimen types and open a sample’s template list.",
           "components": "Live previews and schema fields for every question type in the form engine.",
           "templates": "Create and edit client intake forms, lab forms, and calculations.",
-          "pdfReport": "Design the PDF report layout for a template with variables and preview."
+          "pdfReport": "Design the PDF report layout for a template with variables and preview.",
+          "aiAssistants": "Connect Claude or ChatGPT so the assistant can act as you in the lab workspace."
         }
       },
       "experiments": {
@@ -1421,6 +1453,47 @@
             "body": "Save stores the PDF component layout for this template. Unsaved changes are indicated in the toolbar. After the layout is saved, staff can Generate report from a Finalizing workspace, and requesters can view or download the PDF when report status is ready."
           }
         }
+      },
+      "aiAssistants": {
+        "title": "Connect an AI assistant",
+        "subtitle": "Use Claude or ChatGPT as a custom connector to the lab workspace. The assistant acts as you, and every action is logged under your name.",
+        "sections": {
+          "connect": {
+            "heading": "Add Claude or ChatGPT",
+            "body": "Lab staff can work from Claude (claude.ai) or ChatGPT by adding this site as a custom connector. The URL to add is this site’s address with /api/mcp at the end.\n\nOnly lab staff can connect. On a Claude Team or Enterprise workspace, an owner can add the connector for everyone. On ChatGPT Business or Enterprise, an admin can publish it.\n\nPrefer plans that exclude conversations from training — experiment data is client data. Vendor menus change; check their current documentation if a path below does not match.",
+            "steps": [
+              "In Claude, go to Settings → Connectors → Add custom connector and paste the /api/mcp URL.",
+              "In ChatGPT, enable Developer mode, then go to Settings → Apps → Create with the same URL.",
+              "Choose Connect."
+            ]
+          },
+          "consent": {
+            "heading": "Review the consent screen",
+            "body": "After you choose Connect, sign in to Harper Analytics if asked. The consent screen names the app and lists what it may do: view experiments, check in samples, start experiments, record lab values, submit experiments, run calculations, generate reports, and close tickets.\n\nThe assistant acts as you. Every action is logged under your name.",
+            "steps": [
+              "Sign in to Harper Analytics if you are prompted.",
+              "Read the permissions list.",
+              "Choose Allow access."
+            ]
+          },
+          "unknownApp": {
+            "heading": "Apps that are not Claude or ChatGPT",
+            "body": "If the app is not Claude or ChatGPT, the consent screen shows an orange warning with the host the app will send you back to. Other apps are not blocked, but only allow access when you recognise that host — anyone can register an app under any name."
+          },
+          "ask": {
+            "heading": "What to ask",
+            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
+          },
+          "disconnect": {
+            "heading": "Disconnect an app",
+            "body": "Disconnect any time in Settings → Connected apps. Sign out on all devices and changing your password also disconnects every connected app.",
+            "steps": [
+              "Open Settings → Connected apps.",
+              "Choose Disconnect next to the app.",
+              "Confirm if asked."
+            ]
+          }
+        }
       }
     },
     "client": {
@@ -1614,6 +1687,18 @@
       "staff-pdf-editor": {
         "alt": "PDF report layout editor with canvas and variables",
         "caption": "PDF report editor"
+      },
+      "staff-mcp-consent": {
+        "alt": "Consent screen asking to connect Claude to Harper Analytics",
+        "caption": "Allow Claude to connect"
+      },
+      "staff-mcp-consent-unknown-app": {
+        "alt": "Consent screen with an orange warning that the app is not Claude or ChatGPT",
+        "caption": "Unknown-app warning on the consent screen"
+      },
+      "staff-connected-apps": {
+        "alt": "Settings Connected apps section listing AI assistants",
+        "caption": "Connected apps in Settings"
       }
     }
   },

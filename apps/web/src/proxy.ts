@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { landingPathForRole } from "@/lib/auth/appRole";
 import { SESSION_COOKIE } from "@/lib/auth/constants";
+import { loginPathWithReturnTo, safeReturnTo } from "@/lib/auth/returnTo";
 import { sessionCookieOptions } from "@/lib/auth/cookieOptions";
 import { resolveSession } from "@/lib/auth/sessionStore";
 import {
@@ -23,7 +24,11 @@ function withLocaleCookie(req: NextRequest, res: NextResponse): NextResponse {
   return res;
 }
 
+const OAUTH_MACHINE_ENDPOINT = /^\/(?:\.well-known\/oauth-|oauth\/(?:register|token|revoke)$)/;
+
 export default async function proxy(req: NextRequest) {
+  if (OAUTH_MACHINE_ENDPOINT.test(req.nextUrl.pathname)) return NextResponse.next();
+
   const session = req.cookies.get(SESSION_COOKIE)?.value;
   const payload = await resolveSession(session);
   const { pathname } = req.nextUrl;
@@ -34,18 +39,23 @@ export default async function proxy(req: NextRequest) {
   const isPublicPage = isLandingPage || isAuthPage;
 
   if (isAuthPage && payload?.userId) {
+    const next = safeReturnTo(req.nextUrl.searchParams.get("next"));
     return withLocaleCookie(
       req,
       NextResponse.redirect(
-        new URL(landingPathForRole(payload.role), req.url),
+        new URL(next ?? landingPathForRole(payload.role), req.url),
       ),
     );
   }
 
   if (!isPublicPage && !payload?.userId) {
+    // The OAuth consent screen is reached from Claude/ChatGPT; come back to it.
+    const returnTo = safeReturnTo(`${pathname}${req.nextUrl.search}`);
     return withLocaleCookie(
       req,
-      NextResponse.redirect(new URL("/login", req.url)),
+      NextResponse.redirect(
+        new URL(returnTo ? loginPathWithReturnTo(returnTo) : "/login", req.url),
+      ),
     );
   }
 
@@ -87,9 +97,10 @@ export default async function proxy(req: NextRequest) {
 
 // Skip only real static files by extension: a blanket "contains a dot" skip
 // let dotted /internal URLs (e.g. an encoded `..%2F` param) bypass the gate.
+// OAuth discovery/token endpoints are called by MCP clients without a cookie.
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpe?g|webp|gif|ico|md|txt|xml)$).*)",
+    "/((?!api|\\.well-known/oauth-|oauth/(?:register|token|revoke)$|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpe?g|webp|gif|ico|md|txt|xml)$).*)",
     "/internal/:path*",
     "/admin/:path*",
   ],

@@ -4,6 +4,18 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig = {
   output: "standalone",
   transpilePackages: ["@repo/api-client", "@repo/forms"],
+  async headers() {
+    return [
+      {
+        // One click on the consent screen grants access: never allow framing.
+        source: "/oauth/authorize",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {

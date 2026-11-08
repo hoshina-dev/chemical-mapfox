@@ -177,7 +177,8 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 - Staff documentation hub and guides:
   overview, experiments list, sample check-in, lab workspace, finalize &
   reports, **onboarding samples**, **templates & builder**, **PDF report
-  layout**, and the form **component reference**.
+  layout**, **AI assistants** (`/internal/docs/ai-assistants`), and the form
+  **component reference**.
 - **Component reference** at `/internal/docs/components` plus one page per
   question type at `/internal/docs/[type]` (live preview + schema fields from
   `@repo/forms`). Linked from staff nav as **Docs**.
@@ -192,6 +193,12 @@ the client nav (`components/experiment/ClientNav.tsx`). Data loaders are in
 - `/` ✅ — landing / login (`apps/web/src/app/page.tsx`)
 - `/admin/users` ✅ — staff-only **readonly user lookup** (search via CUSTAPI
   `GET /users/search`, detail panel). No org management. Gated like `/internal/*`.
+
+- `/oauth/authorize` ✅ — OAuth consent screen for the staff MCP connector
+  (admin only; signed-out visitors come back via `/login?next=`). The
+  machine endpoints (`/oauth/register|token|revoke`, `/.well-known/oauth-*`,
+  `/api/mcp`) are listed in [`mcp.md`](mcp.md).
+- `/settings` → **Connected apps** (admins) lists and disconnects MCP clients.
 
 There is **no separate hub/dashboard page**. After login each role is sent
 straight to its primary workspace and navigates from there using the nav chrome

@@ -42,6 +42,9 @@ Every current shot is **localized** (UI contains translated labels).
 | `staff-builder-calculations.webp` | `apps/web/public/docs/{locale}/` | Staff Templates → calculations | Builder calculations section |
 | `staff-pdf-editor.webp` | `apps/web/public/docs/{locale}/` | Staff PDF report layout | PDF canvas editor |
 | `staff-component-reference.webp` | `apps/web/public/docs/{locale}/` | Staff Onboarding · Component reference | Component reference / live preview |
+| `staff-mcp-consent.webp` | `apps/web/public/docs/{locale}/` | Staff AI assistants → consent | Consent screen for Claude |
+| `staff-mcp-consent-unknown-app.webp` | `apps/web/public/docs/{locale}/` | Staff AI assistants → unknown app | Consent screen with the unknown-app warning |
+| `staff-connected-apps.webp` | `apps/web/public/docs/{locale}/` | Staff AI assistants → disconnect | Settings → Connected apps section |
 
 Replace `{locale}` with `en` or `pl`.
 
@@ -73,6 +76,9 @@ by switching the navbar language control (and `NEXT_LOCALE`).
 | `staff-builder-calculations.webp` | Done | Wtr template calculations |
 | `staff-pdf-editor.webp` | Done | Wtr template PDF editor |
 | `staff-component-reference.webp` | Done | Done | Prod `/internal/docs/string` |
+| `staff-mcp-consent.webp` | Done | Done | Captured against local catalogue stack |
+| `staff-mcp-consent-unknown-app.webp` | Done | Done | Captured against local catalogue stack |
+| `staff-connected-apps.webp` | Done | Done | Captured against local catalogue stack |
 
 Re-run helpers (credentials via env, not committed):
 

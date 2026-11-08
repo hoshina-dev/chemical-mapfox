@@ -2,8 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { headers } from "next/headers";
-
+import { clientIp } from "@/lib/http/clientIp";
 import { getRedis } from "@/lib/redis/client";
 
 /**
@@ -18,16 +17,6 @@ const MAX_FAILURES_PER_IP = 50;
 
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
-
-async function clientIp(): Promise<string> {
-  const h = await headers();
-  // Behind Cloudflare; cf-connecting-ip is set by the edge, not the client.
-  return (
-    h.get("cf-connecting-ip") ??
-    h.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown"
-  );
-}
 
 async function keys(email: string): Promise<[string, string]> {
   return [

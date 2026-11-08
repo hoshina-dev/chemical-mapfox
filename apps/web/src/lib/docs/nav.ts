@@ -21,6 +21,7 @@ export const STAFF_DOC_GUIDES: readonly DocsNavItem[] = [
   { href: staffDocsPath("onboarding"), key: "onboarding" },
   { href: staffDocsPath("templates"), key: "templates" },
   { href: staffDocsPath("pdf-report"), key: "pdfReport" },
+  { href: staffDocsPath("ai-assistants"), key: "aiAssistants" },
   { href: staffDocsPath("components"), key: "components" },
 ] as const;
 

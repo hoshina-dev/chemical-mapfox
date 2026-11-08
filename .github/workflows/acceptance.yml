@@ -57,6 +57,7 @@ jobs:
           - staff-listing
           - template-authoring
           - admin-users
+          - mcp
 
     # No external services — backends are stubbed in-process and collaborative
     # editing uses an in-memory Redis mock inside the web app.

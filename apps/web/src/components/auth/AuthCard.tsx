@@ -11,7 +11,13 @@ import { RegisterForm } from "./RegisterForm";
 
 export type AuthTab = "login" | "register";
 
-export function AuthCard({ defaultTab = "login" }: { defaultTab?: AuthTab }) {
+export function AuthCard({
+  defaultTab = "login",
+  returnTo = null,
+}: {
+  defaultTab?: AuthTab;
+  returnTo?: string | null;
+}) {
   const t = useTranslations("auth.card");
 
   return (
@@ -36,7 +42,7 @@ export function AuthCard({ defaultTab = "login" }: { defaultTab?: AuthTab }) {
               <Tabs.Tab value="register">{t("tabRegister")}</Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel value="login">
-              <LoginForm />
+              <LoginForm returnTo={returnTo} />
             </Tabs.Panel>
             <Tabs.Panel value="register">
               <RegisterForm />
