@@ -169,6 +169,15 @@ describe("validateAnswers", () => {
     ]);
   });
 
+  it("accepts an untouched switch, required or not", () => {
+    const questions: Question[] = [
+      { id: "certified", type: "boolean", label: "Certified" },
+      { id: "confirmed", type: "boolean", label: "Confirmed", required: true },
+    ];
+    expect(validateAnswers(questions, {})).toEqual([]);
+    expect(validateAnswers(questions, { certified: null, confirmed: false })).toEqual([]);
+  });
+
   it("validates every repetition of a repeatable-group child", () => {
     const questions: Question[] = [
       {

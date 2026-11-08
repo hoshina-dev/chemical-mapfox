@@ -163,9 +163,6 @@ function isCalendarDate(value: string): boolean {
 
 function isAnswerEmpty(type: QuestionType, value: unknown): boolean {
   switch (type) {
-    case "boolean":
-      // A switch always has a value (true/false) — nothing to require.
-      return false;
     case "multi-select":
     case "checkbox-group":
     case "tags":
@@ -394,7 +391,8 @@ function validateOne(
 ): AnswerIssue[] {
   const sink = new IssueSink(path, question.id, label);
   if (isAnswerEmpty(question.type, value)) {
-    if (question.required) sink.add("required");
+    // An untouched switch reads as off, so a boolean is never "missing".
+    if (question.required && question.type !== "boolean") sink.add("required");
   } else {
     checkAnswer(sink, question, value);
   }
