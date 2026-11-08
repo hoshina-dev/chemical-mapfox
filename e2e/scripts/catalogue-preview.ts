@@ -1,4 +1,6 @@
 // Local test accounts and ticketing double; catalogue data uses the real API.
+import "./catalogue-ticketing.js";
+
 import { addUser, resetDb } from "../features/support/fixtures.js";
 import { resetStubs } from "../features/support/stub/registry.js";
 import {

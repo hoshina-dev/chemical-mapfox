@@ -12,7 +12,7 @@ COPY packages/ui/package.json packages/ui/package.json
 COPY e2e/package.json e2e/package.json
 RUN pnpm install --frozen-lockfile
 COPY e2e/features/support e2e/features/support
-COPY e2e/scripts/catalogue-preview.ts e2e/scripts/catalogue-preview.ts
+COPY e2e/scripts/catalogue-preview.ts e2e/scripts/catalogue-ticketing.ts e2e/scripts/
 WORKDIR /repo/e2e
 USER node
 CMD ["node", "--import", "tsx", "scripts/catalogue-preview.ts"]

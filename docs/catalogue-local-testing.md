@@ -15,9 +15,10 @@ The API and OpenAPI documentation are at <http://localhost:55440/docs>.
 The preview runs the actual Experiment Manager API, PostgreSQL, Redis and
 a production ChemFox build. S3 uses the official Moto testing image because the
 legacy MinIO images used by the observability stack are unavailable.
-Authentication and ticketing use the existing
-acceptance-test doubles with local test accounts. Those accounts and tickets
-reset when `test-services` restarts; they are for this local preview only.
+Authentication uses the acceptance-test doubles with local test accounts;
+ticketing uses `e2e/scripts/catalogue-ticketing.ts`, which supports the whole
+staff lifecycle (check-in through close). Those accounts and tickets reset when
+`test-services` restarts; they are for this local preview only.
 
 On its first start, PostgreSQL applies migrations 001–007, the development seed
 catalogue, then migration 008. Existing seeded specimens and experiments are
