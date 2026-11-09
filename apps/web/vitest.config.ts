@@ -40,6 +40,8 @@ export default defineConfig({
         "src/lib/oauth/redirect.ts",
         "src/lib/oauth/store.ts",
         "src/lib/staff/labValues.ts",
+        "src/lib/staff/formulas.ts",
+        "src/lib/staff/onboarding.ts",
         "src/lib/mcp/server.ts",
         "src/lib/organizationPortal/config.ts",
         "src/lib/organizationPortal/url.ts",

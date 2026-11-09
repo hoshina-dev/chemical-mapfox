@@ -1482,7 +1482,7 @@
           },
           "ask": {
             "heading": "What to ask",
-            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
+            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report. You can also hand it a spreadsheet of a method — the sample, the questions, and the formulas — and ask it to onboard that method.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
           },
           "disconnect": {
             "heading": "Disconnect an app",

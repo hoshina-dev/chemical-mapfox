@@ -18,6 +18,14 @@ vi.mock("@/lib/staff/workflow", () => ({
 vi.mock("@/lib/staff/labValues", () => ({
   recordLabValues: vi.fn(),
 }));
+vi.mock("@/lib/staff/onboarding", () => ({
+  listOnboardingSamples: vi.fn(),
+  listOnboardingTemplates: vi.fn(),
+  getOnboardingTemplate: vi.fn(),
+  createOnboardingSample: vi.fn(),
+  testOnboardingCalculations: vi.fn(),
+  onboardTemplate: vi.fn(),
+}));
 vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
   readValues: vi.fn(),
@@ -43,6 +51,14 @@ import type { ExperimentWorkspace } from "@/lib/internal/experiments";
 import { logger } from "@/lib/log/logger";
 import type { McpActor } from "@/lib/oauth/store";
 import { recordLabValues } from "@/lib/staff/labValues";
+import {
+  createOnboardingSample,
+  getOnboardingTemplate,
+  listOnboardingSamples,
+  listOnboardingTemplates,
+  onboardTemplate,
+  testOnboardingCalculations,
+} from "@/lib/staff/onboarding";
 import {
   checkInSample,
   closeTicket,
@@ -80,6 +96,12 @@ const TOOL_NAMES = [
   "close_ticket",
   "run_calculations",
   "generate_report",
+  "list_samples",
+  "list_templates",
+  "get_template",
+  "create_sample",
+  "test_template_calculations",
+  "onboard_template",
   "get_report_download_url",
 ] as const;
 
@@ -207,6 +229,12 @@ beforeEach(async () => {
   vi.mocked(runCalculations).mockReset();
   vi.mocked(queueReport).mockReset();
   vi.mocked(getReportUrl).mockReset();
+  vi.mocked(listOnboardingSamples).mockReset();
+  vi.mocked(listOnboardingTemplates).mockReset();
+  vi.mocked(getOnboardingTemplate).mockReset();
+  vi.mocked(createOnboardingSample).mockReset();
+  vi.mocked(testOnboardingCalculations).mockReset();
+  vi.mocked(onboardTemplate).mockReset();
   vi.mocked(ticketsApi.apiV1TicketsIdGet).mockReset();
   vi.mocked(logger.info).mockReset();
   vi.mocked(logger.error).mockReset();
@@ -851,6 +879,102 @@ describe("stage transitions and report tools", () => {
     });
     expect(failed.isError).toBe(true);
     expect(textOf(failed)).toBe("The report isn't ready to download yet.");
+  });
+
+  it("forwards onboarding tools to the shared helpers", async () => {
+    const draft = {
+      clientForm: { name: "Client", questions: [] },
+      labForm: { name: "Lab", questions: [] },
+      calculations: {},
+    };
+    vi.mocked(listOnboardingSamples).mockResolvedValue({ success: true, data: [] });
+    vi.mocked(listOnboardingTemplates).mockResolvedValue({ success: true, data: [] });
+    vi.mocked(getOnboardingTemplate).mockResolvedValue({
+      success: true,
+      data: {
+        templateId: "t1",
+        lineageId: "lin-1",
+        title: "Ash",
+        description: null,
+        version: 1,
+        hasPdfTemplate: false,
+        visible: false,
+        template: draft,
+      },
+    });
+    vi.mocked(createOnboardingSample).mockResolvedValue({
+      success: true,
+      data: { id: "s1", name: "Coal" },
+    });
+    vi.mocked(testOnboardingCalculations).mockResolvedValue({
+      success: true,
+      data: {
+        values: {},
+        order: [],
+        calculations: {},
+        missing_values: [],
+        duplicate_question_ids: [],
+      },
+    });
+    vi.mocked(onboardTemplate).mockResolvedValue({
+      success: true,
+      data: {
+        sampleId: "s1",
+        sampleName: "Coal",
+        createdSample: false,
+        templateId: "t1",
+        lineageId: "lin-1",
+        reportLayout: true,
+        published: false,
+        formulaCheck: null,
+      },
+    });
+
+    expect(parseOk(await session.client.callTool({ name: "list_samples", arguments: {} }))).toEqual([]);
+    expect(
+      parseOk(await session.client.callTool({ name: "list_templates", arguments: { sampleId: "s1" } })),
+    ).toEqual([]);
+    expect(
+      (await session.client.callTool({
+        name: "get_template",
+        arguments: { sampleId: "s1", templateId: "t1" },
+      })).isError,
+    ).toBeFalsy();
+    expect(
+      parseOk(
+        await session.client.callTool({
+          name: "create_sample",
+          arguments: { name: "Coal", description: "Raw" },
+        }),
+      ),
+    ).toEqual({ id: "s1", name: "Coal" });
+    await session.client.callTool({
+      name: "test_template_calculations",
+      arguments: { template: draft },
+    });
+    await session.client.callTool({
+      name: "test_template_calculations",
+      arguments: { template: draft, values: { mass: 1 } },
+    });
+    expect(testOnboardingCalculations).toHaveBeenLastCalledWith(draft, { mass: 1 });
+    expect(
+      parseOk(
+        await session.client.callTool({
+          name: "onboard_template",
+          arguments: { title: "Ash", template: draft },
+        }),
+      ).templateId,
+    ).toBe("t1");
+    vi.mocked(onboardTemplate).mockResolvedValue({
+      success: false,
+      error: "Template title is required.",
+    });
+    const refused = await session.client.callTool({
+      name: "onboard_template",
+      arguments: { title: "Ash", template: draft },
+    });
+    expect(refused.isError).toBe(true);
+    expect(textOf(refused)).toBe("Template title is required.");
   });
 });
 

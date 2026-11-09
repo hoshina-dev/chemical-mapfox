@@ -1482,7 +1482,7 @@
           },
           "ask": {
             "heading": "O co poprosić",
-            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
+            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport. Możesz też przekazać arkusz z opisem metody — próbką, pytaniami i wzorami — i poprosić o wdrożenie tej metody.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
           },
           "disconnect": {
             "heading": "Odłącz aplikację",

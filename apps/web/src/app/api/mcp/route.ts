@@ -85,18 +85,58 @@ export async function POST(request: Request) {
   }
 }
 
-// No server-initiated stream or session to delete in stateless mode.
-async function methodNotAllowed(request: Request) {
+/**
+ * Standalone SSE channel. Cursor opens this after initialize because the SDK
+ * advertises tools.listChanged, and it treats the spec-allowed 405 as a failed
+ * handshake. Tool calls stay on POST; this stream carries no notifications
+ * across those requests, since each POST builds its own server.
+ *
+ * Do not close the server here. close() ends the stream at once and the
+ * client reconnects in a loop. Close when the client aborts, or immediately
+ * when the transport refused the request (no SSE body to hold open).
+ */
+export async function GET(request: Request) {
+  const origin = await getRequestOrigin();
+  const actor = await authenticate(request, origin);
+  if (actor instanceof Response) return actor;
+
+  const server = createStaffMcpServer(actor);
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  await server.connect(transport);
+  const response = await transport.handleRequest(request, {
+    authInfo: {
+      token: "",
+      clientId: actor.clientId,
+      scopes: actor.scope.split(" "),
+      extra: { userId: actor.userId },
+    },
+  });
+  if (!response.headers.get("content-type")?.includes("text/event-stream")) {
+    await server.close();
+    return withCors(response);
+  }
+  request.signal.addEventListener(
+    "abort",
+    () => {
+      void server.close();
+    },
+    { once: true },
+  );
+  return withCors(response);
+}
+
+// Stateless mode never issues an Mcp-Session-Id, so there is no session to end.
+export async function DELETE(request: Request) {
   const origin = await getRequestOrigin();
   const actor = await authenticate(request, origin);
   if (actor instanceof Response) return actor;
   return withCors(
-    new NextResponse(null, { status: 405, headers: { Allow: "POST, OPTIONS" } }),
+    new NextResponse(null, { status: 405, headers: { Allow: "GET, POST, OPTIONS" } }),
   );
 }
-
-export const GET = methodNotAllowed;
-export const DELETE = methodNotAllowed;
 
 export function OPTIONS() {
   return preflight();

@@ -2,7 +2,13 @@ import "server-only";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { AnswerValue, answerFieldIds, type FormAnswers, type Question } from "@repo/forms";
+import {
+  AnswerValue,
+  ExperimentTemplate,
+  FormAnswers,
+  answerFieldIds,
+  type Question,
+} from "@repo/forms";
 import { z } from "zod";
 
 import type { ActionResult } from "@/app/actions/experiment-manager";
@@ -10,7 +16,16 @@ import { readTemplate, readValues } from "@/lib/collab/room";
 import { getExperimentWorkspace, listExperimentsForStaff } from "@/lib/internal/experiments";
 import { logger } from "@/lib/log/logger";
 import type { McpActor } from "@/lib/oauth/store";
+import { FORMULA_GUIDE } from "@/lib/staff/formulas";
 import { recordLabValues } from "@/lib/staff/labValues";
+import {
+  createOnboardingSample,
+  getOnboardingTemplate,
+  listOnboardingSamples,
+  listOnboardingTemplates,
+  onboardTemplate,
+  testOnboardingCalculations,
+} from "@/lib/staff/onboarding";
 import {
   checkInSample,
   closeTicket,
@@ -41,7 +56,17 @@ repeatable group's child id takes an array with one entry per repetition. Requir
 fields are only enforced by submit_experiment.
 
 generate_report runs in the background: poll get_experiment until report.status
-is "success" (or "failed"), then use get_report_download_url.`;
+is "success" (or "failed"), then use get_report_download_url.
+
+Onboarding a method from a spreadsheet the user gives you (you read the file;
+this server cannot): list_samples and list_templates first, get_template to
+revise. Question ids are unique snake_case across both forms. onboard_template
+creates the sample when the name is new, checks formulas, and writes a plain
+PDF layout so clients can request the method. Pass lineageId to revise instead
+of creating a second method. publish stays false unless the user asks to show
+it on the catalogue.
+
+${FORMULA_GUIDE}`;
 
 const NEXT_STEP: Record<string, string> = {
   REQUESTED: "Waiting for the sample. Use check_in_sample once it arrives.",
@@ -325,6 +350,107 @@ export function createStaffMcpServer(actor: McpActor): McpServer {
         (await requireFinalizing(contextId)) ??
         fromAction(await queueReport(contextId), (data) => ({ contextId, reportStatus: data.status })),
     ),
+  );
+
+  const sampleIdShape = {
+    sampleId: z.string().min(1).describe("Sample id from list_samples."),
+  };
+
+  server.registerTool(
+    "list_samples",
+    {
+      title: "List samples",
+      description: "Specimen types a method can be onboarded under.",
+      inputSchema: {},
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("list_samples", async () => fromAction(await listOnboardingSamples(), (data) => data)),
+  );
+
+  server.registerTool(
+    "list_templates",
+    {
+      title: "List templates",
+      description:
+        "Methods already onboarded for one sample. Use lineageId with onboard_template to revise one instead of creating another.",
+      inputSchema: sampleIdShape,
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("list_templates", async ({ sampleId }) =>
+      fromAction(await listOnboardingTemplates(sampleId), (data) => data),
+    ),
+  );
+
+  server.registerTool(
+    "get_template",
+    {
+      title: "Get template",
+      description: "One method: both forms, formulas, and whether a PDF layout exists.",
+      inputSchema: {
+        ...sampleIdShape,
+        templateId: z.string().min(1).describe("Template version id from list_templates."),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("get_template", async ({ sampleId, templateId }) =>
+      fromAction(await getOnboardingTemplate(sampleId, templateId), (data) => data),
+    ),
+  );
+
+  server.registerTool(
+    "create_sample",
+    {
+      title: "Create sample",
+      description: "Register a specimen type. Prefer onboard_template, which creates the sample when the name is new.",
+      inputSchema: {
+        name: z.string().min(1),
+        description: z.string().optional(),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    },
+    audited("create_sample", async ({ name, description }) =>
+      fromAction(await createOnboardingSample(name, description), (data) => data),
+    ),
+  );
+
+  server.registerTool(
+    "test_template_calculations",
+    {
+      title: "Test template calculations",
+      description:
+        "Dry-run a draft's formulas the way experiment-manager will, without saving. See the server instructions for the formula language. Stand-in answers fill any question omitted from values.",
+      inputSchema: {
+        template: ExperimentTemplate,
+        values: FormAnswers.optional().describe("Trial answers keyed by question id. Stand-ins fill the rest."),
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("test_template_calculations", async ({ template, values }) =>
+      fromAction(await testOnboardingCalculations(template, values ?? {}), (data) => data),
+    ),
+  );
+
+  server.registerTool(
+    "onboard_template",
+    {
+      title: "Onboard a method",
+      description:
+        "Create or revise a method from forms and formulas you extracted from the user's spreadsheet. Checks formulas the way experiment-manager runs them and saves nothing if a formula fails. Writes a plain PDF layout unless reportLayout is false. Does not publish unless publish is true.",
+      inputSchema: {
+        sampleId: z.string().optional(),
+        sampleName: z.string().optional().describe("Matched case-insensitively. Created when no sample has this name."),
+        sampleDescription: z.string().optional(),
+        title: z.string().min(1),
+        description: z.string().optional(),
+        lineageId: z.string().optional().describe("Set to revise this method. Omit to create one."),
+        template: ExperimentTemplate,
+        trialValues: FormAnswers.optional().describe("Answers to dry-run formulas with. Stand-ins fill the rest."),
+        reportLayout: z.boolean().optional().describe("Default true."),
+        publish: z.boolean().optional().describe("Default false. Also shows the sample on the catalogue."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    },
+    audited("onboard_template", async (args) => fromAction(await onboardTemplate(args), (data) => data)),
   );
 
   server.registerTool(

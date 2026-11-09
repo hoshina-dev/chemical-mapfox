@@ -13,7 +13,9 @@ Only mapfox **admins** (app role `technician`) can connect. Clients see a
 
 | Path | Purpose |
 |---|---|
-| `POST /api/mcp` | MCP Streamable HTTP (stateless, JSON responses). `GET`/`DELETE` → 405 |
+| `POST /api/mcp` | MCP Streamable HTTP. Tool calls are stateless JSON responses |
+| `GET /api/mcp` | Standalone SSE stream Cursor opens after initialize. No notifications are sent on it |
+| `DELETE /api/mcp` | 405. Stateless mode never issues a session id |
 | `GET /.well-known/oauth-protected-resource[/api/mcp]` | RFC 9728 resource metadata |
 | `GET /.well-known/oauth-authorization-server` | RFC 8414 server metadata |
 | `POST /oauth/register` | RFC 7591 dynamic client registration (public clients) |
@@ -70,6 +72,23 @@ the user, client and context id.
 | `generate_report` | FINALIZING | async; poll via `get_experiment` |
 | `get_report_download_url` | report generated | |
 | `close_ticket` | FINALIZING → CLOSED | irreversible |
+| `list_samples` / `list_templates` / `get_template` | onboarding | what is already set up |
+| `create_sample` | onboarding | `onboard_template` also creates a sample by name |
+| `test_template_calculations` | onboarding | dry run, nothing saved |
+| `onboard_template` | onboarding | create or revise a method from forms + formulas |
+
+The connector does not fetch spreadsheets. The assistant reads the file the
+staff member gives it, then calls `onboard_template`.
+
+## Formulas
+
+Formulas are the Python subset experiment-manager evaluates
+(`app/services/calculation_service.py`, builtins in `app/form_schema.py`).
+An answer is `values['question_id']`. Another calculation is a bare name,
+ordered by dependency. Builtins are `round`, `abs`, `min`, `max`, `sum`,
+`len`, `zip`, `mean`, `median`, `stdev`, plus the `math` module. A
+repeatable-group child is a list. `onboard_template` refuses to save when
+that check fails.
 
 The lifecycle tools call the same functions as the workspace's server actions
 (`lib/staff/workflow.ts`); the actions only add the cookie-session check.
