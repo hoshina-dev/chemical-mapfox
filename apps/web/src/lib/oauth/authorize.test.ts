@@ -78,16 +78,16 @@ describe("validateAuthorizeRequest", () => {
         redirectUri,
         codeChallenge: challenge,
         state: null,
-        scope: "staff",
+        scope: "experiments:read experiments:write templates:write",
         resource: null,
       },
     });
   });
 
-  it("accepts the staff scope, a matching resource, and a state", async () => {
+  it("adds read to a narrower scope, with a matching resource and a state", async () => {
     const result = await validateAuthorizeRequest(
       validRaw({
-        scope: " staff ",
+        scope: " templates:write ",
         resource,
         state: "s1",
       }),
@@ -95,7 +95,7 @@ describe("validateAuthorizeRequest", () => {
     );
     expect(result).toMatchObject({
       ok: true,
-      params: { scope: "staff", resource, state: "s1" },
+      params: { scope: "experiments:read templates:write", resource, state: "s1" },
     });
   });
 
@@ -107,7 +107,7 @@ describe("validateAuthorizeRequest", () => {
         response_type: ["code", "token"],
         code_challenge: [challenge, "b".repeat(43)],
         code_challenge_method: ["S256", "plain"],
-        scope: ["staff", "admin"],
+        scope: ["experiments:read", "admin"],
         resource: [resource, "https://evil.example/api/mcp"],
         state: ["keep", "drop"],
       },
@@ -119,7 +119,7 @@ describe("validateAuthorizeRequest", () => {
         clientId,
         redirectUri,
         codeChallenge: challenge,
-        scope: "staff",
+        scope: "experiments:read",
         resource,
         state: "keep",
       },
@@ -223,7 +223,13 @@ describe("validateAuthorizeRequest", () => {
     });
   });
 
-  it("rejects a scope other than staff", async () => {
+  it("expands the legacy staff scope to every scope", async () => {
+    expect(
+      await validateAuthorizeRequest(validRaw({ scope: "staff" }), origin),
+    ).toMatchObject({ ok: true, params: { scope: "experiments:read experiments:write templates:write" } });
+  });
+
+  it("rejects an unknown scope", async () => {
     const result = await validateAuthorizeRequest(
       validRaw({ scope: "admin", state: "st" }),
       origin,
@@ -233,13 +239,13 @@ describe("validateAuthorizeRequest", () => {
       kind: "redirect",
       url: errorUrl(
         "invalid_scope",
-        'The only supported scope is "staff".',
+        "Supported scopes: experiments:read, experiments:write, templates:write.",
         "st",
       ),
     });
     expect(
       await validateAuthorizeRequest(
-        validRaw({ scope: "staff extra" }),
+        validRaw({ scope: "experiments:read extra" }),
         origin,
       ),
     ).toMatchObject({ ok: false, kind: "redirect" });

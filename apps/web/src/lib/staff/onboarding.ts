@@ -43,7 +43,11 @@ export interface OnboardInput {
   template: ExperimentTemplate;
   /** Real answers to dry-run with. Stand-ins fill anything omitted. */
   trialValues?: FormAnswers;
-  /** Default true. Clients cannot request a method that has no PDF layout. */
+  /**
+   * Clients cannot request a method without a PDF layout. Omitted: write a
+   * plain one only if the method has none, so a revision keeps a designed
+   * layout (experiment-manager copies it to the new version). true replaces it.
+   */
   reportLayout?: boolean;
   /** Default false. Also shows the sample on the public catalogue. */
   publish?: boolean;
@@ -55,7 +59,8 @@ export interface OnboardedTemplate {
   createdSample: boolean;
   templateId: string;
   lineageId: string;
-  reportLayout: boolean;
+  /** kept: the revision inherited the method's existing layout. */
+  reportLayout: "written" | "kept" | "none";
   published: boolean;
   /** Dry run against stand-in or trial answers. Not a real result. */
   formulaCheck: CalculationDryRunResponse | null;
@@ -364,19 +369,21 @@ export async function onboardTemplate(input: OnboardInput): Promise<ActionResult
 
   let templateId: string;
   let lineageId: string;
+  let hadLayout: boolean;
   try {
     const detail = input.lineageId
       ? await updateExperimentTemplate(sample.id, input.lineageId, templateToCreate(meta, template))
       : await createExperimentTemplate(sample.id, templateToCreate(meta, template));
     templateId = detail.id;
     lineageId = detail.lineage_id;
+    hadLayout = detail.has_pdf_template;
   } catch (error) {
     return failure(error, "Could not save this template.", { op: "onboardTemplate.template", sampleId: sample.id });
   }
 
   const warnings: string[] = [];
-  const wantLayout = input.reportLayout !== false;
-  let layoutSaved = false;
+  const wantLayout = input.reportLayout ?? !hadLayout;
+  let layout: OnboardedTemplate["reportLayout"] = hadLayout ? "kept" : "none";
   if (wantLayout) {
     try {
       const pdf = await upsertPdfTemplate(
@@ -385,7 +392,7 @@ export async function onboardTemplate(input: OnboardInput): Promise<ActionResult
         simpleReportLayout(meta.title, reportLines(template)),
       );
       templateId = pdf.template_id;
-      layoutSaved = true;
+      layout = "written";
     } catch (error) {
       logHandledError(error, { op: "onboardTemplate.pdf", sampleId: sample.id });
       warnings.push(errorMessage(error, "The template was saved, but the PDF layout was not."));
@@ -413,10 +420,33 @@ export async function onboardTemplate(input: OnboardInput): Promise<ActionResult
       createdSample: sample.created,
       templateId,
       lineageId,
-      reportLayout: layoutSaved,
+      reportLayout: layout,
       published,
       formulaCheck,
       warning: warnings.join("\n") || undefined,
     },
   };
+}
+
+/**
+ * Show or hide a sample, or one of its methods, on the public catalogue. A
+ * method only shows when its sample is visible too.
+ */
+export async function setCatalogueVisibility(
+  sampleId: string,
+  lineageId: string | undefined,
+  visible: boolean,
+): Promise<ActionResult<{ sampleId: string; lineageId: string | null; visible: boolean }>> {
+  try {
+    if (lineageId) await setTemplateWebVisibility(sampleId, lineageId, visible);
+    else await setSampleWebVisibility(sampleId, visible);
+    refresh(sampleId);
+    return { success: true, data: { sampleId, lineageId: lineageId ?? null, visible } };
+  } catch (error) {
+    return failure(error, "Could not change catalogue visibility.", {
+      op: "setCatalogueVisibility",
+      sampleId,
+      lineageId,
+    });
+  }
 }

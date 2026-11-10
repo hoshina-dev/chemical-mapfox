@@ -9,6 +9,22 @@ real person and loses access exactly when their session would.
 Only mapfox **admins** (app role `technician`) can connect. Clients see a
 "staff only" page on the consent screen.
 
+## Scopes
+
+Defined in `lib/oauth/scopes.ts`. Read access is always granted; the consent
+screen shows a ticked checkbox for each requested write scope, and staff can
+untick it. Tools outside the grant are not registered, so the assistant never
+sees them. To change a grant, disconnect and connect again.
+
+| Scope | Tools |
+|---|---|
+| `experiments:read` | every read-only tool, including the docs tools |
+| `experiments:write` | `record_lab_values`, stage transitions, `run_calculations`, `generate_report` |
+| `templates:write` | `create_sample`, `onboard_template`, `set_catalogue_visibility` |
+
+A request with no scope gets all three. `staff`, the only scope before the
+split, still means all three, so existing grants keep full access.
+
 ## Endpoints
 
 | Path | Purpose |
@@ -76,9 +92,20 @@ the user, client and context id.
 | `create_sample` | onboarding | `onboard_template` also creates a sample by name |
 | `test_template_calculations` | onboarding | dry run, nothing saved |
 | `onboard_template` | onboarding | create or revise a method from forms + formulas |
+| `set_catalogue_visibility` | onboarding | show or hide a sample or method on the public catalogue |
+| `list_docs` / `read_doc` | any | the site's staff and client guides, plus a question-type reference |
 
 The connector does not fetch spreadsheets. The assistant reads the file the
 staff member gives it, then calls `onboard_template`.
+
+Revising a method (`lineageId`) saves a new version. experiment-manager copies
+the previous PDF layout to it, so `onboard_template` only writes its plain
+layout when the method has none, unless `reportLayout: true`.
+
+The docs tools (`lib/mcp/docs.ts`) render the same `docs.staff.*` /
+`docs.client.*` copy as `/internal/docs` and `/experiment/docs`, in English,
+with a link to each page. A new guide in `lib/docs/nav.ts` shows up there
+without changes.
 
 ## Formulas
 

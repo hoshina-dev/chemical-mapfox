@@ -12,6 +12,7 @@ const claude = {
   grantId: "grant-claude",
   clientName: "Claude",
   redirectHost: "claude.ai",
+  scope: "staff",
   createdAt: Date.UTC(2024, 0, 15, 10, 30),
   lastUsedAt: Date.UTC(2024, 0, 16, 11, 0),
 };
@@ -20,6 +21,7 @@ const chatgpt = {
   grantId: "grant-gpt",
   clientName: "ChatGPT",
   redirectHost: "chatgpt.com",
+  scope: "experiments:read templates:write",
   createdAt: Date.UTC(2024, 2, 1, 8, 0),
   lastUsedAt: Date.UTC(2024, 2, 2, 9, 0),
 };
@@ -32,6 +34,15 @@ function paragraphMatching(pattern: RegExp) {
 describe("ConnectedApps", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  it("shows what each app may do", () => {
+    render(<ConnectedApps apps={[claude, chatgpt]} />);
+
+    const [full, narrow] = screen.getAllByLabelText("Access");
+    expect(full).toHaveTextContent(/View.*Run experiments.*Onboard methods/);
+    expect(narrow).toHaveTextContent(/View.*Onboard methods/);
+    expect(narrow).not.toHaveTextContent("Run experiments");
   });
 
   it("renders the empty state when there are no apps", () => {

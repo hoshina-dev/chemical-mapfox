@@ -8,7 +8,7 @@ import {
   protectedResourceMetadata,
   protectedResourceMetadataUrl,
 } from "./metadata";
-import { OAUTH_SCOPE } from "./store";
+import { SCOPES } from "./scopes";
 
 const origin = "https://lab.example";
 
@@ -30,7 +30,7 @@ describe("protectedResourceMetadata", () => {
     expect(protectedResourceMetadata(origin)).toEqual({
       resource: "https://lab.example/api/mcp",
       authorization_servers: [origin],
-      scopes_supported: [OAUTH_SCOPE],
+      scopes_supported: [...SCOPES],
       bearer_methods_supported: ["header"],
     });
   });
@@ -49,7 +49,7 @@ describe("authorizationServerMetadata", () => {
       code_challenge_methods_supported: ["S256"],
       token_endpoint_auth_methods_supported: ["none"],
       revocation_endpoint_auth_methods_supported: ["none"],
-      scopes_supported: [OAUTH_SCOPE],
+      scopes_supported: [...SCOPES],
     });
   });
 });

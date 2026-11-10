@@ -42,6 +42,20 @@ Feature: MCP connector for lab staff
     When I call MCP tool "check_in_sample" with context id "ctx-mcp-coal"
     Then ticket "ctx-mcp-coal" should be in the "PENDING" stage
 
+  Scenario: Unticking a permission on consent hides those tools
+    Given I register an MCP client named "Claude" with redirect URI "https://claude.ai/api/mcp/auth_callback"
+    And I am signed in as "admin@example.com" with password "password123"
+    When I open the OAuth authorize page for "Claude"
+    And I untick "Run experiments" on the OAuth consent page
+    And I allow OAuth access
+    And I exchange the authorization code for tokens
+    Then the token response grants scope "experiments:read templates:write"
+    When I send MCP "initialize"
+    And I send MCP "tools/list"
+    Then the tool list does not include "check_in_sample"
+    And the tool list includes "onboard_template"
+    And the tool list includes "read_doc"
+
   Scenario: A client cannot approve the MCP connector
     Given I register an MCP client named "Claude" with redirect URI "https://claude.ai/api/mcp/auth_callback"
     And I am signed in as "client@example.com" with password "password123"

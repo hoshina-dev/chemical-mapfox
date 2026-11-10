@@ -604,18 +604,48 @@ When("I send MCP {string}", async function (this: McpWorld, method: string) {
   await mcpRpc(this, method);
 });
 
-Then("the tool list includes the lab workspace tools", function (this: McpWorld) {
-  const result = rpcResult(this.lastMcp);
-  const tools = result.tools;
+function listedToolNames(world: McpWorld): string[] {
+  const tools = rpcResult(world.lastMcp).tools;
   assert.ok(Array.isArray(tools), "tools/list result has no tools array");
-  const names = tools.map((tool) => {
+  return tools.map((tool) => {
     assert.ok(tool && typeof tool === "object");
     return (tool as { name: string }).name;
   });
+}
+
+Then("the tool list includes the lab workspace tools", function (this: McpWorld) {
+  const names = listedToolNames(this);
   for (const expected of LAB_TOOLS) {
     assert.ok(names.includes(expected), `missing tool ${expected}: ${names.join(", ")}`);
   }
 });
+
+Then("the tool list includes {string}", function (this: McpWorld, name: string) {
+  const names = listedToolNames(this);
+  assert.ok(names.includes(name), `missing tool ${name}: ${names.join(", ")}`);
+});
+
+Then("the tool list does not include {string}", function (this: McpWorld, name: string) {
+  const names = listedToolNames(this);
+  assert.ok(!names.includes(name), `unexpected tool ${name}: ${names.join(", ")}`);
+});
+
+When(
+  "I untick {string} on the OAuth consent page",
+  async function (this: McpWorld, label: string) {
+    const box = this.page.getByRole("checkbox", { name: new RegExp(`^${label}`) });
+    await box.uncheck();
+    assert.equal(await box.isChecked(), false);
+  },
+);
+
+Then(
+  "the token response grants scope {string}",
+  function (this: McpWorld, scope: string) {
+    assert.ok(this.lastHttp, "no token response captured");
+    assert.equal(jsonBody(this.lastHttp).scope, scope);
+  },
+);
 
 When(
   "I call MCP tool {string}",

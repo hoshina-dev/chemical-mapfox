@@ -95,6 +95,12 @@
       "empty": "Brak połączonych aplikacji. Gdy zezwolisz Claude lub ChatGPT na połączenie, pojawią się tutaj.",
       "connectedAt": "Połączono <date></date>",
       "lastUsedAt": "Ostatnio użyto <date></date>",
+      "access": "Dostęp",
+      "scopes": {
+        "read": "Podgląd",
+        "experimentsWrite": "Prowadzenie eksperymentów",
+        "templatesWrite": "Wdrażanie metod"
+      },
       "disconnect": "Odłącz",
       "confirm": "Odłączyć {client}? Aplikacja nie będzie już mogła działać w Twoim imieniu.",
       "loadErrorTitle": "Nie udało się wczytać połączonych aplikacji",
@@ -255,9 +261,12 @@
       "unknownAppTitle": "To nie jest Claude ani ChatGPT",
       "unknownAppBody": "Kontynuuj tylko, jeśli ufasz {host}.",
       "intro": "{client} będzie mógł działać w Twoim imieniu w przestrzeni laboratorium:",
-      "permissionRead": "Przeglądanie eksperymentów, zleceniodawców, formularzy laboratoryjnych i raportów",
-      "permissionWrite": "Przyjmowanie próbek, rozpoczynanie eksperymentów i zapisywanie wartości laboratoryjnych",
-      "permissionReport": "Przesyłanie eksperymentów, uruchamianie obliczeń, generowanie raportów i zamykanie zgłoszeń",
+      "permissionRead": "Przeglądanie eksperymentów, zleceniodawców, formularzy laboratoryjnych, raportów, metod i poradników",
+      "chooseWrite": "Wybierz, co jeszcze może robić. Odznacz to, co ma pozostać tylko do odczytu.",
+      "scope": {
+        "experimentsWrite": "Prowadzenie eksperymentów: przyjmowanie próbek, zapisywanie wartości laboratoryjnych, przesyłanie, uruchamianie obliczeń, generowanie raportów i zamykanie zgłoszeń",
+        "templatesWrite": "Wdrażanie metod: tworzenie i edycja próbek oraz metod, a także pokazywanie lub ukrywanie ich w katalogu"
+      },
       "redirectNote": "Po udzieleniu dostępu wrócisz do {host}.",
       "revokeNote": "Możesz odłączyć aplikację w dowolnym momencie w Ustawieniach → Połączone aplikacje.",
       "deny": "Anuluj",
@@ -1469,10 +1478,10 @@
           },
           "consent": {
             "heading": "Sprawdź ekran zgody",
-            "body": "Po wyborze Connect zaloguj się do Harper Analytics, jeśli zostaniesz o to poproszony. Ekran zgody podaje nazwę aplikacji i wymienia, co może ona robić: przeglądać eksperymenty, przyjmować próbki, rozpoczynać eksperymenty, zapisywać wartości laboratoryjne, przesyłać eksperymenty, uruchamiać obliczenia, generować raporty i zamykać zgłoszenia.\n\nAsystent działa w Twoim imieniu. Każda czynność jest rejestrowana na Twoje konto.",
+            "body": "Po wyborze Connect zaloguj się do Harper Analytics, jeśli zostaniesz o to poproszony. Ekran zgody podaje nazwę aplikacji. Aplikacja zawsze może przeglądać eksperymenty, metody i te poradniki. Odznacz Prowadzenie eksperymentów lub Wdrażanie metod, aby nie mogła ich zmieniać.\n\nAsystent działa w Twoim imieniu. Każda czynność jest rejestrowana na Twoje konto. Aby później zmienić uprawnienia aplikacji, odłącz ją i połącz ponownie.",
             "steps": [
               "Zaloguj się do Harper Analytics, jeśli zostaniesz o to poproszony.",
-              "Przeczytaj listę uprawnień.",
+              "Odznacz dostęp, którego nie chcesz przyznać.",
               "Wybierz Zezwól na dostęp."
             ]
           },
@@ -1482,7 +1491,7 @@
           },
           "ask": {
             "heading": "O co poprosić",
-            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport. Możesz też przekazać arkusz z opisem metody — próbką, pytaniami i wzorami — i poprosić o wdrożenie tej metody.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
+            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport. Możesz też przekazać arkusz z opisem metody — próbką, pytaniami i wzorami — i poprosić o wdrożenie tej metody albo o zmianę metody, która już istnieje. Zmiana zapisuje nową wersję i zachowuje układ raportu PDF metody.\n\nAsystent może czytać te poradniki, więc możesz go też zapytać, jak działa dana część przestrzeni laboratorium.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
           },
           "disconnect": {
             "heading": "Odłącz aplikację",

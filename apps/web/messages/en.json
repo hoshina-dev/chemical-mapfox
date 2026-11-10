@@ -95,6 +95,12 @@
       "empty": "No connected apps. When you allow Claude or ChatGPT to connect, they'll appear here.",
       "connectedAt": "Connected <date></date>",
       "lastUsedAt": "Last used <date></date>",
+      "access": "Access",
+      "scopes": {
+        "read": "View",
+        "experimentsWrite": "Run experiments",
+        "templatesWrite": "Onboard methods"
+      },
       "disconnect": "Disconnect",
       "confirm": "Disconnect {client}? It will no longer be able to act as you.",
       "loadErrorTitle": "Could not load connected apps",
@@ -255,9 +261,12 @@
       "unknownAppTitle": "This app isn't Claude or ChatGPT",
       "unknownAppBody": "Only continue if you trust {host}.",
       "intro": "{client} will be able to act as you in the lab workspace:",
-      "permissionRead": "View experiments, requesters, lab forms and reports",
-      "permissionWrite": "Check in samples, start experiments and record lab values",
-      "permissionReport": "Submit experiments, run calculations, generate reports and close tickets",
+      "permissionRead": "View experiments, requesters, lab forms, reports, methods and help guides",
+      "chooseWrite": "Choose what else it may do. Untick anything you want to keep read-only.",
+      "scope": {
+        "experimentsWrite": "Run experiments: check in samples, record lab values, submit, run calculations, generate reports and close tickets",
+        "templatesWrite": "Onboard methods: create and edit samples and methods, and show or hide them on the catalogue"
+      },
       "redirectNote": "After you allow access you'll be sent back to {host}.",
       "revokeNote": "You can disconnect it at any time in Settings → Connected apps.",
       "deny": "Cancel",
@@ -1469,10 +1478,10 @@
           },
           "consent": {
             "heading": "Review the consent screen",
-            "body": "After you choose Connect, sign in to Harper Analytics if asked. The consent screen names the app and lists what it may do: view experiments, check in samples, start experiments, record lab values, submit experiments, run calculations, generate reports, and close tickets.\n\nThe assistant acts as you. Every action is logged under your name.",
+            "body": "After you choose Connect, sign in to Harper Analytics if asked. The consent screen names the app. It can always view experiments, methods and these guides. Untick Run experiments or Onboard methods to keep it from changing them.\n\nThe assistant acts as you. Every action is logged under your name. To change what an app may do later, disconnect it and connect again.",
             "steps": [
               "Sign in to Harper Analytics if you are prompted.",
-              "Read the permissions list.",
+              "Untick any access you don't want to give.",
               "Choose Allow access."
             ]
           },
@@ -1482,7 +1491,7 @@
           },
           "ask": {
             "heading": "What to ask",
-            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report. You can also hand it a spreadsheet of a method — the sample, the questions, and the formulas — and ask it to onboard that method.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
+            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report. You can also hand it a spreadsheet of a method — the sample, the questions, and the formulas — and ask it to onboard that method, or ask it to change a method that already exists. A change saves a new version and keeps the method's PDF layout.\n\nThe assistant can read these guides, so you can also ask it how something in the lab workspace works.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
           },
           "disconnect": {
             "heading": "Disconnect an app",

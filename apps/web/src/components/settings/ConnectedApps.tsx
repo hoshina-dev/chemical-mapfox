@@ -1,16 +1,24 @@
 "use client";
 
-import { Button, Group, Stack, Text, Title } from "@mantine/core";
+import { Badge, Button, Group, Stack, Text, Title } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { revokeConnectedAppAction } from "@/app/actions/oauth";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import { grantedScopes, type Scope } from "@/lib/oauth/scopes";
+
+const SCOPE_LABEL: Record<Scope, string> = {
+  "experiments:read": "scopes.read",
+  "experiments:write": "scopes.experimentsWrite",
+  "templates:write": "scopes.templatesWrite",
+};
 
 export type ConnectedAppItem = {
   grantId: string;
   clientName: string;
   redirectHost: string;
+  scope: string;
   createdAt: number;
   lastUsedAt: number;
 };
@@ -49,6 +57,13 @@ export function ConnectedApps({ apps }: { apps: ConnectedAppItem[] }) {
                 <Text size="sm" c="dimmed">
                   {app.redirectHost}
                 </Text>
+                <Group gap={4} aria-label={t("access")}>
+                  {[...grantedScopes(app.scope)].map((scope) => (
+                    <Badge key={scope} variant="light" size="sm">
+                      {t(SCOPE_LABEL[scope])}
+                    </Badge>
+                  ))}
+                </Group>
                 <Text size="sm" c="dimmed">
                   {t.rich("connectedAt", {
                     date: () => (

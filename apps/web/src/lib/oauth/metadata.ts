@@ -1,4 +1,4 @@
-import { OAUTH_SCOPE } from "./store";
+import { SCOPES } from "./scopes";
 
 export const MCP_PATH = "/api/mcp";
 export const PROTECTED_RESOURCE_METADATA_PATH =
@@ -17,7 +17,7 @@ export function protectedResourceMetadata(origin: string) {
   return {
     resource: mcpResourceUrl(origin),
     authorization_servers: [origin],
-    scopes_supported: [OAUTH_SCOPE],
+    scopes_supported: [...SCOPES],
     bearer_methods_supported: ["header"],
   };
 }
@@ -35,6 +35,6 @@ export function authorizationServerMetadata(origin: string) {
     code_challenge_methods_supported: ["S256"],
     token_endpoint_auth_methods_supported: ["none"],
     revocation_endpoint_auth_methods_supported: ["none"],
-    scopes_supported: [OAUTH_SCOPE],
+    scopes_supported: [...SCOPES],
   };
 }

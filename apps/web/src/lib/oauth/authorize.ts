@@ -2,13 +2,15 @@ import "server-only";
 
 import { mcpResourceUrl } from "./metadata";
 import { isValidCodeChallenge } from "./pkce";
-import { getClient, OAUTH_SCOPE, type OAuthClient } from "./store";
+import { formatScope, parseRequestedScope, SCOPES } from "./scopes";
+import { getClient, type OAuthClient } from "./store";
 
 export interface AuthorizeParams {
   clientId: string;
   redirectUri: string;
   codeChallenge: string;
   state: string | null;
+  /** Requested scopes, normalised. The consent screen may grant fewer. */
   scope: string;
   resource: string | null;
 }
@@ -74,10 +76,11 @@ export async function validateAuthorizeRequest(
   ) {
     return fail("invalid_request", "PKCE with code_challenge_method=S256 is required.");
   }
-  const scope = first(raw.scope)?.trim() || OAUTH_SCOPE;
-  if (scope.split(/\s+/).some((s) => s !== OAUTH_SCOPE)) {
-    return fail("invalid_scope", `The only supported scope is "${OAUTH_SCOPE}".`);
+  const requested = parseRequestedScope(first(raw.scope));
+  if (!requested) {
+    return fail("invalid_scope", `Supported scopes: ${SCOPES.join(", ")}.`);
   }
+  const scope = formatScope(requested);
   const resource = first(raw.resource) ?? null;
   if (resource !== null && resource !== mcpResourceUrl(origin)) {
     return fail("invalid_target", "Unknown resource.");

@@ -2,6 +2,7 @@ import {
   Alert,
   Anchor,
   Button,
+  Checkbox,
   Container,
   Group,
   List,
@@ -24,8 +25,14 @@ import {
   validateAuthorizeRequest,
 } from "@/lib/oauth/authorize";
 import { isKnownAiRedirect, redirectHost } from "@/lib/oauth/redirect";
+import { WRITE_SCOPES } from "@/lib/oauth/scopes";
 
 export const dynamic = "force-dynamic";
+
+const SCOPE_LABEL = {
+  "experiments:write": "scope.experimentsWrite",
+  "templates:write": "scope.templatesWrite",
+} as const;
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -67,6 +74,8 @@ export default async function AuthorizePage({
   }
   const { params, client } = result;
   const host = redirectHost(params.redirectUri);
+  const requested = params.scope.split(" ");
+  const writeScopes = WRITE_SCOPES.filter((scope) => requested.includes(scope));
 
   if (session.role !== "admin") {
     return (
@@ -99,18 +108,33 @@ export default async function AuthorizePage({
         </Alert>
       )}
       <Text>{t("intro", { client: client.clientName })}</Text>
-      <List size="sm" spacing={4}>
-        <ListItem>{t("permissionRead")}</ListItem>
-        <ListItem>{t("permissionWrite")}</ListItem>
-        <ListItem>{t("permissionReport")}</ListItem>
-      </List>
-      <Text size="sm" c="dimmed">
-        {t("redirectNote", { host })}
-      </Text>
-      <Text size="sm" c="dimmed">
-        {t("revokeNote")}
-      </Text>
       <form method="post" action="/oauth/authorize/decision">
+        <Stack gap="md">
+          <List size="sm" spacing={4}>
+            <ListItem>{t("permissionRead")}</ListItem>
+          </List>
+          {writeScopes.length > 0 && (
+            <Stack gap="xs">
+              <Text size="sm" c="dimmed">
+                {t("chooseWrite")}
+              </Text>
+              {writeScopes.map((scope) => (
+                <Checkbox
+                  key={scope}
+                  name="grant"
+                  value={scope}
+                  defaultChecked
+                  label={t(SCOPE_LABEL[scope])}
+                />
+              ))}
+            </Stack>
+          )}
+          <Text size="sm" c="dimmed">
+            {t("redirectNote", { host })}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {t("revokeNote")}
+          </Text>
         <input type="hidden" name="response_type" value="code" />
         <input type="hidden" name="client_id" value={params.clientId} />
         <input type="hidden" name="redirect_uri" value={params.redirectUri} />
@@ -123,14 +147,15 @@ export default async function AuthorizePage({
         {params.resource !== null && (
           <input type="hidden" name="resource" value={params.resource} />
         )}
-        <Group justify="flex-end">
-          <Button type="submit" name="decision" value="deny" variant="default">
-            {t("deny")}
-          </Button>
-          <Button type="submit" name="decision" value="approve">
-            {t("approve")}
-          </Button>
-        </Group>
+          <Group justify="flex-end">
+            <Button type="submit" name="decision" value="deny" variant="default">
+              {t("deny")}
+            </Button>
+            <Button type="submit" name="decision" value="approve">
+              {t("approve")}
+            </Button>
+          </Group>
+        </Stack>
       </form>
     </Shell>
   );

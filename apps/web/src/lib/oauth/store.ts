@@ -14,7 +14,6 @@ import { redirectHost } from "./redirect";
  * Design: docs/mcp.md.
  */
 
-export const OAUTH_SCOPE = "staff";
 export const CODE_TTL_S = 60;
 export const ACCESS_TOKEN_TTL_S = 60 * 60;
 /** Also the grant's idle lifetime: a grant unused this long disappears. */
@@ -93,6 +92,7 @@ export interface ConnectedApp {
   grantId: string;
   clientName: string;
   redirectHost: string;
+  scope: string;
   createdAt: number;
   lastUsedAt: number;
 }
@@ -305,6 +305,7 @@ export async function listUserGrants(userId: string): Promise<ConnectedApp[]> {
       grantId: grant.grantId,
       clientName: grant.clientName,
       redirectHost: grant.redirectHost,
+      scope: grant.scope,
       createdAt: grant.createdAt,
       lastUsedAt: grant.lastUsedAt,
     });

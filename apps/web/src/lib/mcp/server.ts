@@ -15,15 +15,19 @@ import type { ActionResult } from "@/app/actions/experiment-manager";
 import { readTemplate, readValues } from "@/lib/collab/room";
 import { getExperimentWorkspace, listExperimentsForStaff } from "@/lib/internal/experiments";
 import { logger } from "@/lib/log/logger";
+import { grantedScopes } from "@/lib/oauth/scopes";
 import type { McpActor } from "@/lib/oauth/store";
 import { FORMULA_GUIDE } from "@/lib/staff/formulas";
 import { recordLabValues } from "@/lib/staff/labValues";
+
+import { listDocs, readDoc } from "./docs";
 import {
   createOnboardingSample,
   getOnboardingTemplate,
   listOnboardingSamples,
   listOnboardingTemplates,
   onboardTemplate,
+  setCatalogueVisibility,
   testOnboardingCalculations,
 } from "@/lib/staff/onboarding";
 import {
@@ -62,9 +66,20 @@ Onboarding a method from a spreadsheet the user gives you (you read the file;
 this server cannot): list_samples and list_templates first, get_template to
 revise. Question ids are unique snake_case across both forms. onboard_template
 creates the sample when the name is new, checks formulas, and writes a plain
-PDF layout so clients can request the method. Pass lineageId to revise instead
-of creating a second method. publish stays false unless the user asks to show
-it on the catalogue.
+PDF layout when the method has none, so clients can request it. To edit a
+method, get_template, change it, and pass the result back with its lineageId:
+that saves a new version (experiments already requested keep theirs) and keeps
+the method's existing PDF layout unless reportLayout is true. publish stays
+false unless the user asks to show it on the catalogue;
+set_catalogue_visibility shows or hides it later.
+
+How-to guides for this site are available through list_docs and read_doc.
+Read the relevant one before explaining a page or workflow to the user, and
+link them to it. The question-type reference (staff/question-types) has an
+example JSON for every form question type.
+
+Tools you don't see were not granted when the user connected. To change that,
+they disconnect the app in Settings → Connected apps and connect again.
 
 ${FORMULA_GUIDE}`;
 
@@ -112,7 +127,9 @@ function fromAction<T>(result: ActionResult<T>, describe: (data: T) => unknown):
   return result.success ? ok(describe(result.data)) : fail(result.error);
 }
 
-export function createStaffMcpServer(actor: McpActor): McpServer {
+export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
+  // Tools outside the grant are not registered, so the assistant never sees them.
+  const scopes = grantedScopes(actor.scope);
   const server = new McpServer(
     { name: "chemfox-lab", version: "1.0.0" },
     { instructions: INSTRUCTIONS },
@@ -241,116 +258,118 @@ export function createStaffMcpServer(actor: McpActor): McpServer {
     }),
   );
 
-  server.registerTool(
-    "record_lab_values",
-    {
-      title: "Record lab values",
-      description:
-        "Save lab-form answers (keys are lab form question ids from get_experiment; for a repeatable group, the child id with an array value per repetition). null clears a field. All-or-nothing: if any value is invalid or a colleague is editing that field, nothing is saved. Allowed while EXPERIMENTING (shown live to colleagues) or FINALIZING (fixes; rerun calculations afterwards).",
-      inputSchema: {
-        ...contextIdShape,
-        values: z
-          .record(z.string(), AnswerValue)
-          .describe("Lab form question id → value; see the server instructions for formats."),
-      },
-      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    },
-    audited("record_lab_values", async ({ contextId, values }) => {
-      if (Object.keys(values).length === 0) return fail("No values given.");
-      const res = await recordLabValues(contextId, values, `mcp:${actor.grantId}`);
-      return fromAction(res, (data) => ({
-        ...data,
-        note:
-          data.stage === "FINALIZING"
-            ? "Saved. Calculation results were cleared; run run_calculations again."
-            : "Saved.",
-      }));
-    }),
-  );
-
-  const transitions = [
-    {
-      name: "check_in_sample",
-      title: "Check in sample",
-      description: "Mark the physical sample as received (REQUESTED → PENDING).",
-      run: checkInSample,
-      destructive: false,
-    },
-    {
-      name: "start_experiment",
-      title: "Start experiment",
-      description: "Open the lab form for measurements (PENDING → EXPERIMENTING).",
-      run: startExperiment,
-      destructive: false,
-    },
-    {
-      name: "submit_experiment",
-      title: "Submit experiment",
-      description:
-        "Submit the completed lab form (EXPERIMENTING → FINALIZING). Checks every required field and rule first. There is no way back to EXPERIMENTING.",
-      run: submitExperiment,
-      destructive: true,
-    },
-    {
-      name: "close_ticket",
-      title: "Close ticket",
-      description:
-        "Close a finalized experiment (FINALIZING → CLOSED). Requires calculations and a generated report. Irreversible.",
-      run: closeTicket,
-      destructive: true,
-    },
-  ] as const;
-
-  for (const t of transitions) {
+  if (scopes.has("experiments:write")) {
     server.registerTool(
-      t.name,
+      "record_lab_values",
       {
-        title: t.title,
-        description: t.description,
-        inputSchema: contextIdShape,
-        annotations: { readOnlyHint: false, destructiveHint: t.destructive, openWorldHint: false },
+        title: "Record lab values",
+        description:
+          "Save lab-form answers (keys are lab form question ids from get_experiment; for a repeatable group, the child id with an array value per repetition). null clears a field. All-or-nothing: if any value is invalid or a colleague is editing that field, nothing is saved. Allowed while EXPERIMENTING (shown live to colleagues) or FINALIZING (fixes; rerun calculations afterwards).",
+        inputSchema: {
+          ...contextIdShape,
+          values: z
+            .record(z.string(), AnswerValue)
+            .describe("Lab form question id → value; see the server instructions for formats."),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
       },
-      audited(t.name, async ({ contextId }) =>
-        fromAction(await t.run(contextId), (data) => ({ contextId, status: data.status })),
+      audited("record_lab_values", async ({ contextId, values }) => {
+        if (Object.keys(values).length === 0) return fail("No values given.");
+        const res = await recordLabValues(contextId, values, `mcp:${actor.grantId}`);
+        return fromAction(res, (data) => ({
+          ...data,
+          note:
+            data.stage === "FINALIZING"
+              ? "Saved. Calculation results were cleared; run run_calculations again."
+              : "Saved.",
+        }));
+      }),
+    );
+
+    const transitions = [
+      {
+        name: "check_in_sample",
+        title: "Check in sample",
+        description: "Mark the physical sample as received (REQUESTED → PENDING).",
+        run: checkInSample,
+        destructive: false,
+      },
+      {
+        name: "start_experiment",
+        title: "Start experiment",
+        description: "Open the lab form for measurements (PENDING → EXPERIMENTING).",
+        run: startExperiment,
+        destructive: false,
+      },
+      {
+        name: "submit_experiment",
+        title: "Submit experiment",
+        description:
+          "Submit the completed lab form (EXPERIMENTING → FINALIZING). Checks every required field and rule first. There is no way back to EXPERIMENTING.",
+        run: submitExperiment,
+        destructive: true,
+      },
+      {
+        name: "close_ticket",
+        title: "Close ticket",
+        description:
+          "Close a finalized experiment (FINALIZING → CLOSED). Requires calculations and a generated report. Irreversible.",
+        run: closeTicket,
+        destructive: true,
+      },
+    ] as const;
+
+    for (const t of transitions) {
+      server.registerTool(
+        t.name,
+        {
+          title: t.title,
+          description: t.description,
+          inputSchema: contextIdShape,
+          annotations: { readOnlyHint: false, destructiveHint: t.destructive, openWorldHint: false },
+        },
+        audited(t.name, async ({ contextId }) =>
+          fromAction(await t.run(contextId), (data) => ({ contextId, status: data.status })),
+        ),
+      );
+    }
+
+    server.registerTool(
+      "run_calculations",
+      {
+        title: "Run calculations",
+        description: "Evaluate the experiment's formulas against the recorded values (FINALIZING stage). Safe to rerun.",
+        inputSchema: contextIdShape,
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      audited(
+        "run_calculations",
+        async ({ contextId }) =>
+          (await requireFinalizing(contextId)) ??
+          fromAction(await runCalculations(contextId), () => ({
+            contextId,
+            note: "Calculations finished. Use get_experiment to read the results.",
+          })),
+      ),
+    );
+
+    server.registerTool(
+      "generate_report",
+      {
+        title: "Generate PDF report",
+        description:
+          "Queue PDF report generation (FINALIZING stage, after run_calculations). It runs in the background; check get_experiment for the report status.",
+        inputSchema: contextIdShape,
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      audited(
+        "generate_report",
+        async ({ contextId }) =>
+          (await requireFinalizing(contextId)) ??
+          fromAction(await queueReport(contextId), (data) => ({ contextId, reportStatus: data.status })),
       ),
     );
   }
-
-  server.registerTool(
-    "run_calculations",
-    {
-      title: "Run calculations",
-      description: "Evaluate the experiment's formulas against the recorded values (FINALIZING stage). Safe to rerun.",
-      inputSchema: contextIdShape,
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    },
-    audited(
-      "run_calculations",
-      async ({ contextId }) =>
-        (await requireFinalizing(contextId)) ??
-        fromAction(await runCalculations(contextId), () => ({
-          contextId,
-          note: "Calculations finished. Use get_experiment to read the results.",
-        })),
-    ),
-  );
-
-  server.registerTool(
-    "generate_report",
-    {
-      title: "Generate PDF report",
-      description:
-        "Queue PDF report generation (FINALIZING stage, after run_calculations). It runs in the background; check get_experiment for the report status.",
-      inputSchema: contextIdShape,
-      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-    },
-    audited(
-      "generate_report",
-      async ({ contextId }) =>
-        (await requireFinalizing(contextId)) ??
-        fromAction(await queueReport(contextId), (data) => ({ contextId, reportStatus: data.status })),
-    ),
-  );
 
   const sampleIdShape = {
     sampleId: z.string().min(1).describe("Sample id from list_samples."),
@@ -398,22 +417,6 @@ export function createStaffMcpServer(actor: McpActor): McpServer {
   );
 
   server.registerTool(
-    "create_sample",
-    {
-      title: "Create sample",
-      description: "Register a specimen type. Prefer onboard_template, which creates the sample when the name is new.",
-      inputSchema: {
-        name: z.string().min(1),
-        description: z.string().optional(),
-      },
-      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-    },
-    audited("create_sample", async ({ name, description }) =>
-      fromAction(await createOnboardingSample(name, description), (data) => data),
-    ),
-  );
-
-  server.registerTool(
     "test_template_calculations",
     {
       title: "Test template calculations",
@@ -430,28 +433,69 @@ export function createStaffMcpServer(actor: McpActor): McpServer {
     ),
   );
 
-  server.registerTool(
-    "onboard_template",
-    {
-      title: "Onboard a method",
-      description:
-        "Create or revise a method from forms and formulas you extracted from the user's spreadsheet. Checks formulas the way experiment-manager runs them and saves nothing if a formula fails. Writes a plain PDF layout unless reportLayout is false. Does not publish unless publish is true.",
-      inputSchema: {
-        sampleId: z.string().optional(),
-        sampleName: z.string().optional().describe("Matched case-insensitively. Created when no sample has this name."),
-        sampleDescription: z.string().optional(),
-        title: z.string().min(1),
-        description: z.string().optional(),
-        lineageId: z.string().optional().describe("Set to revise this method. Omit to create one."),
-        template: ExperimentTemplate,
-        trialValues: FormAnswers.optional().describe("Answers to dry-run formulas with. Stand-ins fill the rest."),
-        reportLayout: z.boolean().optional().describe("Default true."),
-        publish: z.boolean().optional().describe("Default false. Also shows the sample on the catalogue."),
+  if (scopes.has("templates:write")) {
+    server.registerTool(
+      "create_sample",
+      {
+        title: "Create sample",
+        description: "Register a specimen type. Prefer onboard_template, which creates the sample when the name is new.",
+        inputSchema: {
+          name: z.string().min(1),
+          description: z.string().optional(),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
       },
-      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-    },
-    audited("onboard_template", async (args) => fromAction(await onboardTemplate(args), (data) => data)),
-  );
+      audited("create_sample", async ({ name, description }) =>
+        fromAction(await createOnboardingSample(name, description), (data) => data),
+      ),
+    );
+
+    server.registerTool(
+      "onboard_template",
+      {
+        title: "Onboard a method",
+        description:
+          "Create or revise a method from forms and formulas you extracted from the user's spreadsheet. Checks formulas the way experiment-manager runs them and saves nothing if a formula fails. Writes a plain PDF layout only when the method has none (see reportLayout). Does not publish unless publish is true.",
+        inputSchema: {
+          sampleId: z.string().optional(),
+          sampleName: z.string().optional().describe("Matched case-insensitively. Created when no sample has this name."),
+          sampleDescription: z.string().optional(),
+          title: z.string().min(1),
+          description: z.string().optional(),
+          lineageId: z.string().optional().describe("Set to revise this method. Omit to create one."),
+          template: ExperimentTemplate,
+          trialValues: FormAnswers.optional().describe("Answers to dry-run formulas with. Stand-ins fill the rest."),
+          reportLayout: z
+          .boolean()
+          .optional()
+          .describe(
+            "Omit to write a plain layout only when the method has none (a revision keeps a designed one). true replaces the layout; false never writes one.",
+          ),
+          publish: z.boolean().optional().describe("Default false. Also shows the sample on the catalogue."),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+      },
+      audited("onboard_template", async (args) => fromAction(await onboardTemplate(args), (data) => data)),
+    );
+
+    server.registerTool(
+      "set_catalogue_visibility",
+      {
+        title: "Show or hide on the catalogue",
+        description:
+          "Show or hide a sample, or one method under it (pass lineageId), on the public catalogue. A method only shows when its sample is visible too. Does not create a new template version.",
+        inputSchema: {
+          ...sampleIdShape,
+          lineageId: z.string().optional().describe("Method lineage id from list_templates. Omit to toggle the whole sample."),
+          visible: z.boolean(),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      audited("set_catalogue_visibility", async ({ sampleId, lineageId, visible }) =>
+        fromAction(await setCatalogueVisibility(sampleId, lineageId, visible), (data) => data),
+      ),
+    );
+  }
 
   server.registerTool(
     "get_report_download_url",
@@ -464,6 +508,34 @@ export function createStaffMcpServer(actor: McpActor): McpServer {
     audited("get_report_download_url", async ({ contextId }) =>
       fromAction(await getReportUrl(contextId), (data) => ({ contextId, url: data.url })),
     ),
+  );
+
+  server.registerTool(
+    "list_docs",
+    {
+      title: "List help docs",
+      description:
+        "The site's own how-to guides for staff and clients, plus the question-type reference. Read the relevant one with read_doc before explaining how the site works or authoring a form.",
+      inputSchema: {},
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("list_docs", async () =>
+      ok(listDocs().map(({ path, ...doc }) => ({ ...doc, url: `${origin}${path}` }))),
+    ),
+  );
+
+  server.registerTool(
+    "read_doc",
+    {
+      title: "Read a help doc",
+      description: "One guide from list_docs as Markdown, ending with a link to the page on the site.",
+      inputSchema: { id: z.string().min(1).describe("Doc id from list_docs, e.g. staff/onboarding.") },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("read_doc", async ({ id }) => {
+      const doc = readDoc(id, origin);
+      return doc ? { content: [{ type: "text", text: doc }] } : fail(`No doc ${id}. Use list_docs.`);
+    }),
   );
 
   return server;

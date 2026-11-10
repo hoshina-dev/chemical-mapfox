@@ -26,7 +26,6 @@ import {
   GRANT_ABSOLUTE_MAX_MS,
   issueGrant,
   listUserGrants,
-  OAUTH_SCOPE,
   refreshGrant,
   registerClient,
   resolveAccessToken,
@@ -91,7 +90,7 @@ function codeRecord(
     clientId: client.clientId,
     redirectUri: client.redirectUris[0] ?? redirectUri,
     codeChallenge: "a".repeat(43),
-    scope: OAUTH_SCOPE,
+    scope: "experiments:read experiments:write",
     resource,
     user,
     ...extra,
@@ -183,12 +182,12 @@ describe("issueGrant + resolveAccessToken", () => {
     const { tokens } = await tokensFor();
 
     expect(tokens.expiresIn).toBe(ACCESS_TOKEN_TTL_S);
-    expect(tokens.scope).toBe(OAUTH_SCOPE);
+    expect(tokens.scope).toBe("experiments:read experiments:write");
     expect(await resolveAccessToken(tokens.accessToken)).toEqual({
       grantId: expect.any(String),
       clientId: expect.any(String),
       clientName: "Claude",
-      scope: OAUTH_SCOPE,
+      scope: "experiments:read experiments:write",
       resource,
       ...admin,
     });
@@ -232,7 +231,7 @@ describe("refreshGrant", () => {
       accessToken: expect.any(String),
       refreshToken: expect.any(String),
       expiresIn: ACCESS_TOKEN_TTL_S,
-      scope: OAUTH_SCOPE,
+      scope: "experiments:read experiments:write",
     });
     expect(rotated!.accessToken).not.toBe(first.accessToken);
     expect(rotated!.refreshToken).not.toBe(first.refreshToken);

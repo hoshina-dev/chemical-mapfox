@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   const actor = await authenticate(request, origin);
   if (actor instanceof Response) return actor;
 
-  const server = createStaffMcpServer(actor);
+  const server = createStaffMcpServer(actor, origin);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
   const actor = await authenticate(request, origin);
   if (actor instanceof Response) return actor;
 
-  const server = createStaffMcpServer(actor);
+  const server = createStaffMcpServer(actor, origin);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

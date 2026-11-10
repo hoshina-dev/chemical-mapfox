@@ -25,6 +25,7 @@ vi.mock("@/lib/staff/onboarding", () => ({
   createOnboardingSample: vi.fn(),
   testOnboardingCalculations: vi.fn(),
   onboardTemplate: vi.fn(),
+  setCatalogueVisibility: vi.fn(),
 }));
 vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
@@ -57,6 +58,7 @@ import {
   listOnboardingSamples,
   listOnboardingTemplates,
   onboardTemplate,
+  setCatalogueVisibility,
   testOnboardingCalculations,
 } from "@/lib/staff/onboarding";
 import {
@@ -99,11 +101,26 @@ const TOOL_NAMES = [
   "list_samples",
   "list_templates",
   "get_template",
-  "create_sample",
   "test_template_calculations",
+  "create_sample",
   "onboard_template",
+  "set_catalogue_visibility",
   "get_report_download_url",
+  "list_docs",
+  "read_doc",
 ] as const;
+
+const READ_TOOLS = [
+  "list_experiments",
+  "get_experiment",
+  "list_samples",
+  "list_templates",
+  "get_template",
+  "test_template_calculations",
+  "get_report_download_url",
+  "list_docs",
+  "read_doc",
+];
 
 function ticket(status: string, overrides: Partial<ExperimentTicket> = {}): ExperimentTicket {
   return {
@@ -190,7 +207,7 @@ function workspace(
 type Connected = { client: Client; close: () => Promise<void> };
 
 async function connect(who: McpActor = actor): Promise<Connected> {
-  const server = createStaffMcpServer(who);
+  const server = createStaffMcpServer(who, "https://lab.test");
   const client = new Client({ name: "vitest", version: "0.0.0" });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
@@ -235,6 +252,7 @@ beforeEach(async () => {
   vi.mocked(createOnboardingSample).mockReset();
   vi.mocked(testOnboardingCalculations).mockReset();
   vi.mocked(onboardTemplate).mockReset();
+  vi.mocked(setCatalogueVisibility).mockReset();
   vi.mocked(ticketsApi.apiV1TicketsIdGet).mockReset();
   vi.mocked(logger.info).mockReset();
   vi.mocked(logger.error).mockReset();
@@ -924,7 +942,7 @@ describe("stage transitions and report tools", () => {
         createdSample: false,
         templateId: "t1",
         lineageId: "lin-1",
-        reportLayout: true,
+        reportLayout: "written",
         published: false,
         formulaCheck: null,
       },
@@ -975,6 +993,94 @@ describe("stage transitions and report tools", () => {
     });
     expect(refused.isError).toBe(true);
     expect(textOf(refused)).toBe("Template title is required.");
+
+    vi.mocked(setCatalogueVisibility).mockResolvedValue({
+      success: true,
+      data: { sampleId: "s1", lineageId: "lin-1", visible: false },
+    });
+    await session.client.callTool({
+      name: "set_catalogue_visibility",
+      arguments: { sampleId: "s1", lineageId: "lin-1", visible: false },
+    });
+    expect(setCatalogueVisibility).toHaveBeenCalledWith("s1", "lin-1", false);
+  });
+});
+
+describe("scopes", () => {
+  async function toolsFor(scope: string) {
+    const scoped = await connect({ ...actor, scope });
+    try {
+      return (await scoped.client.listTools()).tools.map((t) => t.name);
+    } finally {
+      await scoped.close();
+    }
+  }
+
+  it("exposes only read tools to a read-only grant", async () => {
+    expect(await toolsFor("experiments:read")).toEqual(READ_TOOLS);
+  });
+
+  it("adds each write scope's tools on their own", async () => {
+    const experiments = await toolsFor("experiments:read experiments:write");
+    expect(experiments).toContain("record_lab_values");
+    expect(experiments).toContain("close_ticket");
+    expect(experiments).not.toContain("onboard_template");
+
+    const templates = await toolsFor("experiments:read templates:write");
+    expect(templates).toContain("onboard_template");
+    expect(templates).toContain("set_catalogue_visibility");
+    expect(templates).not.toContain("check_in_sample");
+  });
+
+  it("refuses a call to a tool outside the grant", async () => {
+    const scoped = await connect({ ...actor, scope: "experiments:read" });
+    try {
+      const result = await scoped.client.callTool({
+        name: "close_ticket",
+        arguments: { contextId: "ctx-1" },
+      });
+      expect(result.isError).toBe(true);
+      expect(closeTicket).not.toHaveBeenCalled();
+    } finally {
+      await scoped.close();
+    }
+  });
+});
+
+describe("docs tools", () => {
+  it("lists the site guides with absolute links", async () => {
+    const docs = JSON.parse(
+      textOf(await session.client.callTool({ name: "list_docs", arguments: {} })),
+    ) as { id: string; url: string; audience: string }[];
+    expect(docs).toContainEqual(
+      expect.objectContaining({
+        id: "staff/onboarding",
+        audience: "staff",
+        url: "https://lab.test/internal/docs/onboarding",
+      }),
+    );
+    expect(docs.map((d) => d.id)).toEqual(
+      expect.arrayContaining(["staff/overview", "client/request", "staff/question-types"]),
+    );
+  });
+
+  it("reads a guide as markdown and refuses an unknown id", async () => {
+    const guide = textOf(
+      await session.client.callTool({ name: "read_doc", arguments: { id: "staff/check-in" } }),
+    );
+    expect(guide).toMatch(/^# /);
+    expect(guide).toContain("## ");
+    expect(guide).toMatch(/\n1\. /);
+    expect(guide).toContain("Page: https://lab.test/internal/docs/check-in");
+
+    const types = textOf(
+      await session.client.callTool({ name: "read_doc", arguments: { id: "staff/question-types" } }),
+    );
+    expect(types).toContain("`repeatable-group`");
+    expect(types).toContain("```json");
+
+    const missing = await session.client.callTool({ name: "read_doc", arguments: { id: "nope" } });
+    expect(missing.isError).toBe(true);
   });
 });
 

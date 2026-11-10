@@ -34,7 +34,7 @@ import {
 } from "@/lib/experiment-manager/client";
 import { ExperimentManagerError } from "@/lib/experiment-manager/client";
 
-import { onboardTemplate, simpleReportLayout, testOnboardingCalculations, listOnboardingSamples, listOnboardingTemplates, getOnboardingTemplate, createOnboardingSample } from "./onboarding";
+import { onboardTemplate, setCatalogueVisibility, simpleReportLayout, testOnboardingCalculations, listOnboardingSamples, listOnboardingTemplates, getOnboardingTemplate, createOnboardingSample } from "./onboarding";
 
 const draft: ExperimentTemplate = {
   clientForm: { name: "Client", questions: [{ id: "client_note", type: "string", label: "Note" }] },
@@ -295,8 +295,25 @@ describe("onboardTemplate", () => {
     expect(updateExperimentTemplate).toHaveBeenCalled();
     expect(createExperimentTemplate).not.toHaveBeenCalled();
     expect(upsertPdfTemplate).not.toHaveBeenCalled();
-    expect(result.success && result.data.reportLayout).toBe(false);
+    expect(result.success && result.data.reportLayout).toBe("kept");
     expect(result.success && result.data.formulaCheck?.order).toEqual(["doubled"]);
+  });
+
+  it("keeps a revised method's existing layout unless told to replace it", async () => {
+    const kept = await onboardTemplate({ sampleId: "sample-1", lineageId: "lin-1", title: "Ash", template: draft });
+    expect(upsertPdfTemplate).not.toHaveBeenCalled();
+    expect(kept.success && kept.data.reportLayout).toBe("kept");
+
+    vi.mocked(upsertPdfTemplate).mockResolvedValue({ template_id: "tmpl-9", components: [] } as never);
+    const replaced = await onboardTemplate({
+      sampleId: "sample-1",
+      lineageId: "lin-1",
+      title: "Ash",
+      template: draft,
+      reportLayout: true,
+    });
+    expect(upsertPdfTemplate).toHaveBeenCalledOnce();
+    expect(replaced.success && replaced.data.reportLayout).toBe("written");
   });
 
   it("matches an existing sample name and refuses an ambiguous one", async () => {
@@ -325,7 +342,7 @@ describe("onboardTemplate", () => {
     vi.mocked(upsertPdfTemplate).mockRejectedValue(new Error("pdf down"));
     const layout = await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft });
     expect(layout.success && layout.data.warning).toMatch(/PDF layout/);
-    expect(layout.success && layout.data.reportLayout).toBe(false);
+    expect(layout.success && layout.data.reportLayout).toBe("none");
     expect(setSampleWebVisibility).not.toHaveBeenCalled();
 
     vi.mocked(upsertPdfTemplate).mockResolvedValue({ template_id: "tmpl-9", components: [] } as never);
@@ -379,5 +396,21 @@ describe("simpleReportLayout", () => {
   it("starts a new page once the lines run past the bottom", () => {
     const components = simpleReportLayout("Ash", Array.from({ length: 40 }, (_, i) => `row ${i}`));
     expect(components.some((component) => component.type === "pagebreak")).toBe(true);
+  });
+});
+
+describe("setCatalogueVisibility", () => {
+  it("toggles a method when given a lineage, otherwise the sample", async () => {
+    const method = await setCatalogueVisibility("sample-1", "lin-1", false);
+    expect(setTemplateWebVisibility).toHaveBeenCalledWith("sample-1", "lin-1", false);
+    expect(method).toEqual({ success: true, data: { sampleId: "sample-1", lineageId: "lin-1", visible: false } });
+
+    await setCatalogueVisibility("sample-1", undefined, true);
+    expect(setSampleWebVisibility).toHaveBeenCalledWith("sample-1", true);
+  });
+
+  it("reports a backend failure", async () => {
+    vi.mocked(setSampleWebVisibility).mockRejectedValue(new Error("down"));
+    expect((await setCatalogueVisibility("sample-1", undefined, true)).success).toBe(false);
   });
 });
