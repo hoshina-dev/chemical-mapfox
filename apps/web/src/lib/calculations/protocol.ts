@@ -14,13 +14,15 @@ export interface Evaluation {
   calculationsJson: string;
 }
 
-export interface WorkerRequest {
-  id: number;
+/** Page → sandbox frame. */
+export type SandboxCommand =
   /** A dry-run request (or a stored experiment) as JSON text. */
-  body: string;
-}
+  | { id: number; body: string }
+  | { cancel: number };
 
-export type WorkerReply =
+/** Sandbox frame → page. `out` is the engine's JSON text, still untrusted. */
+export type SandboxReply =
+  | { type: "booted" }
   | { id: number; type: "started" }
-  | { id: number; type: "done"; evaluation: Evaluation }
+  | { id: number; type: "done"; out: string }
   | { id: number; type: "error"; code: CalculationEngineErrorCode; detail: string };

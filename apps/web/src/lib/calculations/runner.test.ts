@@ -2,36 +2,39 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client";
 
-import type { WorkerReply, WorkerRequest } from "./protocol";
+import type { SandboxCommand, SandboxReply } from "./protocol";
 
-class FakeWorker {
-  static instances: FakeWorker[] = [];
-  posted: WorkerRequest[] = [];
-  terminated = false;
-  private listeners = { message: new Set<(e: MessageEvent) => void>(), error: new Set<(e: ErrorEvent) => void>() };
+class FakeSandbox {
+  static instances: FakeSandbox[] = [];
+  posted: SandboxCommand[] = [];
+  disposed = false;
+  private listeners = new Set<(reply: SandboxReply) => void>();
 
   constructor() {
-    FakeWorker.instances.push(this);
+    FakeSandbox.instances.push(this);
   }
-  addEventListener(type: "message" | "error", fn: never) {
-    this.listeners[type].add(fn);
+  post(command: SandboxCommand) {
+    this.posted.push(command);
   }
-  removeEventListener(type: "message" | "error", fn: never) {
-    this.listeners[type].delete(fn);
+  onReply(listener: (reply: SandboxReply) => void) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
-  postMessage(data: WorkerRequest) {
-    this.posted.push(data);
+  dispose() {
+    this.disposed = true;
   }
-  terminate() {
-    this.terminated = true;
+  reply(reply: SandboxReply) {
+    for (const listener of [...this.listeners]) listener(reply);
   }
-  reply(data: WorkerReply) {
-    for (const fn of this.listeners.message) fn({ data } as MessageEvent);
-  }
-  fail(message: string) {
-    for (const fn of this.listeners.error) fn({ message } as ErrorEvent);
+  /** The id of the latest run command. */
+  get jobId(): number {
+    const job = this.posted.filter((c): c is { id: number; body: string } => "id" in c).at(-1);
+    if (!job) throw new Error("no job posted");
+    return job.id;
   }
 }
+
+vi.mock("./sandbox", () => ({ createSandbox: () => new FakeSandbox() }));
 
 const report: CalculationDryRunResponse = {
   values: {},
@@ -40,122 +43,135 @@ const report: CalculationDryRunResponse = {
   missing_values: [],
   duplicate_question_ids: [],
 };
-const evaluation = { report, valuesJson: "{}", calculationsJson: "{}" };
+const out = JSON.stringify({ report, values: "{}", calculations: '{"a": 1.0}' });
+const evaluation = { report, valuesJson: "{}", calculationsJson: '{"a": 1.0}' };
 
 async function load() {
   vi.resetModules();
   return import("./runner");
 }
 
-function lastWorker(): FakeWorker {
-  const worker = FakeWorker.instances.at(-1);
-  if (!worker) throw new Error("no worker");
-  return worker;
+function latest(): FakeSandbox {
+  const sandbox = FakeSandbox.instances.at(-1);
+  if (!sandbox) throw new Error("no sandbox");
+  return sandbox;
+}
+
+async function posted(count = 1) {
+  await vi.waitFor(() => expect(latest().posted.filter((c) => "id" in c)).toHaveLength(count));
+  return latest();
 }
 
 beforeEach(() => {
-  FakeWorker.instances = [];
-  vi.stubGlobal("Worker", FakeWorker);
+  FakeSandbox.instances = [];
   vi.useFakeTimers();
 });
 
 afterEach(() => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
 });
 
 describe("evaluateCalculations", () => {
-  it("creates the worker on first use and resolves with its evaluation", async () => {
+  it("creates the sandbox on first use and resolves with the parsed evaluation", async () => {
     const { evaluateCalculations } = await load();
-    expect(FakeWorker.instances).toHaveLength(0);
+    expect(FakeSandbox.instances).toHaveLength(0);
 
     const pending = evaluateCalculations({ calculations: {} });
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    const [request] = lastWorker().posted;
-    expect(request?.body).toBe('{"calculations":{}}');
+    const sandbox = await posted();
+    expect(sandbox.posted[0]).toEqual({ id: sandbox.jobId, body: '{"calculations":{}}' });
 
-    lastWorker().reply({ id: 999, type: "done", evaluation: { ...evaluation, valuesJson: "x" } });
-    lastWorker().reply({ id: request!.id, type: "started" });
-    lastWorker().reply({ id: request!.id, type: "done", evaluation });
+    sandbox.reply({ type: "booted" });
+    sandbox.reply({ id: 999, type: "done", out });
+    sandbox.reply({ id: sandbox.jobId, type: "started" });
+    sandbox.reply({ id: sandbox.jobId, type: "done", out });
     await expect(pending).resolves.toEqual(evaluation);
   });
 
   it("passes JSON text through untouched", async () => {
     const { evaluateCalculations } = await load();
     const pending = evaluateCalculations('{"values":{"x":10.0}}');
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    expect(lastWorker().posted[0]?.body).toBe('{"values":{"x":10.0}}');
-    lastWorker().reply({ id: lastWorker().posted[0]!.id, type: "done", evaluation });
+    const sandbox = await posted();
+    expect(sandbox.posted[0]).toMatchObject({ body: '{"values":{"x":10.0}}' });
+    sandbox.reply({ id: sandbox.jobId, type: "done", out });
     await pending;
   });
 
-  it("kills a run that exceeds 5 s and starts a fresh worker next time", async () => {
+  it("cancels a run after 5 s, however often it claims to have started", async () => {
     const { evaluateCalculations, CalculationEngineError } = await load();
-    const pending = evaluateCalculations({ calculations: {} });
-    const caught = pending.catch((error: unknown) => error);
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    const first = lastWorker();
-    first.reply({ id: first.posted[0]!.id, type: "started" });
+    const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
+    const sandbox = await posted();
+    const id = sandbox.jobId;
+    sandbox.reply({ id, type: "started" });
+    await vi.advanceTimersByTimeAsync(4_000);
+    sandbox.reply({ id, type: "started" });
+    await vi.advanceTimersByTimeAsync(1_000);
 
-    await vi.advanceTimersByTimeAsync(4_999);
-    expect(first.terminated).toBe(false);
-    await vi.advanceTimersByTimeAsync(1);
     const error = await caught;
     expect(error).toBeInstanceOf(CalculationEngineError);
     expect(error).toMatchObject({ code: "timeout" });
-    expect(first.terminated).toBe(true);
+    expect(sandbox.posted).toContainEqual({ cancel: id });
+    expect(sandbox.disposed).toBe(false);
+  });
+
+  it("gives up loading after 60 s and starts a fresh sandbox next time", async () => {
+    const { evaluateCalculations } = await load();
+    const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
+    const first = await posted();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(await caught).toMatchObject({ code: "load", message: "Timed out loading Pyodide" });
+    expect(first.disposed).toBe(true);
 
     const next = evaluateCalculations({ calculations: {} });
-    await vi.waitFor(() => expect(FakeWorker.instances).toHaveLength(2));
-    lastWorker().reply({ id: lastWorker().posted[0]!.id, type: "done", evaluation });
+    await vi.waitFor(() => expect(FakeSandbox.instances).toHaveLength(2));
+    const second = await posted();
+    second.reply({ id: second.jobId, type: "done", out });
     await expect(next).resolves.toEqual(evaluation);
   });
 
-  it("gives up loading after 60 s", async () => {
+  it("reports a worker that failed to start as a load error", async () => {
     const { evaluateCalculations } = await load();
     const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(await caught).toMatchObject({ code: "load", message: "Timed out loading Pyodide" });
-    expect(lastWorker().terminated).toBe(true);
-  });
-
-  it("reports a worker that fails to start as a load error", async () => {
-    const { evaluateCalculations } = await load();
-    const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    lastWorker().fail("network down");
+    const sandbox = await posted();
+    sandbox.reply({ id: sandbox.jobId, type: "error", code: "load", detail: "network down" });
     expect(await caught).toMatchObject({ code: "load", message: "network down" });
+    expect(sandbox.disposed).toBe(true);
   });
 
-  it("keeps the worker after an engine error", async () => {
+  it("reports an engine error and keeps the sandbox", async () => {
     const { evaluateCalculations } = await load();
     const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
-    const worker = lastWorker();
-    worker.reply({ id: worker.posted[0]!.id, type: "error", code: "engine", detail: "boom" });
+    const sandbox = await posted();
+    sandbox.reply({ id: sandbox.jobId, type: "error", code: "engine", detail: "boom" });
     expect(await caught).toMatchObject({ code: "engine", message: "boom" });
-    expect(worker.terminated).toBe(false);
+    expect(sandbox.disposed).toBe(false);
+    expect(sandbox.posted).toContainEqual({ cancel: sandbox.jobId });
+  });
 
-    const next = evaluateCalculations({ calculations: {} });
-    await vi.waitFor(() => expect(worker.posted).toHaveLength(2));
-    expect(FakeWorker.instances).toHaveLength(1);
-    worker.reply({ id: worker.posted[1]!.id, type: "done", evaluation });
-    await next;
+  it.each([
+    ["not JSON", "nope"],
+    ["missing the saved texts", JSON.stringify({ report })],
+    ["without a report", JSON.stringify({ report: null, values: "{}", calculations: "{}" })],
+    ["with a malformed report", JSON.stringify({ report: { calculations: {} }, values: "{}", calculations: "{}" })],
+  ])("rejects a reply that is %s", async (_, malformed) => {
+    const { evaluateCalculations } = await load();
+    const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);
+    const sandbox = await posted();
+    sandbox.reply({ id: sandbox.jobId, type: "done", out: malformed });
+    expect(await caught).toMatchObject({ code: "engine", message: "Malformed engine reply" });
   });
 
   it("runs one request at a time", async () => {
     const { evaluateCalculations } = await load();
     const first = evaluateCalculations({ calculations: {} });
     const second = evaluateCalculations({ calculations: {} });
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(1));
+    const sandbox = await posted();
     await vi.advanceTimersByTimeAsync(0);
-    expect(lastWorker().posted).toHaveLength(1);
+    expect(sandbox.posted).toHaveLength(1);
 
-    lastWorker().reply({ id: lastWorker().posted[0]!.id, type: "done", evaluation });
+    sandbox.reply({ id: sandbox.jobId, type: "done", out });
     await first;
-    await vi.waitFor(() => expect(lastWorker().posted).toHaveLength(2));
-    lastWorker().reply({ id: lastWorker().posted[1]!.id, type: "done", evaluation });
+    await posted(2);
+    sandbox.reply({ id: sandbox.jobId, type: "done", out });
     await second;
   });
 });

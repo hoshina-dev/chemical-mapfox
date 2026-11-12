@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "../public/pyodide");
 const target = join(root, version);
 
 const FILES = [
-  "pyodide.mjs",
+  "pyodide.js",
   "pyodide.asm.js",
   "pyodide.asm.wasm",
   "python_stdlib.zip",

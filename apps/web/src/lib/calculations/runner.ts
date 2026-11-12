@@ -1,14 +1,7 @@
-import type {
-  CalculationDryRunRequest,
-  CalculationDryRunResponse,
-} from "@/lib/experiment-manager/client";
+import type { CalculationDryRunRequest } from "@/lib/experiment-manager/client";
 
-import type {
-  CalculationEngineErrorCode,
-  Evaluation,
-  WorkerReply,
-  WorkerRequest,
-} from "./protocol";
+import type { CalculationEngineErrorCode, Evaluation, SandboxReply } from "./protocol";
+import { createSandbox, type Sandbox } from "./sandbox";
 
 /**
  * experiment-manager's sandbox wall-clock limit (`calc_sandbox_settings`; it
@@ -29,56 +22,72 @@ export class CalculationEngineError extends Error {
   }
 }
 
-let worker: Worker | null = null;
+let sandbox: Sandbox | null = null;
 let nextId = 0;
 let queue: Promise<unknown> = Promise.resolve();
 
-function getWorker(): Worker {
-  worker ??= new Worker(new URL("./calc.worker.ts", import.meta.url), {
-    type: "module",
-  });
-  return worker;
+/** The frame's reply is untrusted: an escaped formula can write anything. */
+function parseEvaluation(out: string): Evaluation | null {
+  try {
+    const { report, values, calculations } = JSON.parse(out) as Record<string, unknown>;
+    const shape = report as { calculations?: unknown; order?: unknown } | null;
+    const ok =
+      typeof shape?.calculations === "object" &&
+      shape.calculations !== null &&
+      Array.isArray(shape.order) &&
+      typeof values === "string" &&
+      typeof calculations === "string";
+    return ok
+      ? { report: report as Evaluation["report"], valuesJson: values, calculationsJson: calculations }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function run(body: string): Promise<Evaluation> {
   const id = ++nextId;
-  const current = getWorker();
+  sandbox ??= createSandbox();
+  const current = sandbox;
   return new Promise((resolve, reject) => {
+    let started = false;
     let timer = setTimeout(() => fail("load", "Timed out loading Pyodide"), LOAD_TIMEOUT_MS);
+    const unsubscribe = current.onReply(onReply);
 
     function settle() {
       clearTimeout(timer);
-      current.removeEventListener("message", onMessage);
-      current.removeEventListener("error", onError);
+      unsubscribe();
     }
     function fail(code: CalculationEngineErrorCode, detail: string) {
       settle();
-      // A runaway formula can't be interrupted, only killed with its worker.
-      if (code !== "engine") {
-        current.terminate();
-        worker = null;
+      if (code === "load") {
+        // The frame itself may be broken; start over next time.
+        current.dispose();
+        sandbox = null;
+      } else {
+        current.post({ cancel: id });
       }
       reject(new CalculationEngineError(code, detail));
     }
-    function onError(event: ErrorEvent) {
-      fail("load", event.message);
-    }
-    function onMessage({ data }: MessageEvent<WorkerReply>) {
-      if (data.id !== id) return;
-      if (data.type === "started") {
+    function onReply(reply: SandboxReply) {
+      if (!("id" in reply) || reply.id !== id) return;
+      if (reply.type === "started") {
+        // Only the first one starts the deadline; a formula can't extend it.
+        if (started) return;
+        started = true;
         clearTimeout(timer);
         timer = setTimeout(() => fail("timeout", "Calculation timed out"), RUN_TIMEOUT_MS);
-      } else if (data.type === "done") {
+      } else if (reply.type === "done") {
+        const evaluation = parseEvaluation(reply.out);
+        if (!evaluation) return fail("engine", "Malformed engine reply");
         settle();
-        resolve(data.evaluation);
+        resolve(evaluation);
       } else {
-        fail(data.code, data.detail);
+        fail(reply.code === "load" ? "load" : "engine", String(reply.detail));
       }
     }
 
-    current.addEventListener("message", onMessage);
-    current.addEventListener("error", onError);
-    current.postMessage({ id, body } satisfies WorkerRequest);
+    current.post({ id, body });
   });
 }
 
@@ -101,7 +110,7 @@ export function evaluateCalculations(
  * The error `POST /experiments/{id}/calculate` would have raised for this
  * report: a cycle first, else the first failure in evaluation order.
  */
-export function firstFailure(report: CalculationDryRunResponse): string | null {
+export function firstFailure(report: Evaluation["report"]): string | null {
   const outcomes = Object.values(report.calculations);
   const circular = outcomes.find((outcome) => outcome.error?.kind === "circular");
   if (circular?.error) return circular.error.message;

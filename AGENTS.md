@@ -165,11 +165,19 @@ that are unreachable). Generated dirs are committed and excluded from eslint.
 
 Staff UI calculations run in the browser: `apps/web/src/lib/calculations/`
 runs a Python port of experiment-manager's calculation service
-(`engineSource.ts`) in Pyodide inside a Web Worker. Pyodide is pinned to
-0.27.x (CPython 3.12, the backend's version: formula semantics such as
-comprehensions depend on it), served from `public/pyodide/<version>/` by
-`scripts/copy-pyodide.mjs` (run by `dev`/`build`), and fetched only when a
-page first calculates. A run is killed after 5 s, the backend sandbox's limit.
+(`engineSource.ts`) in Pyodide. Pyodide is pinned to 0.27.x (CPython 3.12, the
+backend's version: formula semantics such as comprehensions depend on it),
+served from `public/pyodide/<version>/` by `scripts/copy-pyodide.mjs` (run by
+`dev`/`build`), and fetched only when a page first calculates. A run is killed
+after 5 s, the backend sandbox's limit.
+
+Formulas are untrusted code (staff- or LLM-authored) and a Python sandbox can
+be escaped, so the engine runs in a hidden `sandbox="allow-scripts"` iframe
+(opaque origin: no session cookie or storage) whose CSP allows only the
+`/pyodide/<version>/` runtime, with a fresh classic worker per run
+(`sandbox.ts`, `sandboxSource.ts`). Keep `/pyodide` static, outside the auth
+proxy, and served with `Access-Control-Allow-Origin: *`. Treat whatever the
+frame sends back as untrusted.
 
 - **Template builder** — the Live preview's calculation tester
   (`CalculationTester.tsx`) evaluates the draft with nothing persisted.

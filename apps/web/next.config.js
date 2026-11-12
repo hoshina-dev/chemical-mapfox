@@ -22,6 +22,8 @@ const nextConfig = {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
           },
+          // Loaded from the opaque-origin calculation sandbox (lib/calculations).
+          { key: "Access-Control-Allow-Origin", value: "*" },
         ],
       },
       {
