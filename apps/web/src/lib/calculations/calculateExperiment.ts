@@ -56,7 +56,9 @@ async function calculate(
   if (failure) return { success: false, error: failure };
 
   const { valuesJson, calculationsJson } = evaluation;
-  const size = new TextEncoder().encode(fingerprint + valuesJson + calculationsJson).length;
+  // As sent: the action request JSON-escapes these strings again.
+  const payload = JSON.stringify([fingerprint, valuesJson, calculationsJson]);
+  const size = new TextEncoder().encode(payload).length;
   if (size > MAX_SAVE_BYTES) {
     return { success: false, error: engineErrorMessage(new CalculationEngineError("tooLarge", "")) };
   }

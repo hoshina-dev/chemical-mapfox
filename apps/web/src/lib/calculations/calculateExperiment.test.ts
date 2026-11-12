@@ -83,6 +83,15 @@ describe("calculateExperiment", () => {
     expect(saveCalculationResultsAction).not.toHaveBeenCalled();
   });
 
+  it("counts the escaping the action request adds", async () => {
+    vi.mocked(evaluateCalculations).mockResolvedValue({
+      report,
+      valuesJson: "{}",
+      calculationsJson: `{"a": {"formula": "x", "result": "${'\\"'.repeat(240_000)}"}}`,
+    });
+    await expect(calculateExperiment("ctx", message)).resolves.toEqual({ success: false, error: "tooLarge:" });
+  });
+
   it("turns a rejected action request into an error", async () => {
     vi.mocked(evaluateCalculations).mockResolvedValue({ report, valuesJson: "{}", calculationsJson: "{}" });
     vi.mocked(saveCalculationResultsAction).mockRejectedValue(new Error("Body exceeded 1 MB limit"));
