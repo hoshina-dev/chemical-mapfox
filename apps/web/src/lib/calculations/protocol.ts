@@ -2,7 +2,7 @@ import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client"
 
 /**
  * `load`: Pyodide failed to start. `timeout`: a formula ran too long.
- * `tooLarge` / `save`: the results couldn't be sent to the server.
+ * `tooLarge`: the results can't be sent. `save`: a server request failed.
  */
 export type CalculationEngineErrorCode = "load" | "timeout" | "engine" | "tooLarge" | "save";
 
