@@ -1,7 +1,10 @@
 import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client";
 
-/** `load`: Pyodide failed to start. `timeout`: a formula ran too long. */
-export type CalculationEngineErrorCode = "load" | "timeout" | "engine";
+/**
+ * `load`: Pyodide failed to start. `timeout`: a formula ran too long.
+ * `tooLarge` / `save`: the results couldn't be sent to the server.
+ */
+export type CalculationEngineErrorCode = "load" | "timeout" | "engine" | "tooLarge" | "save";
 
 export interface Evaluation {
   report: CalculationDryRunResponse;

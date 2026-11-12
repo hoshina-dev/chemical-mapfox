@@ -45,7 +45,9 @@
     "calculationEngine": {
       "load": "Nie udało się uruchomić silnika obliczeniowego. Sprawdź połączenie i spróbuj ponownie.",
       "timeout": "Obliczenia przekroczyły limit czasu 5 s — sprawdź, czy któraś formuła nie zapętla się bez końca.",
-      "engine": "Błąd silnika obliczeniowego: {detail}"
+      "engine": "Błąd silnika obliczeniowego: {detail}",
+      "tooLarge": "Wyniki są zbyt duże, aby je zapisać. Sprawdź, czy któraś formuła nie tworzy bardzo dużej wartości.",
+      "save": "Nie udało się wysłać wyników na serwer: {detail}"
     }
   },
   "settings": {

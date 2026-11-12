@@ -26,15 +26,31 @@ let sandbox: Sandbox | null = null;
 let nextId = 0;
 let queue: Promise<unknown> = Promise.resolve();
 
-/** The frame's reply is untrusted: an escaped formula can write anything. */
+const STATUSES = new Set(["ok", "error", "skipped"]);
+const isStrings = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === "string");
+
+function isOutcome(value: unknown): boolean {
+  const outcome = value as { formula?: unknown; status?: unknown; error?: unknown } | null;
+  if (typeof outcome?.formula !== "string" || !STATUSES.has(outcome.status as string)) return false;
+  const error = outcome.error as { kind?: unknown; message?: unknown } | null | undefined;
+  return error == null || (typeof error.kind === "string" && typeof error.message === "string");
+}
+
+/** The frame's reply is untrusted: an escaped formula can write anything the UI renders. */
 function parseEvaluation(out: string): Evaluation | null {
   try {
     const { report, values, calculations } = JSON.parse(out) as Record<string, unknown>;
-    const shape = report as { calculations?: unknown; order?: unknown } | null;
+    const shape = report as Record<string, unknown> | null;
+    const outcomes = shape?.calculations;
     const ok =
-      typeof shape?.calculations === "object" &&
-      shape.calculations !== null &&
-      Array.isArray(shape.order) &&
+      typeof outcomes === "object" &&
+      outcomes !== null &&
+      Object.values(outcomes).every(isOutcome) &&
+      isStrings(shape?.order) &&
+      isStrings(shape?.missing_values) &&
+      isStrings(shape?.duplicate_question_ids) &&
+      typeof shape?.values === "object" &&
       typeof values === "string" &&
       typeof calculations === "string";
     return ok

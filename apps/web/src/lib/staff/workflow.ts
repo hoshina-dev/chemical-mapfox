@@ -306,7 +306,8 @@ function defaultsOf(exp: JsonObject): Map<string, unknown> {
       return;
     }
     const value = config.default ?? q.default;
-    if (typeof q.id === "string" && value != null) {
+    // First one wins, as in collect_values.
+    if (typeof q.id === "string" && value != null && !defaults.has(q.id)) {
       defaults.set(q.id, count === undefined ? value : Array(count).fill(value));
     }
   };

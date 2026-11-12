@@ -45,7 +45,9 @@
     "calculationEngine": {
       "load": "Couldn't start the calculation engine. Check your connection and try again.",
       "timeout": "Calculation exceeded its 5s time limit — check for a formula that loops without terminating.",
-      "engine": "The calculation engine failed: {detail}"
+      "engine": "The calculation engine failed: {detail}",
+      "tooLarge": "The results are too large to save. Check for a formula that builds a very large value.",
+      "save": "Could not send the results to the server: {detail}"
     }
   },
   "settings": {

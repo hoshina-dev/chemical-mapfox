@@ -152,6 +152,25 @@ describe("evaluateCalculations", () => {
     ["missing the saved texts", JSON.stringify({ report })],
     ["without a report", JSON.stringify({ report: null, values: "{}", calculations: "{}" })],
     ["with a malformed report", JSON.stringify({ report: { calculations: {} }, values: "{}", calculations: "{}" })],
+    [
+      "with an error message that isn't text",
+      JSON.stringify({
+        report: {
+          ...report,
+          calculations: { a: { formula: "1", status: "error", error: { kind: "x", message: {} } } },
+        },
+        values: "{}",
+        calculations: "{}",
+      }),
+    ],
+    [
+      "with an unknown status",
+      JSON.stringify({
+        report: { ...report, calculations: { a: { formula: "1", status: "pwned" } } },
+        values: "{}",
+        calculations: "{}",
+      }),
+    ],
   ])("rejects a reply that is %s", async (_, malformed) => {
     const { evaluateCalculations } = await load();
     const caught = evaluateCalculations({ calculations: {} }).catch((error: unknown) => error);

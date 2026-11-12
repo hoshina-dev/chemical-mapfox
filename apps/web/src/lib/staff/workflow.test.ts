@@ -147,6 +147,15 @@ describe("saveCalculationResults", () => {
     expect(updateExperimentJson).not.toHaveBeenCalled();
   });
 
+  it("expects the first default when two questions share an id, as the engine does", async () => {
+    const forms = `{"clientForm":{"name":"C","questions":[{"id":"d","type":"number","label":"D","default":1}]},"labForm":{"name":"L","questions":[{"id":"d","type":"number","label":"D","default":2}]},"calculations":{},"values":{}}`;
+    vi.mocked(updateExperimentJson).mockResolvedValue('{"calculations":{},"values":{"d":1}}');
+    const ok = await save(forms, { valuesJson: '{"d": 1}', calculationsJson: "{}" }, forms);
+    expect(ok).toEqual({ success: true, data: null });
+    const later = await save(forms, { valuesJson: '{"d": 2}', calculationsJson: "{}" }, forms);
+    expect(later).toEqual({ success: false, error: "calcSaveFailed" });
+  });
+
   it("refuses output for formulas other than the stored ones", async () => {
     const res = await save(storedJson(), {
       ...engineOutput,
