@@ -28,6 +28,17 @@ CALC_BUILTINS = {
     "stdev": statistics.stdev,
 }
 
+# Formulas can assign to math's attributes (math.pi = 3). The backend runs each
+# request in a fresh process; this interpreter is reused, so restore it.
+_MATH_STATE = dict(vars(math))
+
+
+def _reset_math():
+    state = vars(math)
+    for name in [name for name in state if name not in _MATH_STATE]:
+        del state[name]
+    state.update(_MATH_STATE)
+
 
 def iter_questions(form, expand_repeatable_groups=True):
     if not isinstance(form, dict):
@@ -187,6 +198,15 @@ def _eval_formula(expr, namespace):
     return namespace.get("result")
 
 
+def _finite(value):
+    """Non-finite floats as null, as the backend's response serializer writes them."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, list):
+        return [_finite(item) for item in value]
+    return value
+
+
 def _base_namespace(values):
     return {
         **CALC_BUILTINS,
@@ -255,6 +275,7 @@ def _jsonable(value):
 
 
 def dry_run(body):
+    _reset_math()
     draft = {
         "clientForm": body.get("clientForm"),
         "labForm": body.get("labForm"),
@@ -343,7 +364,7 @@ def dry_run(body):
         referenced |= _referenced_value_keys(expr)
 
     return {
-        "values": namespace["values"],
+        "values": {name: _finite(value) for name, value in namespace["values"].items()},
         "order": order,
         "calculations": {name: outcomes[name] for name in formulas if name in outcomes},
         "missing_values": sorted(referenced - set(values)),

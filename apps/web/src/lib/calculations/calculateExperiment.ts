@@ -25,7 +25,7 @@ export async function calculateExperiment(
 ): Promise<ActionResult<null>> {
   const inputs = await getCalculationInputsAction(contextId);
   if (!inputs.success) return inputs;
-  const { experimentJson, values } = inputs.data;
+  const { experimentJson, fingerprint } = inputs.data;
 
   let evaluation;
   try {
@@ -41,7 +41,7 @@ export async function calculateExperiment(
   if (failure) return { success: false, error: failure };
 
   return saveCalculationResultsAction(contextId, {
-    startedFrom: values,
+    fingerprint,
     valuesJson: evaluation.valuesJson,
     calculationsJson: evaluation.calculationsJson,
   });

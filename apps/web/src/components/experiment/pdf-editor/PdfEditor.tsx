@@ -1248,7 +1248,12 @@ export function PdfEditor({
       return;
     }
     setSavedSnapshot(JSON.stringify(payload));
-    await calculateExperiment(expId, engineErrorMessage);
+    const calculated = await calculateExperiment(expId, engineErrorMessage);
+    if (!calculated.success) {
+      setPdfMsg({ text: calculated.error, ok: false });
+      setPdfBusy(false);
+      return;
+    }
     await generateReportAction(expId);
     let url: string | null = null;
     for (let i = 0; i < 30; i++) {

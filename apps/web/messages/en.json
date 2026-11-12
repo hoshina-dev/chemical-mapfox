@@ -559,7 +559,11 @@
       "fixFormulaModalTitle": "Fix calculation formula",
       "fixFormulaModalBody": "Edit the formula(s) below and save. This only changes this experiment's own calculation — re-run Calculate afterward to see the new result.",
       "fixFormulaErrorTitle": "Could not save formula",
-      "saveFormula": "Save formula"
+      "saveFormula": "Save formula",
+      "calcLoadFailed": "Could not load this experiment's calculations.",
+      "calcSaveFailed": "Could not save the calculation results.",
+      "calcInputsChanged": "The values or formulas changed while calculating. Calculate again.",
+      "calcNoResult": "One or more calculations didn't produce a result. Check the formulas and values, then try again."
     },
     "actions": {
       "notAllowedSubmit": "You aren't allowed to submit this experiment.",

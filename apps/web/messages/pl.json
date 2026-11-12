@@ -559,7 +559,11 @@
       "fixFormulaModalTitle": "Popraw formułę obliczeń",
       "fixFormulaModalBody": "Edytuj poniższą formułę(-y) i zapisz. Zmienia to tylko obliczenia tego eksperymentu — uruchom ponownie obliczenia po zapisaniu, aby zobaczyć nowy wynik.",
       "fixFormulaErrorTitle": "Nie udało się zapisać formuły",
-      "saveFormula": "Zapisz formułę"
+      "saveFormula": "Zapisz formułę",
+      "calcLoadFailed": "Nie udało się wczytać obliczeń tego eksperymentu.",
+      "calcSaveFailed": "Nie udało się zapisać wyników obliczeń.",
+      "calcInputsChanged": "Wartości lub formuły zmieniły się w trakcie obliczeń. Oblicz ponownie.",
+      "calcNoResult": "Co najmniej jedno obliczenie nie dało wyniku. Sprawdź formuły i wartości, a następnie spróbuj ponownie."
     },
     "actions": {
       "notAllowedSubmit": "Nie masz uprawnień do przesłania tego eksperymentu.",

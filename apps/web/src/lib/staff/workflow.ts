@@ -220,37 +220,64 @@ export async function runCalculations(
   }
 }
 
-function parseJsonObject(text: string): Record<string, unknown> | null {
+type JsonObject = Record<string, unknown>;
+
+/**
+ * JSON.parse that keeps each number's source text, so 10 vs 10.0 and integers
+ * past 2^53 stay distinct when comparing what Python will see.
+ */
+function parseExact(text: string): unknown {
+  const reviver = (_key: string, value: unknown, context?: { source?: string }) =>
+    typeof value === "number" ? { "#": context?.source } : value;
+  return JSON.parse(text, reviver as (key: string, value: unknown) => unknown);
+}
+
+function asObject(value: unknown): JsonObject | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as JsonObject)
+    : null;
+}
+
+function parseObject(text: string): JsonObject | null {
   try {
-    const parsed: unknown = JSON.parse(text);
-    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : null;
+    return asObject(JSON.parse(text));
   } catch {
     return null;
   }
 }
 
-function formulasOf(calculations: ExperimentDetail["calculations"]): Record<string, string> {
+/** Equal as stored: JSONB writes -0.0 back as 0.0. */
+function sameJson(a: unknown, b: unknown): boolean {
+  const normalize = (v: unknown): unknown => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
+  return isDeepStrictEqual(normalize(a), normalize(b));
+}
+
+function formulasOf(calculations: unknown): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(calculations ?? {}).map(([name, calc]) => [
+    Object.entries(asObject(calculations) ?? {}).map(([name, calc]) => [
       name,
-      typeof calc === "string" ? calc : calc.formula,
+      typeof calc === "string" ? calc : String((calc as { formula?: unknown }).formula),
     ]),
   );
+}
+
+/** The inputs a run depends on, compared exactly to detect changes. */
+function fingerprintOf(experimentJson: string): string {
+  const exp = asObject(parseExact(experimentJson)) ?? {};
+  return JSON.stringify({ values: exp.values ?? {}, formulas: formulasOf(exp.calculations) });
 }
 
 /** What the browser needs to run an experiment's calculations. */
 export interface CalculationInputs {
   /** The stored experiment, unparsed; the engine reads it as a dry-run body. */
   experimentJson: string;
-  /** Echoed back on save, which refuses if they changed in between. */
-  values: Record<string, unknown>;
+  /** Echoed back on save, which refuses if the inputs changed in between. */
+  fingerprint: string;
 }
 
 /** The engine's output for `getCalculationInputs` (see `lib/calculations`). */
 export interface CalculationResultsInput {
-  startedFrom: Record<string, unknown>;
+  fingerprint: string;
   valuesJson: string;
   calculationsJson: string;
 }
@@ -260,63 +287,74 @@ export async function getCalculationInputs(
 ): Promise<ActionResult<CalculationInputs>> {
   try {
     const experimentJson = await getExperimentJson(contextId);
-    const exp = JSON.parse(experimentJson) as ExperimentDetail;
-    return { success: true, data: { experimentJson, values: exp.values ?? {} } };
+    return {
+      success: true,
+      data: { experimentJson, fingerprint: fingerprintOf(experimentJson) },
+    };
   } catch (error) {
     logHandledError(error, { action: "getCalculationInputsAction", contextId });
-    return {
-      success: false,
-      error: errorMessage(error, "Could not load this experiment's calculations."),
-    };
+    const t = await getTranslations("staff.finalize");
+    return { success: false, error: errorMessage(error, t("calcLoadFailed")) };
   }
 }
 
 /**
  * Store results computed in the browser from `getCalculationInputs`, with the
- * values they came from, the way `POST /calculate` does. Refuses if the values
- * or formulas changed meanwhile; the window between this read and the PUT is
- * not closed (experiment-manager has no versioning).
+ * values they came from, the way `POST /calculate` does. Refuses if the inputs
+ * changed meanwhile; the window between this read and the PUT is not closed
+ * (experiment-manager has no versioning).
  */
 export async function saveCalculationResults(
   contextId: string,
-  { startedFrom, valuesJson, calculationsJson }: CalculationResultsInput,
+  { fingerprint, valuesJson, calculationsJson }: CalculationResultsInput,
 ): Promise<ActionResult<null>> {
-  const calculations = parseJsonObject(calculationsJson) as
-    | ExperimentDetail["calculations"]
-    | null;
-  if (!parseJsonObject(valuesJson) || !calculations) {
-    return { success: false, error: "Could not save the calculation results." };
-  }
+  const t = await getTranslations("staff.finalize");
+  const values = parseObject(valuesJson);
+  const calculations = parseObject(calculationsJson);
+  if (!values || !calculations) return { success: false, error: t("calcSaveFailed") };
+
   try {
-    const current = await getExperiment(contextId);
-    if (
-      !isDeepStrictEqual(current.values ?? {}, startedFrom) ||
-      !isDeepStrictEqual(formulasOf(current.calculations), formulasOf(calculations))
-    ) {
-      return {
-        success: false,
-        error: "The values or formulas changed while calculating. Calculate again.",
-      };
+    const currentJson = await getExperimentJson(contextId);
+    if (fingerprintOf(currentJson) !== fingerprint) {
+      return { success: false, error: t("calcInputsChanged") };
     }
+    const current = JSON.parse(currentJson) as ExperimentDetail;
+    // A run may only add question defaults, never change an answer.
+    const keepsAnswers = Object.entries(current.values ?? {}).every(([id, answer]) =>
+      sameJson(values[id], answer),
+    );
+    if (
+      !keepsAnswers ||
+      !isDeepStrictEqual(formulasOf(calculations), formulasOf(current.calculations))
+    ) {
+      return { success: false, error: t("calcSaveFailed") };
+    }
+
     const exp = await updateExperiment(
       contextId,
       `{"clientForm":${JSON.stringify(current.clientForm)},"labForm":${JSON.stringify(current.labForm)},"calculations":${calculationsJson},"values":${valuesJson}}`,
     );
     revalidatePath(experimentWorkspacePath(contextId));
-    if (!calculationsReady(exp)) {
-      return {
-        success: false,
-        error:
-          "One or more calculations didn't produce a result. Check the formulas and values, then try again.",
-      };
+    // An experiment-manager that predates storing `result` on PUT keeps the old ones.
+    const savedAsSent = Object.entries(calculations).every(([name, calc]) => {
+      const saved = exp.calculations?.[name];
+      return (
+        typeof saved === "object" &&
+        sameJson(saved.result, (calc as { result?: unknown }).result)
+      );
+    });
+    if (!savedAsSent) {
+      logHandledError(new Error("calculation results were not stored"), {
+        action: "saveCalculationResultsAction",
+        contextId,
+      });
+      return { success: false, error: t("calcSaveFailed") };
     }
+    if (!calculationsReady(exp)) return { success: false, error: t("calcNoResult") };
     return { success: true, data: null };
   } catch (error) {
     logHandledError(error, { action: "saveCalculationResultsAction", contextId });
-    return {
-      success: false,
-      error: errorMessage(error, "Could not save the calculation results."),
-    };
+    return { success: false, error: errorMessage(error, t("calcSaveFailed")) };
   }
 }
 

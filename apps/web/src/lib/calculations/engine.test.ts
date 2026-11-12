@@ -179,6 +179,21 @@ describe("calculation engine", () => {
     });
   });
 
+  it("reports a non-finite answer as null instead of failing the run", () => {
+    const { report } = run(draft({ ok: "values['d'] * 2" }, { note: "NaN", far: ["inf", "1"] }));
+    expect(report.values).toMatchObject({ note: null, far: [null, 1] });
+    expect(report.calculations.ok?.result).toBe(8);
+  });
+
+  it("does not let one run's formula change math for the next", () => {
+    run(draft({ tamper: "math.pi = 3\nmath.extra = 1\n1" }));
+    const calcs = outcomes(draft({ pi: "math.pi", extra: "math.extra" }));
+    expect(calcs.pi?.result).toBe(Math.PI);
+    expect(calcs.extra?.error?.message).toBe(
+      "Calculation error in 'extra': module 'math' has no attribute 'extra'",
+    );
+  });
+
   it("reports question ids used more than once", () => {
     const { report } = run({
       clientForm: { name: "C", questions: [{ id: "a", type: "number", label: "A" }] },

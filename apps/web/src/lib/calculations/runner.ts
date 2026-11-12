@@ -10,7 +10,11 @@ import type {
   WorkerRequest,
 } from "./protocol";
 
-/** experiment-manager's sandbox wall-clock budget (`calc_sandbox_settings`). */
+/**
+ * experiment-manager's sandbox wall-clock limit (`calc_sandbox_settings`; it
+ * also caps CPU at 2 s). Pyodide is slower than CPython, so a formula near the
+ * limit may pass on one side only.
+ */
 const RUN_TIMEOUT_MS = 5_000;
 /** First use downloads ~13 MB of Pyodide. */
 const LOAD_TIMEOUT_MS = 60_000;
