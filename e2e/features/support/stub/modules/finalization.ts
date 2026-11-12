@@ -206,7 +206,8 @@ async function handle(ctx: StubContext): Promise<boolean> {
       };
       if (body.values) exp.values = body.values;
       for (const [name, calc] of Object.entries(exp.calculations)) {
-        calc.result = body.calculations?.[name]?.result ?? "";
+        const sent = body.calculations?.[name];
+        calc.result = sent && "result" in sent ? sent.result : "";
       }
       return ctx.json(200, experimentWire(exp));
     }

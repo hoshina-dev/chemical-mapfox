@@ -132,8 +132,16 @@ describe("saveCalculationResults", () => {
     ["changes an answer", '{"x": 99, "d": 9007199254740993}'],
     ["changes a large answer by one", '{"x": 10, "big": 9007199254740992}'],
     ["adds an answer that has no default", '{"x": 10, "extra": 1}'],
+    ["adds an inherited key", '{"x": 10, "constructor": 1}'],
+    ["fills a default with another value", '{"x": 10, "d": 1}'],
+    ["fills a repeatable default with the wrong count", '{"x": 10, "r": [1.0]}'],
+    ["turns a string answer into a number", '{"x": 10, "big": 5}'],
   ])("refuses output that %s", async (_, valuesJson) => {
-    const stored = valuesJson.includes("big") ? '{"x":10,"big":9007199254740993}' : '{"x":10}';
+    const stored = valuesJson.includes('"big": 5')
+      ? '{"x":10,"big":"#5"}'
+      : valuesJson.includes("big")
+        ? '{"x":10,"big":9007199254740993}'
+        : '{"x":10}';
     const res = await save(storedJson(stored), { ...engineOutput, valuesJson }, storedJson(stored));
     expect(res).toEqual({ success: false, error: "calcSaveFailed" });
     expect(updateExperimentJson).not.toHaveBeenCalled();
@@ -164,6 +172,8 @@ describe("saveCalculationResults", () => {
     ["kept its old result", savedJson("18")],
     ["changed a large result", savedJson("9007199254740992")],
     ["dropped the calculation", savedJson("", "{}")],
+    ["kept a string that looks like the number", savedJson('"#20"')],
+    ["kept a null calculation", savedJson("", '{"twice":null}')],
     ["stored a legacy string", savedJson("", '{"twice":"values[\'x\'] * 2"}')],
   ])("detects a backend that %s", async (_, response) => {
     vi.mocked(updateExperimentJson).mockResolvedValue(response);
@@ -178,6 +188,8 @@ describe("saveCalculationResults", () => {
     ["-0.0 stored back as 0.0", "-0.0", "0.0"],
     ["1e20 stored back as an integer", "1e+20", "100000000000000000000"],
     ["a nested float list", "[1.5, [2.0]]", "[1.5, [2.0]]"],
+    ["Avogadro-scale floats as exact decimals", "6.02214076e+23", "602214076000000000000000"],
+    ["a float stored with trailing zeros", "1.5", "1.50"],
   ])("accepts %s", async (_, sent, stored) => {
     vi.mocked(updateExperimentJson).mockResolvedValue(savedJson(stored));
     const res = await save(storedJson(), {

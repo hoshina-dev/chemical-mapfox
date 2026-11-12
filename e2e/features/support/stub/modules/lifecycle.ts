@@ -34,7 +34,7 @@ interface LifecycleTicket {
 
 interface LifecycleCalculation {
   formula: string;
-  result?: number | string;
+  result?: number | string | null;
 }
 
 interface LifecycleExperiment {
@@ -238,7 +238,8 @@ async function handle(ctx: StubContext): Promise<boolean> {
       };
       if (body.values) exp.values = body.values;
       for (const name of Object.keys(exp.calculations)) {
-        const result = body.calculations?.[name]?.result ?? "";
+        const sent = body.calculations?.[name];
+        const result = sent && "result" in sent ? sent.result : "";
         exp.calculations[name] = { ...exp.calculations[name], result };
       }
       return ctx.json(200, experimentWire(exp));

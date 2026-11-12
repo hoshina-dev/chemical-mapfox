@@ -197,6 +197,14 @@ describe("calculation engine", () => {
     );
   });
 
+  it("reports the given answers when a formula mutates values", () => {
+    const { report } = run(
+      draft({ m: "values['a'] = []\nvalues['a'].append(values['a'])\n1" }, { a: 1 }),
+    );
+    expect(report.calculations.m?.result).toBe(1);
+    expect(report.values).toMatchObject({ a: 1 });
+  });
+
   it("reports the given answers when a formula rebinds values", () => {
     const { report } = run(draft({ m: "values = [1, 2, 3]\nmean(values)" }, { a: 1 }));
     expect(report.calculations.m?.result).toBe(2);
@@ -210,6 +218,10 @@ describe("calculation engine", () => {
     expect(calcs.escape?.error?.kind).toBe("forbidden_attribute");
     expect(calcs.escape?.error?.message).toMatch(/^Invalid expression in 'escape': attribute '\w+' not allowed$/);
     expect(calcs.private?.error?.kind).toBe("forbidden_attribute");
+    const pattern = "o = zip.mro()[1]\nmatch values:\n    case o(gi_frame=f):\n        f\n1";
+    expect(outcomes(draft({ pattern })).pattern?.error?.message).toBe(
+      "Invalid expression in 'pattern': attribute 'gi_frame' not allowed",
+    );
     // Python normalizes identifiers (NFKC), so a fullwidth "＿" is still "_".
     const unicode = outcomes(draft({ u: "mean._\uff3fglobals_\uff3f" })).u;
     expect(unicode?.error?.kind).toBe("forbidden_attribute");

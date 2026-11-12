@@ -252,15 +252,28 @@ function parseObject(text: string): JsonObject | null {
   }
 }
 
-/** Numbers as Python's == sees them: exact integers, 5.0 == 5, -0.0 == 0. */
+/**
+ * A number's exact decimal value, as JSONB stores it: 5.0 and 5, -0.0 and 0,
+ * 1e+23 and 100000000000000000000000 are the same.
+ */
+function decimalKey(source: string): string {
+  const match = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(source);
+  if (!match) return source;
+  const [, sign, whole = "", fraction = "", exponent = "0"] = match;
+  let digits = (whole + fraction).replace(/^0+/, "");
+  let power = Number(exponent) - fraction.length;
+  if (!digits) return "0";
+  while (digits.endsWith("0")) {
+    digits = digits.slice(0, -1);
+    power += 1;
+  }
+  return `${sign}${digits}e${power}`;
+}
+
+/** Equal as Python's == and JSONB see it (numbers by exact decimal value). */
 function pythonEqual(a: unknown, b: unknown): boolean {
   const canonical = (value: unknown): unknown => {
-    if (isRawJSON(value)) {
-      const source = value.rawJSON;
-      if (!/[.eE]/.test(source)) return `#${BigInt(source)}`;
-      const n = Number(source);
-      return Number.isInteger(n) ? `#${BigInt(n)}` : `#${n}`;
-    }
+    if (isRawJSON(value)) return { number: decimalKey(value.rawJSON) };
     if (Array.isArray(value)) return value.map(canonical);
     const object = asObject(value);
     return object
@@ -274,28 +287,34 @@ function formulasOf(calculations: unknown): Record<string, string> {
   return Object.fromEntries(
     Object.entries(asObject(calculations) ?? {}).map(([name, calc]) => [
       name,
-      typeof calc === "string" ? calc : String((calc as { formula?: unknown }).formula),
+      typeof calc === "string" ? calc : String(asObject(calc)?.formula),
     ]),
   );
 }
 
-/** Question ids the engine fills from a default, as `collect_values` does. */
-function defaultedIds(exp: JsonObject): Set<string> {
-  const ids = new Set<string>();
-  const visit = (question: unknown) => {
+/** What `collect_values` fills in for unanswered questions, by id. */
+function defaultsOf(exp: JsonObject): Map<string, unknown> {
+  const defaults = new Map<string, unknown>();
+  const visit = (question: unknown, count?: number) => {
     const q = asObject(question) ?? {};
     const config = asObject(q.config) ?? {};
     if (q.type === "repeatable-group") {
-      if (Array.isArray(config.questions)) config.questions.forEach(visit);
-    } else if (typeof q.id === "string" && (config.default ?? q.default) != null) {
-      ids.add(q.id);
+      const repeat = isRawJSON(config.count) ? Number(config.count.rawJSON) : undefined;
+      if (Array.isArray(config.questions) && Number.isInteger(repeat)) {
+        for (const child of config.questions) visit(child, repeat);
+      }
+      return;
+    }
+    const value = config.default ?? q.default;
+    if (typeof q.id === "string" && value != null) {
+      defaults.set(q.id, count === undefined ? value : Array(count).fill(value));
     }
   };
   for (const form of [exp.clientForm, exp.labForm]) {
     const questions = asObject(form)?.questions;
-    if (Array.isArray(questions)) questions.forEach(visit);
+    if (Array.isArray(questions)) questions.forEach((q) => visit(q));
   }
-  return ids;
+  return defaults;
 }
 
 /** The inputs a run depends on, compared exactly to detect changes. */
@@ -357,11 +376,14 @@ export async function saveCalculationResults(
     }
     const current = asObject(parseExact(currentJson)) ?? {};
     const stored = asObject(current.values) ?? {};
-    const defaults = defaultedIds(current);
+    const defaults = defaultsOf(current);
     // A run only fills in question defaults; it never changes an answer.
     const onlyAddsDefaults =
       Object.entries(stored).every(([id, answer]) => pythonEqual(values[id], answer)) &&
-      Object.keys(values).every((id) => id in stored || defaults.has(id));
+      Object.entries(values).every(
+        ([id, value]) =>
+          Object.hasOwn(stored, id) || (defaults.has(id) && pythonEqual(value, defaults.get(id))),
+      );
     if (
       !onlyAddsDefaults ||
       !isDeepStrictEqual(formulasOf(calculations), formulasOf(current.calculations))

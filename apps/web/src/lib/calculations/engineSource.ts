@@ -11,6 +11,7 @@
  */
 export const ENGINE_SOURCE = String.raw`
 import ast
+import copy
 import json
 import math
 import statistics
@@ -229,8 +230,16 @@ def _blocked_attribute(expr):
     except SyntaxError:
         return None
     for node in ast.walk(tree):
-        if isinstance(node, ast.Attribute) and node.attr.startswith(_BLOCKED_ATTRIBUTE_PREFIXES):
-            return node.attr
+        # A class pattern (case o(gi_frame=f)) reads attributes too.
+        if isinstance(node, ast.Attribute):
+            names = [node.attr]
+        elif isinstance(node, ast.MatchClass):
+            names = node.kwd_attrs
+        else:
+            continue
+        for attr in names:
+            if attr.startswith(_BLOCKED_ATTRIBUTE_PREFIXES):
+                return attr
     return None
 
 
@@ -310,8 +319,8 @@ def dry_run(body):
     formulas = calculation_formulas(body.get("calculations"))
 
     namespace = _base_namespace(values)
-    # A formula may rebind "values"; report the answers it was given.
-    coerced = namespace["values"]
+    # Formulas may rebind or mutate "values"; report the answers they were given.
+    coerced = copy.deepcopy(namespace["values"])
     order, unresolved = _resolve_order(formulas)
     outcomes = {}
     failed = set()
