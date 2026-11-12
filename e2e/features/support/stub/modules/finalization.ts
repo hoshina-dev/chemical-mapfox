@@ -8,7 +8,8 @@ import type { StubContext } from "../types.js";
  *  - ticketing  GET   /api/v1/tickets/{id}            → the FINALIZING ticket
  *  - ticketing  PATCH /api/v1/tickets/{id}/status     → the final close (→ CLOSED)
  *  - em         GET   /api/experiments/{id}           → context (calculations + report_status)
- *  - em         POST  /api/experiments/{id}/calculate → fills calculation results
+ *  - em         PUT   /api/experiments/{id}           → stores the values and
+ *                     the results the browser engine computed
  *  - em         POST  /api/experiments/{id}/report/generate  → queues report (async)
  *  - em         GET   /api/experiments/{id}/report/download  → presigned URL once ready
  *
@@ -26,10 +27,8 @@ import type { StubContext } from "../types.js";
 type Scalar = string | number | boolean | null;
 
 interface SeededCalculation {
-  /** Human-readable formula shown in the UI. */
+  /** Evaluated for real by the browser's Pyodide engine. */
   formula: string;
-  /** Evaluated against the experiment values when calculations run. */
-  compute: (values: Record<string, number>) => number;
   /** Populated once calculations have been run. */
   result?: Scalar;
 }
@@ -63,10 +62,6 @@ const store: FinalizationStore = ((
 
 const ISO = "2025-03-01T08:00:00.000Z";
 
-function round(n: number): number {
-  return Math.round(n * 1000) / 1000;
-}
-
 /**
  * Seed a ticket sitting in FINALIZING with an experiment context whose template
  * defines one calculation (no result yet) and no report. Returns the contextId.
@@ -88,8 +83,7 @@ export function seedFinalizingExperiment(contextId: string): void {
     values: { mass_pure: 9, mass_total: 10 },
     calculations: {
       purity: {
-        formula: "mass_pure / mass_total * 100",
-        compute: (v) => round((v.mass_pure / v.mass_total) * 100),
+        formula: "round(values['mass_pure'] / values['mass_total'] * 100)",
       },
     },
     reportStatus: null,
@@ -205,9 +199,15 @@ async function handle(ctx: StubContext): Promise<boolean> {
       return ctx.json(200, experimentWire(exp));
     }
 
-    if (method === "POST" && sub === "calculate") {
-      for (const calc of Object.values(exp.calculations)) {
-        calc.result = calc.compute(exp.values);
+    if (method === "PUT" && path.length === 3) {
+      const body = (await ctx.readBody()) as {
+        values?: Record<string, number>;
+        calculations?: Record<string, { result?: Scalar }>;
+      };
+      if (body.values) exp.values = body.values;
+      for (const [name, calc] of Object.entries(exp.calculations)) {
+        const sent = body.calculations?.[name];
+        calc.result = sent && "result" in sent ? sent.result : "";
       }
       return ctx.json(200, experimentWire(exp));
     }

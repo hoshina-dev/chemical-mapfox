@@ -41,6 +41,13 @@
       "title": "Nie udało się załadować tej sekcji",
       "body": "Usługa nie odpowiedziała na czas. Reszta strony nadal działa.",
       "retry": "Ponów"
+    },
+    "calculationEngine": {
+      "load": "Nie udało się uruchomić silnika obliczeniowego. Sprawdź połączenie i spróbuj ponownie.",
+      "timeout": "Obliczenia przekroczyły limit czasu 5 s — sprawdź, czy któraś formuła nie zapętla się bez końca.",
+      "engine": "Błąd silnika obliczeniowego: {detail}",
+      "tooLarge": "Wyniki są zbyt duże, aby je zapisać. Sprawdź, czy któraś formuła nie tworzy bardzo dużej wartości.",
+      "save": "Nie udało się połączyć z serwerem: {detail}"
     }
   },
   "settings": {
@@ -554,7 +561,11 @@
       "fixFormulaModalTitle": "Popraw formułę obliczeń",
       "fixFormulaModalBody": "Edytuj poniższą formułę(-y) i zapisz. Zmienia to tylko obliczenia tego eksperymentu — uruchom ponownie obliczenia po zapisaniu, aby zobaczyć nowy wynik.",
       "fixFormulaErrorTitle": "Nie udało się zapisać formuły",
-      "saveFormula": "Zapisz formułę"
+      "saveFormula": "Zapisz formułę",
+      "calcLoadFailed": "Nie udało się wczytać obliczeń tego eksperymentu.",
+      "calcSaveFailed": "Nie udało się zapisać wyników obliczeń.",
+      "calcInputsChanged": "Wartości lub formuły zmieniły się w trakcie obliczeń. Oblicz ponownie.",
+      "calcNoResult": "Co najmniej jedno obliczenie nie dało wyniku. Sprawdź formuły i wartości, a następnie spróbuj ponownie."
     },
     "actions": {
       "notAllowedSubmit": "Nie masz uprawnień do przesłania tego eksperymentu.",
@@ -867,8 +878,7 @@
       "createSample": "Nie udało się utworzyć próbki.",
       "createTemplate": "Nie udało się utworzyć szablonu.",
       "saveTemplate": "Nie udało się zapisać szablonu.",
-      "deleteTemplate": "Nie udało się usunąć szablonu.",
-      "testCalculations": "Nie udało się uruchomić obliczeń."
+      "deleteTemplate": "Nie udało się usunąć szablonu."
     }
   },
   "pdfEditor": {

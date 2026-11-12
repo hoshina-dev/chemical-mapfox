@@ -39,6 +39,7 @@ export default defineConfig({
         "src/lib/oauth/pkce.ts",
         "src/lib/oauth/redirect.ts",
         "src/lib/oauth/store.ts",
+        "src/lib/calculations/runner.ts",
         "src/lib/staff/labValues.ts",
         "src/lib/staff/formulas.ts",
         "src/lib/staff/onboarding.ts",

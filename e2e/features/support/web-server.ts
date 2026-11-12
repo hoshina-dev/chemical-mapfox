@@ -1,4 +1,4 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 
 import { REPO_ROOT, WEB_BOOT_TIMEOUT_MS } from "./config.js";
 import { runtime } from "./runtime.js";
@@ -51,6 +51,11 @@ async function waitForReady(timeoutMs: number): Promise<void> {
 }
 
 export async function startWebServer(): Promise<void> {
+  // `pnpm dev` does this too; the calculation engine loads Pyodide from public/.
+  execFileSync("pnpm", ["--filter", "web", "exec", "node", "scripts/copy-pyodide.mjs"], {
+    cwd: REPO_ROOT,
+    stdio: "inherit",
+  });
   child = spawn(
     "pnpm",
     ["--filter", "web", "exec", "next", "dev", "--port", String(runtime.webPort)],
