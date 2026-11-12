@@ -9,37 +9,36 @@ vi.mock("@/lib/collab/room", () => ({ hydrate: vi.fn(), persistNow: vi.fn() }));
 vi.mock("@/lib/ticketing/client", () => ({ ticketsApi: {} }));
 vi.mock("@/lib/experiment-manager/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/experiment-manager/client")>();
-  return { ...actual, getExperimentJson: vi.fn(), updateExperiment: vi.fn() };
+  return { ...actual, getExperimentJson: vi.fn(), updateExperimentJson: vi.fn() };
 });
 
 import { revalidatePath } from "next/cache";
 
 import { logHandledError } from "@/lib/log/handled";
 import {
-  type ExperimentDetail,
   ExperimentManagerError,
   getExperimentJson,
-  updateExperiment,
+  updateExperimentJson,
 } from "@/lib/experiment-manager/client";
 
 import { getCalculationInputs, saveCalculationResults } from "./workflow";
 
-const forms = {
-  clientForm: { name: "Client", questions: [] },
-  labForm: { name: "Lab", questions: [{ id: "x", type: "number", label: "X" }] },
-};
+// Forms as text: the default past 2^53 must reach the PUT unchanged.
+const clientForm = '{"name":"Client","questions":[]}';
+const labForm =
+  '{"name":"Lab","questions":[{"id":"x","type":"number","label":"X"},{"id":"d","type":"number","label":"D","config":{"default":9007199254740993}},{"id":"g","type":"repeatable-group","label":"G","config":{"count":2,"questions":[{"id":"r","type":"number","label":"R","default":1.0}]}}]}';
 
 /** Stored experiment text, as experiment-manager returns it. */
 function storedJson(values = '{"x":10}', calculations = '{"twice":{"formula":"values[\'x\'] * 2","result":""}}') {
-  return `{"clientForm":${JSON.stringify(forms.clientForm)},"labForm":${JSON.stringify(forms.labForm)},"calculations":${calculations},"values":${values}}`;
+  return `{"clientForm":${clientForm},"labForm":${labForm},"calculations":${calculations},"values":${values}}`;
 }
 
-function savedDetail(result: unknown, extra: Record<string, unknown> = {}): ExperimentDetail {
-  return {
-    ...forms,
-    calculations: { twice: { formula: "values['x'] * 2", result }, ...extra },
-    values: { x: 10 },
-  } as ExperimentDetail;
+/** The saved experiment text the PUT answers with. */
+function savedJson(result: string, calculations?: string) {
+  return storedJson(
+    undefined,
+    calculations ?? `{"twice":{"formula":"values['x'] * 2","result":${result}}}`,
+  );
 }
 
 async function inputsFor(text: string) {
@@ -50,7 +49,7 @@ async function inputsFor(text: string) {
 }
 
 const engineOutput = {
-  valuesJson: '{"x": 10, "d": 4.0}',
+  valuesJson: '{"x": 10, "d": 9007199254740993, "r": [1.0, 1.0]}',
   calculationsJson: '{"twice": {"formula": "values[\'x\'] * 2", "result": 20.0}}',
 };
 
@@ -100,14 +99,14 @@ describe("saveCalculationResults", () => {
     return saveCalculationResults("ctx", { fingerprint, ...output });
   }
 
-  it("PUTs the engine's text verbatim with the current forms", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue(savedDetail(20));
+  it("PUTs the engine's text and the stored forms verbatim", async () => {
+    vi.mocked(updateExperimentJson).mockResolvedValue(savedJson("20.0"));
 
     await expect(save()).resolves.toEqual({ success: true, data: null });
 
-    expect(updateExperiment).toHaveBeenCalledWith(
+    expect(updateExperimentJson).toHaveBeenCalledWith(
       "ctx",
-      `{"clientForm":${JSON.stringify(forms.clientForm)},"labForm":${JSON.stringify(forms.labForm)},"calculations":${engineOutput.calculationsJson},"values":${engineOutput.valuesJson}}`,
+      `{"clientForm":${clientForm},"labForm":${labForm},"calculations":${engineOutput.calculationsJson},"values":${engineOutput.valuesJson}}`,
     );
     expect(revalidatePath).toHaveBeenCalledWith("/internal/experiment/ctx");
   });
@@ -117,7 +116,7 @@ describe("saveCalculationResults", () => {
       success: false,
       error: "calcInputsChanged",
     });
-    expect(updateExperiment).not.toHaveBeenCalled();
+    expect(updateExperimentJson).not.toHaveBeenCalled();
   });
 
   it("refuses a change JSON.parse would not see", async () => {
@@ -129,10 +128,15 @@ describe("saveCalculationResults", () => {
     expect(res).toEqual({ success: false, error: "calcInputsChanged" });
   });
 
-  it("refuses output that changes an answer instead of only adding defaults", async () => {
-    const res = await save(storedJson(), { ...engineOutput, valuesJson: '{"x": 99}' });
+  it.each([
+    ["changes an answer", '{"x": 99, "d": 9007199254740993}'],
+    ["changes a large answer by one", '{"x": 10, "big": 9007199254740992}'],
+    ["adds an answer that has no default", '{"x": 10, "extra": 1}'],
+  ])("refuses output that %s", async (_, valuesJson) => {
+    const stored = valuesJson.includes("big") ? '{"x":10,"big":9007199254740993}' : '{"x":10}';
+    const res = await save(storedJson(stored), { ...engineOutput, valuesJson }, storedJson(stored));
     expect(res).toEqual({ success: false, error: "calcSaveFailed" });
-    expect(updateExperiment).not.toHaveBeenCalled();
+    expect(updateExperimentJson).not.toHaveBeenCalled();
   });
 
   it("refuses output for formulas other than the stored ones", async () => {
@@ -141,7 +145,7 @@ describe("saveCalculationResults", () => {
       calculationsJson: '{"twice": {"formula": "1", "result": 1}}',
     });
     expect(res).toEqual({ success: false, error: "calcSaveFailed" });
-    expect(updateExperiment).not.toHaveBeenCalled();
+    expect(updateExperimentJson).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -156,28 +160,35 @@ describe("saveCalculationResults", () => {
     expect(getExperimentJson).not.toHaveBeenCalled();
   });
 
-  it("detects a backend that kept its old results", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue(savedDetail(18));
-    await expect(save()).resolves.toEqual({ success: false, error: "calcSaveFailed" });
+  it.each([
+    ["kept its old result", savedJson("18")],
+    ["changed a large result", savedJson("9007199254740992")],
+    ["dropped the calculation", savedJson("", "{}")],
+    ["stored a legacy string", savedJson("", '{"twice":"values[\'x\'] * 2"}')],
+  ])("detects a backend that %s", async (_, response) => {
+    vi.mocked(updateExperimentJson).mockResolvedValue(response);
+    const output = _ === "changed a large result"
+      ? { ...engineOutput, calculationsJson: '{"twice": {"formula": "values[\'x\'] * 2", "result": 9007199254740993}}' }
+      : engineOutput;
+    await expect(save(storedJson(), output)).resolves.toEqual({ success: false, error: "calcSaveFailed" });
     expect(logHandledError).toHaveBeenCalled();
   });
 
-  it("detects a calculation the backend did not return", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue({ ...savedDetail(20), calculations: {} } as ExperimentDetail);
-    await expect(save()).resolves.toEqual({ success: false, error: "calcSaveFailed" });
-  });
-
-  it("accepts -0.0 stored back as 0.0", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue(savedDetail(0));
+  it.each([
+    ["-0.0 stored back as 0.0", "-0.0", "0.0"],
+    ["1e20 stored back as an integer", "1e+20", "100000000000000000000"],
+    ["a nested float list", "[1.5, [2.0]]", "[1.5, [2.0]]"],
+  ])("accepts %s", async (_, sent, stored) => {
+    vi.mocked(updateExperimentJson).mockResolvedValue(savedJson(stored));
     const res = await save(storedJson(), {
       ...engineOutput,
-      calculationsJson: '{"twice": {"formula": "values[\'x\'] * 2", "result": -0.0}}',
+      calculationsJson: `{"twice": {"formula": "values['x'] * 2", "result": ${sent}}}`,
     });
     expect(res).toEqual({ success: true, data: null });
   });
 
   it("asks for a rerun when a result is still empty", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue(savedDetail(null));
+    vi.mocked(updateExperimentJson).mockResolvedValue(savedJson("null"));
     const res = await save(storedJson(), {
       ...engineOutput,
       calculationsJson: '{"twice": {"formula": "values[\'x\'] * 2", "result": null}}',
@@ -186,15 +197,15 @@ describe("saveCalculationResults", () => {
   });
 
   it("surfaces the backend's error", async () => {
-    vi.mocked(updateExperiment).mockRejectedValue(
+    vi.mocked(updateExperimentJson).mockRejectedValue(
       new ExperimentManagerError("failed", 422, { detail: "Experiment context violates schema" }),
     );
     const res = await save();
     expect(res.success).toBe(false);
   });
 
-  it("treats an experiment without values as empty", async () => {
-    vi.mocked(updateExperiment).mockResolvedValue({ ...forms, calculations: {}, values: {} } as ExperimentDetail);
+  it("treats an experiment without forms or values as empty", async () => {
+    vi.mocked(updateExperimentJson).mockResolvedValue('{"calculations":{},"values":{}}');
     const res = await save("{}", { valuesJson: "{}", calculationsJson: "{}" }, "{}");
     expect(res).toEqual({ success: true, data: null });
   });

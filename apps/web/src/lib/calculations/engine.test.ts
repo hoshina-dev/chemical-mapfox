@@ -185,13 +185,44 @@ describe("calculation engine", () => {
     expect(report.calculations.ok?.result).toBe(8);
   });
 
-  it("does not let one run's formula change math for the next", () => {
-    run(draft({ tamper: "math.pi = 3\nmath.extra = 1\n1" }));
-    const calcs = outcomes(draft({ pi: "math.pi", extra: "math.extra" }));
+  it("does not let one run's formula change shared objects for the next", () => {
+    run(draft({ tamper: "math.pi = 3\nmath.extra = 1\nmean.memo = 42\n1" }));
+    const calcs = outcomes(draft({ pi: "math.pi", extra: "math.extra", memo: "mean.memo" }));
     expect(calcs.pi?.result).toBe(Math.PI);
     expect(calcs.extra?.error?.message).toBe(
       "Calculation error in 'extra': module 'math' has no attribute 'extra'",
     );
+    expect(calcs.memo?.error?.message).toBe(
+      "Calculation error in 'memo': 'function' object has no attribute 'memo'",
+    );
+  });
+
+  it("reports the given answers when a formula rebinds values", () => {
+    const { report } = run(draft({ m: "values = [1, 2, 3]\nmean(values)" }, { a: 1 }));
+    expect(report.calculations.m?.result).toBe(2);
+    expect(report.values).toMatchObject({ a: 1 });
+  });
+
+  it("rejects frame and private attributes that escape the sandbox", () => {
+    const escape =
+      "L = []\ng = (x[0].gi_frame.f_back.f_builtins for x in [L])\nL.append(g)\n[*g][0]";
+    const calcs = outcomes(draft({ escape, private: "math._x", ok: "math.sqrt(4)" }));
+    expect(calcs.escape?.error?.kind).toBe("forbidden_attribute");
+    expect(calcs.escape?.error?.message).toMatch(/^Invalid expression in 'escape': attribute '\w+' not allowed$/);
+    expect(calcs.private?.error?.kind).toBe("forbidden_attribute");
+    // Python normalizes identifiers (NFKC), so a fullwidth "＿" is still "_".
+    const unicode = outcomes(draft({ u: "mean._\uff3fglobals_\uff3f" })).u;
+    expect(unicode?.error?.kind).toBe("forbidden_attribute");
+    expect(calcs.ok?.result).toBe(2);
+  });
+
+  it("reports a self-referential result against its formula", () => {
+    const calcs = outcomes(draft({ loop: "a = []\na.append(a)\na", ok: "1" }));
+    expect(calcs.loop).toMatchObject({
+      status: "error",
+      error: { message: "Calculation error in 'loop': a list result can't be saved" },
+    });
+    expect(calcs.ok?.result).toBe(1);
   });
 
   it("reports question ids used more than once", () => {

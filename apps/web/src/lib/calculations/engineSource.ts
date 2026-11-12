@@ -28,16 +28,18 @@ CALC_BUILTINS = {
     "stdev": statistics.stdev,
 }
 
-# Formulas can assign to math's attributes (math.pi = 3). The backend runs each
-# request in a fresh process; this interpreter is reused, so restore it.
-_MATH_STATE = dict(vars(math))
+# Formulas can set attributes on what they're given (math.pi = 3, mean.x = 1).
+# The backend runs each request in a fresh process; this interpreter is
+# reused, so restore them.
+_SHARED = (math, statistics.mean, statistics.median, statistics.stdev)
+_SHARED_STATE = [dict(vars(obj)) for obj in _SHARED]
 
 
-def _reset_math():
-    state = vars(math)
-    for name in [name for name in state if name not in _MATH_STATE]:
-        del state[name]
-    state.update(_MATH_STATE)
+def _reset_shared_state():
+    for obj, saved in zip(_SHARED, _SHARED_STATE):
+        state = vars(obj)
+        state.clear()
+        state.update(saved)
 
 
 def iter_questions(form, expand_repeatable_groups=True):
@@ -215,6 +217,23 @@ def _base_namespace(values):
     }
 
 
+# Generator/frame attributes reach builtins without "__" (gi_frame.f_back...).
+# The backend runs each request in a throwaway process; here an escape would
+# run in a staff member's browser and persist in the shared interpreter.
+_BLOCKED_ATTRIBUTE_PREFIXES = ("_", "gi_", "cr_", "ag_", "f_", "tb_", "co_")
+
+
+def _blocked_attribute(expr):
+    try:
+        tree = ast.parse(expr, mode="exec")
+    except SyntaxError:
+        return None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and node.attr.startswith(_BLOCKED_ATTRIBUTE_PREFIXES):
+            return node.attr
+    return None
+
+
 def _error(kind, message, names=None):
     return {"kind": kind, "message": message, "names": names or []}
 
@@ -223,6 +242,12 @@ def _eval_one(name, expr, namespace):
     if "__" in expr:
         return None, _error(
             "dunder", f"Invalid expression in '{name}': dunder access not allowed"
+        )
+    blocked = _blocked_attribute(expr)
+    if blocked is not None:
+        return None, _error(
+            "forbidden_attribute",
+            f"Invalid expression in '{name}': attribute '{blocked}' not allowed",
         )
     try:
         value = _eval_formula(expr, namespace)
@@ -275,7 +300,7 @@ def _jsonable(value):
 
 
 def dry_run(body):
-    _reset_math()
+    _reset_shared_state()
     draft = {
         "clientForm": body.get("clientForm"),
         "labForm": body.get("labForm"),
@@ -285,6 +310,8 @@ def dry_run(body):
     formulas = calculation_formulas(body.get("calculations"))
 
     namespace = _base_namespace(values)
+    # A formula may rebind "values"; report the answers it was given.
+    coerced = namespace["values"]
     order, unresolved = _resolve_order(formulas)
     outcomes = {}
     failed = set()
@@ -348,7 +375,7 @@ def dry_run(body):
         try:
             outcome["result"] = _jsonable(outcome["result"])
             json.dumps(outcome["result"], allow_nan=False)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, RecursionError):
             kind = type(namespace.get(name)).__name__
             outcome.update(
                 status="error",
@@ -364,7 +391,7 @@ def dry_run(body):
         referenced |= _referenced_value_keys(expr)
 
     return {
-        "values": {name: _finite(value) for name, value in namespace["values"].items()},
+        "values": {name: _finite(value) for name, value in coerced.items()},
         "order": order,
         "calculations": {name: outcomes[name] for name in formulas if name in outcomes},
         "missing_values": sorted(referenced - set(values)),

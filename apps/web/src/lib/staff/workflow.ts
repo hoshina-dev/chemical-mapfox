@@ -16,6 +16,7 @@ import {
   getExperimentJson,
   getReportDownloadUrl,
   updateExperiment,
+  updateExperimentJson,
   updateExperimentCalculations,
   type ExperimentDetail,
 } from "@/lib/experiment-manager/client";
@@ -222,34 +223,51 @@ export async function runCalculations(
 
 type JsonObject = Record<string, unknown>;
 
+const { rawJSON, isRawJSON } = JSON as unknown as {
+  rawJSON(text: string): { rawJSON: string };
+  isRawJSON(value: unknown): value is { rawJSON: string };
+};
+
 /**
- * JSON.parse that keeps each number's source text, so 10 vs 10.0 and integers
- * past 2^53 stay distinct when comparing what Python will see.
+ * JSON.parse that keeps each number's source text, so re-serializing is exact
+ * (10.0 stays a float for Python, integers past 2^53 survive).
  */
 function parseExact(text: string): unknown {
   const reviver = (_key: string, value: unknown, context?: { source?: string }) =>
-    typeof value === "number" ? { "#": context?.source } : value;
+    typeof value === "number" ? rawJSON(context?.source ?? String(value)) : value;
   return JSON.parse(text, reviver as (key: string, value: unknown) => unknown);
 }
 
 function asObject(value: unknown): JsonObject | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
+  return typeof value === "object" && value !== null && !Array.isArray(value) && !isRawJSON(value)
     ? (value as JsonObject)
     : null;
 }
 
 function parseObject(text: string): JsonObject | null {
   try {
-    return asObject(JSON.parse(text));
+    return asObject(parseExact(text));
   } catch {
     return null;
   }
 }
 
-/** Equal as stored: JSONB writes -0.0 back as 0.0. */
-function sameJson(a: unknown, b: unknown): boolean {
-  const normalize = (v: unknown): unknown => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
-  return isDeepStrictEqual(normalize(a), normalize(b));
+/** Numbers as Python's == sees them: exact integers, 5.0 == 5, -0.0 == 0. */
+function pythonEqual(a: unknown, b: unknown): boolean {
+  const canonical = (value: unknown): unknown => {
+    if (isRawJSON(value)) {
+      const source = value.rawJSON;
+      if (!/[.eE]/.test(source)) return `#${BigInt(source)}`;
+      const n = Number(source);
+      return Number.isInteger(n) ? `#${BigInt(n)}` : `#${n}`;
+    }
+    if (Array.isArray(value)) return value.map(canonical);
+    const object = asObject(value);
+    return object
+      ? Object.fromEntries(Object.entries(object).map(([k, v]) => [k, canonical(v)]))
+      : value;
+  };
+  return isDeepStrictEqual(canonical(a), canonical(b));
 }
 
 function formulasOf(calculations: unknown): Record<string, string> {
@@ -259,6 +277,25 @@ function formulasOf(calculations: unknown): Record<string, string> {
       typeof calc === "string" ? calc : String((calc as { formula?: unknown }).formula),
     ]),
   );
+}
+
+/** Question ids the engine fills from a default, as `collect_values` does. */
+function defaultedIds(exp: JsonObject): Set<string> {
+  const ids = new Set<string>();
+  const visit = (question: unknown) => {
+    const q = asObject(question) ?? {};
+    const config = asObject(q.config) ?? {};
+    if (q.type === "repeatable-group") {
+      if (Array.isArray(config.questions)) config.questions.forEach(visit);
+    } else if (typeof q.id === "string" && (config.default ?? q.default) != null) {
+      ids.add(q.id);
+    }
+  };
+  for (const form of [exp.clientForm, exp.labForm]) {
+    const questions = asObject(form)?.questions;
+    if (Array.isArray(questions)) questions.forEach(visit);
+  }
+  return ids;
 }
 
 /** The inputs a run depends on, compared exactly to detect changes. */
@@ -318,31 +355,30 @@ export async function saveCalculationResults(
     if (fingerprintOf(currentJson) !== fingerprint) {
       return { success: false, error: t("calcInputsChanged") };
     }
-    const current = JSON.parse(currentJson) as ExperimentDetail;
-    // A run may only add question defaults, never change an answer.
-    const keepsAnswers = Object.entries(current.values ?? {}).every(([id, answer]) =>
-      sameJson(values[id], answer),
-    );
+    const current = asObject(parseExact(currentJson)) ?? {};
+    const stored = asObject(current.values) ?? {};
+    const defaults = defaultedIds(current);
+    // A run only fills in question defaults; it never changes an answer.
+    const onlyAddsDefaults =
+      Object.entries(stored).every(([id, answer]) => pythonEqual(values[id], answer)) &&
+      Object.keys(values).every((id) => id in stored || defaults.has(id));
     if (
-      !keepsAnswers ||
+      !onlyAddsDefaults ||
       !isDeepStrictEqual(formulasOf(calculations), formulasOf(current.calculations))
     ) {
       return { success: false, error: t("calcSaveFailed") };
     }
 
-    const exp = await updateExperiment(
+    const savedJson = await updateExperimentJson(
       contextId,
       `{"clientForm":${JSON.stringify(current.clientForm)},"labForm":${JSON.stringify(current.labForm)},"calculations":${calculationsJson},"values":${valuesJson}}`,
     );
     revalidatePath(experimentWorkspacePath(contextId));
+    const saved = asObject(asObject(parseExact(savedJson))?.calculations) ?? {};
     // An experiment-manager that predates storing `result` on PUT keeps the old ones.
-    const savedAsSent = Object.entries(calculations).every(([name, calc]) => {
-      const saved = exp.calculations?.[name];
-      return (
-        typeof saved === "object" &&
-        sameJson(saved.result, (calc as { result?: unknown }).result)
-      );
-    });
+    const savedAsSent = Object.entries(calculations).every(([name, calc]) =>
+      pythonEqual(asObject(saved[name])?.result, asObject(calc)?.result),
+    );
     if (!savedAsSent) {
       logHandledError(new Error("calculation results were not stored"), {
         action: "saveCalculationResultsAction",
@@ -350,6 +386,7 @@ export async function saveCalculationResults(
       });
       return { success: false, error: t("calcSaveFailed") };
     }
+    const exp = JSON.parse(savedJson) as ExperimentDetail;
     if (!calculationsReady(exp)) return { success: false, error: t("calcNoResult") };
     return { success: true, data: null };
   } catch (error) {

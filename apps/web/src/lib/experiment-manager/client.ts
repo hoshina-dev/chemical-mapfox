@@ -162,11 +162,20 @@ export async function createExperiment(body: ExperimentCreate) {
   });
 }
 
-export async function updateExperiment(expId: string, body: ExperimentUpdate | string) {
+export async function updateExperiment(expId: string, body: ExperimentUpdate) {
   return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}`, {
     method: "PUT",
-    body: typeof body === "string" ? body : JSON.stringify(body),
+    body: JSON.stringify(body),
   });
+}
+
+/** PUT with a JSON-text body, answering with the saved experiment as text. */
+export async function updateExperimentJson(expId: string, body: string): Promise<string> {
+  const res = await emRequest(`/api/experiments/${encodeURIComponent(expId)}`, {
+    method: "PUT",
+    body,
+  });
+  return res.text();
 }
 
 /**
