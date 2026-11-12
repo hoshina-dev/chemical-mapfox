@@ -41,6 +41,11 @@
       "title": "Nie udało się załadować tej sekcji",
       "body": "Usługa nie odpowiedziała na czas. Reszta strony nadal działa.",
       "retry": "Ponów"
+    },
+    "calculationEngine": {
+      "load": "Nie udało się uruchomić silnika obliczeniowego. Sprawdź połączenie i spróbuj ponownie.",
+      "timeout": "Obliczenia przekroczyły limit czasu 5 s — sprawdź, czy któraś formuła nie zapętla się bez końca.",
+      "engine": "Błąd silnika obliczeniowego: {detail}"
     }
   },
   "settings": {
@@ -867,8 +872,7 @@
       "createSample": "Nie udało się utworzyć próbki.",
       "createTemplate": "Nie udało się utworzyć szablonu.",
       "saveTemplate": "Nie udało się zapisać szablonu.",
-      "deleteTemplate": "Nie udało się usunąć szablonu.",
-      "testCalculations": "Nie udało się uruchomić obliczeń."
+      "deleteTemplate": "Nie udało się usunąć szablonu."
     }
   },
   "pdfEditor": {

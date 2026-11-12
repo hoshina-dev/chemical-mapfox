@@ -41,6 +41,11 @@
       "title": "Could not load this section",
       "body": "The service did not respond in time. The rest of the page still works.",
       "retry": "Retry"
+    },
+    "calculationEngine": {
+      "load": "Couldn't start the calculation engine. Check your connection and try again.",
+      "timeout": "Calculation exceeded its 5s time limit — check for a formula that loops without terminating.",
+      "engine": "The calculation engine failed: {detail}"
     }
   },
   "settings": {
@@ -867,8 +872,7 @@
       "createSample": "Could not create sample.",
       "createTemplate": "Could not create template.",
       "saveTemplate": "Could not save template.",
-      "deleteTemplate": "Could not delete template.",
-      "testCalculations": "Could not run calculations."
+      "deleteTemplate": "Could not delete template."
     }
   },
   "pdfEditor": {

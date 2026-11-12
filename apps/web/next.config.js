@@ -1,11 +1,29 @@
+import { createRequire } from "node:module";
+
 import createNextIntlPlugin from "next-intl/plugin";
+
+const { version: pyodideVersion } = createRequire(import.meta.url)(
+  "pyodide/package.json",
+);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
   transpilePackages: ["@repo/api-client", "@repo/forms"],
+  // Where the calculation worker loads Pyodide from (scripts/copy-pyodide.mjs).
+  env: { NEXT_PUBLIC_PYODIDE_VERSION: pyodideVersion },
   async headers() {
     return [
+      {
+        // Versioned path, so a cached copy can never be stale.
+        source: "/pyodide/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
       {
         // One click on the consent screen grants access: never allow framing.
         source: "/oauth/authorize",

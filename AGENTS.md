@@ -161,22 +161,30 @@ experiment-manager types (`experiment-manager.d.ts`, used as the
 `pnpm --filter @repo/api-client codegen` (runs via `pnpm dlx`; skips services
 that are unreachable). Generated dirs are committed and excluded from eslint.
 
-## Testing formulas during onboarding
+## Calculation engine (Pyodide, in the browser)
 
-The template builder's Live preview drawer ends with a calculation tester
-(`CalculationTester.tsx`) that runs the draft's formulas through
-experiment-manager's real calculation engine via the stateless
-`POST /api/calculations/evaluate` — no template or experiment has to exist and
-nothing is persisted. It reports each formula's own status, so a typo'd
-`values['question_id']` surfaces during authoring instead of after a technician
-has entered real measurements.
+Staff UI calculations run in the browser: `apps/web/src/lib/calculations/`
+runs a Python port of experiment-manager's calculation service
+(`engineSource.ts`) in Pyodide inside a Web Worker. Pyodide is pinned to
+0.27.x (CPython 3.12, the backend's version: formula semantics such as
+comprehensions depend on it), served from `public/pyodide/<version>/` by
+`scripts/copy-pyodide.mjs` (run by `dev`/`build`), and fetched only when a
+page first calculates. A run is killed after 5 s, the backend sandbox's limit.
 
-Because the endpoint never fails on a bad formula, `testCalculationsAction`
-returning `success: false` means the *request* failed; per-formula problems
-arrive inside a successful response. The e2e double lives in
-`e2e/features/support/stub/modules/calculation-dry-run.ts` and mirrors the
-contract, not Python semantics — engine behaviour is experiment-manager's own
-test suite's job.
+- **Template builder** — the Live preview's calculation tester
+  (`CalculationTester.tsx`) evaluates the draft with nothing persisted.
+- **FINALIZING "Calculate"** (and the PDF editor's real preview) reads the
+  stored experiment, evaluates it, and saves values + results with the
+  ordinary `PUT /api/experiments/{id}`, after re-reading to check nothing
+  changed meanwhile. Both travel as the JSON text Python wrote, so `5.0` stays
+  `5.0` in the PDF. Any other PUT omits results, which clears them
+  (`templateToExperimentUpdate`).
+- **MCP tools** still call the backend (`/calculate`, `/calculations/evaluate`).
+  When the engine changes, change experiment-manager's
+  `calculation_service.py` too.
+
+E2E stubs only store what the browser computed; the formulas they seed are real
+Python, evaluated by the real engine.
 
 ## Collaborative editing (staff workspace)
 

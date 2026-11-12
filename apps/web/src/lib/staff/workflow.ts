@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isDeepStrictEqual } from "node:util";
+
 import type { AnswerValue } from "@repo/forms";
 import { FormAnswers, validateAnswers } from "@repo/forms";
 import { revalidatePath } from "next/cache";
@@ -11,9 +13,11 @@ import {
   calculateExperiment,
   generateReport,
   getExperiment,
+  getExperimentJson,
   getReportDownloadUrl,
   updateExperiment,
   updateExperimentCalculations,
+  type ExperimentDetail,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
@@ -216,6 +220,106 @@ export async function runCalculations(
   }
 }
 
+function parseJsonObject(text: string): Record<string, unknown> | null {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function formulasOf(calculations: ExperimentDetail["calculations"]): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(calculations ?? {}).map(([name, calc]) => [
+      name,
+      typeof calc === "string" ? calc : calc.formula,
+    ]),
+  );
+}
+
+/** What the browser needs to run an experiment's calculations. */
+export interface CalculationInputs {
+  /** The stored experiment, unparsed; the engine reads it as a dry-run body. */
+  experimentJson: string;
+  /** Echoed back on save, which refuses if they changed in between. */
+  values: Record<string, unknown>;
+}
+
+/** The engine's output for `getCalculationInputs` (see `lib/calculations`). */
+export interface CalculationResultsInput {
+  startedFrom: Record<string, unknown>;
+  valuesJson: string;
+  calculationsJson: string;
+}
+
+export async function getCalculationInputs(
+  contextId: string,
+): Promise<ActionResult<CalculationInputs>> {
+  try {
+    const experimentJson = await getExperimentJson(contextId);
+    const exp = JSON.parse(experimentJson) as ExperimentDetail;
+    return { success: true, data: { experimentJson, values: exp.values ?? {} } };
+  } catch (error) {
+    logHandledError(error, { action: "getCalculationInputsAction", contextId });
+    return {
+      success: false,
+      error: errorMessage(error, "Could not load this experiment's calculations."),
+    };
+  }
+}
+
+/**
+ * Store results computed in the browser from `getCalculationInputs`, with the
+ * values they came from, the way `POST /calculate` does. Refuses if the values
+ * or formulas changed meanwhile; the window between this read and the PUT is
+ * not closed (experiment-manager has no versioning).
+ */
+export async function saveCalculationResults(
+  contextId: string,
+  { startedFrom, valuesJson, calculationsJson }: CalculationResultsInput,
+): Promise<ActionResult<null>> {
+  const calculations = parseJsonObject(calculationsJson) as
+    | ExperimentDetail["calculations"]
+    | null;
+  if (!parseJsonObject(valuesJson) || !calculations) {
+    return { success: false, error: "Could not save the calculation results." };
+  }
+  try {
+    const current = await getExperiment(contextId);
+    if (
+      !isDeepStrictEqual(current.values ?? {}, startedFrom) ||
+      !isDeepStrictEqual(formulasOf(current.calculations), formulasOf(calculations))
+    ) {
+      return {
+        success: false,
+        error: "The values or formulas changed while calculating. Calculate again.",
+      };
+    }
+    const exp = await updateExperiment(
+      contextId,
+      `{"clientForm":${JSON.stringify(current.clientForm)},"labForm":${JSON.stringify(current.labForm)},"calculations":${calculationsJson},"values":${valuesJson}}`,
+    );
+    revalidatePath(experimentWorkspacePath(contextId));
+    if (!calculationsReady(exp)) {
+      return {
+        success: false,
+        error:
+          "One or more calculations didn't produce a result. Check the formulas and values, then try again.",
+      };
+    }
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, { action: "saveCalculationResultsAction", contextId });
+    return {
+      success: false,
+      error: errorMessage(error, "Could not save the calculation results."),
+    };
+  }
+}
+
 /**
  * Verify `contextId` is a FINALIZING-stage ticket. Shared by the "fix values"
  * and "fix formula" paths so both stay restricted to FINALIZING — never
@@ -273,21 +377,14 @@ export async function updateFinalizingValues(
         error: `${tIssue("invalidTitle")}\n${formatAnswerIssues(tIssue, issues)}`,
       };
     }
-    const snapshot = state.wireSnapshot;
-    const calculations = Object.fromEntries(
-      Object.entries(snapshot.calculations).map(([name, calc]) => [
-        name,
-        typeof calc === "string" ? { formula: calc } : { formula: calc.formula },
-      ]),
-    );
     const values: Record<string, AnswerValue> = {
       ...(exp.values as Record<string, AnswerValue> | undefined),
       ...parsedInput.data,
     };
-    await updateExperiment(contextId, {
-      ...templateToExperimentUpdate(snapshot, values),
-      calculations,
-    });
+    await updateExperiment(
+      contextId,
+      templateToExperimentUpdate(state.wireSnapshot, values),
+    );
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: null };
   } catch (error) {
