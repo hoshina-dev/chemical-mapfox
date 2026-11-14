@@ -98,9 +98,10 @@ export default async function proxy(req: NextRequest) {
 // Skip only real static files by extension: a blanket "contains a dot" skip
 // let dotted /internal URLs (e.g. an encoded `..%2F` param) bypass the gate.
 // OAuth discovery/token endpoints are called by MCP clients without a cookie.
+// /pyodide is the public calculation runtime, cached as immutable.
 export const config = {
   matcher: [
-    "/((?!api|\\.well-known/oauth-|oauth/(?:register|token|revoke)$|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpe?g|webp|gif|ico|md|txt|xml)$).*)",
+    "/((?!api|\\.well-known/oauth-|oauth/(?:register|token|revoke)$|_next/static|_next/image|pyodide/|favicon.ico|.*\\.(?:svg|png|jpe?g|webp|gif|ico|md|txt|xml)$).*)",
     "/internal/:path*",
     "/admin/:path*",
   ],

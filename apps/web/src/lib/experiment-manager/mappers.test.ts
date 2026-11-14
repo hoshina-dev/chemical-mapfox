@@ -308,6 +308,16 @@ describe("templateToExperimentUpdate", () => {
     expect(body.calculations).toEqual(snapshot.calculations);
     expect(body.values).toEqual({ ph: 8 });
   });
+
+  it("drops stored results so the backend clears them", () => {
+    const snapshot = extractWireSnapshot({
+      clientForm: baseForm,
+      labForm,
+      calculations: { avg: { formula: "1", result: 1 }, legacy: "2" },
+    });
+    const body = templateToExperimentUpdate(snapshot, { ph: 8 });
+    expect(body.calculations).toEqual({ avg: { formula: "1" }, legacy: { formula: "2" } });
+  });
 });
 
 describe("toTemplateSummary", () => {

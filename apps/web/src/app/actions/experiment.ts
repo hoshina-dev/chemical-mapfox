@@ -5,13 +5,16 @@ import type { AnswerValue } from "@repo/forms";
 import type { ActionResult } from "@/app/actions/experiment-manager";
 import { getSession } from "@/lib/auth/dal";
 import {
+  type CalculationInputs,
+  type CalculationResultsInput,
   checkInSample,
   closeTicket,
   fixExperimentFormula,
   getReportStatus,
+  getCalculationInputs,
   getReportUrl,
   queueReport,
-  runCalculations,
+  saveCalculationResults,
   startExperiment,
   submitExperiment,
   updateFinalizingValues,
@@ -55,13 +58,25 @@ export async function startExperimentAction(
   return startExperiment(contextId);
 }
 
-export async function calculateExperimentAction(
+// Calculations run in the browser (lib/calculations): fetch the inputs, then
+// save what the engine produced.
+export async function getCalculationInputsAction(
   contextId: string,
+): Promise<ActionResult<CalculationInputs>> {
+  if (!(await isAdmin())) {
+    return { success: false, error: "You aren't allowed to run calculations." };
+  }
+  return getCalculationInputs(contextId);
+}
+
+export async function saveCalculationResultsAction(
+  contextId: string,
+  body: CalculationResultsInput,
 ): Promise<ActionResult<null>> {
   if (!(await isAdmin())) {
     return { success: false, error: "You aren't allowed to run calculations." };
   }
-  return runCalculations(contextId);
+  return saveCalculationResults(contextId, body);
 }
 
 export async function updateExperimentValuesAction(

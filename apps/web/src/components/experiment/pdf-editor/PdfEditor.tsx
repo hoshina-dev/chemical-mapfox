@@ -31,7 +31,6 @@ import {
 } from "react";
 
 import {
-  calculateExperimentAction,
   generateReportAction,
   getReportDownloadUrlAction,
   getReportStatusAction,
@@ -41,6 +40,10 @@ import {
   type PdfPreviewExperiment,
   savePdfTemplateAction,
 } from "@/app/actions/pdf";
+import {
+  calculateExperiment,
+  useEngineErrorMessage,
+} from "@/lib/calculations/calculateExperiment";
 import {
   templateBuilderPath,
   templatePdfPath,
@@ -571,6 +574,7 @@ export function PdfEditor({
 }: PdfEditorProps) {
   const t = useTranslations("pdfEditor");
   const router = useRouter();
+  const engineErrorMessage = useEngineErrorMessage();
   const [hist, hd] = useReducer(historyReducer, undefined, () => ({
     past: [],
     present: initialComponents,
@@ -1244,7 +1248,12 @@ export function PdfEditor({
       return;
     }
     setSavedSnapshot(JSON.stringify(payload));
-    await calculateExperimentAction(expId);
+    const calculated = await calculateExperiment(expId, engineErrorMessage);
+    if (!calculated.success) {
+      setPdfMsg({ text: calculated.error, ok: false });
+      setPdfBusy(false);
+      return;
+    }
     await generateReportAction(expId);
     let url: string | null = null;
     for (let i = 0; i < 30; i++) {
@@ -1279,7 +1288,7 @@ export function PdfEditor({
     } else {
       setPdfMsg({ text: t("pdfTimedOut"), ok: false });
     }
-  }, [selectedExpId, sampleId, lineageId, templateId, t]);
+  }, [selectedExpId, sampleId, lineageId, templateId, t, engineErrorMessage]);
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────
   useEffect(() => {

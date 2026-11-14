@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isDeepStrictEqual } from "node:util";
+
 import type { AnswerValue } from "@repo/forms";
 import { FormAnswers, validateAnswers } from "@repo/forms";
 import { revalidatePath } from "next/cache";
@@ -11,9 +13,12 @@ import {
   calculateExperiment,
   generateReport,
   getExperiment,
+  getExperimentJson,
   getReportDownloadUrl,
   updateExperiment,
+  updateExperimentJson,
   updateExperimentCalculations,
+  type ExperimentDetail,
 } from "@/lib/experiment-manager/client";
 import { errorMessage } from "@/lib/experiment-manager/errors";
 import {
@@ -216,6 +221,203 @@ export async function runCalculations(
   }
 }
 
+type JsonObject = Record<string, unknown>;
+
+const { rawJSON, isRawJSON } = JSON as unknown as {
+  rawJSON(text: string): { rawJSON: string };
+  isRawJSON(value: unknown): value is { rawJSON: string };
+};
+
+/**
+ * JSON.parse that keeps each number's source text, so re-serializing is exact
+ * (10.0 stays a float for Python, integers past 2^53 survive).
+ */
+function parseExact(text: string): unknown {
+  const reviver = (_key: string, value: unknown, context?: { source?: string }) =>
+    typeof value === "number" ? rawJSON(context?.source ?? String(value)) : value;
+  return JSON.parse(text, reviver as (key: string, value: unknown) => unknown);
+}
+
+function asObject(value: unknown): JsonObject | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value) && !isRawJSON(value)
+    ? (value as JsonObject)
+    : null;
+}
+
+function parseObject(text: string): JsonObject | null {
+  try {
+    return asObject(parseExact(text));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A number's exact decimal value, as JSONB stores it: 5.0 and 5, -0.0 and 0,
+ * 1e+23 and 100000000000000000000000 are the same.
+ */
+function decimalKey(source: string): string {
+  const match = /^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(source);
+  if (!match) return source;
+  const [, sign, whole = "", fraction = "", exponent = "0"] = match;
+  let digits = (whole + fraction).replace(/^0+/, "");
+  let power = Number(exponent) - fraction.length;
+  if (!digits) return "0";
+  while (digits.endsWith("0")) {
+    digits = digits.slice(0, -1);
+    power += 1;
+  }
+  return `${sign}${digits}e${power}`;
+}
+
+/** Equal as Python's == and JSONB see it (numbers by exact decimal value). */
+function pythonEqual(a: unknown, b: unknown): boolean {
+  const canonical = (value: unknown): unknown => {
+    if (isRawJSON(value)) return { number: decimalKey(value.rawJSON) };
+    if (Array.isArray(value)) return value.map(canonical);
+    const object = asObject(value);
+    return object
+      ? Object.fromEntries(Object.entries(object).map(([k, v]) => [k, canonical(v)]))
+      : value;
+  };
+  return isDeepStrictEqual(canonical(a), canonical(b));
+}
+
+function formulasOf(calculations: unknown): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(asObject(calculations) ?? {}).map(([name, calc]) => [
+      name,
+      typeof calc === "string" ? calc : String(asObject(calc)?.formula),
+    ]),
+  );
+}
+
+/** What `collect_values` fills in for unanswered questions, by id. */
+function defaultsOf(exp: JsonObject): Map<string, unknown> {
+  const defaults = new Map<string, unknown>();
+  const visit = (question: unknown, count?: number) => {
+    const q = asObject(question) ?? {};
+    const config = asObject(q.config) ?? {};
+    if (q.type === "repeatable-group") {
+      const repeat = isRawJSON(config.count) ? Number(config.count.rawJSON) : undefined;
+      if (Array.isArray(config.questions) && Number.isInteger(repeat)) {
+        for (const child of config.questions) visit(child, repeat);
+      }
+      return;
+    }
+    const value = config.default ?? q.default;
+    // First one wins, as in collect_values.
+    if (typeof q.id === "string" && value != null && !defaults.has(q.id)) {
+      defaults.set(q.id, count === undefined ? value : Array(count).fill(value));
+    }
+  };
+  for (const form of [exp.clientForm, exp.labForm]) {
+    const questions = asObject(form)?.questions;
+    if (Array.isArray(questions)) questions.forEach((q) => visit(q));
+  }
+  return defaults;
+}
+
+/** The inputs a run depends on, compared exactly to detect changes. */
+function fingerprintOf(experimentJson: string): string {
+  const exp = asObject(parseExact(experimentJson)) ?? {};
+  return JSON.stringify({ values: exp.values ?? {}, formulas: formulasOf(exp.calculations) });
+}
+
+/** What the browser needs to run an experiment's calculations. */
+export interface CalculationInputs {
+  /** The stored experiment, unparsed; the engine reads it as a dry-run body. */
+  experimentJson: string;
+  /** Echoed back on save, which refuses if the inputs changed in between. */
+  fingerprint: string;
+}
+
+/** The engine's output for `getCalculationInputs` (see `lib/calculations`). */
+export interface CalculationResultsInput {
+  fingerprint: string;
+  valuesJson: string;
+  calculationsJson: string;
+}
+
+export async function getCalculationInputs(
+  contextId: string,
+): Promise<ActionResult<CalculationInputs>> {
+  try {
+    const experimentJson = await getExperimentJson(contextId);
+    return {
+      success: true,
+      data: { experimentJson, fingerprint: fingerprintOf(experimentJson) },
+    };
+  } catch (error) {
+    logHandledError(error, { action: "getCalculationInputsAction", contextId });
+    const t = await getTranslations("staff.finalize");
+    return { success: false, error: errorMessage(error, t("calcLoadFailed")) };
+  }
+}
+
+/**
+ * Store results computed in the browser from `getCalculationInputs`, with the
+ * values they came from, the way `POST /calculate` does. Refuses if the inputs
+ * changed meanwhile; the window between this read and the PUT is not closed
+ * (experiment-manager has no versioning).
+ */
+export async function saveCalculationResults(
+  contextId: string,
+  { fingerprint, valuesJson, calculationsJson }: CalculationResultsInput,
+): Promise<ActionResult<null>> {
+  const t = await getTranslations("staff.finalize");
+  const values = parseObject(valuesJson);
+  const calculations = parseObject(calculationsJson);
+  if (!values || !calculations) return { success: false, error: t("calcSaveFailed") };
+
+  try {
+    const currentJson = await getExperimentJson(contextId);
+    if (fingerprintOf(currentJson) !== fingerprint) {
+      return { success: false, error: t("calcInputsChanged") };
+    }
+    const current = asObject(parseExact(currentJson)) ?? {};
+    const stored = asObject(current.values) ?? {};
+    const defaults = defaultsOf(current);
+    // A run only fills in question defaults; it never changes an answer.
+    const onlyAddsDefaults =
+      Object.entries(stored).every(([id, answer]) => pythonEqual(values[id], answer)) &&
+      Object.entries(values).every(
+        ([id, value]) =>
+          Object.hasOwn(stored, id) || (defaults.has(id) && pythonEqual(value, defaults.get(id))),
+      );
+    if (
+      !onlyAddsDefaults ||
+      !isDeepStrictEqual(formulasOf(calculations), formulasOf(current.calculations))
+    ) {
+      return { success: false, error: t("calcSaveFailed") };
+    }
+
+    const savedJson = await updateExperimentJson(
+      contextId,
+      `{"clientForm":${JSON.stringify(current.clientForm)},"labForm":${JSON.stringify(current.labForm)},"calculations":${calculationsJson},"values":${valuesJson}}`,
+    );
+    revalidatePath(experimentWorkspacePath(contextId));
+    const saved = asObject(asObject(parseExact(savedJson))?.calculations) ?? {};
+    // An experiment-manager that predates storing `result` on PUT keeps the old ones.
+    const savedAsSent = Object.entries(calculations).every(([name, calc]) =>
+      pythonEqual(asObject(saved[name])?.result, asObject(calc)?.result),
+    );
+    if (!savedAsSent) {
+      logHandledError(new Error("calculation results were not stored"), {
+        action: "saveCalculationResultsAction",
+        contextId,
+      });
+      return { success: false, error: t("calcSaveFailed") };
+    }
+    const exp = JSON.parse(savedJson) as ExperimentDetail;
+    if (!calculationsReady(exp)) return { success: false, error: t("calcNoResult") };
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, { action: "saveCalculationResultsAction", contextId });
+    return { success: false, error: errorMessage(error, t("calcSaveFailed")) };
+  }
+}
+
 /**
  * Verify `contextId` is a FINALIZING-stage ticket. Shared by the "fix values"
  * and "fix formula" paths so both stay restricted to FINALIZING — never
@@ -273,21 +475,14 @@ export async function updateFinalizingValues(
         error: `${tIssue("invalidTitle")}\n${formatAnswerIssues(tIssue, issues)}`,
       };
     }
-    const snapshot = state.wireSnapshot;
-    const calculations = Object.fromEntries(
-      Object.entries(snapshot.calculations).map(([name, calc]) => [
-        name,
-        typeof calc === "string" ? { formula: calc } : { formula: calc.formula },
-      ]),
-    );
     const values: Record<string, AnswerValue> = {
       ...(exp.values as Record<string, AnswerValue> | undefined),
       ...parsedInput.data,
     };
-    await updateExperiment(contextId, {
-      ...templateToExperimentUpdate(snapshot, values),
-      calculations,
-    });
+    await updateExperiment(
+      contextId,
+      templateToExperimentUpdate(state.wireSnapshot, values),
+    );
     revalidatePath(experimentWorkspacePath(contextId));
     return { success: true, data: null };
   } catch (error) {

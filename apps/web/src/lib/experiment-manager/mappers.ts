@@ -248,8 +248,9 @@ export function templateToCalculationDryRun(
 
 /**
  * Build the experiment-manager PUT body. Resend the verbatim wire snapshot from
- * GET (forms + calculations) plus the edited values — the backend validates
- * that forms match the template and only applies `values`.
+ * GET (forms + formulas) plus the edited values — the backend validates that
+ * they match. Results are left out, which clears them: they were computed from
+ * the old values.
  */
 export function templateToExperimentUpdate(
   snapshot: TemplateWireSnapshot,
@@ -258,7 +259,12 @@ export function templateToExperimentUpdate(
   return {
     clientForm: snapshot.clientForm,
     labForm: snapshot.labForm,
-    calculations: snapshot.calculations as Record<string, CalculationSnapshot>,
+    calculations: Object.fromEntries(
+      Object.entries(snapshot.calculations).map(([name, calc]) => [
+        name,
+        { formula: typeof calc === "string" ? calc : calc.formula },
+      ]),
+    ),
     values,
   };
 }

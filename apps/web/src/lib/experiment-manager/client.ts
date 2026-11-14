@@ -27,10 +27,7 @@ async function parseJson<T>(res: Response): Promise<T> {
   return JSON.parse(text) as T;
 }
 
-export async function emFetch<T>(
-  path: string,
-  init?: DownstreamInit,
-): Promise<T> {
+async function emRequest(path: string, init?: DownstreamInit): Promise<Response> {
   const url = `${getExperimentManagerUrl()}${path}`;
   let res: Response;
   try {
@@ -74,7 +71,14 @@ export async function emFetch<T>(
       body,
     );
   }
+  return res;
+}
 
+export async function emFetch<T>(
+  path: string,
+  init?: DownstreamInit,
+): Promise<T> {
+  const res = await emRequest(path, init);
   if (res.status === 204) return undefined as T;
   return parseJson<T>(res);
 }
@@ -145,6 +149,12 @@ export async function getExperiment(expId: string) {
   return emFetch<ExperimentDetail>(`/api/experiments/${encodeURIComponent(expId)}`);
 }
 
+/** The experiment as JSON text, for the calculation engine: parsing would turn 5.0 into 5. */
+export async function getExperimentJson(expId: string): Promise<string> {
+  const res = await emRequest(`/api/experiments/${encodeURIComponent(expId)}`);
+  return res.text();
+}
+
 export async function createExperiment(body: ExperimentCreate) {
   return emFetch<ExperimentDetail>("/api/experiments", {
     method: "POST",
@@ -157,6 +167,15 @@ export async function updateExperiment(expId: string, body: ExperimentUpdate) {
     method: "PUT",
     body: JSON.stringify(body),
   });
+}
+
+/** PUT with a JSON-text body, answering with the saved experiment as text. */
+export async function updateExperimentJson(expId: string, body: string): Promise<string> {
+  const res = await emRequest(`/api/experiments/${encodeURIComponent(expId)}`, {
+    method: "PUT",
+    body,
+  });
+  return res.text();
 }
 
 /**

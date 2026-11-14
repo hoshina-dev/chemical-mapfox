@@ -34,7 +34,7 @@ interface LifecycleTicket {
 
 interface LifecycleCalculation {
   formula: string;
-  result?: number | string;
+  result?: number | string | null;
 }
 
 interface LifecycleExperiment {
@@ -229,17 +229,18 @@ async function handle(ctx: StubContext): Promise<boolean> {
       return ctx.json(200, experimentWire(exp));
     }
 
-    // PUT /api/experiments/{id} — collab buffer flush (submit's persistNow).
+    // PUT /api/experiments/{id} — collab buffer flush (submit's persistNow), or
+    // Calculate saving the browser engine's results. No result clears one.
     if (method === "PUT" && path.length === 3) {
-      const body = (await ctx.readBody()) as { values?: Record<string, unknown> };
+      const body = (await ctx.readBody()) as {
+        values?: Record<string, unknown>;
+        calculations?: Record<string, { result?: LifecycleCalculation["result"] }>;
+      };
       if (body.values) exp.values = body.values;
-      return ctx.json(200, experimentWire(exp));
-    }
-
-    // POST /api/experiments/{id}/calculate — fill every calculation result.
-    if (method === "POST" && path[3] === "calculate") {
       for (const name of Object.keys(exp.calculations)) {
-        exp.calculations[name] = { ...exp.calculations[name], result: 42 };
+        const sent = body.calculations?.[name];
+        const result = sent && "result" in sent ? sent.result : "";
+        exp.calculations[name] = { ...exp.calculations[name], result };
       }
       return ctx.json(200, experimentWire(exp));
     }

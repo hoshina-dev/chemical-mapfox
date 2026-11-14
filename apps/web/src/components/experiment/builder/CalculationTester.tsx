@@ -15,11 +15,16 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { testCalculationsAction } from "@/app/actions/experiment-manager";
+import { useEngineErrorMessage } from "@/lib/calculations/calculateExperiment";
+import {
+  CalculationEngineError,
+  evaluateCalculations,
+} from "@/lib/calculations/runner";
 import type {
   CalculationDryRunResponse,
   CalculationOutcome,
 } from "@/lib/experiment-manager/client";
+import { templateToCalculationDryRun } from "@/lib/experiment-manager/mappers";
 
 interface CalculationTesterProps {
   template: ExperimentTemplate;
@@ -48,17 +53,18 @@ function formatResult(result: unknown): string {
 }
 
 /**
- * Runs the draft template's formulas through the backend's calculation engine
- * and shows what each one produced. The same engine evaluates real experiments,
- * so a formula that works here works in production — which is the point: catch
- * a typo'd question id or a bad expression during onboarding rather than after
- * a technician has already entered real measurements.
+ * Runs the draft template's formulas through the calculation engine (Pyodide,
+ * in the browser) and shows what each one produced. The same engine evaluates
+ * real experiments, so a formula that works here works in production — which
+ * is the point: catch a typo'd question id or a bad expression during
+ * onboarding rather than after a technician has entered real measurements.
  */
 export function CalculationTester({
   template,
   values,
 }: CalculationTesterProps) {
   const t = useTranslations("builder.calculationTester");
+  const engineErrorMessage = useEngineErrorMessage();
   const [report, setReport] = useState<CalculationDryRunResponse | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -67,14 +73,17 @@ export function CalculationTester({
 
   const run = () => {
     startTransition(async () => {
-      const result = await testCalculationsAction(template, values);
-      if (!result.success) {
+      try {
+        const { report: next } = await evaluateCalculations(
+          templateToCalculationDryRun(template, values),
+        );
+        setRunError(null);
+        setReport(next);
+      } catch (error) {
+        if (!(error instanceof CalculationEngineError)) throw error;
         setReport(null);
-        setRunError(result.error);
-        return;
+        setRunError(engineErrorMessage(error));
       }
-      setRunError(null);
-      setReport(result.data);
     });
   };
 

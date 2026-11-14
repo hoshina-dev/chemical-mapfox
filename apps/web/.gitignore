@@ -38,3 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Pyodide runtime, copied from node_modules by scripts/copy-pyodide.mjs
+/public/pyodide/

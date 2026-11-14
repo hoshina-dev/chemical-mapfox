@@ -22,7 +22,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 import {
-  calculateExperimentAction,
   closeTicketAction,
   fixExperimentFormulaAction,
   generateReportAction,
@@ -30,6 +29,10 @@ import {
   updateExperimentValuesAction,
 } from "@/app/actions/experiment";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import {
+  calculateExperiment,
+  useEngineErrorMessage,
+} from "@/lib/calculations/calculateExperiment";
 import {
   experimentReportDownloadPath,
   experimentReportViewPath,
@@ -104,6 +107,7 @@ export function FinalizingActions({
   const tCommon = useTranslations("common");
   const tIssue = useTranslations("forms.validation");
   const router = useRouter();
+  const engineErrorMessage = useEngineErrorMessage();
 
   const [calcPending, startCalc] = useTransition();
   const [calcError, setCalcError] = useState<string | null>(null);
@@ -186,7 +190,7 @@ export function FinalizingActions({
   const onCalculate = () =>
     startCalc(async () => {
       setCalcError(null);
-      const res = await calculateExperimentAction(contextId);
+      const res = await calculateExperiment(contextId, engineErrorMessage);
       if (!res.success) {
         setCalcError(res.error);
         return;
