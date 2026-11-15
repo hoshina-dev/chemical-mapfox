@@ -5,31 +5,58 @@ import { getTranslations } from "next-intl/server";
 
 import type { ActionResult } from "@/app/actions/onboarding";
 import { requireAdmin } from "@/lib/auth/dal";
-import { reportFormPath } from "@/lib/internal/routes";
+import { reportFormPath, sampleOnboardingPath } from "@/lib/internal/routes";
 import { logHandledError } from "@/lib/log/handled";
-import { putReportForm, sampleTrackerMessage } from "@/lib/sample-tracker/client";
+import {
+  putReportForm,
+  type ReportField,
+  sampleTrackerMessage,
+} from "@/lib/sample-tracker/client";
 
-/**
- * Upload a sample type's blank report form (PDF) and its field map. sample_tracker
- * checks both (PDF safety, known sources) and replaces the stored ones.
- */
-export async function uploadReportFormAction(
+// sample_tracker checks both parts (PDF safety, pages, known sources).
+
+/** Upload (or replace) a sample type's blank report form. Placed fields are kept. */
+export async function uploadReportFormPdfAction(
   sampleId: string,
   form: FormData,
-): Promise<ActionResult<{ fields: number }>> {
+): Promise<ActionResult<null>> {
   const session = await requireAdmin();
   const t = await getTranslations("staff.reportForm");
   const file = form.get("file");
-  const fields = form.get("fields");
-  if (!(file instanceof Blob) || file.size === 0 || typeof fields !== "string") {
+  if (!(file instanceof Blob) || file.size === 0) {
     return { success: false, error: t("missing") };
   }
   try {
-    const saved = await putReportForm(session.userId, sampleId, file, fields);
+    await putReportForm(session.userId, sampleId, { pdf: file });
     revalidatePath(reportFormPath(sampleId));
-    return { success: true, data: { fields: saved.reportForm?.fields.length ?? 0 } };
+    revalidatePath(sampleOnboardingPath(sampleId));
+    return { success: true, data: null };
   } catch (error) {
-    logHandledError(error, { action: "uploadReportFormAction", sampleId });
-    return { success: false, error: sampleTrackerMessage(error, t("uploadError")) };
+    logHandledError(error, { action: "uploadReportFormPdfAction", sampleId });
+    return {
+      success: false,
+      error: sampleTrackerMessage(error, t("uploadError")),
+    };
+  }
+}
+
+/** Save where each value is printed on the stored blank form (the editor's autosave). */
+export async function saveReportFieldsAction(
+  sampleId: string,
+  fields: ReportField[],
+): Promise<ActionResult<null>> {
+  const session = await requireAdmin();
+  try {
+    await putReportForm(session.userId, sampleId, {
+      fields: JSON.stringify({ fields }),
+    });
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, { action: "saveReportFieldsAction", sampleId });
+    const t = await getTranslations("staff.reportForm");
+    return {
+      success: false,
+      error: sampleTrackerMessage(error, t("saveError")),
+    };
   }
 }

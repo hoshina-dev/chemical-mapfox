@@ -1,9 +1,10 @@
-import { Alert, Button, Container, Stack, Text, Title } from "@mantine/core";
+import { Alert, Container, Stack, Text, Title } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
+import { ReportFormEditor } from "@/components/experiment/report/ReportFormEditor";
 import { ReportFormUpload } from "@/components/experiment/report/ReportFormUpload";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireAdmin } from "@/lib/auth/dal";
@@ -12,12 +13,24 @@ import {
   reportFormPath,
   sampleOnboardingPath,
 } from "@/lib/internal/routes";
-import { getSampleType, hasReportForm, SampleTrackerError } from "@/lib/sample-tracker/client";
+import {
+  experimentFields,
+  experimentLabels,
+  storedFields,
+} from "@/lib/report/reportFields";
+import {
+  getSampleType,
+  hasReportForm,
+  listTemplates,
+  SampleTrackerError,
+} from "@/lib/sample-tracker/client";
 
 export const dynamic = "force-dynamic";
 
 /** Synchronous by design; the awaits live under `AsyncPanel` (see the other onboarding pages). */
-export default function ReportFormPage(props: Parameters<typeof ReportFormContent>[0]) {
+export default function ReportFormPage(
+  props: Parameters<typeof ReportFormContent>[0],
+) {
   return (
     <AsyncPanel
       fallback={
@@ -31,7 +44,11 @@ export default function ReportFormPage(props: Parameters<typeof ReportFormConten
   );
 }
 
-async function ReportFormContent({ params }: { params: Promise<{ sampleId: string }> }) {
+async function ReportFormContent({
+  params,
+}: {
+  params: Promise<{ sampleId: string }>;
+}) {
   const session = await requireAdmin();
   const { sampleId } = await params;
   const t = await getTranslations("staff.reportForm");
@@ -43,9 +60,12 @@ async function ReportFormContent({ params }: { params: Promise<{ sampleId: strin
     if (error instanceof SampleTrackerError && error.status === 404) notFound();
     throw error;
   }
-  const fields = sample.reportForm?.fields ?? [];
   // The field map alone is not enough: reports are printed on the stored blank PDF.
-  const hasPdf = await hasReportForm(session.userId, sampleId);
+  const [hasPdf, templates] = await Promise.all([
+    hasReportForm(session.userId, sampleId),
+    listTemplates(session.userId, sampleId),
+  ]);
+  const experiments = experimentFields(templates);
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
@@ -60,29 +80,23 @@ async function ReportFormContent({ params }: { params: Promise<{ sampleId: strin
           <Title order={2}>{t("title")}</Title>
           <Text c="dimmed">{t("subtitle")}</Text>
         </Stack>
-        {hasPdf && sample.reportForm ? (
-          <Alert color="green" variant="light" title={t("currentTitle")}>
-            <Text size="sm">{t("currentBody", { count: fields.length })}</Text>
-          </Alert>
+        {hasPdf ? (
+          // Holds its own upload row: Replace PDF reloads the form in place.
+          <ReportFormEditor
+            sampleId={sampleId}
+            pdfUrl={`${reportFormPath(sampleId)}/pdf`}
+            initialFields={storedFields(sample.reportForm?.fields ?? [])}
+            experiments={experiments}
+            labels={experimentLabels(experiments)}
+          />
         ) : (
-          <Alert color="red" variant="light" title={t("noneTitle")}>
-            {t("noneBody")}
-          </Alert>
+          <>
+            <ReportFormUpload sampleId={sampleId} hasPdf={false} />
+            <Alert color="red" variant="light" title={t("noneTitle")}>
+              {t("noneBody")}
+            </Alert>
+          </>
         )}
-        <Button
-          component="a"
-          href={hasPdf ? `${reportFormPath(sampleId)}/pdf` : undefined}
-          target="_blank"
-          variant="default"
-          w="fit-content"
-          disabled={!hasPdf}
-        >
-          {t("download")}
-        </Button>
-        <ReportFormUpload
-          sampleId={sampleId}
-          initialFields={JSON.stringify({ fields }, null, 2)}
-        />
       </Stack>
     </Container>
   );

@@ -42,13 +42,11 @@ export interface SampleType {
   updatedAt: string;
 }
 
+/** One value on the report form, printed in one fixed format (10 pt, starting at x). */
 export interface ReportField {
   page: number;
   x: number;
   y: number;
-  size?: number;
-  align?: "" | "left" | "center" | "right";
-  prefix?: string;
   source: string;
 }
 
@@ -282,15 +280,18 @@ export async function hasReportForm(actor: string | undefined, sampleTypeId: str
   }
 }
 
+/**
+ * Store the blank form and/or the field map; a part left out is kept (the map
+ * alone needs a stored PDF, a first PDF alone starts with an empty map).
+ */
 export function putReportForm(
   actor: string,
   sampleTypeId: string,
-  pdf: Blob,
-  fields: string,
+  parts: { pdf?: Blob; fields?: string },
 ) {
   const body = new FormData();
-  body.append("file", pdf, "report-form.pdf");
-  body.append("fields", fields);
+  if (parts.pdf) body.append("file", parts.pdf, "report-form.pdf");
+  if (parts.fields !== undefined) body.append("fields", parts.fields);
   return stFetch<SampleType>(`/sample-types/${sampleTypeId}/report-form`, {
     actor,
     method: "PUT",

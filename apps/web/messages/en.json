@@ -621,21 +621,56 @@
     "reportForm": {
       "title": "Report form",
       "subtitle": "The blank report (PDF) for this sample type and where each value is printed on it. One report per sample.",
-      "currentTitle": "Report form uploaded",
-      "currentBody": "{count, plural, one {# value is placed on the form.} other {# values are placed on the form.}}",
-      "download": "Open the blank form",
       "noneTitle": "No report form yet",
-      "noneBody": "Upload the blank PDF and its field map. Without one, reports cannot be published for this sample type.",
+      "noneBody": "Upload the blank PDF, then place the values on it. Without one, reports cannot be published for this sample type.",
       "fileLabel": "Blank form (PDF)",
       "fileDescription": "The lab's report with labels and grid, values left empty.",
-      "chooseFile": "Choose PDF",
-      "noFile": "No file chosen",
-      "fieldsLabel": "Field map (JSON)",
-      "fieldsDescription": "A list of fields, each with page, x, y, size, align, prefix and source. x and y are PDF points from the top-left corner, y on the text baseline.",
-      "upload": "Upload",
-      "saved": "{count, plural, one {Saved: # value placed.} other {Saved: # values placed.}}",
-      "missing": "Choose a PDF and give the field map.",
-      "uploadError": "Could not save the report form."
+      "chooseFile": "Upload PDF",
+      "replaceFile": "Replace PDF",
+      "missing": "Choose a PDF.",
+      "uploadError": "Could not save the report form.",
+      "saveError": "Could not save the placed values.",
+      "general": "General",
+      "experiment": "Experiment",
+      "noExperiments": "This sample type has no methods yet.",
+      "noFields": "This method has no client questions or results.",
+      "pickHint": "Pick a value on the right, then click where it goes.",
+      "placeHint": "Click on the page to place {label}. Esc cancels.",
+      "page": "Page {page} of {count}",
+      "prevPage": "Previous page",
+      "nextPage": "Next page",
+      "remove": "Remove {label}",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "loadError": "Could not open the blank form.",
+      "sources": {
+        "sampleType": {
+          "name": "Sample type"
+        },
+        "ticket": {
+          "description": "Sample description",
+          "receivedAt": "Date received"
+        },
+        "experiments": {
+          "firstStartedAt": "Testing started",
+          "lastFinishedAt": "Testing finished"
+        },
+        "report": {
+          "publishedAt": "Date published",
+          "number": "Report number",
+          "orderNumber": "Order number"
+        },
+        "client": {
+          "name": "Client name",
+          "address": "Client address",
+          "postcodeCity": "Client postcode and city",
+          "taxId": "Client tax ID"
+        },
+        "authorizedBy": {
+          "name": "Authorized by",
+          "title": "Authorizer's title"
+        }
+      }
     },
     "lifecycle": {
       "forbidden": "Only lab staff can do this.",
@@ -1159,7 +1194,7 @@
           "onboarding": "Register specimen types and open a sample’s template list.",
           "components": "Live previews and schema fields for every question type in the form engine.",
           "templates": "Create and edit client intake forms, lab forms, and calculations.",
-          "pdfReport": "Design the PDF report layout for a template with variables and preview.",
+          "pdfReport": "Upload the blank report form (PDF) and place its values on it.",
           "aiAssistants": "Connect Claude or ChatGPT so the assistant can act as you in the lab workspace."
         }
       },
@@ -1330,32 +1365,31 @@
       },
       "pdfReport": {
         "title": "Report form",
-        "subtitle": "One report per sample: each sample type has a blank report form (PDF) and a field map saying where each value is printed.",
+        "subtitle": "One report per sample: each sample type has a blank report form (PDF) and the places where each value is printed on it.",
         "sections": {
           "open": {
             "heading": "Open the report form",
             "body": "Open Onboarding → sample type → Report form (also reachable from Report form in the template builder).",
             "steps": [
               "Open Onboarding and choose the sample type (for example Coal).",
-              "Choose Report form.",
-              "Open the blank form to check the current one."
+              "Choose Report form."
             ]
           },
           "canvas": {
             "heading": "The blank form",
-            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept."
+            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept. Replace PDF swaps it and keeps the values already placed."
           },
           "variables": {
-            "heading": "The field map",
-            "body": "A list of fields, each with page, x, y (PDF points from the top-left corner, y on the text baseline), optional size, align and prefix, and source: the value to print. Sources are the sample type's name, the ticket's description and dates, the publish date, client form answers (clientForm.questionId) and calculation results (result.templateId.calculationKey). The report and order number, client and authorised-by sources are accepted but print nothing yet."
+            "heading": "Place the values",
+            "body": "The panel on the right lists what a report can print: General (sample type, description and dates) and, for the experiment chosen in the list, its client answers and results. Pick one, then click on the page where it should print; the dot marks the start of the text line. Drag a value or use the arrow keys (Shift for bigger steps) to move it, and Delete or × to remove it. A value can be placed more than once. Grey values (client, report number, signer) are kept but print nothing yet."
           },
           "preview": {
             "heading": "Check it",
             "body": "Publish the report of a completed ticket of this sample type and open it: values are written onto the blank form in Helvetica, numbers with a decimal comma, dates as dd.mm.yyyy."
           },
           "save": {
-            "heading": "Upload",
-            "body": "Choose the PDF, edit the field map and upload. Both replace the stored ones. A field on a page the PDF does not have, or a source that does not exist for this sample type, is refused with the reason."
+            "heading": "Saving",
+            "body": "Every change is saved on its own a moment later; the panel shows Saving… and Saved. A value that no longer exists for this sample type is refused with the reason."
           }
         }
       },

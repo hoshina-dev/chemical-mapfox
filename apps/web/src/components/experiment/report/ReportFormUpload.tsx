@@ -1,83 +1,71 @@
 "use client";
 
-import { Alert, Button, FileButton, Group, Stack, Text, Textarea } from "@mantine/core";
+import { Alert, Button, FileButton, Group, Stack, Text } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { uploadReportFormAction } from "@/app/actions/report-form";
+import { uploadReportFormPdfAction } from "@/app/actions/report-form";
 
-/** Upload a blank report form (PDF) with its field map (JSON). */
+/** Upload or replace the blank report form (PDF); placed values are kept. */
 export function ReportFormUpload({
   sampleId,
-  initialFields,
+  hasPdf,
+  onUploaded,
 }: {
   sampleId: string;
-  initialFields: string;
+  hasPdf: boolean;
+  /** Called after a successful upload (the editor reloads the PDF). */
+  onUploaded?: () => void;
 }) {
   const t = useTranslations("staff.reportForm");
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
-  const [fields, setFields] = useState(initialFields);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function submit() {
+  function upload(file: File | null) {
     if (!file) return;
     const form = new FormData();
     form.set("file", file);
-    form.set("fields", fields);
+    setError(null);
     startTransition(async () => {
-      const result = await uploadReportFormAction(sampleId, form);
-      setMessage(
-        result.success
-          ? { ok: true, text: t("saved", { count: result.data.fields }) }
-          : { ok: false, text: result.error },
-      );
-      if (result.success) router.refresh();
+      const result = await uploadReportFormPdfAction(sampleId, form);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      onUploaded?.();
+      router.refresh();
     });
   }
 
   return (
-    <Stack gap="md" maw={720}>
-      <Stack gap={4}>
+    <Stack gap="xs">
+      <Group gap="sm">
         <Text size="sm" fw={500}>
           {t("fileLabel")}
         </Text>
+        <FileButton onChange={upload} accept="application/pdf">
+          {(props) => (
+            <Button
+              {...props}
+              variant={hasPdf ? "default" : "filled"}
+              loading={isPending}
+              size="xs"
+            >
+              {hasPdf ? t("replaceFile") : t("chooseFile")}
+            </Button>
+          )}
+        </FileButton>
         <Text size="xs" c="dimmed">
           {t("fileDescription")}
         </Text>
-        <Group gap="sm" mt={4}>
-          <FileButton onChange={setFile} accept="application/pdf">
-            {(props) => (
-              <Button {...props} variant="default">
-                {t("chooseFile")}
-              </Button>
-            )}
-          </FileButton>
-          <Text size="sm" c={file ? undefined : "dimmed"}>
-            {file?.name ?? t("noFile")}
-          </Text>
-        </Group>
-      </Stack>
-      <Textarea
-        label={t("fieldsLabel")}
-        description={t("fieldsDescription")}
-        value={fields}
-        onChange={(e) => setFields(e.currentTarget.value)}
-        autosize
-        minRows={8}
-        maxRows={24}
-        styles={{ input: { fontFamily: "monospace", fontSize: 12 } }}
-      />
-      {message && (
-        <Alert color={message.ok ? "green" : "red"} variant="light" style={{ whiteSpace: "pre-line" }}>
-          {message.text}
+      </Group>
+      {error && (
+        <Alert color="red" variant="light" style={{ whiteSpace: "pre-line" }}>
+          {error}
         </Alert>
       )}
-      <Button onClick={submit} loading={isPending} disabled={!file} w="fit-content">
-        {t("upload")}
-      </Button>
     </Stack>
   );
 }

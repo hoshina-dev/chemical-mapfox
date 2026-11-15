@@ -30,6 +30,7 @@
     "ioredis": "^5.4.1",
     "next": "16.4.3",
     "next-intl": "^4.13.3",
+    "pdfjs-dist": "6.4.299",
     "prismjs": "^1.30.0",
     "pyodide": "0.27.7",
     "qrcode.react": "^4.2.0",

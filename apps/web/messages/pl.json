@@ -621,21 +621,56 @@
     "reportForm": {
       "title": "Formularz sprawozdania",
       "subtitle": "Pusty formularz sprawozdania (PDF) dla tego rodzaju próbki i miejsca, w których drukowane są wartości. Jedno sprawozdanie na próbkę.",
-      "currentTitle": "Formularz przesłany",
-      "currentBody": "{count, plural, one {# wartość jest umieszczona na formularzu.} few {# wartości są umieszczone na formularzu.} many {# wartości jest umieszczonych na formularzu.} other {# wartości jest umieszczonych na formularzu.}}",
-      "download": "Otwórz pusty formularz",
       "noneTitle": "Brak formularza sprawozdania",
-      "noneBody": "Prześlij pusty PDF i mapę pól. Bez nich nie można publikować sprawozdań dla tego rodzaju próbki.",
+      "noneBody": "Prześlij pusty PDF, a potem umieść na nim wartości. Bez niego nie można publikować sprawozdań dla tego rodzaju próbki.",
       "fileLabel": "Pusty formularz (PDF)",
       "fileDescription": "Sprawozdanie laboratorium z etykietami i siatką, bez wartości.",
-      "chooseFile": "Wybierz PDF",
-      "noFile": "Nie wybrano pliku",
-      "fieldsLabel": "Mapa pól (JSON)",
-      "fieldsDescription": "Lista pól, każde z page, x, y, size, align, prefix i source. x i y w punktach PDF od lewego górnego rogu, y na linii bazowej tekstu.",
-      "upload": "Prześlij",
-      "saved": "{count, plural, one {Zapisano: # wartość.} few {Zapisano: # wartości.} many {Zapisano: # wartości.} other {Zapisano: # wartości.}}",
-      "missing": "Wybierz plik PDF i podaj mapę pól.",
-      "uploadError": "Nie udało się zapisać formularza sprawozdania."
+      "chooseFile": "Prześlij PDF",
+      "replaceFile": "Zamień PDF",
+      "missing": "Wybierz plik PDF.",
+      "uploadError": "Nie udało się zapisać formularza sprawozdania.",
+      "saveError": "Nie udało się zapisać umieszczonych wartości.",
+      "general": "Ogólne",
+      "experiment": "Badanie",
+      "noExperiments": "Ten rodzaj próbki nie ma jeszcze metod.",
+      "noFields": "Ta metoda nie ma pytań do klienta ani wyników.",
+      "pickHint": "Wybierz wartość po prawej, a potem kliknij, gdzie ma się znaleźć.",
+      "placeHint": "Kliknij na stronie, aby umieścić: {label}. Esc anuluje.",
+      "page": "Strona {page} z {count}",
+      "prevPage": "Poprzednia strona",
+      "nextPage": "Następna strona",
+      "remove": "Usuń: {label}",
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano",
+      "loadError": "Nie udało się otworzyć pustego formularza.",
+      "sources": {
+        "sampleType": {
+          "name": "Rodzaj próbki"
+        },
+        "ticket": {
+          "description": "Opis próbki",
+          "receivedAt": "Data przyjęcia"
+        },
+        "experiments": {
+          "firstStartedAt": "Rozpoczęcie badań",
+          "lastFinishedAt": "Zakończenie badań"
+        },
+        "report": {
+          "publishedAt": "Data publikacji",
+          "number": "Numer sprawozdania",
+          "orderNumber": "Numer zlecenia"
+        },
+        "client": {
+          "name": "Nazwa klienta",
+          "address": "Adres klienta",
+          "postcodeCity": "Kod pocztowy i miasto klienta",
+          "taxId": "NIP klienta"
+        },
+        "authorizedBy": {
+          "name": "Zatwierdził",
+          "title": "Stanowisko zatwierdzającego"
+        }
+      }
     },
     "lifecycle": {
       "forbidden": "Tylko personel laboratorium może to zrobić.",
@@ -1159,7 +1194,7 @@
           "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
           "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
           "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
-          "pdfReport": "Projektuj układ raportu PDF dla szablonu ze zmiennymi i podglądem.",
+          "pdfReport": "Prześlij pusty formularz sprawozdania (PDF) i umieść na nim wartości.",
           "aiAssistants": "Połącz Claude lub ChatGPT, aby asystent mógł działać w Twoim imieniu w przestrzeni laboratorium."
         }
       },
@@ -1330,32 +1365,31 @@
       },
       "pdfReport": {
         "title": "Formularz sprawozdania",
-        "subtitle": "Jedno sprawozdanie na próbkę: każdy rodzaj próbki ma pusty formularz (PDF) i mapę pól mówiącą, gdzie drukowana jest każda wartość.",
+        "subtitle": "Jedno sprawozdanie na próbkę: każdy rodzaj próbki ma pusty formularz sprawozdania (PDF) i miejsca, w których drukowane są wartości.",
         "sections": {
           "open": {
             "heading": "Otwórz formularz sprawozdania",
             "body": "Otwórz Wdrażanie → rodzaj próbki → Formularz sprawozdania (dostępny też z kreatora szablonu).",
             "steps": [
               "Otwórz Wdrażanie i wybierz rodzaj próbki (np. Węgiel).",
-              "Wybierz Formularz sprawozdania.",
-              "Otwórz pusty formularz, aby sprawdzić obecny."
+              "Wybierz Formularz sprawozdania."
             ]
           },
           "canvas": {
             "heading": "Pusty formularz",
-            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane, a zachowywane jest tylko to, czego dokument używa."
+            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane i zachowywane jest tylko to, czego dokument używa. Zamień PDF podmienia plik i zachowuje umieszczone wartości."
           },
           "variables": {
-            "heading": "Mapa pól",
-            "body": "Lista pól, każde z page, x, y (punkty PDF od lewego górnego rogu, y na linii bazowej tekstu), opcjonalnie size, align i prefix oraz source: drukowana wartość. Źródła to nazwa rodzaju próbki, opis i daty zgłoszenia, data publikacji, odpowiedzi z formularza klienta (clientForm.questionId) i wyniki obliczeń (result.templateId.calculationKey). Źródła numeru sprawozdania i zlecenia, zleceniodawcy i autoryzującego są akceptowane, ale na razie nic nie drukują."
+            "heading": "Umieść wartości",
+            "body": "Panel po prawej pokazuje, co może wydrukować sprawozdanie: Ogólne (rodzaj próbki, opis i daty) oraz, dla badania wybranego z listy, odpowiedzi klienta i wyniki. Wybierz wartość i kliknij na stronie, gdzie ma się znaleźć; kropka oznacza początek linii tekstu. Przeciągnij wartość lub użyj strzałek (Shift — większe kroki), aby ją przesunąć, a Delete lub ×, aby ją usunąć. Wartość można umieścić więcej niż raz. Szare wartości (klient, numer sprawozdania, zatwierdzający) są zachowane, ale jeszcze nic nie drukują."
           },
           "preview": {
             "heading": "Sprawdź",
-            "body": "Opublikuj sprawozdanie zakończonego zgłoszenia tego rodzaju próbki i otwórz je: wartości są wpisywane na pusty formularz czcionką Helvetica, liczby z przecinkiem dziesiętnym, daty jako dd.mm.rrrr."
+            "body": "Opublikuj sprawozdanie zakończonego zlecenia tego rodzaju próbki i otwórz je: wartości są wpisywane na pusty formularz czcionką Helvetica, liczby z przecinkiem dziesiętnym, daty jako dd.mm.rrrr."
           },
           "save": {
-            "heading": "Prześlij",
-            "body": "Wybierz PDF, popraw mapę pól i prześlij. Oba zastępują zapisane. Pole na stronie, której PDF nie ma, lub źródło nieistniejące dla tego rodzaju próbki jest odrzucane z podaniem powodu."
+            "heading": "Zapisywanie",
+            "body": "Każda zmiana zapisuje się sama chwilę później; panel pokazuje Zapisywanie… i Zapisano. Wartość, której ten rodzaj próbki już nie ma, jest odrzucana z podaniem powodu."
           }
         }
       },
