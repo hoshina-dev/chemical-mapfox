@@ -122,7 +122,11 @@ export async function finishInputs(room: string): Promise<ActionResult<FinishInp
     if (!exp) return { success: false, error: t("finishFailed") };
     return {
       success: true,
-      data: { experimentJson: JSON.stringify(exp.context), version: Number(exp.contextVersion) },
+      // parseExact wraps numbers (Number() cannot read them); stringify gives the text back.
+      data: {
+        experimentJson: JSON.stringify(exp.context),
+        version: Number(JSON.stringify(exp.contextVersion)),
+      },
     };
   } catch (error) {
     logHandledError(error, { action: "finishInputs", contextId: room });
