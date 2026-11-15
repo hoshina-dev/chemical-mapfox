@@ -137,8 +137,18 @@ async function MyExperimentDetailContent({
 
         <Grid gap="lg">
           <GridCol span={{ base: 12, md: 8 }}>
-            {state ? (
-              <ExperimentStateView state={state} />
+            {ws.experiments.length > 0 ? (
+              <Stack gap="lg">
+                {ws.experiments.map((exp) => (
+                  <Stack key={exp.id} gap="xs">
+                    <Group gap="sm">
+                      <Title order={4}>{exp.name}</Title>
+                      <StatusChip status={exp.status} variant="badge" size="sm" />
+                    </Group>
+                    <ExperimentStateView state={exp.state} />
+                  </Stack>
+                ))}
+              </Stack>
             ) : (
               <Alert color="gray" variant="light" title={t("noDetailsTitle")}>
                 {ws.errors.state ?? t("noDetailsBody")}

@@ -119,8 +119,8 @@ export interface NotificationPreference {
 }
 
 interface Init extends DownstreamInit {
-  /** The acting user, sent as X-Actor-User-Id (required by every /api/v1 route). */
-  actor: string;
+  /** The acting user, sent as X-Actor-User-Id (required on writes; reads may omit it). */
+  actor?: string;
 }
 
 async function request(path: string, init: Init): Promise<Response> {
@@ -132,7 +132,7 @@ async function request(path: string, init: Init): Promise<Response> {
       ...rest,
       headers: {
         Accept: "application/json",
-        "X-Actor-User-Id": actor,
+        ...(actor ? { "X-Actor-User-Id": actor } : {}),
         ...(typeof rest.body === "string"
           ? { "Content-Type": "application/json" }
           : {}),
@@ -182,11 +182,11 @@ const json = (body: unknown) => JSON.stringify(body);
 
 // --- catalogue ---------------------------------------------------------------
 
-export const listSampleTypes = (actor: string) =>
+export const listSampleTypes = (actor: string | undefined) =>
   stFetch<SampleType[]>("/sample-types", { actor });
 
 /** One live sample type; a 404 SampleTrackerError when unknown or deleted. */
-export async function getSampleType(actor: string, id: string): Promise<SampleType> {
+export async function getSampleType(actor: string | undefined, id: string): Promise<SampleType> {
   const found = (await listSampleTypes(actor)).find((st) => st.id === id);
   if (!found) throw new SampleTrackerError("sample type not found", 404, "sample type not found");
   return found;
@@ -207,12 +207,12 @@ export const updateSampleType = (
 export const deleteSampleType = (actor: string, id: string) =>
   stFetch<void>(`/sample-types/${id}`, { actor, method: "DELETE" });
 
-export const listTemplates = (actor: string, sampleTypeId: string) =>
+export const listTemplates = (actor: string | undefined, sampleTypeId: string) =>
   stFetch<ExperimentTemplate[]>(`/sample-types/${sampleTypeId}/experiment-templates`, {
     actor,
   });
 
-export const getTemplate = (actor: string, id: string) =>
+export const getTemplate = (actor: string | undefined, id: string) =>
   stFetch<ExperimentTemplate>(`/experiment-templates/${id}`, { actor });
 
 export interface TemplateBody {
@@ -238,7 +238,7 @@ export const updateTemplate = (actor: string, id: string, body: TemplateBody) =>
 export const deleteTemplate = (actor: string, id: string) =>
   stFetch<void>(`/experiment-templates/${id}`, { actor, method: "DELETE" });
 
-export const getReportForm = (actor: string, sampleTypeId: string) =>
+export const getReportForm = (actor: string | undefined, sampleTypeId: string) =>
   stBytes(`/sample-types/${sampleTypeId}/report-form`, { actor });
 
 export function putReportForm(
@@ -272,7 +272,7 @@ export const createTicket = (actor: string, body: CreateTicket) =>
   stFetch<Ticket>("/tickets", { actor, method: "POST", body: json(body) });
 
 export function listTickets(
-  actor: string,
+  actor: string | undefined,
   query: { requesterUserId?: string; status?: TicketStatus[]; limit?: number } = {},
 ) {
   const q = new URLSearchParams({ sortBy: "updatedAt", sortDir: "desc" });
@@ -282,10 +282,10 @@ export function listTickets(
   return stFetch<TicketSummary[]>(`/tickets?${q}`, { actor });
 }
 
-export const getTicket = (actor: string, id: string) =>
+export const getTicket = (actor: string | undefined, id: string) =>
   stFetch<Ticket>(`/tickets/${id}`, { actor });
 
-export const listTicketEvents = (actor: string, id: string) =>
+export const listTicketEvents = (actor: string | undefined, id: string) =>
   stFetch<TicketEvent[]>(`/tickets/${id}/events`, { actor });
 
 const command = (actor: string, path: string, body?: unknown) =>
@@ -343,12 +343,12 @@ export const reopenExperiment = (
 export const publishReport = (actor: string, ticketId: string, body: PublishReport) =>
   command(actor, `/tickets/${ticketId}/report`, body);
 
-export const getReport = (actor: string, ticketId: string) =>
+export const getReport = (actor: string | undefined, ticketId: string) =>
   stBytes(`/tickets/${ticketId}/report`, { actor });
 
 // --- notification preferences ------------------------------------------------
 
-export const getNotificationPreferences = async (actor: string, userId: string) =>
+export const getNotificationPreferences = async (actor: string | undefined, userId: string) =>
   (
     await stFetch<{ preferences: NotificationPreference[] }>(
       `/users/${userId}/notification-preferences`,

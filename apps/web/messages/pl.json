@@ -319,7 +319,7 @@
         "requested": "Zgłoszono",
         "sampleReceived": "Próbka przyjęta",
         "inProgress": "W toku",
-        "finalizing": "Finalizowanie",
+        "finalizing": "Wyniki gotowe",
         "closed": "Zamknięte",
         "cancelled": "Anulowane",
         "other": "Inne"
@@ -383,7 +383,9 @@
         "errorTitle": "Nie udało się przesłać zgłoszenia",
         "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
         "submit": "Prześlij zgłoszenie",
-        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
+        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem",
+        "methodsLabel": "Metody dla tej próbki",
+        "methodsDescription": "Jedna próbka, jedno sprawozdanie: zaznacz wszystkie metody do wykonania."
       },
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",

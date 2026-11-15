@@ -319,7 +319,7 @@
         "requested": "Requested",
         "sampleReceived": "Sample received",
         "inProgress": "In progress",
-        "finalizing": "Finalizing",
+        "finalizing": "Results ready",
         "closed": "Closed",
         "cancelled": "Cancelled",
         "other": "Other"
@@ -383,7 +383,9 @@
         "errorTitle": "Could not submit your request",
         "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
         "submit": "Submit request",
-        "missingRequired": "Fill in all required fields before submitting"
+        "missingRequired": "Fill in all required fields before submitting",
+        "methodsLabel": "Methods for this sample",
+        "methodsDescription": "One sample, one report: tick every method to run on it."
       },
       "errors": {
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",

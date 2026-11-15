@@ -17,6 +17,7 @@ export type StatusMessageKey =
 const STATUS_TRANSLATION_KEY: Record<string, StatusMessageKey> = {
   requested: "requested",
   open: "open",
+  received: "sampleReceived",
   pending: "sampleReceived",
   sample_received: "sampleReceived",
   experimenting: "inProgress",

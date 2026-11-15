@@ -1,4 +1,4 @@
-import { reportPdfResponse } from "@/lib/experiment-manager/report-route";
+import { reportPdfResponse } from "@/lib/sample-tracker/report-route";
 
 export const dynamic = "force-dynamic";
 

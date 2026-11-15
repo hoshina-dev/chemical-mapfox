@@ -58,6 +58,7 @@ const STATUS_META: Record<string, StatusMeta> = {
   // PENDING is the canonical "sample received" stage in this app's flow (a
   // sample has been checked in, awaiting experiment start), so it's labelled
   // accordingly rather than a generic "Pending".
+  received: { label: "Sample received", color: "cyan" },
   pending: { label: "Sample received", color: "cyan" },
   sample_received: { label: "Sample received", color: "cyan" },
   // Canonical ticketing-service statuses (ticket_status.go):
@@ -67,7 +68,7 @@ const STATUS_META: Record<string, StatusMeta> = {
   experiment_started: { label: "In progress", color: "yellow" },
   in_progress: { label: "In progress", color: "yellow" },
   results_submitted: { label: "Results submitted", color: "teal" },
-  completed: { label: "Completed", color: "green" },
+  completed: { label: "Completed", color: "teal" },
   closed: { label: "Closed", color: "green" },
   cancelled: { label: "Cancelled", color: "red" },
   canceled: { label: "Cancelled", color: "red" },

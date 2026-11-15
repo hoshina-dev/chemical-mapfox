@@ -34,16 +34,13 @@ export default function RequestExperimentPage(props: Parameters<typeof RequestEx
 
 async function RequestExperimentPageContent({
   params,
-  searchParams,
 }: {
   params: Promise<{ templateId: string }>;
-  searchParams: Promise<{ sampleId?: string }>;
 }) {
   const { templateId } = await params;
-  const { sampleId } = await searchParams;
   const t = await getTranslations("experiment.request");
 
-  const loaded = await loadRequestTemplate(templateId, sampleId);
+  const loaded = await loadRequestTemplate(templateId);
   if (!loaded) {
     notFound();
   }
@@ -71,18 +68,19 @@ async function RequestExperimentPageContent({
           </Alert>
         )}
 
-        {loaded.template.valid && !loaded.template.hasPdfTemplate && (
-          <Alert color="orange" variant="light" title={t("form.noReportLayoutTitle")}>
-            {t("form.noReportLayoutBody")}
-          </Alert>
-        )}
-
         <Card withBorder radius="md" padding="lg">
           <RequestExperimentForm
-            sampleId={loaded.sampleId}
+            sampleName={loaded.sampleName}
             templateId={templateId}
-            clientForm={loaded.template.template.clientForm}
-            canRequest={loaded.template.valid && loaded.template.hasPdfTemplate}
+            methods={loaded.methods
+              .filter((m) => m.valid)
+              .map((m) => ({
+                id: m.id,
+                title: m.meta.title,
+                description: m.meta.description,
+                clientForm: m.template.clientForm,
+              }))}
+            canRequest={loaded.template.valid}
           />
         </Card>
       </Stack>

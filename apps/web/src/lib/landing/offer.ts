@@ -1,9 +1,6 @@
 import "server-only";
 
-import {
-  listExperimentTemplates,
-  listSamples,
-} from "@/lib/experiment-manager/client";
+import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
 
 /**
  * Laboratory-offer data for the public landing page: every specimen type the
@@ -25,29 +22,23 @@ export interface OfferSample {
 }
 
 /**
- * Loads the offer from Experiment Manager. Best-effort: returns `null` if the
+ * Loads the offer from sample_tracker. Best-effort: returns `null` if the
  * service can't be reached (the landing section degrades to a friendly
  * fallback), and treats a sample whose templates fail to load as having no
  * methods rather than failing the whole page.
  */
 export async function getLabOffer(): Promise<OfferSample[] | null> {
   try {
-    const { samples } = await listSamples();
-    const visible = samples.filter((sample) => sample.is_visible_on_web);
+    // TODO(catalogue visibility): filter once sample_tracker has visibility.
+    const visible = await listSampleTypes(undefined);
     return await Promise.all(
       visible.map(async (sample): Promise<OfferSample> => {
         let experiments: OfferExperiment[] = [];
         try {
-          const { experiments: templates } = await listExperimentTemplates(
-            sample.id,
-          );
-          experiments = templates
-            .filter(
-              (template) => template.is_current && template.is_visible_on_web,
-            )
-            .map((t) => ({
+          const templates = await listTemplates(undefined, sample.id);
+          experiments = templates.map((t) => ({
               id: t.id,
-              canRequest: t.has_pdf_template,
+              canRequest: true,
               name: t.name,
               description: t.description ?? undefined,
             }));

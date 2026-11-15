@@ -44,7 +44,7 @@ const PIPELINE_LANES: Lane[] = [
     key: "sample_received",
     labelKey: "sampleReceived",
     color: "cyan",
-    statuses: ["pending", "sample_received"],
+    statuses: ["received", "pending", "sample_received"],
   },
   {
     key: "in_progress",
@@ -56,13 +56,13 @@ const PIPELINE_LANES: Lane[] = [
     key: "finalizing",
     labelKey: "finalizing",
     color: "teal",
-    statuses: ["finalizing", "results_submitted"],
+    statuses: ["completed", "finalizing", "results_submitted"],
   },
   {
     key: "closed",
     labelKey: "closed",
     color: "green",
-    statuses: ["closed", "completed"],
+    statuses: ["closed"],
   },
 ];
 
