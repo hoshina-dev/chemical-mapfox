@@ -48,6 +48,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
 
   let loaded;
   let sampleName: string | undefined;
+  let reportSources: string[] = [];
   try {
     const [detail, sample] = await Promise.all([
       getTemplate(session.userId, templateId),
@@ -56,6 +57,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
     if (detail.sampleTypeId !== sampleId) notFound();
     loaded = templateToLoaded(detail);
     sampleName = sample?.name;
+    reportSources = (sample?.reportForm?.fields ?? []).map((f) => f.source);
   } catch (error) {
     if (error instanceof SampleTrackerError && error.status === 404) {
       notFound();
@@ -83,6 +85,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
         sampleName={sampleName}
         templateId={templateId}
         lineageId={loaded.lineageId}
+        reportSources={reportSources}
       />
     </Container>
   );

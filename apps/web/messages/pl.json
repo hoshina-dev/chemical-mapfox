@@ -633,7 +633,7 @@
       "general": "Ogólne",
       "experiment": "Badanie",
       "noExperiments": "Ten rodzaj próbki nie ma jeszcze metod.",
-      "noFields": "Ta metoda nie ma pytań do klienta ani wyników.",
+      "noFields": "Ta metoda nie ma wyników ani pytań do wydrukowania.",
       "pickHint": "Wybierz wartość po prawej, a potem kliknij, gdzie ma się znaleźć.",
       "placeHint": "Kliknij na stronie, aby umieścić: {label}. Esc anuluje.",
       "page": "Strona {page} z {count}",
@@ -670,6 +670,11 @@
           "name": "Zatwierdził",
           "title": "Stanowisko zatwierdzającego"
         }
+      },
+      "kinds": {
+        "result": "Wyniki",
+        "lab": "Formularz laboratoryjny",
+        "client": "Formularz klienta"
       }
     },
     "lifecycle": {
@@ -894,7 +899,10 @@
       "createTemplate": "Nie udało się utworzyć szablonu.",
       "saveTemplate": "Nie udało się zapisać szablonu.",
       "deleteTemplate": "Nie udało się usunąć szablonu."
-    }
+    },
+    "deleteConfirmReport": "Usunąć ten szablon badania? {count, plural, one {# wartość umieszczona na formularzu sprawozdania zostanie usunięta razem z nim.} few {# wartości umieszczone na formularzu sprawozdania zostaną usunięte razem z nim.} many {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.} other {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.}}",
+    "removedFromReportTitle": "Usunięto z formularza sprawozdania",
+    "removedFromReportBody": "{fields}. Ta metoda już ich nie ma; w razie potrzeby umieść nowe wartości na formularzu sprawozdania."
   },
   "docs": {
     "layout": {
@@ -1381,7 +1389,7 @@
           },
           "variables": {
             "heading": "Umieść wartości",
-            "body": "Panel po prawej pokazuje, co może wydrukować sprawozdanie: Ogólne (rodzaj próbki, opis i daty) oraz, dla badania wybranego z listy, odpowiedzi klienta i wyniki. Wybierz wartość i kliknij na stronie, gdzie ma się znaleźć; kropka oznacza początek linii tekstu. Przeciągnij wartość lub użyj strzałek (Shift — większe kroki), aby ją przesunąć, a Delete lub ×, aby ją usunąć. Wartość można umieścić więcej niż raz. Szare wartości (klient, numer sprawozdania, zatwierdzający) są zachowane, ale jeszcze nic nie drukują."
+            "body": "Panel po prawej pokazuje, co może wydrukować sprawozdanie: Ogólne (rodzaj próbki, opis i daty) oraz, dla badania wybranego z listy, wyniki, wartości z formularza laboratoryjnego i odpowiedzi klienta (każdy rodzaj w swoim kolorze; wybrana wartość podświetla się wszędzie, gdzie jest umieszczona). Wybierz wartość i kliknij na stronie, gdzie ma się znaleźć; kropka oznacza początek linii tekstu. Przeciągnij wartość lub użyj strzałek (Shift — większe kroki), aby ją przesunąć, a Delete lub ×, aby ją usunąć. Wartość można umieścić więcej niż raz. Szare wartości (klient, numer sprawozdania, zatwierdzający) są zachowane, ale jeszcze nic nie drukują."
           },
           "preview": {
             "heading": "Sprawdź",

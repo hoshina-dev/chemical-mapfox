@@ -29,6 +29,7 @@ import {
   templateBuilderPath,
   reportFormPath,
 } from "@/lib/internal/routes";
+import { placementsRemoved } from "@/lib/report/reportFields";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { CollapsiblePanel } from "./CollapsiblePanel";
@@ -44,6 +45,8 @@ interface BuilderAppProps {
   templateId?: string;
   /** Stable lineage id — required for PUT updates in edit mode. */
   lineageId?: string;
+  /** Sources placed on the sample type's report form (edit mode). */
+  reportSources?: string[];
 }
 
 export function BuilderApp({
@@ -53,11 +56,14 @@ export function BuilderApp({
   sampleName,
   templateId,
   lineageId,
+  reportSources = [],
 }: BuilderAppProps) {
   const t = useTranslations("builder");
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Placements the last save took off the report form (sample_tracker drops them).
+  const [removedFromReport, setRemovedFromReport] = useState<string[]>([]);
   const [debugPayload, setDebugPayload] = useState<unknown>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -77,7 +83,11 @@ export function BuilderApp({
     }
     setSaveError(null);
     setDebugPayload(null);
+    setRemovedFromReport([]);
     const payload = { meta, template: parsed.data };
+    const removed = templateId
+      ? placementsRemoved(templateId, reportSources, fromDraft(initial).template, parsed.data)
+      : [];
     startTransition(async () => {
       if (mode === "create") {
         const result = await createTemplateAction(sampleId, payload);
@@ -97,6 +107,7 @@ export function BuilderApp({
         setDebugPayload({ sampleId, templateId, lineageId, ...payload });
         return;
       }
+      setRemovedFromReport(removed.map((o) => o.label));
       if (result.data.id !== templateId) {
         router.push(
           templateBuilderPath({ sampleId, templateId: result.data.id }),
@@ -108,7 +119,10 @@ export function BuilderApp({
 
   const remove = () => {
     if (!templateId) return;
-    if (!window.confirm(t("deleteConfirm"))) return;
+    const removed = placementsRemoved(templateId, reportSources, fromDraft(initial).template, null);
+    const confirmText =
+      removed.length > 0 ? t("deleteConfirmReport", { count: removed.length }) : t("deleteConfirm");
+    if (!window.confirm(confirmText)) return;
     startTransition(async () => {
       const result = await deleteTemplateAction({ sampleId, templateId });
       if (!result.success) {
@@ -134,27 +148,18 @@ export function BuilderApp({
         </Button>
       </Group>
 
-      {saveError && (
-        <Alert color="red" variant="light" title={t("saveFailedTitle")}>
-          <Stack gap="xs">
-            <Text size="sm" style={{ whiteSpace: "pre-line" }}>
-              {saveError}
-            </Text>
-            {debugPayload != null && (
-              <>
-                <Text size="xs" c="dimmed" fw={600}>
-                  {t("payloadForDebugging")}
-                </Text>
-                <Code
-                  block
-                  style={{ maxHeight: 320, overflow: "auto", whiteSpace: "pre" }}
-                >
-                  {JSON.stringify(debugPayload, null, 2)}
-                </Code>
-              </>
-            )}
-          </Stack>
-        </Alert>
+      {saveError && debugPayload != null && (
+        <Stack gap="xs">
+          <Text size="xs" c="dimmed" fw={600}>
+            {t("payloadForDebugging")}
+          </Text>
+          <Code
+            block
+            style={{ maxHeight: 320, overflow: "auto", whiteSpace: "pre" }}
+          >
+            {JSON.stringify(debugPayload, null, 2)}
+          </Code>
+        </Stack>
       )}
 
       <CollapsiblePanel title={t("metadata.title")} subtitle={t("metadata.subtitle")}>
@@ -177,7 +182,8 @@ export function BuilderApp({
       <SectionEditor form={form} path="labForm" />
       <CalculationsEditor form={form} />
 
-      <Group
+      <Stack
+        gap="xs"
         style={{
           position: "sticky",
           bottom: 0,
@@ -187,32 +193,61 @@ export function BuilderApp({
           zIndex: 1,
         }}
       >
-        <Button variant="default" onClick={() => setPreviewOpen(true)}>
-          {t("livePreview")}
-        </Button>
-        <Button onClick={save} loading={isPending} color="green">
-          {mode === "create" ? t("createTemplate") : t("saveChanges")}
-        </Button>
-        {mode === "edit" && templateId && (
-          <Button
+        {/* Next to the buttons that caused it, so it is seen without scrolling. */}
+        {removedFromReport.length > 0 && (
+          <Alert
+            color="yellow"
             variant="light"
-            component={Link}
-            href={reportFormPath(sampleId)}
+            title={t("removedFromReportTitle")}
+            withCloseButton
+            onClose={() => setRemovedFromReport([])}
           >
-            {t("designPdf")}
-          </Button>
+            <Text size="sm">
+              {t("removedFromReportBody", { fields: removedFromReport.join(", ") })}
+            </Text>
+          </Alert>
         )}
-        {mode === "edit" && templateId && (
-          <Button
+        {saveError && (
+          <Alert
             color="red"
             variant="light"
-            onClick={remove}
-            loading={isPending}
+            title={t("saveFailedTitle")}
+            withCloseButton
+            onClose={() => setSaveError(null)}
           >
-            {t("delete")}
-          </Button>
+            <Text size="sm" style={{ whiteSpace: "pre-line" }}>
+              {saveError}
+            </Text>
+          </Alert>
         )}
-      </Group>
+        <Group>
+          <Button variant="default" onClick={() => setPreviewOpen(true)}>
+            {t("livePreview")}
+          </Button>
+          <Button onClick={save} loading={isPending} color="green">
+            {mode === "create" ? t("createTemplate") : t("saveChanges")}
+          </Button>
+          {mode === "edit" && templateId && (
+            <Button
+              variant="light"
+              component={Link}
+              href={reportFormPath(sampleId)}
+            >
+              {t("designPdf")}
+            </Button>
+          )}
+          {mode === "edit" && templateId && (
+            <Button
+              color="red"
+              variant="light"
+              onClick={remove}
+              loading={isPending}
+            >
+              {t("delete")}
+            </Button>
+          )}
+        </Group>
+      </Stack>
 
       <Drawer
         opened={previewOpen}

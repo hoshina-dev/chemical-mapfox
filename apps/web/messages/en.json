@@ -633,7 +633,7 @@
       "general": "General",
       "experiment": "Experiment",
       "noExperiments": "This sample type has no methods yet.",
-      "noFields": "This method has no client questions or results.",
+      "noFields": "This method has no results or form questions to print.",
       "pickHint": "Pick a value on the right, then click where it goes.",
       "placeHint": "Click on the page to place {label}. Esc cancels.",
       "page": "Page {page} of {count}",
@@ -670,6 +670,11 @@
           "name": "Authorized by",
           "title": "Authorizer's title"
         }
+      },
+      "kinds": {
+        "result": "Results",
+        "lab": "Lab form",
+        "client": "Client form"
       }
     },
     "lifecycle": {
@@ -894,7 +899,10 @@
       "createTemplate": "Could not create template.",
       "saveTemplate": "Could not save template.",
       "deleteTemplate": "Could not delete template."
-    }
+    },
+    "deleteConfirmReport": "Delete this experiment template? {count, plural, one {# value placed on the report form is removed with it.} other {# values placed on the report form are removed with it.}}",
+    "removedFromReportTitle": "Removed from the report form",
+    "removedFromReportBody": "{fields}. This method no longer has them; place new values on the report form if needed."
   },
   "docs": {
     "layout": {
@@ -1381,7 +1389,7 @@
           },
           "variables": {
             "heading": "Place the values",
-            "body": "The panel on the right lists what a report can print: General (sample type, description and dates) and, for the experiment chosen in the list, its client answers and results. Pick one, then click on the page where it should print; the dot marks the start of the text line. Drag a value or use the arrow keys (Shift for bigger steps) to move it, and Delete or × to remove it. A value can be placed more than once. Grey values (client, report number, signer) are kept but print nothing yet."
+            "body": "The panel on the right lists what a report can print: General (sample type, description and dates) and, for the experiment chosen in the list, its results, lab form values and client answers (one colour each; a value picked in the list lights up everywhere it is placed). Pick one, then click on the page where it should print; the dot marks the start of the text line. Drag a value or use the arrow keys (Shift for bigger steps) to move it, and Delete or × to remove it. A value can be placed more than once. Grey values (client, report number, signer) are kept but print nothing yet."
           },
           "preview": {
             "heading": "Check it",

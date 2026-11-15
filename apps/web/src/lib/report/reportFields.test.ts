@@ -5,8 +5,10 @@ import type { ExperimentTemplate } from "@/lib/sample-tracker/client";
 import {
   experimentFields,
   experimentLabels,
+  fieldKind,
   moveField,
   placeField,
+  placementsRemoved,
   storedFields,
 } from "./reportFields";
 
@@ -31,14 +33,19 @@ function template(
 }
 
 describe("experimentFields", () => {
-  it("offers each method's client answers and results under the sources sample_tracker accepts", () => {
+  it("offers each method's results, lab and client questions under the sources sample_tracker accepts", () => {
     const [moisture, ash] = experimentFields([
       template("t-mt", "Total moisture", {
         clientForm: {
           questions: [
             { id: "purpose", type: "string", label: "Purpose" },
-            { id: "batches", type: "repeatable-group", label: "Batches" },
             { id: "no_label", type: "string" },
+          ],
+        },
+        labForm: {
+          questions: [
+            { id: "mass", type: "number", label: "Mass of sample" },
+            { id: "readings", type: "repeatable-group", label: "Readings" },
           ],
         },
         calculations: { result_mt: { formula: "1" }, mt_avg: { formula: "2" } },
@@ -49,14 +56,36 @@ describe("experimentFields", () => {
     expect(moisture).toEqual({
       id: "t-mt",
       name: "Total moisture",
-      fields: [
-        { source: "clientForm.purpose", label: "Purpose" },
-        { source: "clientForm.no_label", label: "no_label" },
-        { source: "result.t-mt.result_mt", label: "result_mt" },
-        { source: "result.t-mt.mt_avg", label: "mt_avg" },
-      ],
+      fields: {
+        result: [
+          { source: "result.t-mt.result_mt", label: "result_mt" },
+          { source: "result.t-mt.mt_avg", label: "mt_avg" },
+        ],
+        // A repeatable group holds a list, so it is not offered.
+        lab: [{ source: "labForm.t-mt.mass", label: "Mass of sample" }],
+        client: [
+          { source: "clientForm.purpose", label: "Purpose" },
+          { source: "clientForm.no_label", label: "no_label" },
+        ],
+      },
     });
-    expect(ash).toEqual({ id: "t-a", name: "Ash", fields: [] });
+    expect(ash).toEqual({
+      id: "t-a",
+      name: "Ash",
+      fields: { result: [], lab: [], client: [] },
+    });
+  });
+
+  it("tells each source's kind (the editor's colour)", () => {
+    expect(
+      [
+        "result.t.x",
+        "labForm.t.mass",
+        "clientForm.purpose",
+        "ticket.receivedAt",
+        "client.name",
+      ].map(fieldKind),
+    ).toEqual(["result", "lab", "client", "general", "general"]);
   });
 
   it("names a placed field by its method, and a shared question by the first method that asks it", () => {
@@ -79,6 +108,47 @@ describe("experimentFields", () => {
       "clientForm.purpose": "Moisture · Purpose",
       "result.t-1.result": "Moisture · result",
     });
+  });
+});
+
+describe("placementsRemoved", () => {
+  const before = {
+    labForm: {
+      questions: [
+        { id: "mass", type: "number", label: "Mass of sample" },
+        { id: "ash", type: "number", label: "Mass of ash" },
+      ],
+    },
+    calculations: { result_a: { formula: "1" }, avg: { formula: "2" } },
+  };
+  const placed = [
+    "result.t1.result_a",
+    "result.t1.result_a", // placed twice (both pages): named once
+    "labForm.t1.mass",
+    "result.t1.avg",
+    "result.t2.result_a", // another method
+    "clientForm.purpose",
+    "sampleType.name",
+  ];
+
+  it("names this method's placed results and lab values the new version drops", () => {
+    const after = {
+      labForm: {
+        questions: [{ id: "ash", type: "number", label: "Mass of ash" }],
+      },
+      calculations: { avg: { formula: "3" } },
+    };
+    expect(placementsRemoved("t1", placed, before, after)).toEqual([
+      { source: "result.t1.result_a", label: "result_a" },
+      { source: "labForm.t1.mass", label: "Mass of sample" },
+    ]);
+    expect(placementsRemoved("t1", placed, before, before)).toEqual([]);
+  });
+
+  it("names all of this method's placements when it is deleted", () => {
+    expect(
+      placementsRemoved("t1", placed, before, null).map((o) => o.source),
+    ).toEqual(["result.t1.result_a", "labForm.t1.mass", "result.t1.avg"]);
   });
 });
 

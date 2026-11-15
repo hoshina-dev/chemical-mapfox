@@ -4,7 +4,6 @@ import {
   Accordion,
   ActionIcon,
   Alert,
-  Badge,
   Box,
   Grid,
   Group,
@@ -30,7 +29,10 @@ import {
 
 import { saveReportFieldsAction } from "@/app/actions/report-form";
 import {
+  EXPERIMENT_KINDS,
   type ExperimentFields,
+  type FieldKind,
+  fieldKind,
   type FieldOption,
   GENERAL_SOURCES,
   moveField,
@@ -44,6 +46,13 @@ import { ReportFormUpload } from "./ReportFormUpload";
 const AUTOSAVE_MS = 800;
 /** Every value prints in one fixed format: Helvetica 10 pt, starting at its point. */
 const TEXT_PT = 10;
+/** One colour per kind of value, in the list and on the page. */
+const KIND_COLOR: Record<FieldKind, string> = {
+  general: "indigo",
+  result: "orange",
+  lab: "grape",
+  client: "teal",
+};
 
 interface Item {
   key: number;
@@ -98,9 +107,11 @@ export function ReportFormEditor({
     label: labelOf(source),
   }));
   const experiment = experiments.find((e) => e.id === experimentId) ?? null;
-  const counts = new Map<string, number>();
-  for (const { field } of items)
-    counts.set(field.source, (counts.get(field.source) ?? 0) + 1);
+  // The value picked in the list (or of the selected chip): all its placements light up.
+  const focusSource =
+    armed?.source ??
+    items.find((i) => i.key === selected)?.field.source ??
+    null;
 
   // --- autosave: one save at a time, the latest fields win ---
   const [status, setStatus] = useState<SaveStatus>({ kind: "idle" });
@@ -289,32 +300,44 @@ export function ReportFormEditor({
 
   const option = (o: FieldOption) => {
     const active = armed?.source === o.source;
+    const color = KIND_COLOR[fieldKind(o.source)];
     return (
       <UnstyledButton
         key={o.source}
-        onClick={() => setArmed(active ? null : o)}
+        onClick={() => {
+          setSelected(null);
+          setArmed(active ? null : o);
+        }}
         px="xs"
         py={6}
         style={{
           borderRadius: "var(--mantine-radius-sm)",
-          background: active ? "var(--mantine-color-blue-light)" : undefined,
+          background:
+            focusSource === o.source
+              ? `var(--mantine-color-${color}-light)`
+              : undefined,
         }}
       >
-        <Group justify="space-between" wrap="nowrap" gap="xs">
+        <Group gap="xs" wrap="nowrap">
+          <Box
+            w={8}
+            h={8}
+            style={{
+              flexShrink: 0,
+              borderRadius: "50%",
+              background: `var(--mantine-color-${color}-filled)`,
+            }}
+          />
           <Text size="sm" truncate>
             {o.label}
           </Text>
-          <Badge
-            size="sm"
-            variant="light"
-            color={counts.get(o.source) ? "blue" : "gray"}
-          >
-            ×{counts.get(o.source) ?? 0}
-          </Badge>
         </Group>
       </UnstyledButton>
     );
   };
+  const experimentValues = experiment
+    ? EXPERIMENT_KINDS.filter((kind) => experiment.fields[kind].length > 0)
+    : [];
 
   const pageCount = doc?.numPages ?? 0;
   return (
@@ -395,7 +418,10 @@ export function ReportFormEditor({
                         const { field } = item;
                         const isSelected = selected === item.key;
                         const known = offered.has(field.source);
-                        const color = known ? "blue" : "gray";
+                        const lit = field.source === focusSource;
+                        const color = known
+                          ? KIND_COLOR[fieldKind(field.source)]
+                          : "gray";
                         return (
                           <Box
                             key={item.key}
@@ -422,12 +448,18 @@ export function ReportFormEditor({
                                 cursor: "move",
                                 touchAction: "none",
                                 userSelect: "none",
-                                color: `var(--mantine-color-${color}-9)`,
-                                background: known
-                                  ? "rgba(34, 139, 230, 0.15)"
-                                  : "repeating-linear-gradient(45deg, rgba(134,142,150,.15) 0 4px, transparent 4px 8px)",
-                                outline: `1px ${known ? "solid" : "dashed"} var(--mantine-color-${color}-6)`,
-                                outlineWidth: isSelected ? 2 : 1,
+                                // Lit (picked in the list, or the same value as the
+                                // selected chip): filled in its colour.
+                                color: lit
+                                  ? "var(--mantine-color-white)"
+                                  : `var(--mantine-color-${color}-9)`,
+                                background: lit
+                                  ? `var(--mantine-color-${color}-filled)`
+                                  : known
+                                    ? `var(--mantine-color-${color}-light)`
+                                    : "repeating-linear-gradient(45deg, rgba(134,142,150,.15) 0 4px, transparent 4px 8px)",
+                                outline: `1px ${known ? "solid" : "dashed"} var(--mantine-color-${color}-${lit ? 9 : 6})`,
+                                outlineWidth: isSelected || lit ? 2 : 1,
                               }}
                             >
                               {labelOf(field.source)}
@@ -501,8 +533,21 @@ export function ReportFormEditor({
                         onChange={setExperimentId}
                         allowDeselect={false}
                       />
-                      {experiment && experiment.fields.length > 0 ? (
-                        <Stack gap={2}>{experiment.fields.map(option)}</Stack>
+                      {experiment && experimentValues.length > 0 ? (
+                        experimentValues.map((kind) => (
+                          <Stack key={kind} gap={2}>
+                            <Text
+                              size="xs"
+                              fw={600}
+                              c="dimmed"
+                              tt="uppercase"
+                              px="xs"
+                            >
+                              {t(`kinds.${kind}`)}
+                            </Text>
+                            {experiment.fields[kind].map(option)}
+                          </Stack>
+                        ))
                       ) : (
                         <Text size="sm" c="dimmed">
                           {t("noFields")}
