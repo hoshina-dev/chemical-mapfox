@@ -1,7 +1,7 @@
 import "server-only";
 
 import { usersApi } from "@/lib/custapi/client";
-import type { ExperimentState } from "@/lib/experiment-manager/mappers";
+import type { ExperimentState } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
 import {
   type ExperimentStatus,
@@ -12,7 +12,7 @@ import {
   type Ticket,
 } from "@/lib/sample-tracker/client";
 import { experimentToState, toExperimentTicket } from "@/lib/sample-tracker/mappers";
-import type { ExperimentTicket } from "@/lib/ticketing/tickets";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 export interface Requester {
   id: string;

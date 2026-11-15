@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { LoadedTemplate } from "@/lib/experiment-manager/mappers";
+import type { LoadedTemplate } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
 import {
   getTemplate,
@@ -10,7 +10,7 @@ import {
   SampleTrackerError,
 } from "@/lib/sample-tracker/client";
 import { templateToLoaded, toExperimentTicket } from "@/lib/sample-tracker/mappers";
-import type { ExperimentTicket } from "@/lib/ticketing/tickets";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 /** A requestable template within a specimen (sample) group. */
 export interface CatalogTemplate {

@@ -3,10 +3,10 @@
 import { Badge } from "@mantine/core";
 import { useTranslations } from "next-intl";
 
-import { StatusIcon, statusIconKind } from "@/components/ticketing/StatusIcon";
-import { colorsForStatus } from "@/lib/ticketing/statusColors";
-import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
-import { statusMeta } from "@/lib/ticketing/tickets";
+import { StatusIcon, statusIconKind } from "@/components/status/StatusIcon";
+import { colorsForStatus } from "@/lib/experiment/statusColors";
+import { statusTranslationKey } from "@/lib/experiment/statusI18n";
+import { statusMeta } from "@/lib/experiment/tickets";
 
 type ChipVariant = "badge" | "pill";
 

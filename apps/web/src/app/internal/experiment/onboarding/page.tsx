@@ -6,7 +6,7 @@ import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButt
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireAdmin } from "@/lib/auth/dal";
 import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
-import { sampleOnboardingPath } from "@/lib/experiment-manager/routes";
+import { sampleOnboardingPath } from "@/lib/internal/routes";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 

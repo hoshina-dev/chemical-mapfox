@@ -25,13 +25,13 @@ import { LocalDateTime } from "@/components/LocalDateTime";
 import { ReportPanel } from "@/components/experiment/ReportPanel";
 import { SampleLabel } from "@/components/experiment/SampleLabel";
 import { requireSession } from "@/lib/auth/dal";
-import { experimentCheckinPath } from "@/lib/experiment-manager/routes";
+import { experimentCheckinPath } from "@/lib/internal/routes";
 import {
   myExperimentReportDownloadPath,
   myExperimentReportViewPath,
   myExperimentsPath,
 } from "@/lib/experiment/routes";
-import { StatusChip } from "@/components/ticketing/StatusChip";
+import { StatusChip } from "@/components/status/StatusChip";
 import { getRequestOrigin } from "@/lib/http/origin";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
 
@@ -71,7 +71,7 @@ async function MyExperimentDetailContent({
 
   // Ownership: a client may only view their own experiment. Fail closed —
   // if the ticket did not load, has no owner, or belongs to someone else,
-  // hide it entirely (matches the pattern in lib/experiment-manager/report-route.ts).
+  // hide it entirely (as lib/sample-tracker/report-route.ts does).
   if (!ticket || !ticket.userId || ticket.userId !== session.userId) {
     notFound();
   }

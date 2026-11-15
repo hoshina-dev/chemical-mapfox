@@ -2,7 +2,7 @@ import "server-only";
 
 import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
 
-import type { TemplateWireSnapshot } from "@/lib/experiment-manager/mappers";
+import type { TemplateWireSnapshot } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
 import { getRedis } from "@/lib/redis/client";
 import { getTicket, saveValues } from "@/lib/sample-tracker/client";

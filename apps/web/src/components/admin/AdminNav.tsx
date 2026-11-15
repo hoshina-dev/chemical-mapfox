@@ -15,7 +15,7 @@ import { STAFF_DOCS_BASE } from "@/lib/docs/routes";
 import {
   experimentListingPath,
   onboardingPath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import { settingsPath } from "@/lib/settings/routes";
 
 const LISTING_PATH = experimentListingPath();

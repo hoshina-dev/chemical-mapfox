@@ -1,18 +1,16 @@
 import type { ExperimentTemplate as FormTemplate } from "@repo/forms";
 
-import type {
-  ExperimentDetail,
-  ExperimentTemplateDetail,
-} from "@/lib/experiment-manager/client";
+import type { AnswerValue } from "@repo/forms";
+
 import {
   type ExperimentState,
-  experimentDetailToState,
   type LoadedTemplate,
   mapCalculationsToApi,
+  parseTemplate,
+  type StoredTemplate,
   type TemplateSummary,
-  templateDetailToLoaded,
-} from "@/lib/experiment-manager/mappers";
-import type { ExperimentTicket } from "@/lib/ticketing/tickets";
+} from "@/lib/experiment/templates";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 import type {
   ExperimentTemplate,
@@ -26,14 +24,13 @@ import type {
 // is edited in place and tickets keep their frozen copy, so lineageId = id.
 
 export function templateToLoaded(t: ExperimentTemplate): LoadedTemplate {
-  return templateDetailToLoaded({
-    ...(t.template as object),
+  return {
+    ...parseTemplate(t.template as StoredTemplate),
     id: t.id,
-    lineage_id: t.id,
-    name: t.name,
-    description: t.description,
-    has_pdf_template: true, // reports are per sample type now
-  } as unknown as ExperimentTemplateDetail);
+    lineageId: t.id,
+    meta: { title: t.name, description: t.description ?? undefined },
+    hasPdfTemplate: true, // reports are per sample type now
+  };
 }
 
 /** A template row for the onboarding tables. */
@@ -55,15 +52,16 @@ export function experimentToState(
   ticket: Pick<Ticket, "sampleTypeId">,
   e: TicketExperiment,
 ): ExperimentState {
-  return experimentDetailToState({
-    ...(e.context as object),
+  return {
+    ...parseTemplate(e.context as StoredTemplate),
     id: e.id,
-    sample_id: ticket.sampleTypeId,
-    template_id: e.experimentTemplateId,
-    report_status: null,
-    report_generated_at: null,
-    created_at: e.createdAt,
-  } as unknown as ExperimentDetail);
+    sampleId: ticket.sampleTypeId,
+    templateId: e.experimentTemplateId,
+    reportStatus: null,
+    reportGeneratedAt: null,
+    createdAt: e.createdAt,
+    values: (e.context.values ?? {}) as Record<string, AnswerValue>,
+  };
 }
 
 /** A template body for sample_tracker from the builder's draft. */

@@ -1,4 +1,4 @@
-import type { TemplateRef } from "./mappers";
+import type { TemplateRef } from "@/lib/experiment/templates";
 
 const BASE = "/internal/experiment";
 
@@ -29,7 +29,7 @@ export function experimentReportDownloadPath(contextId: string) {
 /**
  * Sample check-in page (the target of the QR label printed by the requester).
  * Lab staff open it to confirm a shipped sample has arrived, transitioning the
- * ticket REQUESTED → PENDING ("Sample received").
+ * ticket REQUESTED → RECEIVED ("Sample received").
  */
 export function experimentCheckinPath(contextId: string) {
   return `${BASE}/checkin/${contextId}`;
@@ -53,12 +53,7 @@ export function templateBuilderPath(ref: TemplateRef) {
   return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}`;
 }
 
-/** PDF report-layout designer for a template version. */
 /** The sample type's report form (blank PDF + field map). */
 export function reportFormPath(sampleId: string) {
   return `${BASE}/onboarding/${sampleId}/report-form`;
-}
-
-export function templatePdfPath(ref: TemplateRef) {
-  return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}/pdf`;
 }

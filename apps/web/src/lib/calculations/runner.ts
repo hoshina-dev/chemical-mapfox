@@ -1,4 +1,4 @@
-import type { CalculationDryRunRequest } from "@/lib/experiment-manager/client";
+import type { CalculationDryRunRequest } from "@/lib/calculations/types";
 
 import type { CalculationEngineErrorCode, Evaluation, SandboxReply } from "./protocol";
 import { createSandbox, type Sandbox } from "./sandbox";

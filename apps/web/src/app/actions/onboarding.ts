@@ -6,7 +6,7 @@ import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import { logHandledError } from "@/lib/log/handled";
-import type { TemplateRef } from "@/lib/experiment-manager/mappers";
+import type { TemplateRef } from "@/lib/experiment/templates";
 import {
   createSampleType,
   createTemplate,

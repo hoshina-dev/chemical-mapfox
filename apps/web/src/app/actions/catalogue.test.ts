@@ -18,7 +18,7 @@ import {
   setTemplateWebVisibility,
 } from "@/lib/sample-tracker/client";
 
-import { setCatalogueOrderAction, setCatalogueVisibilityAction } from "./experiment-manager";
+import { setCatalogueOrderAction, setCatalogueVisibilityAction } from "./onboarding";
 
 beforeEach(() => {
   vi.clearAllMocks();

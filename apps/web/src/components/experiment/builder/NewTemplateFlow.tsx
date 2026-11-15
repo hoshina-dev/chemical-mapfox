@@ -13,7 +13,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { createSampleAction } from "@/app/actions/experiment-manager";
+import { createSampleAction } from "@/app/actions/onboarding";
 import { emptyDraft } from "@/lib/builder";
 
 import { BuilderApp } from "./BuilderApp";

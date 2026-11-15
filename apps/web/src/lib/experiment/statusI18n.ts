@@ -1,5 +1,5 @@
 /**
- * Maps raw ticketing-service status strings to keys in the `status` message
+ * Maps raw ticket/experiment status strings to keys in the `status` message
  * namespace (messages/*.json). Unknown statuses return null so callers can fall
  * back to a humanized label.
  */

@@ -7,8 +7,6 @@ import { redact, safeUrl } from "./serialize";
 
 export type DownstreamService =
   | "custapi"
-  | "ticketing"
-  | "experiment-manager"
   | "sample-tracker"
   | "s3";
 
@@ -41,12 +39,6 @@ interface ExpectedStatusRule {
  * check>` to `logHandledError` for one of these services.
  */
 const EXPECTED_STATUS_RULES: ExpectedStatusRule[] = [
-  // Experiment context often does not exist yet (ticket created, EM not seeded).
-  {
-    service: "experiment-manager",
-    status: 404,
-    urlPattern: /\/api\/experiments\/[^/]+$/,
-  },
   // Login / change-password verify against custapi — a 401 is the "wrong
   // password" path, not an outage.
   { service: "custapi", status: 401, urlPattern: /\/auth\/verify$/ },
@@ -128,8 +120,6 @@ export interface DownstreamInit extends RequestInit {
  */
 const DEFAULT_TIMEOUT_MS: Record<DownstreamService, number> = {
   custapi: 10_000,
-  ticketing: 10_000,
-  "experiment-manager": 10_000,
   // builds the report PDF on download and parses uploaded report forms
   "sample-tracker": 30_000,
   s3: 45_000,

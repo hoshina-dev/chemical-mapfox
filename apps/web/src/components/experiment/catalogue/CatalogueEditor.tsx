@@ -31,7 +31,7 @@ import {
   setCatalogueOrderAction,
   setCatalogueVisibilityAction,
   type ActionResult,
-} from "@/app/actions/experiment-manager";
+} from "@/app/actions/onboarding";
 
 export interface CatalogueItem {
   id: string;

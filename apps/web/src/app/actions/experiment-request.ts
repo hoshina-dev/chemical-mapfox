@@ -5,7 +5,7 @@ import { FormAnswers, validateAnswers } from "@repo/forms";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import { requireClient } from "@/lib/auth/dal";
 import { CHEMFOX_ORG_ID } from "@/lib/custapi/chemfoxOrg";
 import { loadRequestTemplate } from "@/lib/experiment/data";

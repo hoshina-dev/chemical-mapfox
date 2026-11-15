@@ -1,8 +1,6 @@
-import type { TicketingTicketResponse } from "@repo/api-client";
-
 /**
- * View model for an experiment ticket. A ticket's `id` is the experiment
- * **context id** used to address the experiment everywhere else in the app.
+ * View model of a ticket (one sample) for the listings and detail pages.
+ * `contextId` is the ticket id.
  */
 export interface ExperimentTicket {
   contextId: string;
@@ -20,26 +18,6 @@ export interface ExperimentTicket {
   closedReason: string | null;
 }
 
-export function toExperimentTicket(
-  ticket: TicketingTicketResponse,
-): ExperimentTicket {
-  return {
-    contextId: ticket.id ?? "",
-    name: ticket.name?.trim() || null,
-    status: ticket.status ?? "unknown",
-    templateId: ticket.experimentTemplate?.experimentTemplateId ?? null,
-    organizationId: ticket.organizationId ?? null,
-    userId: ticket.userId ?? null,
-    createdAt: ticket.createdAt ?? null,
-    updatedAt: ticket.updatedAt ?? null,
-    sampleReceivedAt: ticket.sampleReceivedAt ?? null,
-    experimentStartedAt: ticket.experimentStartedAt ?? null,
-    resultsSubmittedAt: ticket.resultsSubmittedAt ?? null,
-    closedAt: ticket.closedAt ?? null,
-    closedReason: ticket.closedReason ?? null,
-  };
-}
-
 export interface StatusMeta {
   label: string;
   /** Mantine color name used for the status Badge. */
@@ -50,19 +28,15 @@ export interface StatusMeta {
 // fall back to a humanised label in grey, so the table never breaks if the
 // backend introduces a new status.
 const STATUS_META: Record<string, StatusMeta> = {
-  // The ticketing backend emits SCREAMING_SNAKE_CASE; keys here are lowercase
-  // because statusMeta() lowercases before lookup. "requested" is the initial
-  // state a freshly created request lands in.
+  // Statuses come as SCREAMING_SNAKE_CASE; keys here are lowercase because
+  // statusMeta() lowercases before lookup.
   requested: { label: "Requested", color: "blue" },
   open: { label: "Open", color: "gray" },
-  // PENDING is the canonical "sample received" stage in this app's flow (a
-  // sample has been checked in, awaiting experiment start), so it's labelled
-  // accordingly rather than a generic "Pending".
   received: { label: "Sample received", color: "cyan" },
   pending: { label: "Sample received", color: "cyan" },
   sample_received: { label: "Sample received", color: "cyan" },
-  // Canonical ticketing-service statuses (ticket_status.go):
-  // REQUESTED → PENDING → EXPERIMENTING → FINALIZING → CLOSED.
+  // sample_tracker: REQUESTED → RECEIVED → IN_PROGRESS → COMPLETED → CLOSED
+  // (or CANCELLED); the others are older names, kept so old data still reads.
   experimenting: { label: "In progress", color: "yellow" },
   finalizing: { label: "Finalizing", color: "teal" },
   experiment_started: { label: "In progress", color: "yellow" },

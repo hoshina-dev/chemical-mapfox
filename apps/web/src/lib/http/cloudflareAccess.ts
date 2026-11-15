@@ -2,8 +2,7 @@ import "server-only";
 
 const BACKEND_SERVICES = new Set([
   "custapi",
-  "ticketing",
-  "experiment-manager",
+  "sample-tracker",
 ]);
 
 function trimmedEnv(value: string | undefined): string | undefined {

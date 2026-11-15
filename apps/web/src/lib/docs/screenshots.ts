@@ -26,7 +26,6 @@ export type DocsScreenshotId =
   | "staff-new-template"
   | "staff-template-builder"
   | "staff-builder-calculations"
-  | "staff-pdf-editor"
   | "staff-component-reference"
   | "staff-mcp-consent"
   | "staff-mcp-consent-unknown-app"
@@ -146,11 +145,6 @@ export const DOCS_SCREENSHOTS: Record<DocsScreenshotId, DocsScreenshotMeta> = {
     id: "staff-builder-calculations",
     localized: true,
     capture: "Calculations section in the template builder with formulas.",
-  },
-  "staff-pdf-editor": {
-    id: "staff-pdf-editor",
-    localized: true,
-    capture: "PDF report layout editor canvas with variables and components.",
   },
   "staff-component-reference": {
     id: "staff-component-reference",

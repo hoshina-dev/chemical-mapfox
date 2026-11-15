@@ -1,4 +1,4 @@
-import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client";
+import type { CalculationDryRunResponse } from "@/lib/calculations/types";
 
 /**
  * `load`: Pyodide failed to start. `timeout`: a formula ran too long.

@@ -21,8 +21,8 @@ import { requireAdmin } from "@/lib/auth/dal";
 import {
   experimentListingPath,
   experimentWorkspacePath,
-} from "@/lib/experiment-manager/routes";
-import { StatusChip } from "@/components/ticketing/StatusChip";
+} from "@/lib/internal/routes";
+import { StatusChip } from "@/components/status/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";

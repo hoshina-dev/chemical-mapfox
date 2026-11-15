@@ -23,8 +23,8 @@ import {
 import type {
   CalculationDryRunResponse,
   CalculationOutcome,
-} from "@/lib/experiment-manager/client";
-import { templateToCalculationDryRun } from "@/lib/experiment-manager/mappers";
+} from "@/lib/calculations/types";
+import { templateToCalculationDryRun } from "@/lib/experiment/templates";
 
 interface CalculationTesterProps {
   template: ExperimentTemplate;

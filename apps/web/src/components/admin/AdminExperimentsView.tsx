@@ -8,16 +8,16 @@ import { useRouter } from "next/navigation";
 import classes from "@/components/admin/staffListing.module.css";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
-import { StatusChip } from "@/components/ticketing/StatusChip";
-import { StatusIcon, statusIconKind } from "@/components/ticketing/StatusIcon";
+import { StatusChip } from "@/components/status/StatusChip";
+import { StatusIcon, statusIconKind } from "@/components/status/StatusIcon";
 import { UserAvatar } from "@/components/UserAvatar";
 import {
   experimentRawPath,
   experimentWorkspacePath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import type { EnrichedTicket } from "@/lib/internal/experiments";
-import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
-import { statusMeta } from "@/lib/ticketing/tickets";
+import { statusTranslationKey } from "@/lib/experiment/statusI18n";
+import { statusMeta } from "@/lib/experiment/tickets";
 
 type SortField = "experiment" | "requester" | "status" | "createdAt" | "updatedAt";
 type SortDir = "asc" | "desc";

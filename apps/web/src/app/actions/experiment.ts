@@ -2,7 +2,7 @@
 
 import { getTranslations } from "next-intl/server";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import { getSession } from "@/lib/auth/dal";
 import type { PublishReport } from "@/lib/sample-tracker/client";
 import {

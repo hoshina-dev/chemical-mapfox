@@ -6,33 +6,9 @@ vi.mock("@/lib/internal/experiments", () => ({
   listExperimentsForStaff: vi.fn(),
   getExperimentWorkspace: vi.fn(),
 }));
-vi.mock("@/lib/staff/workflow", () => ({
-  checkInSample: vi.fn(),
-  closeTicket: vi.fn(),
-  getReportUrl: vi.fn(),
-  queueReport: vi.fn(),
-  runCalculations: vi.fn(),
-  startExperiment: vi.fn(),
-  submitExperiment: vi.fn(),
-}));
-vi.mock("@/lib/staff/labValues", () => ({
-  recordLabValues: vi.fn(),
-}));
-vi.mock("@/lib/staff/onboarding", () => ({
-  listOnboardingSamples: vi.fn(),
-  listOnboardingTemplates: vi.fn(),
-  getOnboardingTemplate: vi.fn(),
-  createOnboardingSample: vi.fn(),
-  testOnboardingCalculations: vi.fn(),
-  onboardTemplate: vi.fn(),
-  setCatalogueVisibility: vi.fn(),
-}));
 vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
   readValues: vi.fn(),
-}));
-vi.mock("@/lib/ticketing/client", () => ({
-  ticketsApi: { apiV1TicketsIdGet: vi.fn() },
 }));
 vi.mock("@/lib/log/logger", () => ({
   logger: {
@@ -44,36 +20,16 @@ vi.mock("@/lib/log/logger", () => ({
 }));
 
 import { readTemplate, readValues } from "@/lib/collab/room";
+import type { ExperimentState } from "@/lib/experiment/templates";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 import {
+  type EnrichedTicket,
+  type ExperimentWorkspace,
   getExperimentWorkspace,
   listExperimentsForStaff,
 } from "@/lib/internal/experiments";
-import type { ExperimentWorkspace } from "@/lib/internal/experiments";
 import { logger } from "@/lib/log/logger";
 import type { McpActor } from "@/lib/oauth/store";
-import { recordLabValues } from "@/lib/staff/labValues";
-import {
-  createOnboardingSample,
-  getOnboardingTemplate,
-  listOnboardingSamples,
-  listOnboardingTemplates,
-  onboardTemplate,
-  setCatalogueVisibility,
-  testOnboardingCalculations,
-} from "@/lib/staff/onboarding";
-import {
-  checkInSample,
-  closeTicket,
-  getReportUrl,
-  queueReport,
-  runCalculations,
-  startExperiment,
-  submitExperiment,
-} from "@/lib/staff/workflow";
-import { ticketsApi } from "@/lib/ticketing/client";
-import type { ExperimentTicket } from "@/lib/ticketing/tickets";
-import type { ExperimentState } from "@/lib/experiment-manager/mappers";
-import type { EnrichedTicket } from "@/lib/internal/experiments";
 
 import { createStaffMcpServer } from "./server";
 
@@ -88,39 +44,8 @@ const actor: McpActor = {
   resource: null,
 };
 
-const TOOL_NAMES = [
-  "list_experiments",
-  "get_experiment",
-  "record_lab_values",
-  "check_in_sample",
-  "start_experiment",
-  "submit_experiment",
-  "close_ticket",
-  "run_calculations",
-  "generate_report",
-  "list_samples",
-  "list_templates",
-  "get_template",
-  "test_template_calculations",
-  "create_sample",
-  "onboard_template",
-  "set_catalogue_visibility",
-  "get_report_download_url",
-  "list_docs",
-  "read_doc",
-] as const;
-
-const READ_TOOLS = [
-  "list_experiments",
-  "get_experiment",
-  "list_samples",
-  "list_templates",
-  "get_template",
-  "test_template_calculations",
-  "get_report_download_url",
-  "list_docs",
-  "read_doc",
-];
+// Only read tools are left until the MCP rework (see lib/sample-tracker/client.ts).
+const TOOL_NAMES = ["list_experiments", "get_experiment", "list_docs", "read_doc"] as const;
 
 function ticket(status: string, overrides: Partial<ExperimentTicket> = {}): ExperimentTicket {
   return {
@@ -189,16 +114,31 @@ function state(overrides: Partial<ExperimentState> = {}): ExperimentState {
   };
 }
 
+function selected(status: string): ExperimentWorkspace["selected"] {
+  return {
+    id: "exp-1",
+    name: "pH",
+    status,
+    contextVersion: 1,
+    startedAt: null,
+    finishedAt: null,
+    state: state(),
+  } as ExperimentWorkspace["selected"];
+}
+
 function workspace(
   overrides: Partial<ExperimentWorkspace> = {},
 ): ExperimentWorkspace {
   return {
     contextId: "ctx-1",
-    ticket: ticket("EXPERIMENTING"),
+    ticket: ticket("IN_PROGRESS"),
     requester: { id: "u2", name: "Bob", email: "bob@lab.test", avatarUrl: null },
     sampleType: "Water",
     experimentTitle: "Water pH",
     state: state(),
+    raw: null,
+    experiments: [],
+    selected: selected("IN_PROGRESS"),
     errors: {},
     ...overrides,
   };
@@ -236,24 +176,8 @@ let session: Connected;
 beforeEach(async () => {
   vi.mocked(listExperimentsForStaff).mockReset();
   vi.mocked(getExperimentWorkspace).mockReset();
-  vi.mocked(recordLabValues).mockReset();
   vi.mocked(readTemplate).mockReset();
   vi.mocked(readValues).mockReset();
-  vi.mocked(checkInSample).mockReset();
-  vi.mocked(startExperiment).mockReset();
-  vi.mocked(submitExperiment).mockReset();
-  vi.mocked(closeTicket).mockReset();
-  vi.mocked(runCalculations).mockReset();
-  vi.mocked(queueReport).mockReset();
-  vi.mocked(getReportUrl).mockReset();
-  vi.mocked(listOnboardingSamples).mockReset();
-  vi.mocked(listOnboardingTemplates).mockReset();
-  vi.mocked(getOnboardingTemplate).mockReset();
-  vi.mocked(createOnboardingSample).mockReset();
-  vi.mocked(testOnboardingCalculations).mockReset();
-  vi.mocked(onboardTemplate).mockReset();
-  vi.mocked(setCatalogueVisibility).mockReset();
-  vi.mocked(ticketsApi.apiV1TicketsIdGet).mockReset();
   vi.mocked(logger.info).mockReset();
   vi.mocked(logger.error).mockReset();
   session = await connect();
@@ -264,42 +188,12 @@ afterEach(async () => {
 });
 
 describe("createStaffMcpServer", () => {
-  it("lists every tool with the advertised annotations", async () => {
+  it("lists only the read tools, all marked read-only", async () => {
     const listed = await session.client.listTools();
     expect(listed.tools.map((t) => t.name)).toEqual([...TOOL_NAMES]);
-
-    const byName = Object.fromEntries(listed.tools.map((t) => [t.name, t.annotations]));
-    expect(byName.list_experiments).toMatchObject({ readOnlyHint: true });
-    expect(byName.get_experiment).toMatchObject({ readOnlyHint: true });
-    expect(byName.get_report_download_url).toMatchObject({ readOnlyHint: true });
-    expect(byName.record_lab_values).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.check_in_sample).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.start_experiment).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.submit_experiment).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.close_ticket).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.run_calculations).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.generate_report).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
+    for (const tool of listed.tools) {
+      expect(tool.annotations).toMatchObject({ readOnlyHint: true });
+    }
   });
 
   it("rejects a bad status enum as an input-validation error", async () => {
@@ -308,26 +202,24 @@ describe("createStaffMcpServer", () => {
       arguments: { status: "NOPE" },
     });
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toMatch(
-      /Invalid arguments for tool list_experiments/,
-    );
+    expect(textOf(result)).toMatch(/Invalid arguments for tool list_experiments/);
     expect(logger.info).not.toHaveBeenCalled();
   });
 });
 
 describe("list_experiments", () => {
   const tickets: EnrichedTicket[] = [
-    enriched("EXPERIMENTING", {
+    enriched("IN_PROGRESS", {
       contextId: "ctx-water",
       experimentTitle: "Water pH",
     }),
-    enriched("PENDING", {
+    enriched("RECEIVED", {
       contextId: "ctx-soil",
       name: "Soil metals",
       experimentTitle: "Soil metals",
       requester: null,
     }),
-    enriched("FINALIZING", {
+    enriched("COMPLETED", {
       contextId: "ctx-air",
       name: "Air quality",
       experimentTitle: "Air quality",
@@ -349,7 +241,7 @@ describe("list_experiments", () => {
     const byStatus = parseOk(
       await session.client.callTool({
         name: "list_experiments",
-        arguments: { status: "PENDING" },
+        arguments: { status: "RECEIVED" },
       }),
     );
     expect(byStatus.total).toBe(1);
@@ -358,7 +250,7 @@ describe("list_experiments", () => {
       expect.objectContaining({
         contextId: "ctx-soil",
         title: "Soil metals",
-        status: "PENDING",
+        status: "RECEIVED",
         statusLabel: "Sample received",
         requester: null,
       }),
@@ -492,7 +384,7 @@ describe("get_experiment", () => {
     expect(textOf(result)).toBe("No experiment found for context id unknown.");
   });
 
-  it("overlays live collab-buffer values while EXPERIMENTING and a template is hydrated", async () => {
+  it("overlays the method's live collab room while it is IN_PROGRESS and hydrated", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
     vi.mocked(readTemplate).mockResolvedValue({ labForm: { questions: [] } } as never);
     vi.mocked(readValues).mockResolvedValue({ ph: 8.1 });
@@ -507,10 +399,8 @@ describe("get_experiment", () => {
       contextId: "ctx-1",
       title: "Water pH",
       sampleType: "Water",
-      status: "EXPERIMENTING",
+      status: "IN_PROGRESS",
       statusLabel: "In progress",
-      nextStep:
-        "Record measurements with record_lab_values, then submit_experiment when the lab form is complete.",
       requester: { name: "Bob", email: "bob@lab.test" },
     });
     expect(body.labForm).toMatchObject({ values: { ph: 8.1 } });
@@ -518,10 +408,10 @@ describe("get_experiment", () => {
       answers: { sample_id: "W-1" },
     });
     expect(body.warnings).toBeUndefined();
-    expect(readValues).toHaveBeenCalledWith("ctx-1");
+    expect(readValues).toHaveBeenCalledWith("ctx-1_exp-1");
   });
 
-  it("keeps experiment-manager values when the EXPERIMENTING room is not hydrated", async () => {
+  it("keeps the stored values when the method's room is not hydrated", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
     vi.mocked(readTemplate).mockResolvedValue(null);
 
@@ -535,9 +425,9 @@ describe("get_experiment", () => {
     expect(readValues).not.toHaveBeenCalled();
   });
 
-  it("does not read the collab buffer outside EXPERIMENTING", async () => {
+  it("does not read the collab room when the method is not in progress", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: ticket("FINALIZING") }),
+      workspace({ ticket: ticket("COMPLETED"), selected: selected("FINISHED") }),
     );
 
     const body = parseOk(
@@ -546,8 +436,7 @@ describe("get_experiment", () => {
         arguments: { contextId: "ctx-1" },
       }),
     );
-    expect(body.status).toBe("FINALIZING");
-    expect(body.nextStep).toContain("run_calculations");
+    expect(body.status).toBe("COMPLETED");
     expect(readTemplate).not.toHaveBeenCalled();
     expect(readValues).not.toHaveBeenCalled();
   });
@@ -569,9 +458,7 @@ describe("get_experiment", () => {
     );
     expect(withWarnings.requester).toBeNull();
     expect(withWarnings.warnings).toEqual({ ticket: "slow", state: "missing" });
-    expect(withWarnings.nextStep).toBe(
-      "Waiting for the sample. Use check_in_sample once it arrives.",
-    );
+    expect(withWarnings.statusLabel).toBe("Requested");
 
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
       workspace({ ticket: null, state: state(), experimentTitle: "Orphan" }),
@@ -584,7 +471,6 @@ describe("get_experiment", () => {
     );
     expect(stateOnly.status).toBeNull();
     expect(stateOnly.statusLabel).toBeNull();
-    expect(stateOnly.nextStep).toBeUndefined();
     expect(stateOnly.timeline).toBeNull();
 
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
@@ -596,28 +482,11 @@ describe("get_experiment", () => {
         arguments: { contextId: "ctx-1" },
       }),
     );
-    expect(ticketOnly.nextStep).toBe(
-      "Closed. Use get_report_download_url for the PDF report.",
-    );
+    expect(ticketOnly.status).toBe("CLOSED");
     expect(ticketOnly.labForm).toBeNull();
     expect(ticketOnly.clientIntake).toBeNull();
     expect(ticketOnly.report).toBeNull();
     expect(ticketOnly.calculations).toBeUndefined();
-  });
-
-  it("returns the PENDING next-step copy", async () => {
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: ticket("PENDING") }),
-    );
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(body.nextStep).toBe(
-      "Sample received. Use start_experiment to open the lab form.",
-    );
   });
 
   it("keeps client answers out of labForm.values and lab answers (including repeatable children) out of clientIntake", async () => {
@@ -635,7 +504,7 @@ describe("get_experiment", () => {
     ];
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
       workspace({
-        ticket: ticket("FINALIZING"),
+        ticket: ticket("COMPLETED"),
         state: state({
           template: {
             clientForm: { name: "Client", questions: clientQuestions },
@@ -666,384 +535,6 @@ describe("get_experiment", () => {
       questions: labFormQuestions,
       values: { ph: 7, reading: [1.1, 1.2] },
     });
-  });
-});
-
-describe("record_lab_values", () => {
-  it("rejects an empty values object without calling the writer", async () => {
-    const result = await session.client.callTool({
-      name: "record_lab_values",
-      arguments: { contextId: "ctx-1", values: {} },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No values given.");
-    expect(recordLabValues).not.toHaveBeenCalled();
-  });
-
-  it("passes mcp:<grantId> as the connection id and notes a FINALIZING save", async () => {
-    vi.mocked(recordLabValues).mockResolvedValue({
-      success: true,
-      data: { stage: "FINALIZING", saved: ["ph"] },
-    });
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "record_lab_values",
-        arguments: { contextId: "ctx-1", values: { ph: 8 } },
-      }),
-    );
-    expect(recordLabValues).toHaveBeenCalledWith("ctx-1", { ph: 8 }, "mcp:grant-1");
-    expect(body).toEqual({
-      stage: "FINALIZING",
-      saved: ["ph"],
-      note: "Saved. Calculation results were cleared; run run_calculations again.",
-    });
-  });
-
-  it("notes a live EXPERIMENTING save", async () => {
-    vi.mocked(recordLabValues).mockResolvedValue({
-      success: true,
-      data: { stage: "EXPERIMENTING", saved: ["ph", "note"] },
-    });
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "record_lab_values",
-        arguments: {
-          contextId: "ctx-1",
-          values: { ph: 8, note: null },
-        },
-      }),
-    );
-    expect(body.note).toBe("Saved.");
-  });
-
-  it("passes the writer error through as isError", async () => {
-    vi.mocked(recordLabValues).mockResolvedValue({
-      success: false,
-      error: "Nothing was saved.\nph: Ada is editing this field right now; try again shortly.",
-    });
-
-    const result = await session.client.callTool({
-      name: "record_lab_values",
-      arguments: { contextId: "ctx-1", values: { ph: 8 } },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("Nothing was saved.");
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.objectContaining({ tool: "record_lab_values", ok: false }),
-      "mcp tool call",
-    );
-  });
-});
-
-describe("stage transitions and report tools", () => {
-  const transitions = [
-    { name: "check_in_sample", run: checkInSample, status: "PENDING" },
-    { name: "start_experiment", run: startExperiment, status: "EXPERIMENTING" },
-    { name: "submit_experiment", run: submitExperiment, status: "FINALIZING" },
-    { name: "close_ticket", run: closeTicket, status: "CLOSED" },
-  ] as const;
-
-  it.each(transitions)("$name succeeds and fails", async ({ name, run, status }) => {
-    vi.mocked(run).mockResolvedValueOnce({
-      success: true,
-      data: { status },
-    });
-    const ok = parseOk(
-      await session.client.callTool({ name, arguments: { contextId: "ctx-1" } }),
-    );
-    expect(ok).toEqual({ contextId: "ctx-1", status });
-    expect(run).toHaveBeenCalledWith("ctx-1");
-
-    vi.mocked(run).mockResolvedValueOnce({
-      success: false,
-      error: `${name} blocked`,
-    });
-    const failed = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe(`${name} blocked`);
-  });
-
-  it("runs calculations", async () => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "FINALIZING",
-    } as never);
-    vi.mocked(runCalculations).mockResolvedValue({ success: true, data: null });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "run_calculations",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({
-      contextId: "ctx-1",
-      note: "Calculations finished. Use get_experiment to read the results.",
-    });
-
-    vi.mocked(runCalculations).mockResolvedValue({
-      success: false,
-      error: "One or more calculations didn't produce a result.",
-    });
-    const failed = await session.client.callTool({
-      name: "run_calculations",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toContain("calculations");
-  });
-
-  it("queues a report", async () => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "FINALIZING",
-    } as never);
-    vi.mocked(queueReport).mockResolvedValue({
-      success: true,
-      data: { status: "pending" },
-    });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "generate_report",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({ contextId: "ctx-1", reportStatus: "pending" });
-
-    vi.mocked(queueReport).mockResolvedValue({
-      success: false,
-      error: "Could not start report generation.",
-    });
-    const failed = await session.client.callTool({
-      name: "generate_report",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe("Could not start report generation.");
-  });
-
-  const gated = [
-    { name: "run_calculations", run: runCalculations },
-    { name: "generate_report", run: queueReport },
-  ] as const;
-
-  it.each(gated)("$name fails when the ticket cannot be loaded", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockRejectedValue(new Error("gone"));
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "missing" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No experiment found for context id missing.");
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it.each(gated)("$name is only allowed in FINALIZING", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "EXPERIMENTING",
-    } as never);
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe(
-      "Only allowed in the FINALIZING stage; this experiment is EXPERIMENTING.",
-    );
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it.each(gated)("$name treats a missing ticket status as unknown", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({} as never);
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe(
-      "Only allowed in the FINALIZING stage; this experiment is unknown.",
-    );
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it("returns a report download url", async () => {
-    vi.mocked(getReportUrl).mockResolvedValue({
-      success: true,
-      data: { url: "https://files.test/report.pdf" },
-    });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "get_report_download_url",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({
-      contextId: "ctx-1",
-      url: "https://files.test/report.pdf",
-    });
-
-    vi.mocked(getReportUrl).mockResolvedValue({
-      success: false,
-      error: "The report isn't ready to download yet.",
-    });
-    const failed = await session.client.callTool({
-      name: "get_report_download_url",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe("The report isn't ready to download yet.");
-  });
-
-  it("forwards onboarding tools to the shared helpers", async () => {
-    const draft = {
-      clientForm: { name: "Client", questions: [] },
-      labForm: { name: "Lab", questions: [] },
-      calculations: {},
-    };
-    vi.mocked(listOnboardingSamples).mockResolvedValue({ success: true, data: [] });
-    vi.mocked(listOnboardingTemplates).mockResolvedValue({ success: true, data: [] });
-    vi.mocked(getOnboardingTemplate).mockResolvedValue({
-      success: true,
-      data: {
-        templateId: "t1",
-        lineageId: "lin-1",
-        title: "Ash",
-        description: null,
-        version: 1,
-        hasPdfTemplate: false,
-        visible: false,
-        template: draft,
-      },
-    });
-    vi.mocked(createOnboardingSample).mockResolvedValue({
-      success: true,
-      data: { id: "s1", name: "Coal" },
-    });
-    vi.mocked(testOnboardingCalculations).mockResolvedValue({
-      success: true,
-      data: {
-        values: {},
-        order: [],
-        calculations: {},
-        missing_values: [],
-        duplicate_question_ids: [],
-      },
-    });
-    vi.mocked(onboardTemplate).mockResolvedValue({
-      success: true,
-      data: {
-        sampleId: "s1",
-        sampleName: "Coal",
-        createdSample: false,
-        templateId: "t1",
-        lineageId: "lin-1",
-        reportLayout: "written",
-        published: false,
-        formulaCheck: null,
-      },
-    });
-
-    expect(parseOk(await session.client.callTool({ name: "list_samples", arguments: {} }))).toEqual([]);
-    expect(
-      parseOk(await session.client.callTool({ name: "list_templates", arguments: { sampleId: "s1" } })),
-    ).toEqual([]);
-    expect(
-      (await session.client.callTool({
-        name: "get_template",
-        arguments: { sampleId: "s1", templateId: "t1" },
-      })).isError,
-    ).toBeFalsy();
-    expect(
-      parseOk(
-        await session.client.callTool({
-          name: "create_sample",
-          arguments: { name: "Coal", description: "Raw" },
-        }),
-      ),
-    ).toEqual({ id: "s1", name: "Coal" });
-    await session.client.callTool({
-      name: "test_template_calculations",
-      arguments: { template: draft },
-    });
-    await session.client.callTool({
-      name: "test_template_calculations",
-      arguments: { template: draft, values: { mass: 1 } },
-    });
-    expect(testOnboardingCalculations).toHaveBeenLastCalledWith(draft, { mass: 1 });
-    expect(
-      parseOk(
-        await session.client.callTool({
-          name: "onboard_template",
-          arguments: { title: "Ash", template: draft },
-        }),
-      ).templateId,
-    ).toBe("t1");
-    vi.mocked(onboardTemplate).mockResolvedValue({
-      success: false,
-      error: "Template title is required.",
-    });
-    const refused = await session.client.callTool({
-      name: "onboard_template",
-      arguments: { title: "Ash", template: draft },
-    });
-    expect(refused.isError).toBe(true);
-    expect(textOf(refused)).toBe("Template title is required.");
-
-    vi.mocked(setCatalogueVisibility).mockResolvedValue({
-      success: true,
-      data: { sampleId: "s1", lineageId: "lin-1", visible: false },
-    });
-    await session.client.callTool({
-      name: "set_catalogue_visibility",
-      arguments: { sampleId: "s1", lineageId: "lin-1", visible: false },
-    });
-    expect(setCatalogueVisibility).toHaveBeenCalledWith("s1", "lin-1", false);
-  });
-});
-
-describe("scopes", () => {
-  async function toolsFor(scope: string) {
-    const scoped = await connect({ ...actor, scope });
-    try {
-      return (await scoped.client.listTools()).tools.map((t) => t.name);
-    } finally {
-      await scoped.close();
-    }
-  }
-
-  it("exposes only read tools to a read-only grant", async () => {
-    expect(await toolsFor("experiments:read")).toEqual(READ_TOOLS);
-  });
-
-  it("adds each write scope's tools on their own", async () => {
-    const experiments = await toolsFor("experiments:read experiments:write");
-    expect(experiments).toContain("record_lab_values");
-    expect(experiments).toContain("close_ticket");
-    expect(experiments).not.toContain("onboard_template");
-
-    const templates = await toolsFor("experiments:read templates:write");
-    expect(templates).toContain("onboard_template");
-    expect(templates).toContain("set_catalogue_visibility");
-    expect(templates).not.toContain("check_in_sample");
-  });
-
-  it("refuses a call to a tool outside the grant", async () => {
-    const scoped = await connect({ ...actor, scope: "experiments:read" });
-    try {
-      const result = await scoped.client.callTool({
-        name: "close_ticket",
-        arguments: { contextId: "ctx-1" },
-      });
-      expect(result.isError).toBe(true);
-      expect(closeTicket).not.toHaveBeenCalled();
-    } finally {
-      await scoped.close();
-    }
   });
 });
 

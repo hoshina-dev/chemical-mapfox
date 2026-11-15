@@ -1,8 +1,8 @@
 "use client";
 
 import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEditor";
-import { templateBuilderPath } from "@/lib/experiment-manager/routes";
-import type { TemplateSummary } from "@/lib/experiment-manager/mappers";
+import { templateBuilderPath } from "@/lib/internal/routes";
+import type { TemplateSummary } from "@/lib/experiment/templates";
 
 export function SampleTemplatesTable({
   templates,

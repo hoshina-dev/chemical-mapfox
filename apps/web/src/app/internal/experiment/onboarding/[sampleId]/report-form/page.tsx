@@ -11,7 +11,7 @@ import {
   onboardingPath,
   reportFormPath,
   sampleOnboardingPath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import { getSampleType, SampleTrackerError } from "@/lib/sample-tracker/client";
 
 export const dynamic = "force-dynamic";

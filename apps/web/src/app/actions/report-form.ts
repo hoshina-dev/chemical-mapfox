@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import { requireAdmin } from "@/lib/auth/dal";
-import { reportFormPath } from "@/lib/experiment-manager/routes";
+import { reportFormPath } from "@/lib/internal/routes";
 import { logHandledError } from "@/lib/log/handled";
 import { putReportForm, sampleTrackerMessage } from "@/lib/sample-tracker/client";
 

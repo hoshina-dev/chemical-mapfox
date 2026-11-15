@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { StatusChip } from "@/components/ticketing/StatusChip";
+import { StatusChip } from "@/components/status/StatusChip";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import type { MyExperiment } from "@/lib/experiment/data";

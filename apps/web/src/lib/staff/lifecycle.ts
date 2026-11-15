@@ -3,13 +3,13 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import { hydrate, persistNow, resetRoom } from "@/lib/collab/room";
 import {
   experimentCheckinPath,
   experimentListingPath,
   experimentWorkspacePath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import { myExperimentDetailPath } from "@/lib/experiment/routes";
 import { logHandledError } from "@/lib/log/handled";
 import {
@@ -26,8 +26,7 @@ import {
 import { collabRoomId, parseRoomId } from "@/lib/sample-tracker/mappers";
 
 // The staff ticket lifecycle on sample_tracker, used by the /internal server
-// actions. (MCP still uses lib/staff/workflow.ts until its own rework.) Callers
-// must have checked the actor is staff.
+// actions (and later by the MCP tools). Callers must have checked the actor is staff.
 
 function refresh(ticketId: string) {
   revalidatePath(experimentWorkspacePath(ticketId));

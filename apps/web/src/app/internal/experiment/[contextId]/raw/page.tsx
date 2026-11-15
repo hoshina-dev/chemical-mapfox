@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import {
   experimentListingPath,
   experimentWorkspacePath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import { getTicket, listTicketEvents, SampleTrackerError } from "@/lib/sample-tracker/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";

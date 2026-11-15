@@ -1,5 +1,5 @@
 import { myExperimentsPath } from "../experiment/routes";
-import { experimentListingPath } from "../experiment-manager/routes";
+import { experimentListingPath } from "@/lib/internal/routes";
 import type { CustApiRole, SessionPayload } from "./definitions";
 
 /**

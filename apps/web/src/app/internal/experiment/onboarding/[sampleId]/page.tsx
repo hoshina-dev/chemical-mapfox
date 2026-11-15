@@ -5,12 +5,12 @@ import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemp
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { LinkButton } from "@/components/links";
 import { requireAdmin } from "@/lib/auth/dal";
-import type { TemplateSummary } from "@/lib/experiment-manager/mappers";
+import type { TemplateSummary } from "@/lib/experiment/templates";
 import {
   newTemplatePath,
   onboardingPath,
   reportFormPath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import { getSampleType, listTemplates } from "@/lib/sample-tracker/client";
 import { toTemplateSummary } from "@/lib/sample-tracker/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";

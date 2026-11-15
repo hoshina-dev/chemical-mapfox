@@ -22,13 +22,13 @@ import {
   createTemplateAction,
   deleteTemplateAction,
   updateTemplateAction,
-} from "@/app/actions/experiment-manager";
+} from "@/app/actions/onboarding";
 import { type FormDraft, fromDraft } from "@/lib/builder";
 import {
   onboardingPath,
   templateBuilderPath,
   reportFormPath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { CollapsiblePanel } from "./CollapsiblePanel";

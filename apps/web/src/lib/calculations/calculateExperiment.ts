@@ -5,7 +5,7 @@ import {
   finishExperimentAction,
   finishInputsAction,
 } from "@/app/actions/experiment";
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 
 import { CalculationEngineError, evaluateCalculations, firstFailure } from "./runner";
 

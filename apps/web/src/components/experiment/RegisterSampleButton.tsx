@@ -14,8 +14,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { createSampleAction } from "@/app/actions/experiment-manager";
-import { sampleOnboardingPath } from "@/lib/experiment-manager/routes";
+import { createSampleAction } from "@/app/actions/onboarding";
+import { sampleOnboardingPath } from "@/lib/internal/routes";
 
 export function RegisterSampleButton() {
   const t = useTranslations("staff.registerSample");

@@ -35,8 +35,8 @@ import {
   experimentReportDownloadPath,
   experimentReportViewPath,
   experimentRawPath,
-} from "@/lib/experiment-manager/routes";
-import { StatusChip } from "@/components/ticketing/StatusChip";
+} from "@/lib/internal/routes";
+import { StatusChip } from "@/components/status/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
 import { listTicketEvents, type PublishReport, type TicketEvent } from "@/lib/sample-tracker/client";
 import { collabRoomId } from "@/lib/sample-tracker/mappers";

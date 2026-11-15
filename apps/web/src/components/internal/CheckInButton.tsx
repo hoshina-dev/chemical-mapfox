@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { checkInSampleAction } from "@/app/actions/experiment";
-import { experimentWorkspacePath } from "@/lib/experiment-manager/routes";
+import { experimentWorkspacePath } from "@/lib/internal/routes";
 
 /**
  * Confirms a shipped sample has arrived (REQUESTED → PENDING) and forwards the

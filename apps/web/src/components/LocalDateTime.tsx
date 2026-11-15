@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { formatDateTime } from "@/lib/ticketing/tickets";
+import { formatDateTime } from "@/lib/experiment/tickets";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
