@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator, Page } from "playwright";
 
+import { waitForHydration } from "../support/interactions.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 type UiLocale = "en" | "pl";
@@ -62,17 +63,7 @@ When(
     await switcher.waitFor({ state: "visible", timeout: 15_000 });
     // Wait for client hydration — selecting too early changes the DOM value
     // without firing the React onChange that persists NEXT_LOCALE.
-    await this.page.waitForFunction(
-      () => {
-        const select = [...document.querySelectorAll("select")].find((el) => {
-          const values = [...el.options].map((o) => o.value);
-          return values.includes("en") && values.includes("pl");
-        });
-        return select instanceof HTMLSelectElement && !select.disabled;
-      },
-      undefined,
-      { timeout: 15_000 },
-    );
+    await waitForHydration(switcher);
     await switcher.selectOption(locale);
     // setLocaleAction + router.refresh(); <html lang> updates with the locale.
     await this.page.waitForFunction(
