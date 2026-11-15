@@ -124,12 +124,22 @@ function SampleMethods({
       <Checkbox.Group value={chosen} onChange={onChange}>
         <Stack gap="xs">
           {group.templates.map((tpl) => (
-            <Checkbox
-              key={tpl.templateId}
-              value={tpl.templateId}
-              label={tpl.title}
-              description={tpl.description ?? undefined}
-            />
+            // The whole row toggles the method, not just the small box.
+            <Checkbox.Card key={tpl.templateId} value={tpl.templateId} radius="md" p="sm">
+              <Group wrap="nowrap" align="flex-start" gap="sm">
+                <Checkbox.Indicator />
+                <div>
+                  <Text size="sm" fw={500}>
+                    {tpl.title}
+                  </Text>
+                  {tpl.description && (
+                    <Text size="xs" c="dimmed">
+                      {tpl.description}
+                    </Text>
+                  )}
+                </div>
+              </Group>
+            </Checkbox.Card>
           ))}
         </Stack>
       </Checkbox.Group>
