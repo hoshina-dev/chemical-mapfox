@@ -83,6 +83,7 @@ export function ExperimentStateView({
             <LabFormEditor
               contextId={editable.contextId}
               doc={template.labForm}
+              template={template}
               initialValues={state.values}
               currentUser={editable.currentUser}
               canSubmit={editable.canSubmit}

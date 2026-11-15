@@ -23,6 +23,7 @@ import {
   startExperiment,
 } from "@/lib/sample-tracker/client";
 import { collabRoomId, parseRoomId } from "@/lib/sample-tracker/mappers";
+import { ACCEPTED_PAIR_CALC } from "@/lib/forms/dishFormula";
 
 // The staff ticket lifecycle on sample_tracker, used by the /internal server
 // actions and the MCP tools. Callers must have checked the actor is staff.
@@ -154,6 +155,16 @@ export async function finish(
   if (!ref || typeof calculations !== "object" || calculations === null) {
     return { success: false, error: t("finishFailed") };
   }
+  // A dish-run method generates an `accepted_pair` calculation: the two dishes
+  // that agreed within the acceptable error, or None when no pair did. Its
+  // presence is what marks the method as a dish run, so an ordinary one is
+  // unaffected. These are the same results the certificate prints, which makes
+  // this the authoritative gate — the UI's own check is only a courtesy.
+  const acceptedPair = calculations[ACCEPTED_PAIR_CALC];
+  if (acceptedPair && !Array.isArray(acceptedPair.result)) {
+    return { success: false, error: t("dishesDisagree") };
+  }
+
   const results = Object.fromEntries(
     Object.entries(calculations).map(([key, calc]) => [key, calc?.result ?? ""]),
   );

@@ -98,11 +98,20 @@ function stripLiterals(expr: string): string {
     .replace(/#.*$/gm, " ");
 }
 
+// Names the formula binds itself, so they are not reported as unknown.
+const FOR_TARGETS =
+  /\bfor\s+\(?\s*([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)*)\s*,?\s*\)?\s+in\b/g;
+
 function assignedNames(code: string): Set<string> {
   const names = new Set<string>();
   for (const line of code.split("\n")) {
     const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)/.exec(line);
     if (match?.[1]) names.add(match[1]);
+  }
+  for (const match of code.matchAll(FOR_TARGETS)) {
+    for (const target of (match[1] as string).split(",")) {
+      names.add(target.trim());
+    }
   }
   return names;
 }
@@ -252,20 +261,39 @@ function standInScalar(question: Exclude<Question, { type: "repeatable-group" }>
 }
 
 /**
+ * How many dishes a dry run stands in for. Deliberately three: two measured and
+ * one still being measured.
+ */
+const STAND_IN_DISHES = 3;
+
+/**
  * Answers to dry-run formulas with. Question defaults win, then a stand-in of
  * the right shape (numbers are 1, never 0, so a plain division still runs).
- * `trial` overrides either. Repeatable children become a list of `count`.
+ * `trial` overrides either.
+ *
+ * An ordinary repeatable child becomes a list of `count`. A **dish** group's
+ * children instead get the production shape described on `STAND_IN_DISHES`.
  */
 export function standInValues(
   template: ExperimentTemplate,
   trial?: FormAnswers,
 ): FormAnswers {
   const values: FormAnswers = {};
+  const dishGroupId = template.labForm.dishRun?.group;
   const fill = (question: Question) => {
     if (question.type === "repeatable-group") {
+      const isDishGroup = question.id === dishGroupId;
+      const length = isDishGroup
+        ? Math.min(STAND_IN_DISHES, question.config.count)
+        : question.config.count;
+      // Only null the tail when there are still two measured dishes left to
+      // compare, so the stand-in always represents a runnable comparison.
+      const unmeasuredIndex = isDishGroup && length > 2 ? length - 1 : -1;
       for (const child of question.config.questions) {
         const one = standInScalar(child);
-        values[child.id] = Array.from({ length: question.config.count }, () => one) as AnswerValue;
+        values[child.id] = Array.from({ length }, (_, index) =>
+          index === unmeasuredIndex ? null : one,
+        ) as AnswerValue;
       }
       return;
     }

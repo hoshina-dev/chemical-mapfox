@@ -26,6 +26,8 @@ import { MonacoFormulaEditor } from "./MonacoFormulaEditor";
 
 interface CalculationsEditorProps {
   form: UseFormReturnType<FormDraft>;
+  /** Collapsed by default: dish formulas are authored in the dish-run panel. */
+  defaultOpen?: boolean;
 }
 
 interface CalcRowProps {
@@ -101,7 +103,7 @@ function CalcRow({
   );
 }
 
-export function CalculationsEditor({ form }: CalculationsEditorProps) {
+export function CalculationsEditor({ form, defaultOpen }: CalculationsEditorProps) {
   const t = useTranslations("builder.calculations");
   const calcs = form.values.calculations;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -113,6 +115,7 @@ export function CalculationsEditor({ form }: CalculationsEditorProps) {
       title={t("title")}
       subtitle={t("subtitle")}
       badge={t("formulaCount", { count: calcs.length })}
+      defaultOpen={defaultOpen}
     >
       <Stack gap="sm" style={{ width: "100%" }}>
         {calcs.length === 0 && (

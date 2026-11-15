@@ -73,6 +73,74 @@ describe("inspectFormulas", () => {
     expect(messages.some((message) => message.includes("uses 'bare'"))).toBe(true);
     expect(messages.filter((message) => message.includes("Circular"))).toHaveLength(2);
   });
+
+  // A per-dish formula is a comprehension over a repeatable-group's columns, so
+  // its loop targets are bound by the engine and must not read as unknown names.
+  // Before this, every dish-run template was unsaveable (`inspectFormulas` gates
+  // saving in `onboarding.ts`).
+  describe("comprehension and loop targets are local", () => {
+    const dishes: Question = {
+      id: "dishes",
+      type: "repeatable-group",
+      label: "Dish",
+      config: {
+        count: 8,
+        itemLabel: "Dish",
+        questions: [
+          { id: "B", type: "number", label: "B" },
+          { id: "C", type: "number", label: "C" },
+          { id: "D", type: "number", label: "D" },
+        ],
+      },
+    };
+
+    it.each([
+      ["single target", "[b * 2 for b in values['B']]"],
+      ["tuple target", "[b + c for b, c in zip(values['B'], values['C'])]"],
+      ["parenthesised target", "[b + c for (b, c) in zip(values['B'], values['C'])]"],
+      [
+        "three targets with null guards (what the dish-run generator emits)",
+        "[b + c * d if b is not None and c is not None and d is not None else None" +
+          " for b, c, d in zip(values['B'], values['C'], values['D'])]",
+      ],
+      ["statement loop", "total = 0\nfor b in values['B']:\n    total = total + b\nresult = total"],
+    ])("accepts a %s", (_label, formula) => {
+      expect(inspectFormulas(template([dishes], { G: { formula } }))).toEqual([]);
+    });
+
+    it("still reports a genuinely unknown name alongside bound targets", () => {
+      const messages = inspectFormulas(
+        template([dishes], {
+          G: { formula: "[b + typo for b in values['B']]" },
+        }),
+      ).map((issue) => issue.message);
+      expect(messages).toEqual([
+        "Calculation 'G' uses 'typo', which is not a calculation, a builtin, or math. Answers must be values['…'].",
+      ]);
+    });
+
+    it("still rejects a dunder inside a comprehension", () => {
+      const messages = inspectFormulas(
+        template([dishes], {
+          G: { formula: "[b.__class__ for b in values['B']]" },
+        }),
+      ).map((issue) => issue.message);
+      expect(messages.some((message) => message.includes("dunder"))).toBe(true);
+    });
+
+    // A chained per-dish calculation refers to earlier ones by bare name.
+    it("accepts a chain of per-dish calculations referring to each other", () => {
+      expect(
+        inspectFormulas(
+          template([dishes], {
+            E: { formula: "[b + c for b, c in zip(values['B'], values['C'])]" },
+            F: { formula: "[c * d for c, d in zip(values['C'], values['D'])]" },
+            G: { formula: "[e + f for e, f in zip(E, F)]" },
+          }),
+        ),
+      ).toEqual([]);
+    });
+  });
 });
 
 describe("standInValues", () => {
@@ -134,5 +202,70 @@ describe("standInValues", () => {
     expect(values.secret).toBe("sample");
     expect(values.reading).toEqual([1, 1]);
     expect(values.reps).toBeUndefined();
+  });
+
+  // A dish column is never padded to `count` in production — it is exactly as
+  // long as the dishes touched — so the stand-in must not pad either, or a
+  // formula could pass the authoring check and still fail in the lab.
+  describe("dish groups get the production shape", () => {
+    function dishTemplate(count: number, extraGroup = false): ExperimentTemplate {
+      const dishes: Question = {
+        id: "dishes",
+        type: "repeatable-group",
+        label: "Dish",
+        config: {
+          count,
+          itemLabel: "Dish",
+          questions: [
+            { id: "B", type: "number", label: "B" },
+            { id: "C", type: "number", label: "C" },
+          ],
+        },
+      };
+      const sieves: Question = {
+        id: "sieves",
+        type: "repeatable-group",
+        label: "Sieve",
+        config: {
+          count: 4,
+          questions: [{ id: "retained", type: "number", label: "Retained" }],
+        },
+      };
+      return {
+        clientForm: { name: "Client", questions: [] },
+        labForm: {
+          name: "Lab",
+          questions: extraGroup ? [dishes, sieves] : [dishes],
+          dishRun: {
+            group: "dishes",
+            maxDishes: count,
+            rules: [{ target: "G", label: "G", limit: { kind: "absolute", value: 0.3 } }],
+          },
+        },
+        calculations: {},
+      };
+    }
+
+    it("stands in two measured dishes plus one being measured", () => {
+      const values = standInValues(dishTemplate(8));
+      expect(values.B).toEqual([1, 1, null]);
+      expect(values.C).toEqual([1, 1, null]);
+    });
+
+    it("keeps two measured dishes when the cap is only two", () => {
+      const values = standInValues(dishTemplate(2));
+      expect(values.B).toEqual([1, 1]);
+    });
+
+    it("leaves an unrelated repeatable group padded to its own count", () => {
+      const values = standInValues(dishTemplate(8, true));
+      expect(values.B).toEqual([1, 1, null]);
+      expect(values.retained).toEqual([1, 1, 1, 1]);
+    });
+
+    it("still lets a trial override a dish column", () => {
+      const values = standInValues(dishTemplate(8), { B: [2, 3] });
+      expect(values.B).toEqual([2, 3]);
+    });
   });
 });
