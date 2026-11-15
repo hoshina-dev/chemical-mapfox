@@ -383,11 +383,10 @@
         "noReportLayoutTitle": "Nie skonfigurowano układu raportu",
         "noReportLayoutBody": "Ten eksperyment nie ma jeszcze zdefiniowanego układu raportu, więc nie można go zamówić. Sprawdź ponownie później.",
         "errorTitle": "Nie udało się przesłać zgłoszenia",
-        "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
+        "noIntake": "Żadna z tych metod nie wymaga od Ciebie danych. Sprawdź listę powyżej i wyślij zgłoszenie.",
         "submit": "Prześlij zgłoszenie",
         "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem",
-        "methodsLabel": "Metody dla tej próbki",
-        "methodsDescription": "Jedna próbka, jedno sprawozdanie: zaznacz wszystkie metody do wykonania."
+        "requestedLabel": "{count, plural, one {Zamawiana metoda} other {Zamawiane metody}}"
       },
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
@@ -657,19 +656,8 @@
       "ticket": {
         "title": "Zgłoszenie",
         "publish": "Opublikuj sprawozdanie",
-        "republish": "Opublikuj ponownie",
         "close": "Zamknij zgłoszenie",
         "cancel": "Anuluj zgłoszenie",
-        "publishTitle": "Publikacja sprawozdania",
-        "reportNumber": "Numer sprawozdania",
-        "orderNumber": "Numer zlecenia",
-        "clientName": "Zleceniodawca",
-        "clientAddress": "Adres",
-        "clientPostcodeCity": "Kod pocztowy i miasto",
-        "clientTaxId": "NIP",
-        "signerName": "Autoryzował",
-        "signerTitle": "Stanowisko",
-        "publishConfirm": "Opublikuj",
         "dismiss": "Wróć",
         "cancelTitle": "Anulowanie zgłoszenia",
         "cancelReason": "Powód",
@@ -1252,7 +1240,7 @@
               "Uzupełnij formularz laboratoryjny metody.",
               "Wybierz Zakończ badanie: wartości są zapisywane, wzory liczone w przeglądarce, a wyniki zapisywane.",
               "Powtórz dla każdej metody; gdy wszystkie są zakończone, zgłoszenie jest Zakończone.",
-              "Opublikuj sprawozdanie: wpisz numer sprawozdania i zlecenia, zleceniodawcę i autoryzującego.",
+              "Opublikuj sprawozdanie: od tej chwili Ty i zleceniodawca możecie je pobrać.",
               "Zamknij zgłoszenie."
             ]
           },
@@ -1359,7 +1347,7 @@
           },
           "variables": {
             "heading": "Mapa pól",
-            "body": "Lista pól, każde z page, x, y (punkty PDF od lewego górnego rogu, y na linii bazowej tekstu), opcjonalnie size, align i prefix oraz source: drukowana wartość. Źródła to nazwa rodzaju próbki, opis i daty zgłoszenia, odpowiedzi z formularza klienta (clientForm.questionId), wyniki obliczeń (result.templateId.calculationKey) oraz dane wpisywane przy publikacji (numer sprawozdania i zlecenia, zleceniodawca, autoryzujący)."
+            "body": "Lista pól, każde z page, x, y (punkty PDF od lewego górnego rogu, y na linii bazowej tekstu), opcjonalnie size, align i prefix oraz source: drukowana wartość. Źródła to nazwa rodzaju próbki, opis i daty zgłoszenia, data publikacji, odpowiedzi z formularza klienta (clientForm.questionId) i wyniki obliczeń (result.templateId.calculationKey). Źródła numeru sprawozdania i zlecenia, zleceniodawcy i autoryzującego są akceptowane, ale na razie nic nie drukują."
           },
           "preview": {
             "heading": "Sprawdź",

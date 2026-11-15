@@ -127,13 +127,6 @@ export interface TicketEvent {
   data: Record<string, unknown>;
 }
 
-export interface PublishReport {
-  reportNumber: string;
-  orderNumber: string;
-  client: { name: string; address: string; postcodeCity: string; taxId: string };
-  authorizedBy: { name: string; title: string };
-}
-
 export interface NotificationPreference {
   eventType: string;
   emailEnabled: boolean;
@@ -407,8 +400,9 @@ export const reopenExperiment = (
   reason: string,
 ) => command(actor, `${exp(ticketId, experimentId)}/reopen`, { reason });
 
-export const publishReport = (actor: string, ticketId: string, body: PublishReport) =>
-  command(actor, `/tickets/${ticketId}/report`, body);
+/** Release the report for download (no input: what it prints comes from the ticket). */
+export const publishReport = (actor: string, ticketId: string) =>
+  command(actor, `/tickets/${ticketId}/report`);
 
 export const getReport = (actor: string | undefined, ticketId: string) =>
   stBytes(`/tickets/${ticketId}/report`, { actor });

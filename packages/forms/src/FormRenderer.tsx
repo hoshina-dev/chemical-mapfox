@@ -159,6 +159,40 @@ export function RepeatableGroupField({
   );
 }
 
+/**
+ * The starting answers of a form: locked values, then given values, then each
+ * question's default (when `fillDefaults`). A repeatable group's child gets one
+ * entry per repetition.
+ */
+export function initialAnswersFor(
+  questions: Question[],
+  {
+    lockedValues = {},
+    initialValues = {},
+    fillDefaults = true,
+  }: { lockedValues?: FormAnswers; initialValues?: FormAnswers; fillDefaults?: boolean } = {},
+): FormAnswers {
+  const answers: FormAnswers = {};
+  for (const q of questions) {
+    if (q.type === "repeatable-group") {
+      for (const child of q.config.questions) {
+        const column = (initialValues[child.id] as RepeatableColumn | undefined) ?? [];
+        answers[child.id] = Array.from(
+          { length: q.config.count },
+          (_, k) => column[k] ?? (fillDefaults ? defaultFor(child) : undefined),
+        ) as AnswerValue;
+      }
+    } else if (q.id in lockedValues) {
+      answers[q.id] = lockedValues[q.id];
+    } else if (initialValues[q.id] !== undefined) {
+      answers[q.id] = initialValues[q.id];
+    } else {
+      answers[q.id] = fillDefaults ? defaultFor(q) : undefined;
+    }
+  }
+  return answers;
+}
+
 export function FormRenderer({
   doc,
   lockedValues = {},
@@ -173,28 +207,10 @@ export function FormRenderer({
   onSubmit,
   onSaveDraft,
 }: FormRendererProps) {
-  const initialAnswers = useMemo(() => {
-    const answers: FormAnswers = {};
-    for (const q of doc.questions) {
-      if (q.type === "repeatable-group") {
-        for (const child of q.config.questions) {
-          const column =
-            (initialValues[child.id] as RepeatableColumn | undefined) ?? [];
-          answers[child.id] = Array.from(
-            { length: q.config.count },
-            (_, k) => column[k] ?? (fillDefaults ? defaultFor(child) : undefined),
-          ) as AnswerValue;
-        }
-      } else if (q.id in lockedValues) {
-        answers[q.id] = lockedValues[q.id];
-      } else if (initialValues[q.id] !== undefined) {
-        answers[q.id] = initialValues[q.id];
-      } else {
-        answers[q.id] = fillDefaults ? defaultFor(q) : undefined;
-      }
-    }
-    return answers;
-  }, [doc, lockedValues, initialValues, fillDefaults]);
+  const initialAnswers = useMemo(
+    () => initialAnswersFor(doc.questions, { lockedValues, initialValues, fillDefaults }),
+    [doc, lockedValues, initialValues, fillDefaults],
+  );
 
   const [answers, setAnswers] = useState<FormAnswers>(initialAnswers);
   const [issues, setIssues] = useState<AnswerIssue[]>([]);

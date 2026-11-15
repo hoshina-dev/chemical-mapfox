@@ -383,11 +383,10 @@
         "noReportLayoutTitle": "Report layout not set up",
         "noReportLayoutBody": "This experiment has no report layout defined yet, so it can't be requested. Please check back later.",
         "errorTitle": "Could not submit your request",
-        "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
+        "noIntake": "None of these methods needs input from you. Check the list above and submit your request.",
         "submit": "Submit request",
         "missingRequired": "Fill in all required fields before submitting",
-        "methodsLabel": "Methods for this sample",
-        "methodsDescription": "One sample, one report: tick every method to run on it."
+        "requestedLabel": "{count, plural, one {Requested method} other {Requested methods}}"
       },
       "errors": {
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
@@ -657,19 +656,8 @@
       "ticket": {
         "title": "Ticket",
         "publish": "Publish report",
-        "republish": "Publish report again",
         "close": "Close ticket",
         "cancel": "Cancel ticket",
-        "publishTitle": "Publish the report",
-        "reportNumber": "Report number",
-        "orderNumber": "Order number",
-        "clientName": "Client",
-        "clientAddress": "Address",
-        "clientPostcodeCity": "Postcode and city",
-        "clientTaxId": "Tax ID",
-        "signerName": "Authorised by",
-        "signerTitle": "Position",
-        "publishConfirm": "Publish",
         "dismiss": "Back",
         "cancelTitle": "Cancel ticket",
         "cancelReason": "Reason",
@@ -1252,7 +1240,7 @@
               "Complete the lab form of the method.",
               "Choose Finish experiment: the values are saved, the formulas run in your browser and the results are stored.",
               "Repeat for every method; when all are finished the ticket is Completed.",
-              "Publish the report: type the report and order number, the client and who authorised it.",
+              "Publish the report: from then on you and the client can download it.",
               "Close the ticket."
             ]
           },
@@ -1359,7 +1347,7 @@
           },
           "variables": {
             "heading": "The field map",
-            "body": "A list of fields, each with page, x, y (PDF points from the top-left corner, y on the text baseline), optional size, align and prefix, and source: the value to print. Sources are the sample type's name, the ticket's description and dates, client form answers (clientForm.questionId), calculation results (result.templateId.calculationKey) and what staff type when publishing (report and order number, client, authorised by)."
+            "body": "A list of fields, each with page, x, y (PDF points from the top-left corner, y on the text baseline), optional size, align and prefix, and source: the value to print. Sources are the sample type's name, the ticket's description and dates, the publish date, client form answers (clientForm.questionId) and calculation results (result.templateId.calculationKey). The report and order number, client and authorised-by sources are accepted but print nothing yet."
           },
           "preview": {
             "heading": "Check it",

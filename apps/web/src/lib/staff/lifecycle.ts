@@ -17,7 +17,6 @@ import {
   finishExperiment,
   getTicketText,
   publishReport,
-  type PublishReport,
   receiveTicket,
   reopenExperiment,
   sampleTrackerMessage,
@@ -80,9 +79,9 @@ export async function reopen(
 export const close = (actor: string, ticketId: string, reason?: string) =>
   run("closeTicket", ticketId, "closeFailed", () => closeTicket(actor, ticketId, reason));
 
-/** Record the report's numbers, client and signer (COMPLETED or CLOSED tickets). */
-export const publish = (actor: string, ticketId: string, body: PublishReport) =>
-  run("publishReport", ticketId, "publishFailed", () => publishReport(actor, ticketId, body));
+/** Publish the report: staff and the requester can download it (COMPLETED or CLOSED tickets). */
+export const publish = (actor: string, ticketId: string) =>
+  run("publishReport", ticketId, "publishFailed", () => publishReport(actor, ticketId));
 
 // --- finish: calculate in the browser, then finish with the results --------------
 

@@ -4,6 +4,7 @@ export type {
 } from "./FormRenderer";
 export {
   FormRenderer,
+  initialAnswersFor,
   QuestionField,
   RepeatableGroupField,
 } from "./FormRenderer";

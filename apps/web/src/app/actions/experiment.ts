@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 
 import type { ActionResult } from "@/app/actions/onboarding";
 import { getSession } from "@/lib/auth/dal";
-import type { PublishReport } from "@/lib/sample-tracker/client";
 import {
   checkIn,
   close,
@@ -75,10 +74,7 @@ export async function closeTicketAction(
   return actor ? close(actor, ticketId, reason) : forbidden();
 }
 
-export async function publishReportAction(
-  ticketId: string,
-  body: PublishReport,
-): Promise<ActionResult<null>> {
+export async function publishReportAction(ticketId: string): Promise<ActionResult<null>> {
   const actor = await staff();
-  return actor ? publish(actor, ticketId, body) : forbidden();
+  return actor ? publish(actor, ticketId) : forbidden();
 }

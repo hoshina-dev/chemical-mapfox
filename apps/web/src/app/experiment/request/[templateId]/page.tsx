@@ -1,4 +1,4 @@
-import { Alert, Card, Container, Stack, Text, Title } from "@mantine/core";
+import { Alert, Card, Container, Stack, Title } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -55,16 +55,11 @@ async function RequestExperimentPageContent({
         <Breadcrumbs
           items={[
             { label: t("catalog.breadcrumb"), href: requestCatalogPath() },
-            { label: loaded.template.meta.title },
+            { label: loaded.sampleName },
           ]}
         />
 
-        <Stack gap={4}>
-          <Title order={2}>{loaded.template.meta.title}</Title>
-          {loaded.template.meta.description && (
-            <Text c="dimmed">{loaded.template.meta.description}</Text>
-          )}
-        </Stack>
+        <Title order={2}>{loaded.sampleName}</Title>
 
         {!loaded.template.valid && (
           <Alert color="orange" variant="light" title={t("form.outOfDateTitle")}>
@@ -74,7 +69,6 @@ async function RequestExperimentPageContent({
 
         <Card withBorder radius="md" padding="lg">
           <RequestExperimentForm
-            sampleName={loaded.sampleName}
             templateId={templateId}
             initialMethods={(methods ?? "").split(",")}
             methods={loaded.methods

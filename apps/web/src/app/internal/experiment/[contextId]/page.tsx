@@ -39,7 +39,6 @@ import {
 } from "@/lib/internal/routes";
 import { StatusChip } from "@/components/status/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { listTicketEvents, type PublishReport, type TicketEvent } from "@/lib/sample-tracker/client";
 import { collabRoomId } from "@/lib/sample-tracker/mappers";
 
 export const dynamic = "force-dynamic";
@@ -73,13 +72,6 @@ export default function ExperimentWorkspacePage({
   );
 }
 
-/** What the latest publish recorded, to pre-fill the publish dialog. */
-async function lastPublish(ticketId: string): Promise<PublishReport | null> {
-  const events = await listTicketEvents(undefined, ticketId).catch(() => [] as TicketEvent[]);
-  const last = [...events].reverse().find((e) => e.type === "ticket.report_published");
-  return last ? (last.data as unknown as PublishReport) : null;
-}
-
 async function ExperimentWorkspaceContent({
   params,
   searchParams,
@@ -98,8 +90,6 @@ async function ExperimentWorkspaceContent({
   const ticketOpen = status !== null && !["REQUESTED", "CLOSED", "CANCELLED"].includes(status);
   // The lab form is editable while its experiment is in progress; otherwise read-only.
   const canEdit = ticketOpen && selected?.status === "IN_PROGRESS";
-  const published =
-    status === "COMPLETED" || status === "CLOSED" ? await lastPublish(contextId) : null;
   const reportReady =
     state?.reportStatus?.toLowerCase() === "success" ||
     state?.reportStatus?.toLowerCase() === "succeeded";
@@ -242,7 +232,11 @@ async function ExperimentWorkspaceContent({
           <GridCol span={{ base: 12, md: 4 }}>
             <Stack gap="lg">
               {status && (
-                <TicketActions contextId={contextId} status={status} lastPublish={published} />
+                <TicketActions
+                  contextId={contextId}
+                  status={status}
+                  published={Boolean(ws.raw?.reportPublishedAt)}
+                />
               )}
 
               <Card withBorder radius="md" padding="lg">
