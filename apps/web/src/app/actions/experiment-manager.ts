@@ -12,6 +12,10 @@ import {
   createTemplate,
   deleteTemplate,
   sampleTrackerMessage as errorMessage,
+  setSampleTypesWebOrder,
+  setSampleTypeWebVisibility,
+  setTemplatesWebOrder,
+  setTemplateWebVisibility,
   updateTemplate,
 } from "@/lib/sample-tracker/client";
 import { templateBody } from "@/lib/sample-tracker/mappers";
@@ -129,30 +133,44 @@ function refreshCatalogues(sampleId?: string) {
   if (sampleId) revalidatePath(`/internal/experiment/onboarding/${sampleId}`);
 }
 
+/** A catalogue write; with `sampleId` it is about that sample type's templates. */
+async function catalogueWrite(
+  action: string,
+  sampleId: string | undefined,
+  write: (actor: string) => Promise<unknown>,
+): Promise<ActionResult<null>> {
+  const session = await requireAdmin();
+  try {
+    await write(session.userId);
+    return { success: true, data: null };
+  } catch (error) {
+    logHandledError(error, { action, sampleId });
+    const t = await getTranslations("staff.catalogue");
+    return { success: false, error: errorMessage(error, t("saveError")) };
+  } finally {
+    refreshCatalogues(sampleId);
+  }
+}
+
+/** Show or hide a sample type (no `sampleId`) or one of its templates. */
 export async function setCatalogueVisibilityAction(
   id: string,
   visible: boolean,
   sampleId?: string,
 ): Promise<ActionResult<null>> {
-  await requireAdmin();
-  // TODO(catalogue visibility): sample_tracker has no visibility yet (last step of
-  // the switch-over); until then everything is shown.
-  void id;
-  void visible;
-  refreshCatalogues(sampleId);
-  const t = await getTranslations("staff.catalogue");
-  return { success: false, error: t("saveError") };
+  return catalogueWrite("setCatalogueVisibilityAction", sampleId, (actor) =>
+    sampleId
+      ? setTemplateWebVisibility(actor, id, visible)
+      : setSampleTypeWebVisibility(actor, id, visible),
+  );
 }
 
+/** Order the sample types (no `sampleId`) or the templates of one. */
 export async function setCatalogueOrderAction(
   ids: string[],
   sampleId?: string,
 ): Promise<ActionResult<null>> {
-  await requireAdmin();
-  // TODO(catalogue order): sample_tracker has no order yet (last step of the
-  // switch-over); until then lists are sorted by name.
-  void ids;
-  refreshCatalogues(sampleId);
-  const t = await getTranslations("staff.catalogue");
-  return { success: false, error: t("saveError") };
+  return catalogueWrite("setCatalogueOrderAction", sampleId, (actor) =>
+    sampleId ? setTemplatesWebOrder(actor, sampleId, ids) : setSampleTypesWebOrder(actor, ids),
+  );
 }

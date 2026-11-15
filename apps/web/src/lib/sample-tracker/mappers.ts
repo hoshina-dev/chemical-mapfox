@@ -36,7 +36,7 @@ export function templateToLoaded(t: ExperimentTemplate): LoadedTemplate {
   } as unknown as ExperimentTemplateDetail);
 }
 
-/** A template row for the onboarding tables (visibility and order come later). */
+/** A template row for the onboarding tables. */
 export function toTemplateSummary(t: ExperimentTemplate): TemplateSummary {
   return {
     sampleId: t.sampleTypeId,
@@ -45,8 +45,8 @@ export function toTemplateSummary(t: ExperimentTemplate): TemplateSummary {
     title: t.name,
     description: t.description ?? undefined,
     hasPdfTemplate: true,
-    isVisibleOnWeb: true,
-    displayOrder: 0,
+    isVisibleOnWeb: t.isVisibleOnWeb,
+    displayOrder: t.displayOrder,
   };
 }
 

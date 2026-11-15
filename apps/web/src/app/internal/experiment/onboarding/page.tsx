@@ -33,7 +33,7 @@ async function loadSamples(actor: string): Promise<SampleCard[]> {
       }
       return {
         id: sample.id,
-        isVisibleOnWeb: true, // TODO(catalogue visibility): from sample_tracker once it has it
+        isVisibleOnWeb: sample.isVisibleOnWeb,
         name: sample.name,
         description: sample.description ?? undefined,
         templateCount,

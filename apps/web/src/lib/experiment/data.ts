@@ -30,23 +30,27 @@ export interface CatalogGroup {
 }
 
 /**
- * The catalogue of requestable experiments, grouped by sample type (sample_tracker
- * lists live ones only, sorted by name). Groups with no template are kept so the
+ * The catalogue of requestable experiments, grouped by sample type: the ones staff
+ * show on the web, in catalogue order. Groups with no template are kept so the
  * lab's specimen coverage is visible.
  */
 export async function listRequestCatalog(): Promise<CatalogGroup[]> {
-  const samples = await listSampleTypes(undefined);
+  const samples = (await listSampleTypes(undefined)).filter(
+    (s) => s.isVisibleOnWeb,
+  );
   return Promise.all(
     samples.map(async (sample): Promise<CatalogGroup> => {
       let templates: CatalogTemplate[] = [];
       try {
-        templates = (await listTemplates(undefined, sample.id)).map((tpl) => ({
-          sampleId: sample.id,
-          templateId: tpl.id,
-          lineageId: tpl.id,
-          title: tpl.name,
-          description: tpl.description,
-        }));
+        templates = (await listTemplates(undefined, sample.id))
+          .filter((tpl) => tpl.isVisibleOnWeb)
+          .map((tpl) => ({
+            sampleId: sample.id,
+            templateId: tpl.id,
+            lineageId: tpl.id,
+            title: tpl.name,
+            description: tpl.description,
+          }));
       } catch (error) {
         // A single specimen's templates failing shouldn't blank the catalogue.
         logHandledError(error, {
@@ -70,13 +74,14 @@ export interface RequestTemplates {
   sampleId: string;
   sampleName: string;
   template: LoadedTemplate;
-  /** All live templates of the sample type, `template` included. */
+  /** The sample type's templates shown on the web, `template` included. */
   methods: LoadedTemplate[];
 }
 
 /**
  * Resolve a template for the request flow, with the other methods of its sample
- * type so the client can request several on one sample. null when unknown.
+ * type so the client can request several on one sample. null when unknown or
+ * hidden (hidden ones cannot be requested).
  */
 export async function loadRequestTemplate(
   templateId: string,
@@ -93,12 +98,12 @@ export async function loadRequestTemplate(
     listTemplates(undefined, tpl.sampleTypeId),
   ]);
   const sample = samples.find((s) => s.id === tpl.sampleTypeId);
-  if (!sample) return null;
+  if (!sample?.isVisibleOnWeb || !tpl.isVisibleOnWeb) return null;
   return {
     sampleId: sample.id,
     sampleName: sample.name,
     template: templateToLoaded(tpl),
-    methods: siblings.map(templateToLoaded),
+    methods: siblings.filter((m) => m.isVisibleOnWeb).map(templateToLoaded),
   };
 }
 
@@ -106,7 +111,9 @@ export async function loadRequestTemplate(
 export type MyExperiment = ExperimentTicket;
 
 /** Every ticket the given user requested, most recently updated first. */
-export async function listMyExperiments(userId: string): Promise<MyExperiment[]> {
+export async function listMyExperiments(
+  userId: string,
+): Promise<MyExperiment[]> {
   const rows = await listTickets(userId, { requesterUserId: userId });
   return rows.map(toExperimentTicket);
 }

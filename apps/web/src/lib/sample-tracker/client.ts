@@ -35,6 +35,9 @@ export interface SampleType {
   name: string;
   description: string | null;
   reportForm: { fields: ReportField[] } | null;
+  /** Offered in the catalogues; new sample types start hidden. */
+  isVisibleOnWeb: boolean;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,6 +59,9 @@ export interface ExperimentTemplate {
   description: string | null;
   /** `{clientForm, labForm, calculations}` as stored. */
   template: Record<string, unknown>;
+  /** Offered in the catalogues; new templates start hidden. */
+  isVisibleOnWeb: boolean;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -237,6 +243,37 @@ export const updateTemplate = (actor: string, id: string, body: TemplateBody) =>
 
 export const deleteTemplate = (actor: string, id: string) =>
   stFetch<void>(`/experiment-templates/${id}`, { actor, method: "DELETE" });
+
+// Catalogue web settings: a hidden sample type or template is not listed in the
+// public catalogues and cannot be requested. Orders list every item once.
+
+export const setSampleTypeWebVisibility = (actor: string, id: string, isVisibleOnWeb: boolean) =>
+  stFetch<SampleType>(`/sample-types/${id}/web-visibility`, {
+    actor,
+    method: "PATCH",
+    body: json({ isVisibleOnWeb }),
+  });
+
+export const setTemplateWebVisibility = (actor: string, id: string, isVisibleOnWeb: boolean) =>
+  stFetch<ExperimentTemplate>(`/experiment-templates/${id}/web-visibility`, {
+    actor,
+    method: "PATCH",
+    body: json({ isVisibleOnWeb }),
+  });
+
+export const setSampleTypesWebOrder = (actor: string, sampleTypeIds: string[]) =>
+  stFetch<SampleType[]>("/sample-types/web-order", {
+    actor,
+    method: "PUT",
+    body: json({ sampleTypeIds }),
+  });
+
+export const setTemplatesWebOrder = (actor: string, sampleTypeId: string, templateIds: string[]) =>
+  stFetch<ExperimentTemplate[]>(`/sample-types/${sampleTypeId}/experiment-templates/web-order`, {
+    actor,
+    method: "PUT",
+    body: json({ templateIds }),
+  });
 
 export const getReportForm = (actor: string | undefined, sampleTypeId: string) =>
   stBytes(`/sample-types/${sampleTypeId}/report-form`, { actor });
