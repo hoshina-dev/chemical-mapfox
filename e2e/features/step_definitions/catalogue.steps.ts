@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
+import { waitForHydration } from "../support/interactions.js";
 import type { ChemFoxWorld } from "../support/world.js";
 import {
   failNextCatalogueWrite,
@@ -55,7 +56,7 @@ async function hide(world: ChemFoxWorld, name: string) {
   const input = world.page.getByLabel(`Show ${name} on landing page`, {
     exact: true,
   });
-  await input.waitFor({ state: "visible", timeout: 10000 });
+  await waitForHydration(input);
   await input.uncheck();
 }
 When(

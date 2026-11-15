@@ -24,6 +24,20 @@ export async function clickUntil(
 }
 
 /**
+ * Wait until React has hydrated `target` (it attaches `__reactProps$…` to the
+ * node). Toggling a server-rendered checkbox before then flips the native box
+ * — so Playwright's check()/uncheck() succeed — but no onChange ever runs.
+ */
+export async function waitForHydration(target: Locator): Promise<void> {
+  await target.waitFor({ state: "visible", timeout: 15_000 });
+  await target.page().waitForFunction(
+    (el) => !!el && Object.keys(el).some((k) => k.startsWith("__reactProps$")),
+    await target.elementHandle(),
+    { timeout: 15_000 },
+  );
+}
+
+/**
  * Fill a (controlled, Mantine) input and confirm the value stuck. A fill that
  * lands before hydration completes gets reset to the form's initial value, so
  * re-fill until the DOM value matches what we want.
