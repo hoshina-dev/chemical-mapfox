@@ -9,6 +9,7 @@ export type DownstreamService =
   | "custapi"
   | "ticketing"
   | "experiment-manager"
+  | "sample-tracker"
   | "s3";
 
 export function requestUrl(input: RequestInfo | URL): string {
@@ -129,6 +130,8 @@ const DEFAULT_TIMEOUT_MS: Record<DownstreamService, number> = {
   custapi: 10_000,
   ticketing: 10_000,
   "experiment-manager": 10_000,
+  // builds the report PDF on download and parses uploaded report forms
+  "sample-tracker": 30_000,
   s3: 45_000,
 };
 

@@ -6,11 +6,11 @@ import { BuilderApp } from "@/components/experiment/builder/BuilderApp";
 import { requireAdmin } from "@/lib/auth/dal";
 import { toDraft } from "@/lib/builder";
 import {
-  ExperimentManagerError,
-  getExperimentTemplate,
-  getSample,
-} from "@/lib/experiment-manager/client";
-import { templateDetailToLoaded } from "@/lib/experiment-manager/mappers";
+  getSampleType,
+  getTemplate,
+  SampleTrackerError,
+} from "@/lib/sample-tracker/client";
+import { templateToLoaded } from "@/lib/sample-tracker/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -42,7 +42,7 @@ export default function EditTemplatePage(props: Parameters<typeof EditTemplatePa
 }
 
 async function EditTemplatePageContent({ params }: PageProps) {
-  await requireAdmin();
+  const session = await requireAdmin();
   const { sampleId, templateId } = await params;
   const t = await getTranslations("builder.editPage");
 
@@ -50,13 +50,14 @@ async function EditTemplatePageContent({ params }: PageProps) {
   let sampleName: string | undefined;
   try {
     const [detail, sample] = await Promise.all([
-      getExperimentTemplate(sampleId, templateId),
-      getSample(sampleId).catch(() => undefined),
+      getTemplate(session.userId, templateId),
+      getSampleType(session.userId, sampleId).catch(() => undefined),
     ]);
-    loaded = templateDetailToLoaded(detail);
+    if (detail.sampleTypeId !== sampleId) notFound();
+    loaded = templateToLoaded(detail);
     sampleName = sample?.name;
   } catch (error) {
-    if (error instanceof ExperimentManagerError && error.status === 404) {
+    if (error instanceof SampleTrackerError && error.status === 404) {
       notFound();
     }
     return (

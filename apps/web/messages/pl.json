@@ -639,7 +639,8 @@
         "defaultDescription": "Szablony eksperymentów dla tej próbki.",
         "newTemplate": "Nowy szablon",
         "loadSampleFallback": "Nie udało się załadować próbki.",
-        "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy."
+        "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy.",
+        "reportForm": "Formularz sprawozdania"
       }
     },
     "registerSample": {
@@ -683,6 +684,23 @@
       "dragPosition": "{name} znajduje się na pozycji {position}.",
       "dragCancelled": "Anulowano zmianę kolejności.",
       "dragFinished": "Upuszczono element."
+    },
+    "reportForm": {
+      "title": "Formularz sprawozdania",
+      "subtitle": "Pusty formularz sprawozdania (PDF) dla tego rodzaju próbki i miejsca, w których drukowane są wartości. Jedno sprawozdanie na próbkę.",
+      "currentTitle": "Formularz przesłany",
+      "currentBody": "{count, plural, one {# wartość jest umieszczona na formularzu.} few {# wartości są umieszczone na formularzu.} many {# wartości jest umieszczonych na formularzu.} other {# wartości jest umieszczonych na formularzu.}}",
+      "download": "Otwórz pusty formularz",
+      "noneTitle": "Brak formularza sprawozdania",
+      "noneBody": "Prześlij pusty PDF i mapę pól. Bez nich nie można publikować sprawozdań dla tego rodzaju próbki.",
+      "fileLabel": "Pusty formularz (PDF)",
+      "fileDescription": "Sprawozdanie laboratorium z etykietami i siatką, bez wartości.",
+      "fieldsLabel": "Mapa pól (JSON)",
+      "fieldsDescription": "Lista pól, każde z page, x, y, size, align, prefix i source. x i y w punktach PDF od lewego górnego rogu, y na linii bazowej tekstu.",
+      "upload": "Prześlij",
+      "saved": "{count, plural, one {Zapisano: # wartość.} few {Zapisano: # wartości.} many {Zapisano: # wartości.} other {Zapisano: # wartości.}}",
+      "missing": "Wybierz plik PDF i podaj mapę pól.",
+      "uploadError": "Nie udało się zapisać formularza sprawozdania."
     }
   },
   "builder": {
@@ -695,7 +713,7 @@
     "livePreview": "Podgląd na żywo",
     "createTemplate": "Utwórz szablon",
     "saveChanges": "Zapisz zmiany",
-    "designPdf": "Zaprojektuj raport PDF",
+    "designPdf": "Formularz sprawozdania",
     "delete": "Usuń",
     "deleteConfirm": "Usunąć ten szablon eksperymentu?",
     "draftNotValidTitle": "Wersja robocza jest nieprawidłowa",

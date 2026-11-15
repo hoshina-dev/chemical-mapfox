@@ -5,18 +5,14 @@ import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemp
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { LinkButton } from "@/components/links";
 import { requireAdmin } from "@/lib/auth/dal";
-import {
-  getSample,
-  listExperimentTemplates,
-} from "@/lib/experiment-manager/client";
-import {
-  type TemplateSummary,
-  toTemplateSummary,
-} from "@/lib/experiment-manager/mappers";
+import type { TemplateSummary } from "@/lib/experiment-manager/mappers";
 import {
   newTemplatePath,
   onboardingPath,
+  reportFormPath,
 } from "@/lib/experiment-manager/routes";
+import { getSampleType, listTemplates } from "@/lib/sample-tracker/client";
+import { toTemplateSummary } from "@/lib/sample-tracker/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -28,15 +24,15 @@ interface SampleTemplates {
   templates: TemplateSummary[];
 }
 
-async function loadSample(sampleId: string): Promise<SampleTemplates> {
-  const [sample, { experiments }] = await Promise.all([
-    getSample(sampleId),
-    listExperimentTemplates(sampleId),
+async function loadSample(actor: string, sampleId: string): Promise<SampleTemplates> {
+  const [sample, templates] = await Promise.all([
+    getSampleType(actor, sampleId),
+    listTemplates(actor, sampleId),
   ]);
   return {
     sampleName: sample.name,
     sampleDescription: sample.description ?? undefined,
-    templates: experiments.map((row) => toTemplateSummary(sampleId, row)),
+    templates: templates.map(toTemplateSummary),
   };
 }
 
@@ -67,14 +63,14 @@ async function SampleOnboardingPageContent({
 }: {
   params: Promise<{ sampleId: string }>;
 }) {
-  await requireAdmin();
+  const session = await requireAdmin();
   const { sampleId } = await params;
   const t = await getTranslations("staff.onboarding");
 
   let data: SampleTemplates | null = null;
   let loadError: string | null = null;
   try {
-    data = await loadSample(sampleId);
+    data = await loadSample(session.userId, sampleId);
   } catch (error) {
     loadError =
       error instanceof Error ? error.message : t("sample.loadSampleFallback");
@@ -98,9 +94,14 @@ async function SampleOnboardingPageContent({
               {data?.sampleDescription ?? t("sample.defaultDescription")}
             </Text>
           </Stack>
-          <LinkButton href={newTemplatePath(sampleId)} color="green">
-            {t("sample.newTemplate")}
-          </LinkButton>
+          <Group gap="sm">
+            <LinkButton href={reportFormPath(sampleId)} variant="default">
+              {t("sample.reportForm")}
+            </LinkButton>
+            <LinkButton href={newTemplatePath(sampleId)} color="green">
+              {t("sample.newTemplate")}
+            </LinkButton>
+          </Group>
         </Group>
 
         {loadError && (

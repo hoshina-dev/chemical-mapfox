@@ -27,7 +27,7 @@ import { type FormDraft, fromDraft } from "@/lib/builder";
 import {
   onboardingPath,
   templateBuilderPath,
-  templatePdfPath,
+  reportFormPath,
 } from "@/lib/experiment-manager/routes";
 
 import { CalculationsEditor } from "./CalculationsEditor";
@@ -91,11 +91,7 @@ export function BuilderApp({
         return;
       }
       if (!templateId || !lineageId) return;
-      const result = await updateTemplateAction(
-        { sampleId, templateId },
-        payload,
-        lineageId,
-      );
+      const result = await updateTemplateAction({ sampleId, templateId }, payload);
       if (!result.success) {
         setSaveError(result.error);
         setDebugPayload({ sampleId, templateId, lineageId, ...payload });
@@ -201,7 +197,7 @@ export function BuilderApp({
           <Button
             variant="light"
             component={Link}
-            href={templatePdfPath({ sampleId, templateId })}
+            href={reportFormPath(sampleId)}
           >
             {t("designPdf")}
           </Button>

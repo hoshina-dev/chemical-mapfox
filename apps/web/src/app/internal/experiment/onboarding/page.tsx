@@ -5,10 +5,7 @@ import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEdit
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireAdmin } from "@/lib/auth/dal";
-import {
-  listExperimentTemplates,
-  listSamples,
-} from "@/lib/experiment-manager/client";
+import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
 import { sampleOnboardingPath } from "@/lib/experiment-manager/routes";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
@@ -24,20 +21,19 @@ interface SampleCard {
   isVisibleOnWeb: boolean;
 }
 
-async function loadSamples(): Promise<SampleCard[]> {
-  const { samples } = await listSamples();
+async function loadSamples(actor: string): Promise<SampleCard[]> {
+  const samples = await listSampleTypes(actor);
   return Promise.all(
     samples.map(async (sample) => {
       let templateCount: number | null = null;
       try {
-        const { experiments } = await listExperimentTemplates(sample.id);
-        templateCount = experiments.length;
+        templateCount = (await listTemplates(actor, sample.id)).length;
       } catch {
         templateCount = null;
       }
       return {
         id: sample.id,
-        isVisibleOnWeb: sample.is_visible_on_web,
+        isVisibleOnWeb: true, // TODO(catalogue visibility): from sample_tracker once it has it
         name: sample.name,
         description: sample.description ?? undefined,
         templateCount,
@@ -67,13 +63,13 @@ export default function OnboardingPage() {
 }
 
 async function OnboardingPageContent() {
-  await requireAdmin();
+  const session = await requireAdmin();
   const t = await getTranslations("staff.onboarding");
 
   let samples: SampleCard[] | null = null;
   let loadError: string | null = null;
   try {
-    samples = await loadSamples();
+    samples = await loadSamples(session.userId);
   } catch (error) {
     loadError =
       error instanceof Error ? error.message : t("loadSamplesFallback");

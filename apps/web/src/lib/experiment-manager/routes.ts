@@ -54,6 +54,11 @@ export function templateBuilderPath(ref: TemplateRef) {
 }
 
 /** PDF report-layout designer for a template version. */
+/** The sample type's report form (blank PDF + field map). */
+export function reportFormPath(sampleId: string) {
+  return `${BASE}/onboarding/${sampleId}/report-form`;
+}
+
 export function templatePdfPath(ref: TemplateRef) {
   return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}/pdf`;
 }

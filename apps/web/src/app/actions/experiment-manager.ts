@@ -6,22 +6,15 @@ import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import { logHandledError } from "@/lib/log/handled";
+import type { TemplateRef } from "@/lib/experiment-manager/mappers";
 import {
-  createExperimentTemplate,
-  createSample,
-  deleteExperimentTemplate,
-  updateExperimentTemplate,
-  setSampleWebVisibility,
-  setSamplesWebOrder,
-  setTemplateWebVisibility,
-  setTemplatesWebOrder,
-} from "@/lib/experiment-manager/client";
-import { errorMessage } from "@/lib/experiment-manager/errors";
-import {
-  templateToCreate,
-  templateToUpdate,
-  type TemplateRef,
-} from "@/lib/experiment-manager/mappers";
+  createSampleType,
+  createTemplate,
+  deleteTemplate,
+  sampleTrackerMessage as errorMessage,
+  updateTemplate,
+} from "@/lib/sample-tracker/client";
+import { templateBody } from "@/lib/sample-tracker/mappers";
 
 export type ActionResult<T> =
   | { success: true; data: T }
@@ -36,14 +29,14 @@ export async function createSampleAction(
   name: string,
   description?: string,
 ): Promise<ActionResult<{ id: string; name: string }>> {
-  await requireAdmin();
+  const session = await requireAdmin();
   const trimmed = name.trim();
   if (!trimmed) {
     const t = await getTranslations("staff.registerSample");
     return { success: false, error: t("nameRequired") };
   }
   try {
-    const sample = await createSample({
+    const sample = await createSampleType(session.userId, {
       name: trimmed,
       description: description?.trim() || null,
     });
@@ -60,17 +53,15 @@ export async function createTemplateAction(
   sampleId: string,
   { meta, template }: TemplatePayload,
 ): Promise<ActionResult<{ id: string; lineageId: string }>> {
-  await requireAdmin();
+  const session = await requireAdmin();
   try {
-    const detail = await createExperimentTemplate(
+    const detail = await createTemplate(
+      session.userId,
       sampleId,
-      templateToCreate(meta, template),
+      templateBody(meta, template),
     );
     revalidatePath("/internal/experiment/onboarding");
-    return {
-      success: true,
-      data: { id: detail.id, lineageId: detail.lineage_id },
-    };
+    return { success: true, data: { id: detail.id, lineageId: detail.id } };
   } catch (error) {
     logHandledError(error, { action: "createTemplateAction", sampleId });
     const t = await getTranslations("builder.errors");
@@ -84,23 +75,19 @@ export async function createTemplateAction(
 export async function updateTemplateAction(
   ref: TemplateRef,
   { meta, template }: TemplatePayload,
-  lineageId: string,
 ): Promise<ActionResult<{ id: string; lineageId: string }>> {
-  await requireAdmin();
+  const session = await requireAdmin();
   try {
-    const detail = await updateExperimentTemplate(
-      ref.sampleId,
-      lineageId,
-      templateToUpdate(meta, template),
+    const detail = await updateTemplate(
+      session.userId,
+      ref.templateId,
+      templateBody(meta, template),
     );
     revalidatePath("/internal/experiment/onboarding");
     revalidatePath(
       `/internal/experiment/onboarding/${ref.sampleId}/${ref.templateId}`,
     );
-    return {
-      success: true,
-      data: { id: detail.id, lineageId: detail.lineage_id },
-    };
+    return { success: true, data: { id: detail.id, lineageId: detail.id } };
   } catch (error) {
     logHandledError(error, {
       action: "updateTemplateAction",
@@ -117,9 +104,9 @@ export async function updateTemplateAction(
 export async function deleteTemplateAction(
   ref: TemplateRef,
 ): Promise<ActionResult<null>> {
-  await requireAdmin();
+  const session = await requireAdmin();
   try {
-    await deleteExperimentTemplate(ref.sampleId, ref.templateId);
+    await deleteTemplate(session.userId, ref.templateId);
     revalidatePath("/internal/experiment/onboarding");
     return { success: true, data: null };
   } catch (error) {
@@ -148,19 +135,13 @@ export async function setCatalogueVisibilityAction(
   sampleId?: string,
 ): Promise<ActionResult<null>> {
   await requireAdmin();
+  // TODO(catalogue visibility): sample_tracker has no visibility yet (last step of
+  // the switch-over); until then everything is shown.
+  void id;
+  void visible;
+  refreshCatalogues(sampleId);
   const t = await getTranslations("staff.catalogue");
-  try {
-    if (sampleId) await setTemplateWebVisibility(sampleId, id, visible);
-    else await setSampleWebVisibility(id, visible);
-    refreshCatalogues(sampleId);
-    return { success: true, data: null };
-  } catch (error) {
-    logHandledError(error, {
-      action: "setCatalogueVisibilityAction",
-      sampleId,
-    });
-    return { success: false, error: t("saveError") };
-  }
+  return { success: false, error: t("saveError") };
 }
 
 export async function setCatalogueOrderAction(
@@ -168,14 +149,10 @@ export async function setCatalogueOrderAction(
   sampleId?: string,
 ): Promise<ActionResult<null>> {
   await requireAdmin();
+  // TODO(catalogue order): sample_tracker has no order yet (last step of the
+  // switch-over); until then lists are sorted by name.
+  void ids;
+  refreshCatalogues(sampleId);
   const t = await getTranslations("staff.catalogue");
-  try {
-    if (sampleId) await setTemplatesWebOrder(sampleId, ids);
-    else await setSamplesWebOrder(ids);
-    refreshCatalogues(sampleId);
-    return { success: true, data: null };
-  } catch (error) {
-    logHandledError(error, { action: "setCatalogueOrderAction", sampleId });
-    return { success: false, error: t("saveError") };
-  }
+  return { success: false, error: t("saveError") };
 }

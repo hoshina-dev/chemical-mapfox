@@ -639,7 +639,8 @@
         "defaultDescription": "Experiment templates for this sample.",
         "newTemplate": "New template",
         "loadSampleFallback": "Failed to load sample.",
-        "emptyTemplates": "No templates yet for this sample. Create the first one."
+        "emptyTemplates": "No templates yet for this sample. Create the first one.",
+        "reportForm": "Report form"
       }
     },
     "registerSample": {
@@ -683,6 +684,23 @@
       "dragPosition": "{name} is at position {position}.",
       "dragCancelled": "Reordering cancelled.",
       "dragFinished": "Item dropped."
+    },
+    "reportForm": {
+      "title": "Report form",
+      "subtitle": "The blank report (PDF) for this sample type and where each value is printed on it. One report per sample.",
+      "currentTitle": "Report form uploaded",
+      "currentBody": "{count, plural, one {# value is placed on the form.} other {# values are placed on the form.}}",
+      "download": "Open the blank form",
+      "noneTitle": "No report form yet",
+      "noneBody": "Upload the blank PDF and its field map. Without one, reports cannot be published for this sample type.",
+      "fileLabel": "Blank form (PDF)",
+      "fileDescription": "The lab's report with labels and grid, values left empty.",
+      "fieldsLabel": "Field map (JSON)",
+      "fieldsDescription": "A list of fields, each with page, x, y, size, align, prefix and source. x and y are PDF points from the top-left corner, y on the text baseline.",
+      "upload": "Upload",
+      "saved": "{count, plural, one {Saved: # value placed.} other {Saved: # values placed.}}",
+      "missing": "Choose a PDF and give the field map.",
+      "uploadError": "Could not save the report form."
     }
   },
   "builder": {
@@ -695,7 +713,7 @@
     "livePreview": "Live preview",
     "createTemplate": "Create template",
     "saveChanges": "Save changes",
-    "designPdf": "Design PDF report",
+    "designPdf": "Report form",
     "delete": "Delete",
     "deleteConfirm": "Delete this experiment template?",
     "draftNotValidTitle": "Draft is not valid",
