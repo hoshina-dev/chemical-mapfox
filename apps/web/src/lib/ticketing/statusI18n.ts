@@ -11,6 +11,7 @@ export type StatusMessageKey =
   | "finalizing"
   | "resultsSubmitted"
   | "completed"
+  | "methodFinished"
   | "closed"
   | "cancelled";
 
@@ -26,6 +27,7 @@ const STATUS_TRANSLATION_KEY: Record<string, StatusMessageKey> = {
   in_progress: "inProgress",
   results_submitted: "resultsSubmitted",
   completed: "completed",
+  experiment_finished: "methodFinished",
   closed: "closed",
   cancelled: "cancelled",
   canceled: "cancelled",

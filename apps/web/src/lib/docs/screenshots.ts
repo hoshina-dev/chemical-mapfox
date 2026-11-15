@@ -231,9 +231,6 @@ export const GUIDE_SECTION_FIGURES: Record<
     forms: "staff-template-builder",
     calculations: "staff-builder-calculations",
   },
-  "docs.staff.pdfReport": {
-    open: "staff-pdf-editor",
-  },
   "docs.staff.aiAssistants": {
     consent: "staff-mcp-consent",
     unknownApp: "staff-mcp-consent-unknown-app",

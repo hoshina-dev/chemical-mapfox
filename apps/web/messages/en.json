@@ -115,8 +115,8 @@
     },
     "notifications": {
       "title": "Email notifications",
-      "subtitle": "Choose which experiment stages should email you. Turn a stage off if you do not want an email for that status.",
-      "emailForStage": "Email me when a ticket reaches {stage}",
+      "subtitle": "Choose which steps of your requests should email you.",
+      "emailForStage": "Email me at: {stage}",
       "loadErrorTitle": "Could not load notification preferences",
       "loadErrorFallback": "Failed to load notification preferences.",
       "saveErrorFallback": "Failed to save notification preferences."
@@ -289,7 +289,8 @@
     "resultsSubmitted": "Results submitted",
     "completed": "Completed",
     "closed": "Closed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "methodFinished": "Method finished"
   },
   "experiment": {
     "nav": {
@@ -599,7 +600,7 @@
       "ticketHeading": "Ticket (ticketing-service)",
       "ticketErrorTitle": "Ticketing Service error",
       "ticketErrorFallback": "Failed to load ticket.",
-      "experimentHeading": "Experiment (experiment-manager)",
+      "experimentHeading": "Event history",
       "experimentReturned": "Experiment Manager returned {status}",
       "experimentErrorTitle": "Experiment Manager error",
       "experimentNotFound": "No experiment context has been created for this id yet, so there is no state to show.",
@@ -1387,44 +1388,44 @@
       },
       "workspace": {
         "title": "Lab workspace",
-        "subtitle": "The workspace is where staff start an experiment and fill the collaborative lab form.",
+        "subtitle": "The workspace shows one ticket (one sample) with its methods; start, fill and finish each one.",
         "sections": {
           "stages": {
-            "heading": "What you can do at each stage",
-            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nSample received — use Start experiment to move to In progress and unlock editing.\n\nIn progress — the lab form is editable; Submit to final stage moves the ticket to Finalizing.\n\nLater stages keep the lab form readable but not collaboratively editable."
+            "heading": "What you can do",
+            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nReceived — pick a method and use Start experiment to unlock its lab form.\n\nIn progress — the method's lab form is editable; Finish experiment calculates and finishes it.\n\nFinished — reopen it with a reason to correct values.\n\nThe ticket panel publishes the report, closes or cancels the ticket."
           },
           "collab": {
             "heading": "Collaborative editing",
-            "body": "While the ticket is In progress, several technicians can edit the lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to Experiment Manager. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
+            "body": "While a method is in progress, several technicians can edit its lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to the sample tracker. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
           },
           "tabs": {
             "heading": "Lab form, client intake, and calculations",
-            "body": "The workspace shows three tabs: Lab form (editable in progress), Client intake (the requester’s answers, always read-only), and Calculations (formulas and computed results from the template).\n\nUse Submit to final stage only when lab entry is complete. That transitions In progress → Finalizing."
+            "body": "Each method shows three tabs: Lab form (editable in progress), Client intake (the requester’s answers, always read-only), and Calculations (formulas and results).\n\nUse the buttons above the form to switch between the ticket's methods."
           }
         }
       },
       "finalize": {
-        "title": "Finalize & reports",
-        "subtitle": "In Finalizing, run calculations (when the template defines them), generate the PDF report, then close the ticket.",
+        "title": "Finish & report",
+        "subtitle": "Finish each method of the ticket, then publish the sample's report and close the ticket.",
         "sections": {
           "flow": {
             "heading": "Recommended order",
-            "body": "Finish collaborative lab entry before submitting to Finalizing. Then:",
+            "body": "Each method (experiment) of the ticket is finished on its own:",
             "steps": [
-              "Open the Finalize panel on the workspace.",
-              "If the template has calculations, run Calculate (you can recalculate later if values change).",
-              "Generate the report once calculations are ready (or immediately if there are none).",
-              "When the report status is Ready, view or download the PDF.",
-              "Close the ticket when the report is ready — closing locks further calculation and report generation."
+              "Complete the lab form of the method.",
+              "Choose Finish experiment: the values are saved, the formulas run in your browser and the results are stored.",
+              "Repeat for every method; when all are finished the ticket is Completed.",
+              "Publish the report: type the report and order number, the client and who authorised it.",
+              "Close the ticket."
             ]
           },
           "report": {
-            "heading": "Report status",
-            "body": "Generation is asynchronous. Status moves through Queued and Generating to Ready, or Failed if something went wrong. You can regenerate after a failure or when you need a fresh PDF. Requesters can view and download the same report from their experiment detail once it is ready."
+            "heading": "The report",
+            "body": "There is one report per sample, built from the sample type's report form each time it is opened, so it always shows the current results. Publishing again replaces the numbers. Requesters can open the same report from their request once it is published."
           },
           "close": {
-            "heading": "Closing the ticket",
-            "body": "Close ticket marks the experiment Completed. The app asks for confirmation because calculation and report actions stop afterward. Make sure calculations (if any) and the report are ready before you close."
+            "heading": "Correcting and closing",
+            "body": "To correct a finished method, reopen it with a reason, change the values and finish it again. Close the ticket once the report is published; a closed ticket can still have its report published again."
           }
         }
       },
@@ -1503,33 +1504,33 @@
         }
       },
       "pdfReport": {
-        "title": "PDF report layout",
-        "subtitle": "Design the PDF report for a template: place text and shapes, insert form variables, preview with real experiment data, then save.",
+        "title": "Report form",
+        "subtitle": "One report per sample: each sample type has a blank report form (PDF) and a field map saying where each value is printed.",
         "sections": {
           "open": {
-            "heading": "Open the PDF editor",
-            "body": "From an existing template in the builder, choose Design PDF report. You can also open the /pdf route under that template. A missing layout simply starts with an empty canvas — that is normal until the first save.",
+            "heading": "Open the report form",
+            "body": "Open Onboarding → sample type → Report form (also reachable from Report form in the template builder).",
             "steps": [
-              "Open Onboarding → sample → template (for example Total Moisture Determination under Coal).",
-              "Choose Design PDF report.",
-              "Use Back to return to the form builder when finished."
+              "Open Onboarding and choose the sample type (for example Coal).",
+              "Choose Report form.",
+              "Open the blank form to check the current one."
             ]
           },
           "canvas": {
-            "heading": "Build the layout",
-            "body": "Add Text or Shape components to the canvas. Move and resize them, use snap when helpful, and manage pages from the Pages tab. The Inspector edits the selected component: position, content, font, color, and shape options.\n\nText supports variables with the '{{'name'}}' syntax so report values fill in at generation time."
+            "heading": "The blank form",
+            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept."
           },
           "variables": {
-            "heading": "Variables",
-            "body": "The Variables panel lists fields from the Client form, Lab form, and calculations. Click a variable to insert it into the selected text box, or copy the token. Search the list when templates are large."
+            "heading": "The field map",
+            "body": "A list of fields, each with page, x, y (PDF points from the top-left corner, y on the text baseline), optional size, align and prefix, and source: the value to print. Sources are the sample type's name, the ticket's description and dates, client form answers (clientForm.questionId), calculation results (result.templateId.calculationKey) and what staff type when publishing (report and order number, client, authorised by)."
           },
           "preview": {
-            "heading": "Preview modes",
-            "body": "Show placeholders leaves variable tokens visible. Use defaults fills sample defaults from the template. From experiment lets you pick a real experiment context to preview with live values. Open real PDF saves, renders, and opens the generated PDF for that experiment when you need a true output check."
+            "heading": "Check it",
+            "body": "Publish the report of a completed ticket of this sample type and open it: values are written onto the blank form in Helvetica, numbers with a decimal comma, dates as dd.mm.yyyy."
           },
           "save": {
-            "heading": "Save the layout",
-            "body": "Save stores the PDF component layout for this template. Unsaved changes are indicated in the toolbar. After the layout is saved, staff can Generate report from a Finalizing workspace, and requesters can view or download the PDF when report status is ready."
+            "heading": "Upload",
+            "body": "Choose the PDF, edit the field map and upload. Both replace the stored ones. A field on a page the PDF does not have, or a source that does not exist for this sample type, is refused with the reason."
           }
         }
       },

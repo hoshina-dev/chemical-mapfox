@@ -5,14 +5,10 @@ import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { RawJsonView } from "@/components/internal/RawJsonView";
 import { requireAdmin } from "@/lib/auth/dal";
 import {
-  ExperimentManagerError,
-  getExperiment,
-} from "@/lib/experiment-manager/client";
-import {
   experimentListingPath,
   experimentWorkspacePath,
 } from "@/lib/experiment-manager/routes";
-import { ticketsApi } from "@/lib/ticketing/client";
+import { getTicket, listTicketEvents, SampleTrackerError } from "@/lib/sample-tracker/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -58,7 +54,7 @@ async function ExperimentRawPageContent({
   let ticket: unknown;
   let ticketError: FetchError | null = null;
   try {
-    ticket = await ticketsApi.apiV1TicketsIdGet(contextId);
+    ticket = await getTicket(undefined, contextId);
   } catch (error) {
     ticketError = {
       status: null,
@@ -70,12 +66,13 @@ async function ExperimentRawPageContent({
   let experiment: unknown;
   let experimentError: FetchError | null = null;
   try {
-    experiment = await getExperiment(contextId);
+    // The ticket's event history (experiments are inside the ticket above).
+    experiment = await listTicketEvents(undefined, contextId);
   } catch (error) {
-    if (error instanceof ExperimentManagerError) {
+    if (error instanceof SampleTrackerError) {
       experimentError = {
         status: error.status,
-        body: error.body,
+        body: error.detail,
         message: error.message,
       };
     } else {

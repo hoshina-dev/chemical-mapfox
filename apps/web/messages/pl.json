@@ -115,8 +115,8 @@
     },
     "notifications": {
       "title": "Powiadomienia e-mail",
-      "subtitle": "Wybierz etapy eksperymentu, o których chcesz dostawać e-mail. Wyłącz etap, jeśli nie chcesz powiadomienia dla tego statusu.",
-      "emailForStage": "Wyślij e-mail, gdy zgłoszenie osiągnie etap {stage}",
+      "subtitle": "Wybierz, o których etapach zgłoszeń chcesz dostawać e-mail.",
+      "emailForStage": "Wyślij e-mail przy: {stage}",
       "loadErrorTitle": "Nie udało się wczytać preferencji powiadomień",
       "loadErrorFallback": "Nie udało się wczytać preferencji powiadomień.",
       "saveErrorFallback": "Nie udało się zapisać preferencji powiadomień."
@@ -289,7 +289,8 @@
     "resultsSubmitted": "Wyniki przesłane",
     "completed": "Zakończone",
     "closed": "Zamknięte",
-    "cancelled": "Anulowane"
+    "cancelled": "Anulowane",
+    "methodFinished": "Metoda zakończona"
   },
   "experiment": {
     "nav": {
@@ -599,7 +600,7 @@
       "ticketHeading": "Zgłoszenie (ticketing-service)",
       "ticketErrorTitle": "Błąd usługi zgłoszeń",
       "ticketErrorFallback": "Nie udało się załadować zgłoszenia.",
-      "experimentHeading": "Eksperyment (experiment-manager)",
+      "experimentHeading": "Historia zdarzeń",
       "experimentReturned": "Experiment Manager zwrócił {status}",
       "experimentErrorTitle": "Błąd Experiment Manager",
       "experimentNotFound": "Dla tego identyfikatora nie utworzono jeszcze kontekstu eksperymentu, więc nie ma stanu do wyświetlenia.",
@@ -1386,45 +1387,45 @@
         }
       },
       "workspace": {
-        "title": "Przestrzeń robocza laboratorium",
-        "subtitle": "Przestrzeń robocza to miejsce, w którym personel rozpoczyna eksperyment i wypełnia wspólny formularz laboratoryjny.",
+        "title": "Stanowisko laboratoryjne",
+        "subtitle": "Stanowisko pokazuje jedno zgłoszenie (jedną próbkę) z jego metodami; rozpocznij, uzupełnij i zakończ każdą.",
         "sections": {
           "stages": {
-            "heading": "Co możesz zrobić na każdym etapie",
-            "body": "Zgłoszono — próbki jeszcze nie ma; skorzystaj z linku do przyjęcia.\n\nPróbka przyjęta — użyj Rozpocznij eksperyment, aby przejść do W toku i odblokować edycję.\n\nW toku — formularz laboratoryjny jest edytowalny; Prześlij do etapu końcowego przenosi zgłoszenie do Finalizowanie.\n\nPóźniejsze etapy pozostawiają formularz laboratoryjny do odczytu, ale bez wspólnej edycji."
+            "heading": "Co możesz zrobić",
+            "body": "Zgłoszone — próbki jeszcze nie ma; przejdź do przyjęcia.\n\nPrzyjęte — wybierz metodę i użyj Rozpocznij badanie, aby odblokować jej formularz.\n\nW toku — formularz laboratoryjny metody jest edytowalny; Zakończ badanie liczy wyniki i kończy metodę.\n\nZakończone — otwórz ponownie z podaniem powodu, aby poprawić wartości.\n\nPanel zgłoszenia publikuje sprawozdanie, zamyka lub anuluje zgłoszenie."
           },
           "collab": {
             "heading": "Wspólna edycja",
-            "body": "Gdy zgłoszenie ma status W toku, kilku techników może jednocześnie edytować formularz laboratoryjny. Widzisz, kto jeszcze jest obecny (awatar i nazwa po najechaniu). Gdy ktoś skupi pole, jest ono miękko zablokowane dla innych — podświetlone i wyłączone, żebyście nie nadpisywali sobie wpisów — ale wartości pozostają czytelne i aktualizują się na żywo.\n\nEdycje są przesyłane między otwartymi kartami i automatycznie zapisywane w Experiment Manager. Wyczyszczenie pola jest celowe: opróżnij kontrolkę, aby usunąć zapisaną wartość. Tożsamość jest per karta przeglądarki, więc dwie karty tej samej osoby nie kradną sobie blokad."
+            "body": "Gdy metoda jest w toku, kilku techników może jednocześnie edytować jej formularz. Widzisz, kto jeszcze jest obecny (awatar i nazwa po najechaniu). Gdy ktoś zaznaczy pole, jest ono miękko zablokowane dla innych — podświetlone i wyłączone, abyś nie pisał w tym samym miejscu — ale wartości pozostają widoczne na bieżąco.\n\nZmiany przesyłane są między otwartymi kartami i zapisywane automatycznie w systemie próbek. Wyczyszczenie pola jest celowe: opróżnij pole, aby usunąć zapisaną wartość. Tożsamość jest per karta przeglądarki, więc dwie karty tej samej osoby nie przejmują sobie blokad."
           },
           "tabs": {
-            "heading": "Formularz laboratoryjny, przyjęcie klienta i obliczenia",
-            "body": "Przestrzeń robocza pokazuje trzy karty: Formularz laboratoryjny (edytowalny w toku), Dane od klienta (odpowiedzi zlecającego, zawsze tylko do odczytu) oraz Obliczenia (formuły i wyniki obliczone z szablonu).\n\nUżyj Prześlij do etapu końcowego dopiero, gdy wprowadzanie danych laboratoryjnych jest zakończone. To przechodzi W toku → Finalizowanie."
+            "heading": "Formularz laboratoryjny, dane klienta i obliczenia",
+            "body": "Każda metoda ma trzy karty: Formularz laboratoryjny (edytowalny w toku), Dane klienta (odpowiedzi zleceniodawcy, zawsze tylko do odczytu) i Obliczenia (wzory i wyniki).\n\nPrzyciski nad formularzem przełączają między metodami zgłoszenia."
           }
         }
       },
       "finalize": {
-        "title": "Finalizowanie i raporty",
-        "subtitle": "W statusie Finalizowanie uruchom obliczenia (gdy szablon je definiuje), wygeneruj raport PDF, a następnie zamknij zgłoszenie.",
+        "title": "Zakończenie i sprawozdanie",
+        "subtitle": "Zakończ każdą metodę zgłoszenia, potem opublikuj sprawozdanie próbki i zamknij zgłoszenie.",
         "sections": {
           "flow": {
             "heading": "Zalecana kolejność",
-            "body": "Zakończ wspólną edycję laboratoryjną przed przesłaniem do Finalizowanie. Następnie:",
+            "body": "Każda metoda (badanie) zgłoszenia jest kończona osobno:",
             "steps": [
-              "Otwórz panel Finalizowanie w przestrzeni roboczej.",
-              "Jeśli szablon ma obliczenia, uruchom Oblicz (możesz przeliczyć później, gdy wartości się zmienią).",
-              "Wygeneruj raport, gdy obliczenia są gotowe (lub od razu, jeśli ich nie ma).",
-              "Gdy status raportu to Gotowy, wyświetl lub pobierz PDF.",
-              "Zamknij zgłoszenie, gdy raport jest gotowy — zamknięcie blokuje dalsze obliczenia i generowanie raportu."
+              "Uzupełnij formularz laboratoryjny metody.",
+              "Wybierz Zakończ badanie: wartości są zapisywane, wzory liczone w przeglądarce, a wyniki zapisywane.",
+              "Powtórz dla każdej metody; gdy wszystkie są zakończone, zgłoszenie jest Zakończone.",
+              "Opublikuj sprawozdanie: wpisz numer sprawozdania i zlecenia, zleceniodawcę i autoryzującego.",
+              "Zamknij zgłoszenie."
             ]
           },
           "report": {
-            "heading": "Status raportu",
-            "body": "Generowanie jest asynchroniczne. Status przechodzi przez W kolejce i Generowanie do Gotowy, albo Niepowodzenie, jeśli coś poszło nie tak. Możesz wygenerować ponownie po niepowodzeniu lub gdy potrzebujesz świeżego PDF. Zlecający mogą wyświetlić i pobrać ten sam raport ze szczegółów swojego eksperymentu, gdy będzie gotowy."
+            "heading": "Sprawozdanie",
+            "body": "Jest jedno sprawozdanie na próbkę, tworzone z formularza rodzaju próbki przy każdym otwarciu, więc zawsze pokazuje aktualne wyniki. Ponowna publikacja zastępuje numery. Zleceniodawca może otworzyć to samo sprawozdanie po publikacji."
           },
           "close": {
-            "heading": "Zamykanie zgłoszenia",
-            "body": "Zamknij zgłoszenie oznacza eksperyment jako Zakończone. Interfejs prosi o potwierdzenie, ponieważ potem akcje obliczeń i raportów przestają być dostępne. Upewnij się, że obliczenia (jeśli są) i raport są gotowe przed zamknięciem."
+            "heading": "Poprawki i zamknięcie",
+            "body": "Aby poprawić zakończoną metodę, otwórz ją ponownie z podaniem powodu, zmień wartości i zakończ ponownie. Zamknij zgłoszenie po publikacji sprawozdania; zamknięte zgłoszenie nadal może mieć ponownie opublikowane sprawozdanie."
           }
         }
       },
@@ -1503,33 +1504,33 @@
         }
       },
       "pdfReport": {
-        "title": "Układ raportu PDF",
-        "subtitle": "Zaprojektuj raport PDF dla szablonu: umieść tekst i kształty, wstaw zmienne formularza, podejrzyj z rzeczywistymi danymi eksperymentu, a następnie zapisz.",
+        "title": "Formularz sprawozdania",
+        "subtitle": "Jedno sprawozdanie na próbkę: każdy rodzaj próbki ma pusty formularz (PDF) i mapę pól mówiącą, gdzie drukowana jest każda wartość.",
         "sections": {
           "open": {
-            "heading": "Otwórz edytor PDF",
-            "body": "Z istniejącego szablonu w kreatorze wybierz Projektuj raport PDF. Możesz też otworzyć trasę /pdf w ramach tego szablonu. Brak układu po prostu zaczyna od pustego płótna — to normalne do pierwszego zapisu.",
+            "heading": "Otwórz formularz sprawozdania",
+            "body": "Otwórz Wdrażanie → rodzaj próbki → Formularz sprawozdania (dostępny też z kreatora szablonu).",
             "steps": [
-              "Otwórz Wdrażanie → próbka → szablon (np. Total Moisture Determination w ramach Węgiel).",
-              "Wybierz Projektuj raport PDF.",
-              "Użyj Wstecz, aby wrócić do kreatora formularzy po zakończeniu."
+              "Otwórz Wdrażanie i wybierz rodzaj próbki (np. Węgiel).",
+              "Wybierz Formularz sprawozdania.",
+              "Otwórz pusty formularz, aby sprawdzić obecny."
             ]
           },
           "canvas": {
-            "heading": "Zbuduj układ",
-            "body": "Dodawaj komponenty Tekst lub Kształt na płótno. Przesuwaj i zmieniaj ich rozmiar, używaj przyciągania, gdy pomaga, i zarządzaj stronami z karty Strony. Inspektor edytuje wybrany komponent: pozycję, treść, czcionkę, kolor oraz opcje kształtu.\n\nTekst obsługuje zmienne w składni '{{'name'}}', dzięki czemu wartości raportu wypełniają się w momencie generowania."
+            "heading": "Pusty formularz",
+            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane, a zachowywane jest tylko to, czego dokument używa."
           },
           "variables": {
-            "heading": "Zmienne",
-            "body": "Panel Zmienne wymienia pola z formularza klienta, formularza laboratoryjnego oraz obliczeń. Kliknij zmienną, aby wstawić ją do zaznaczonego pola tekstowego, albo skopiuj token. Przeszukaj listę, gdy szablony są duże."
+            "heading": "Mapa pól",
+            "body": "Lista pól, każde z page, x, y (punkty PDF od lewego górnego rogu, y na linii bazowej tekstu), opcjonalnie size, align i prefix oraz source: drukowana wartość. Źródła to nazwa rodzaju próbki, opis i daty zgłoszenia, odpowiedzi z formularza klienta (clientForm.questionId), wyniki obliczeń (result.templateId.calculationKey) oraz dane wpisywane przy publikacji (numer sprawozdania i zlecenia, zleceniodawca, autoryzujący)."
           },
           "preview": {
-            "heading": "Tryby podglądu",
-            "body": "Pokaż symbole zastępcze pozostawia tokeny zmiennych widoczne. Użyj wartości domyślnych wypełnia przykładowe wartości domyślne z szablonu. Z eksperymentu pozwala wybrać rzeczywisty kontekst eksperymentu do podglądu z żywymi wartościami. Otwórz rzeczywisty PDF zapisuje, renderuje i otwiera wygenerowany PDF dla tego eksperymentu, gdy potrzebujesz prawdziwej kontroli wyniku."
+            "heading": "Sprawdź",
+            "body": "Opublikuj sprawozdanie zakończonego zgłoszenia tego rodzaju próbki i otwórz je: wartości są wpisywane na pusty formularz czcionką Helvetica, liczby z przecinkiem dziesiętnym, daty jako dd.mm.rrrr."
           },
           "save": {
-            "heading": "Zapisz układ",
-            "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizowanie, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
+            "heading": "Prześlij",
+            "body": "Wybierz PDF, popraw mapę pól i prześlij. Oba zastępują zapisane. Pole na stronie, której PDF nie ma, lub źródło nieistniejące dla tego rodzaju próbki jest odrzucane z podaniem powodu."
           }
         }
       },
