@@ -1,20 +1,5 @@
 import "server-only";
 
-// TODO(MCP rework): rebuild the MCP write tools on this client. lib/mcp/server.ts only
-// keeps read tools (list_experiments, get_experiment, list_docs, read_doc); the write
-// tools went with ticketing-service and experiment-manager. Reuse what the web uses:
-//   - lifecycle: lib/staff/lifecycle.ts (checkIn, start, reopen, close, publish) —
-//     one ticket per sample, one experiment per method;
-//   - lab values: saveValues (merge patch, per experiment, with `version`);
-//   - finish: results are calculated in the browser (Pyodide), so a finish tool can
-//     only finish an experiment that already has every result;
-//   - report: publishReport + getReport (one report per ticket);
-//   - onboarding: create/update sample types and templates, putReportForm, and
-//     setSampleTypeWebVisibility / set…WebOrder for the catalogue;
-//   - instructions: lib/staff/formulas.ts (FORMULA_GUIDE) explains formulas to the model.
-// Register write tools only for granted scopes (grantedScopes in lib/oauth/scopes.ts),
-// audited like the read tools; then bring back the @mcp e2e feature.
-
 import {
   type DownstreamInit,
   DownstreamTimeoutError,

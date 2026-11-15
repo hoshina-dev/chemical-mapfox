@@ -50,7 +50,7 @@ const RESERVED = new Set<string>([
   "return",
 ]);
 
-export const FORMULA_GUIDE = `Formulas are Python, run by experiment-manager with no builtins beyond
+export const FORMULA_GUIDE = `Formulas are Python, run in the browser engine with no builtins beyond
 round, abs, min, max, sum, len, zip, mean, median, stdev, plus the math module
 (math.sqrt). int(), float(), and imports are not available; numeric strings are
 already coerced. Read an answer as values['question_id'], never the bare id.

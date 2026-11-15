@@ -43,10 +43,7 @@ const LAB_TOOLS = [
   "record_lab_values",
   "check_in_sample",
   "start_experiment",
-  "submit_experiment",
   "close_ticket",
-  "run_calculations",
-  "generate_report",
   "get_report_download_url",
 ] as const;
 

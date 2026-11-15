@@ -25,7 +25,7 @@ import {
 import { collabRoomId, parseRoomId } from "@/lib/sample-tracker/mappers";
 
 // The staff ticket lifecycle on sample_tracker, used by the /internal server
-// actions (and later by the MCP tools). Callers must have checked the actor is staff.
+// actions and the MCP tools. Callers must have checked the actor is staff.
 
 function refresh(ticketId: string) {
   revalidatePath(experimentWorkspacePath(ticketId));

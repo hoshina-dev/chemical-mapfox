@@ -19,6 +19,7 @@ import {
   updateTemplate,
 } from "@/lib/sample-tracker/client";
 import { templateBody } from "@/lib/sample-tracker/mappers";
+import { refreshOnboarding } from "@/lib/staff/onboarding";
 
 export type ActionResult<T> =
   | { success: true; data: T }
@@ -126,13 +127,6 @@ export async function deleteTemplateAction(
   }
 }
 
-function refreshCatalogues(sampleId?: string) {
-  revalidatePath("/");
-  revalidatePath("/experiment/request/listing");
-  revalidatePath("/internal/experiment/onboarding");
-  if (sampleId) revalidatePath(`/internal/experiment/onboarding/${sampleId}`);
-}
-
 /** A catalogue write; with `sampleId` it is about that sample type's templates. */
 async function catalogueWrite(
   action: string,
@@ -148,7 +142,7 @@ async function catalogueWrite(
     const t = await getTranslations("staff.catalogue");
     return { success: false, error: errorMessage(error, t("saveError")) };
   } finally {
-    refreshCatalogues(sampleId);
+    refreshOnboarding(sampleId);
   }
 }
 
