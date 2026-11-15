@@ -865,7 +865,7 @@
     },
     "calculationTester": {
       "title": "Przetestuj obliczenia",
-      "subtitle": "Uruchamia Twoje formuły w prawdziwym silniku obliczeniowym, korzystając z wartości przechwyconych powyżej lub z wartości domyślnej pytania, gdy nic nie przechwycono. Nic nie jest zapisywane.",
+      "subtitle": "Przechwytuje to, co zawierają formularze powyżej, i uruchamia na tym Twoje formuły w prawdziwym silniku obliczeniowym (puste pytanie przyjmuje wartość domyślną). Nic nie jest zapisywane.",
       "run": "Uruchom obliczenia",
       "runAgain": "Uruchom ponownie",
       "none": "Ten szablon nie ma obliczeń do przetestowania.",

@@ -28,8 +28,8 @@ import { templateToCalculationDryRun } from "@/lib/experiment/templates";
 
 interface CalculationTesterProps {
   template: ExperimentTemplate;
-  /** Answers captured from the preview forms; may be empty. */
-  values: Record<string, AnswerValue>;
+  /** Captures the preview forms' current answers (may be empty) and returns them. */
+  capture: () => Record<string, AnswerValue>;
 }
 
 const STATUS_COLOR: Record<CalculationOutcome["status"], string> = {
@@ -61,7 +61,7 @@ function formatResult(result: unknown): string {
  */
 export function CalculationTester({
   template,
-  values,
+  capture,
 }: CalculationTesterProps) {
   const t = useTranslations("builder.calculationTester");
   const engineErrorMessage = useEngineErrorMessage();
@@ -72,6 +72,7 @@ export function CalculationTester({
   const names = Object.keys(template.calculations);
 
   const run = () => {
+    const values = capture();
     startTransition(async () => {
       try {
         const { report: next } = await evaluateCalculations(

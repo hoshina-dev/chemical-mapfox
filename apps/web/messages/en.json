@@ -865,7 +865,7 @@
     },
     "calculationTester": {
       "title": "Test calculations",
-      "subtitle": "Runs your formulas through the real calculation engine using the values captured above, or each question's default where no value was captured. Nothing is saved.",
+      "subtitle": "Captures what the forms above hold and runs your formulas on it through the real calculation engine (a question left empty uses its default). Nothing is saved.",
       "run": "Run calculations",
       "runAgain": "Run again",
       "none": "This template has no calculations to test.",

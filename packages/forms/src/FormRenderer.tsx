@@ -25,7 +25,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type {
   AnswerValue,
@@ -68,6 +68,8 @@ interface FormRendererProps {
   formatIssue?: (issue: AnswerIssue) => string;
   onSubmit?: (answers: FormAnswers) => void;
   onSaveDraft?: (answers: FormAnswers) => void;
+  /** The current answers, unvalidated, on first render and after every edit. */
+  onChange?: (answers: FormAnswers) => void;
 }
 
 type RepeatableColumn = Exclude<Extract<AnswerValue, unknown[]>, string[]>;
@@ -206,6 +208,7 @@ export function FormRenderer({
   formatIssue = describeAnswerIssue,
   onSubmit,
   onSaveDraft,
+  onChange,
 }: FormRendererProps) {
   const initialAnswers = useMemo(
     () => initialAnswersFor(doc.questions, { lockedValues, initialValues, fillDefaults }),
@@ -221,6 +224,10 @@ export function FormRenderer({
     setAnswers(initialAnswers);
     setIssues([]);
   }
+
+  useEffect(() => {
+    onChange?.(answers);
+  }, [answers, onChange]);
 
   function updateAnswers(updater: (prev: FormAnswers) => FormAnswers) {
     setAnswers(updater);

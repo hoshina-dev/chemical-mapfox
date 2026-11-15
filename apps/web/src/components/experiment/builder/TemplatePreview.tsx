@@ -23,7 +23,14 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const t = useTranslations("builder.preview");
   const [clientAnswers, setClientAnswers] = useState<FormAnswers | null>(null);
   const [labAnswers, setLabAnswers] = useState<FormAnswers | null>(null);
-  const capturedValues = { ...(clientAnswers ?? {}), ...(labAnswers ?? {}) };
+  // What the forms hold right now: running the formulas captures both first.
+  const [liveClient, setLiveClient] = useState<FormAnswers>({});
+  const [liveLab, setLiveLab] = useState<FormAnswers>({});
+  const capture = () => {
+    setClientAnswers(liveClient);
+    setLabAnswers(liveLab);
+    return { ...liveClient, ...liveLab };
+  };
 
   return (
     <Stack gap="xl">
@@ -35,6 +42,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           doc={template.clientForm}
           submitLabel={t("capture")}
           onSubmit={(answers) => setClientAnswers(answers)}
+          onChange={setLiveClient}
         />
         {clientAnswers && (
           <div>
@@ -56,6 +64,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           doc={template.labForm}
           submitLabel={t("capture")}
           onSubmit={(answers) => setLabAnswers(answers)}
+          onChange={setLiveLab}
         />
         {labAnswers && (
           <div>
@@ -69,7 +78,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
       <Divider />
 
-      <CalculationTester template={template} values={capturedValues} />
+      <CalculationTester template={template} capture={capture} />
     </Stack>
   );
 }
