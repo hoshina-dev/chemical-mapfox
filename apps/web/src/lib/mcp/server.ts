@@ -1,4 +1,11 @@
 import "server-only";
+// TODO(MCP rework, after HS-197): these tools still drive the retired ticketing-service
+// and experiment-manager (lib/staff/workflow.ts, onboarding.ts, labValues.ts,
+// lib/experiment-manager/*, lib/ticketing/*). Move them to sample_tracker like the web
+// app (lib/staff/lifecycle.ts, lib/sample-tracker/*): one ticket per sample with N
+// experiments, finish = browser-calculated results, one report per ticket (publish +
+// download). Finishing needs the browser engine, so a finish tool can only finish an
+// experiment that already has every result. Then delete the old modules and env vars.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";

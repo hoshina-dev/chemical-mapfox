@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next-intl", () => ({ useTranslations: vi.fn() }));
 vi.mock("@/app/actions/experiment", () => ({
-  getCalculationInputsAction: vi.fn(),
-  saveCalculationResultsAction: vi.fn(),
+  finishInputsAction: vi.fn(),
+  finishExperimentAction: vi.fn(),
 }));
 vi.mock("./runner", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./runner")>();
@@ -11,11 +11,11 @@ vi.mock("./runner", async (importOriginal) => {
 });
 
 import {
-  getCalculationInputsAction,
-  saveCalculationResultsAction,
+  finishExperimentAction,
+  finishInputsAction,
 } from "@/app/actions/experiment";
 
-import { calculateExperiment } from "./calculateExperiment";
+import { finishWithCalculations as calculateExperiment } from "./calculateExperiment";
 import { CalculationEngineError, evaluateCalculations } from "./runner";
 
 const message = (error: CalculationEngineError) => `${error.code}:${error.message}`;
@@ -29,26 +29,22 @@ const report = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(getCalculationInputsAction).mockResolvedValue({
+  vi.mocked(finishInputsAction).mockResolvedValue({
     success: true,
-    data: { experimentJson: "{}", fingerprint: "fp" },
+    data: { experimentJson: "{}", version: 3 },
   });
 });
 
-describe("calculateExperiment", () => {
-  it("saves what the engine produced", async () => {
+describe("finishWithCalculations", () => {
+  it("finishes with what the engine produced, at the version it read", async () => {
     vi.mocked(evaluateCalculations).mockResolvedValue({ report, valuesJson: "{}", calculationsJson: '{"a": 1}' });
-    vi.mocked(saveCalculationResultsAction).mockResolvedValue({ success: true, data: null });
+    vi.mocked(finishExperimentAction).mockResolvedValue({ success: true, data: null });
     await expect(calculateExperiment("ctx", message)).resolves.toEqual({ success: true, data: null });
-    expect(saveCalculationResultsAction).toHaveBeenCalledWith("ctx", {
-      fingerprint: "fp",
-      valuesJson: "{}",
-      calculationsJson: '{"a": 1}',
-    });
+    expect(finishExperimentAction).toHaveBeenCalledWith("ctx", 3, '{"a": 1}');
   });
 
   it("returns a failed read as is", async () => {
-    vi.mocked(getCalculationInputsAction).mockResolvedValue({ success: false, error: "nope" });
+    vi.mocked(finishInputsAction).mockResolvedValue({ success: false, error: "nope" });
     await expect(calculateExperiment("ctx", message)).resolves.toEqual({ success: false, error: "nope" });
   });
 
@@ -65,7 +61,7 @@ describe("calculateExperiment", () => {
       success: false,
       error: "Division by zero in 'a'",
     });
-    expect(saveCalculationResultsAction).not.toHaveBeenCalled();
+    expect(finishExperimentAction).not.toHaveBeenCalled();
   });
 
   it("reports an engine failure", async () => {
@@ -80,7 +76,7 @@ describe("calculateExperiment", () => {
       calculationsJson: `{"a": {"formula": "x", "result": "${"é".repeat(450_000)}"}}`,
     });
     await expect(calculateExperiment("ctx", message)).resolves.toEqual({ success: false, error: "tooLarge:" });
-    expect(saveCalculationResultsAction).not.toHaveBeenCalled();
+    expect(finishExperimentAction).not.toHaveBeenCalled();
   });
 
   it("counts the escaping the action request adds", async () => {
@@ -94,7 +90,7 @@ describe("calculateExperiment", () => {
 
   it("turns a rejected action request into an error", async () => {
     vi.mocked(evaluateCalculations).mockResolvedValue({ report, valuesJson: "{}", calculationsJson: "{}" });
-    vi.mocked(saveCalculationResultsAction).mockRejectedValue(new Error("Body exceeded 1 MB limit"));
+    vi.mocked(finishExperimentAction).mockRejectedValue(new Error("Body exceeded 1 MB limit"));
     await expect(calculateExperiment("ctx", message)).resolves.toEqual({
       success: false,
       error: "save:Error: Body exceeded 1 MB limit",

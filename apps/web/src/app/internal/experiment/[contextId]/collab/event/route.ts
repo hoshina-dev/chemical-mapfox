@@ -17,8 +17,8 @@ import {
   setPresence,
 } from "@/lib/collab/room";
 import { logHandledError } from "@/lib/log/handled";
-import { ticketsApi } from "@/lib/ticketing/client";
-import { toExperimentTicket } from "@/lib/ticketing/tickets";
+import { getTicket } from "@/lib/sample-tracker/client";
+import { parseRoomId } from "@/lib/sample-tracker/mappers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -111,10 +111,9 @@ export async function POST(
       // Writes are only permitted while the experiment is in progress.
       let status: string | null = null;
       try {
-        const ticket = toExperimentTicket(
-          await ticketsApi.apiV1TicketsIdGet(contextId),
-        );
-        status = ticket.status;
+        const ref = parseRoomId(contextId);
+        const ticket = ref ? await getTicket(undefined, ref.ticketId) : null;
+        status = ticket?.experiments.find((e) => e.id === ref?.experimentId)?.status ?? null;
       } catch (err) {
         logHandledError(err, { op: "collab.editStatus", contextId });
         return NextResponse.json(
@@ -122,7 +121,7 @@ export async function POST(
           { status: 502 },
         );
       }
-      if (status !== "EXPERIMENTING") {
+      if (status !== "IN_PROGRESS") {
         return NextResponse.json(
           { error: "not editable in current stage" },
           { status: 409 },
@@ -150,7 +149,7 @@ export async function POST(
         );
       }
 
-      await applyEdit(contextId, event.field, value);
+      await applyEdit(contextId, event.field, value, session.userId);
       scheduleFlush(contextId);
       await publish(contextId, {
         type: "edit",

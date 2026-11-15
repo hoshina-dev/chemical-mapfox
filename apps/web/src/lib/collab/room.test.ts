@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Back the room with an in-memory Redis and stub the experiment-manager client.
+// Back the room with an in-memory Redis and stub the sample_tracker client.
 // (ioredis-mock is imported inside the factory — vi.mock factories can't close
 // over top-level imports.)
 vi.mock("@/lib/redis/client", async () => {
@@ -8,106 +8,117 @@ vi.mock("@/lib/redis/client", async () => {
   const redis = new RedisMock();
   return { getRedis: () => redis, getSubscriber: () => redis };
 });
-vi.mock("@/lib/experiment-manager/client", () => ({
-  getExperiment: vi.fn(),
-  updateExperiment: vi.fn(),
-  ExperimentManagerError: class ExperimentManagerError extends Error {},
+vi.mock("@/lib/sample-tracker/client", () => ({
+  getTicket: vi.fn(),
+  saveValues: vi.fn(),
 }));
 
-import {
-  getExperiment,
-  updateExperiment,
-} from "@/lib/experiment-manager/client";
+import { getTicket, saveValues } from "@/lib/sample-tracker/client";
 import { logger } from "@/lib/log/logger";
 import { getRedis } from "@/lib/redis/client";
 
 import * as room from "./room";
 
-const ctx = "ctx-1";
+// A room is one experiment of one ticket: `{ticketId}_{experimentId}`.
+const ctx = "t1_e1";
 
 const detail = {
-  id: ctx,
-  sample_id: "s1",
-  template_id: "t1",
-  clientForm: { name: "Client", questions: [] },
+  clientForm: { name: "Client", questions: [{ id: "purpose", type: "string", label: "Purpose" }] },
   labForm: {
     name: "Lab",
-    questions: [{ id: "ph", type: "number", label: "pH", required: false }],
+    questions: [
+      { id: "ph", type: "number", label: "pH", required: false },
+      { id: "note", type: "string", label: "Note", required: false },
+    ],
   },
   calculations: {},
-  values: { ph: 7 },
-  created_at: "2026-01-01T00:00:00Z",
-  report_status: null,
+  values: { ph: 7, purpose: "QA" },
 };
+
+const ticketWith = (values: Record<string, unknown>) => ({
+  id: "t1",
+  sampleTypeId: "s1",
+  experiments: [
+    {
+      id: "e1",
+      experimentTemplateId: "tpl1",
+      createdAt: "2026-01-01T00:00:00Z",
+      context: { ...detail, values },
+    },
+  ],
+});
 
 beforeEach(async () => {
   await getRedis().flushall();
-  vi.mocked(getExperiment).mockReset().mockResolvedValue(detail as never);
-  vi.mocked(updateExperiment).mockReset().mockResolvedValue({} as never);
+  vi.mocked(getTicket).mockReset().mockResolvedValue(ticketWith(detail.values) as never);
+  vi.mocked(saveValues).mockReset().mockResolvedValue({} as never);
 });
 
 describe("buffer + flush", () => {
-  it("hydrates the buffer from experiment-manager exactly once", async () => {
+  it("hydrates the buffer from sample_tracker exactly once", async () => {
     await room.hydrate(ctx);
-    expect(getExperiment).toHaveBeenCalledTimes(1);
-    expect(await room.readValues(ctx)).toEqual({ ph: 7 });
+    expect(getTicket).toHaveBeenCalledTimes(1);
+    expect(await room.readValues(ctx)).toEqual({ ph: 7, purpose: "QA" });
 
     await room.hydrate(ctx); // idempotent
-    expect(getExperiment).toHaveBeenCalledTimes(1);
+    expect(getTicket).toHaveBeenCalledTimes(1);
   });
 
   it("hydrates a room with no stored values without seeding the hash", async () => {
-    vi.mocked(getExperiment).mockResolvedValueOnce({
-      ...detail,
-      values: { empty: null, missing: undefined },
-    } as never);
-    await room.hydrate("ctx-empty");
-    expect(await room.readValues("ctx-empty")).toEqual({});
+    vi.mocked(getTicket).mockResolvedValueOnce(
+      ticketWith({ empty: null, missing: undefined }) as never,
+    );
+    await room.hydrate(ctx);
+    expect(await room.readValues(ctx)).toEqual({});
   });
 
-  it("applies edits and flushes the merged values to EM", async () => {
+  it("saves the lab form's answers as the last editor, never the client's", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", 8);
-    await room.applyEdit(ctx, "note", "looks good");
-    expect(await room.readValues(ctx)).toEqual({ ph: 8, note: "looks good" });
+    await room.applyEdit(ctx, "ph", 8, "u1");
+    await room.applyEdit(ctx, "note", "looks good", "u2");
+    expect(await room.readValues(ctx)).toEqual({ ph: 8, note: "looks good", purpose: "QA" });
 
     expect(await room.flushNow(ctx)).toBe(true);
-    expect(updateExperiment).toHaveBeenCalledTimes(1);
-    const call = vi.mocked(updateExperiment).mock.calls[0]!;
-    expect(call[0]).toBe(ctx);
-    expect(call[1].values).toEqual({ ph: 8, note: "looks good" });
-    expect(call[1].labForm).toEqual(detail.labForm);
-    expect(call[1].clientForm).toEqual(detail.clientForm);
+    expect(saveValues).toHaveBeenCalledWith("u2", "t1", "e1", {
+      values: { ph: 8, note: "looks good" },
+    });
+  });
+
+  it("sends a cleared lab answer as null, removing it", async () => {
+    await room.hydrate(ctx);
+    await room.applyEdit(ctx, "ph", null, "u1");
+    await room.flushNow(ctx);
+    expect(saveValues).toHaveBeenCalledWith("u1", "t1", "e1", { values: { ph: null, note: null } });
   });
 
   it("does not re-flush when nothing is dirty", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", 8);
+    await room.applyEdit(ctx, "ph", 8, "u1");
     expect(await room.flushNow(ctx)).toBe(true);
     expect(await room.flushNow(ctx)).toBe(false);
-    expect(updateExperiment).toHaveBeenCalledTimes(1);
+    expect(saveValues).toHaveBeenCalledTimes(1);
   });
 
   it("single-flights — skips when another flush holds the lock", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", 8);
+    await room.applyEdit(ctx, "ph", 8, "u1");
     await getRedis().set(`flush:${ctx}`, "1"); // simulate a concurrent flusher
     expect(await room.flushNow(ctx)).toBe(false);
-    expect(updateExperiment).not.toHaveBeenCalled();
+    expect(saveValues).not.toHaveBeenCalled();
   });
 
   it("skips flush when the raw snapshot is missing", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", 8);
+    await room.applyEdit(ctx, "ph", 8, "u1");
     await getRedis().del(`rawSnapshot:${ctx}`);
     expect(await room.flushNow(ctx)).toBe(false);
-    expect(updateExperiment).not.toHaveBeenCalled();
+    expect(saveValues).not.toHaveBeenCalled();
   });
 
   it("removes a field from the buffer when cleared to null", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", null);
-    expect(await room.readValues(ctx)).toEqual({});
+    await room.applyEdit(ctx, "ph", null, "u1");
+    expect(await room.readValues(ctx)).toEqual({ purpose: "QA" });
   });
 });
 
@@ -125,18 +136,18 @@ describe("readTemplate", () => {
 });
 
 describe("persistNow", () => {
-  it("persists values even when the room is not dirty", async () => {
+  it("saves unsaved edits right away, ignoring the debounce", async () => {
     await room.hydrate(ctx);
-    await room.applyEdit(ctx, "ph", 8);
+    await room.applyEdit(ctx, "ph", 8, "u1");
     await room.persistNow(ctx);
-    expect(updateExperiment).toHaveBeenCalledTimes(1);
+    expect(saveValues).toHaveBeenCalledTimes(1);
     expect(await getRedis().get(`dirty:${ctx}`)).toBeNull();
   });
 
-  it("throws when the room has not been hydrated", async () => {
-    await expect(room.persistNow("missing-room")).rejects.toThrow(
-      "room missing-room is not hydrated",
-    );
+  it("saves nothing when there are no unsaved edits", async () => {
+    await room.hydrate(ctx);
+    await room.persistNow(ctx);
+    expect(saveValues).not.toHaveBeenCalled();
   });
 });
 
@@ -145,13 +156,13 @@ describe("scheduleFlush", () => {
     vi.useFakeTimers();
     try {
       await room.hydrate(ctx);
-      await room.applyEdit(ctx, "ph", 8);
+      await room.applyEdit(ctx, "ph", 8, "u1");
       room.scheduleFlush(ctx);
       room.scheduleFlush(ctx);
-      expect(updateExperiment).not.toHaveBeenCalled();
+      expect(saveValues).not.toHaveBeenCalled();
 
       await vi.advanceTimersByTimeAsync(10_000);
-      expect(updateExperiment).toHaveBeenCalledTimes(1);
+      expect(saveValues).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
@@ -160,10 +171,10 @@ describe("scheduleFlush", () => {
   it("logs when a scheduled flush fails", async () => {
     vi.useFakeTimers();
     const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
-    vi.mocked(updateExperiment).mockRejectedValueOnce(new Error("network down"));
+    vi.mocked(saveValues).mockRejectedValueOnce(new Error("network down"));
     try {
       await room.hydrate(ctx);
-      await room.applyEdit(ctx, "ph", 8);
+      await room.applyEdit(ctx, "ph", 8, "u1");
       room.scheduleFlush(ctx);
       await vi.advanceTimersByTimeAsync(10_000);
       expect(errorSpy).toHaveBeenCalledWith(
@@ -194,10 +205,10 @@ describe("scheduleFlush", () => {
     });
     try {
       await room.hydrate(ctx);
-      await room.applyEdit(ctx, "ph", 8);
+      await room.applyEdit(ctx, "ph", 8, "u1");
       room.scheduleFlush(ctx);
       await vi.advanceTimersByTimeAsync(10_000);
-      expect(updateExperiment).toHaveBeenCalledTimes(1);
+      expect(saveValues).toHaveBeenCalledTimes(1);
     } finally {
       vi.restoreAllMocks();
       vi.useRealTimers();
@@ -272,7 +283,7 @@ describe("presence + snapshot", () => {
     await room.acquireLock(ctx, "ph", "conn-a");
 
     const snap = await room.getSnapshot(ctx);
-    expect(snap.values).toEqual({ ph: 7 });
+    expect(snap.values).toEqual({ ph: 7, purpose: "QA" });
     expect(snap.presence).toEqual([entry]);
     expect(snap.locks).toEqual({ ph: "conn-a" });
 

@@ -4,9 +4,13 @@ import { Alert, Button, Card, Group, List, Stack } from "@mantine/core";
 import type { AnswerIssue, FormAnswers, FormDoc } from "@repo/forms";
 import { validateAnswers } from "@repo/forms";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
-import { submitExperimentAction } from "@/app/actions/experiment";
+import {
+  finishWithCalculations,
+  useEngineErrorMessage,
+} from "@/lib/calculations/calculateExperiment";
 import type { SessionUser } from "@/lib/auth/definitions";
 import type { PresenceEntry } from "@/lib/collab/events";
 import { formatAnswerIssue } from "@/lib/forms/answerIssues";
@@ -38,6 +42,8 @@ export function LabFormEditor({
 }: LabFormEditorProps) {
   const t = useTranslations("staff.collab");
   const tIssue = useTranslations("forms.validation");
+  const router = useRouter();
+  const engineError = useEngineErrorMessage();
   const { values, presence, locks, connectionId, focusField, blurField, edit } =
     useCollab(contextId, initialValues);
 
@@ -86,8 +92,10 @@ export function LabFormEditor({
     setIssues(found);
     if (found.length > 0) return;
     startTransition(async () => {
-      const res = await submitExperimentAction(contextId);
+      // Saves the buffer, calculates in the browser, then finishes (contextId is the room).
+      const res = await finishWithCalculations(contextId, engineError);
       setResult(res.success ? { ok: true } : { error: res.error });
+      if (res.success) router.refresh();
     });
   };
 

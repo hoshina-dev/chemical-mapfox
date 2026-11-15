@@ -8,11 +8,17 @@ import { useState, useTransition } from "react";
 import { startExperimentAction } from "@/app/actions/experiment";
 
 /**
- * Starts the experiment (PENDING → EXPERIMENTING), which unlocks the
+ * Starts one experiment of the ticket (PENDING → IN_PROGRESS), which unlocks its
  * collaborative lab-form editor. Refreshes the workspace in place so the
  * read-only view becomes the live editor.
  */
-export function StartExperimentButton({ contextId }: { contextId: string }) {
+export function StartExperimentButton({
+  contextId,
+  experimentId,
+}: {
+  contextId: string;
+  experimentId: string;
+}) {
   const t = useTranslations("staff.startExperiment");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +27,7 @@ export function StartExperimentButton({ contextId }: { contextId: string }) {
   function onClick() {
     setError(null);
     startTransition(async () => {
-      const result = await startExperimentAction(contextId);
+      const result = await startExperimentAction(contextId, experimentId);
       if (!result.success) {
         setError(result.error);
         return;

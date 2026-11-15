@@ -468,7 +468,9 @@
         "experimentStarted": "Experiment started",
         "resultsSubmitted": "Results submitted",
         "closed": "Closed"
-      }
+      },
+      "finishedTitle": "Experiment finished",
+      "finishedBody": "Its results are saved. Reopen it to correct values; it then needs finishing again."
     },
     "startExperiment": {
       "button": "Start experiment",
@@ -511,10 +513,10 @@
       }
     },
     "collab": {
-      "submitFailedTitle": "Submit failed",
-      "submittedTitle": "Submitted",
-      "submittedBody": "Experiment submitted to the final stage.",
-      "submitToFinalStage": "Submit to final stage",
+      "submitFailedTitle": "Could not finish",
+      "submittedTitle": "Finished",
+      "submittedBody": "Results calculated and the experiment is finished.",
+      "submitToFinalStage": "Finish experiment",
       "noOneEditing": "No one else is editing right now.",
       "editingNow": "Editing now:",
       "missingRequiredTitle": "Fill in all required fields before submitting"
@@ -703,6 +705,44 @@
       "saved": "{count, plural, one {Saved: # value placed.} other {Saved: # values placed.}}",
       "missing": "Choose a PDF and give the field map.",
       "uploadError": "Could not save the report form."
+    },
+    "lifecycle": {
+      "forbidden": "Only lab staff can do this.",
+      "checkInFailed": "Could not check the sample in.",
+      "startFailed": "Could not start the experiment.",
+      "finishFailed": "Could not finish the experiment.",
+      "reopenFailed": "Could not reopen the experiment.",
+      "closeFailed": "Could not change the ticket.",
+      "publishFailed": "Could not publish the report.",
+      "reopen": {
+        "button": "Reopen to correct",
+        "title": "Reopen experiment",
+        "reason": "Reason",
+        "reasonDescription": "Recorded in the ticket's history.",
+        "cancel": "Cancel",
+        "confirm": "Reopen"
+      },
+      "ticket": {
+        "title": "Ticket",
+        "publish": "Publish report",
+        "republish": "Publish report again",
+        "close": "Close ticket",
+        "cancel": "Cancel ticket",
+        "publishTitle": "Publish the report",
+        "reportNumber": "Report number",
+        "orderNumber": "Order number",
+        "clientName": "Client",
+        "clientAddress": "Address",
+        "clientPostcodeCity": "Postcode and city",
+        "clientTaxId": "Tax ID",
+        "signerName": "Authorised by",
+        "signerTitle": "Position",
+        "publishConfirm": "Publish",
+        "dismiss": "Back",
+        "cancelTitle": "Cancel ticket",
+        "cancelReason": "Reason",
+        "cancelConfirm": "Cancel ticket"
+      }
     }
   },
   "builder": {

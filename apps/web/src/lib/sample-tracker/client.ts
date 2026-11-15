@@ -285,6 +285,10 @@ export function listTickets(
 export const getTicket = (actor: string | undefined, id: string) =>
   stFetch<Ticket>(`/tickets/${id}`, { actor });
 
+/** The ticket as sent, unparsed: numbers keep their text (5.0 stays a float for Python). */
+export const getTicketText = async (id: string) =>
+  (await request(`/tickets/${id}`, {})).text();
+
 export const listTicketEvents = (actor: string | undefined, id: string) =>
   stFetch<TicketEvent[]>(`/tickets/${id}/events`, { actor });
 

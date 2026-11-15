@@ -468,7 +468,9 @@
         "experimentStarted": "Eksperyment rozpoczęty",
         "resultsSubmitted": "Wyniki przesłane",
         "closed": "Zamknięte"
-      }
+      },
+      "finishedTitle": "Badanie zakończone",
+      "finishedBody": "Wyniki są zapisane. Otwórz ponownie, aby poprawić wartości; potem trzeba je znowu zakończyć."
     },
     "startExperiment": {
       "button": "Rozpocznij eksperyment",
@@ -511,10 +513,10 @@
       }
     },
     "collab": {
-      "submitFailedTitle": "Przesyłanie nie powiodło się",
-      "submittedTitle": "Przesłano",
-      "submittedBody": "Eksperyment przesłany do etapu końcowego.",
-      "submitToFinalStage": "Prześlij do etapu końcowego",
+      "submitFailedTitle": "Nie udało się zakończyć",
+      "submittedTitle": "Zakończono",
+      "submittedBody": "Wyniki obliczone, badanie zakończone.",
+      "submitToFinalStage": "Zakończ badanie",
       "noOneEditing": "Nikt inny obecnie nie edytuje.",
       "editingNow": "Teraz edytują:",
       "missingRequiredTitle": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
@@ -703,6 +705,44 @@
       "saved": "{count, plural, one {Zapisano: # wartość.} few {Zapisano: # wartości.} many {Zapisano: # wartości.} other {Zapisano: # wartości.}}",
       "missing": "Wybierz plik PDF i podaj mapę pól.",
       "uploadError": "Nie udało się zapisać formularza sprawozdania."
+    },
+    "lifecycle": {
+      "forbidden": "Tylko personel laboratorium może to zrobić.",
+      "checkInFailed": "Nie udało się przyjąć próbki.",
+      "startFailed": "Nie udało się rozpocząć badania.",
+      "finishFailed": "Nie udało się zakończyć badania.",
+      "reopenFailed": "Nie udało się ponownie otworzyć badania.",
+      "closeFailed": "Nie udało się zmienić zgłoszenia.",
+      "publishFailed": "Nie udało się opublikować sprawozdania.",
+      "reopen": {
+        "button": "Otwórz do poprawy",
+        "title": "Ponowne otwarcie badania",
+        "reason": "Powód",
+        "reasonDescription": "Zapisywany w historii zgłoszenia.",
+        "cancel": "Anuluj",
+        "confirm": "Otwórz"
+      },
+      "ticket": {
+        "title": "Zgłoszenie",
+        "publish": "Opublikuj sprawozdanie",
+        "republish": "Opublikuj ponownie",
+        "close": "Zamknij zgłoszenie",
+        "cancel": "Anuluj zgłoszenie",
+        "publishTitle": "Publikacja sprawozdania",
+        "reportNumber": "Numer sprawozdania",
+        "orderNumber": "Numer zlecenia",
+        "clientName": "Zleceniodawca",
+        "clientAddress": "Adres",
+        "clientPostcodeCity": "Kod pocztowy i miasto",
+        "clientTaxId": "NIP",
+        "signerName": "Autoryzował",
+        "signerTitle": "Stanowisko",
+        "publishConfirm": "Opublikuj",
+        "dismiss": "Wróć",
+        "cancelTitle": "Anulowanie zgłoszenia",
+        "cancelReason": "Powód",
+        "cancelConfirm": "Anuluj zgłoszenie"
+      }
     }
   },
   "builder": {

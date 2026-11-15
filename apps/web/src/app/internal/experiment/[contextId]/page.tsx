@@ -22,9 +22,10 @@ import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { UserAvatar } from "@/components/UserAvatar";
 import { ExperimentStateView } from "@/components/internal/ExperimentStateView";
-import { FinalizingActions } from "@/components/internal/FinalizingActions";
 import { ReportPanel } from "@/components/experiment/ReportPanel";
+import { ReopenExperimentButton } from "@/components/internal/ReopenExperimentButton";
 import { StartExperimentButton } from "@/components/internal/StartExperimentButton";
+import { TicketActions } from "@/components/internal/TicketActions";
 import { LinkButton } from "@/components/links";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { requireAdmin, toSessionUser } from "@/lib/auth/dal";
@@ -37,6 +38,8 @@ import {
 } from "@/lib/experiment-manager/routes";
 import { StatusChip } from "@/components/ticketing/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
+import { listTicketEvents, type PublishReport, type TicketEvent } from "@/lib/sample-tracker/client";
+import { collabRoomId } from "@/lib/sample-tracker/mappers";
 
 export const dynamic = "force-dynamic";
 
@@ -48,48 +51,47 @@ export const dynamic = "force-dynamic";
  */
 export default function ExperimentWorkspacePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ contextId: string }>;
+  searchParams: Promise<{ experiment?: string }>;
 }) {
   return (
     <Container size="xl" py="xl">
       <AsyncPanel fallback={<PanelSkeleton lines={10} />}>
-        <ExperimentWorkspaceContent params={params} />
+        <ExperimentWorkspaceContent params={params} searchParams={searchParams} />
       </AsyncPanel>
     </Container>
   );
 }
 
+/** What the latest publish recorded, to pre-fill the publish dialog. */
+async function lastPublish(ticketId: string): Promise<PublishReport | null> {
+  const events = await listTicketEvents(undefined, ticketId).catch(() => [] as TicketEvent[]);
+  const last = [...events].reverse().find((e) => e.type === "ticket.report_published");
+  return last ? (last.data as unknown as PublishReport) : null;
+}
+
 async function ExperimentWorkspaceContent({
   params,
+  searchParams,
 }: {
   params: Promise<{ contextId: string }>;
+  searchParams: Promise<{ experiment?: string }>;
 }) {
   const { contextId } = await params;
+  const { experiment } = await searchParams;
   const t = await getTranslations("staff.workspace");
   const tCommon = await getTranslations("common");
   const session = await requireAdmin();
-  const ws = await getExperimentWorkspace(contextId);
-  const { ticket, requester, state } = ws;
+  const ws = await getExperimentWorkspace(contextId, experiment);
+  const { ticket, requester, state, selected } = ws;
   const status = ticket?.status ?? null;
-  // Editing/collaboration is only allowed once the experiment has started.
-  // Earlier stages (REQUESTED, PENDING) and later ones (FINALIZING, CLOSED)
-  // render the lab form read-only.
-  const canEdit = status === "EXPERIMENTING";
-
-  // FINALIZING-stage gating: report generation depends on calculations having
-  // been run, but only when the template defines any. A calculation counts as
-  // "run" once its result is populated (`POST /calculate` writes it).
-  const calcEntries = state ? Object.entries(state.template.calculations) : [];
-  const hasCalculations = calcEntries.length > 0;
-  const calculationsReady =
-    !hasCalculations ||
-    calcEntries.every(
-      ([, calc]) =>
-        calc.result !== undefined &&
-        calc.result !== null &&
-        calc.result !== "",
-    );
+  const ticketOpen = status !== null && !["REQUESTED", "CLOSED", "CANCELLED"].includes(status);
+  // The lab form is editable while its experiment is in progress; otherwise read-only.
+  const canEdit = ticketOpen && selected?.status === "IN_PROGRESS";
+  const published =
+    status === "COMPLETED" || status === "CLOSED" ? await lastPublish(contextId) : null;
   const reportReady =
     state?.reportStatus?.toLowerCase() === "success" ||
     state?.reportStatus?.toLowerCase() === "succeeded";
@@ -159,29 +161,41 @@ async function ExperimentWorkspaceContent({
                 </Alert>
               )}
 
-              {status === "PENDING" && (
+              {ws.experiments.length > 1 && (
+                <Group gap="xs">
+                  {ws.experiments.map((exp) => (
+                    <LinkButton
+                      key={exp.id}
+                      href={`?experiment=${exp.id}`}
+                      variant={exp.id === selected?.id ? "filled" : "default"}
+                      size="xs"
+                      rightSection={<StatusChip status={exp.status} variant="badge" size="xs" />}
+                    >
+                      {exp.name}
+                    </LinkButton>
+                  ))}
+                </Group>
+              )}
+
+              {selected && ticketOpen && selected.status === "PENDING" && (
                 <Alert color="blue" variant="light" title={t("pendingTitle")}>
                   <Stack gap="sm" align="flex-start">
                     <Text size="sm">{t("pendingBody")}</Text>
-                    <StartExperimentButton contextId={contextId} />
+                    <StartExperimentButton contextId={contextId} experimentId={selected.id} />
                   </Stack>
                 </Alert>
               )}
 
-              {status === "FINALIZING" && state && (
-                <FinalizingActions
-                  contextId={contextId}
-                  hasCalculations={hasCalculations}
-                  calculationsReady={calculationsReady}
-                  initialReportStatus={state.reportStatus}
-                  reportGeneratedAt={state.reportGeneratedAt}
-                  labForm={state.template.labForm}
-                  labValues={state.values}
-                  calculations={state.template.calculations}
-                />
+              {selected && ticketOpen && selected.status === "FINISHED" && (
+                <Alert color="teal" variant="light" title={t("finishedTitle")}>
+                  <Stack gap="sm" align="flex-start">
+                    <Text size="sm">{t("finishedBody")}</Text>
+                    <ReopenExperimentButton contextId={contextId} experimentId={selected.id} />
+                  </Stack>
+                </Alert>
               )}
 
-              {status === "CLOSED" && reportReady && (
+              {reportReady && (
                 <ReportPanel
                   generatedAt={state?.reportGeneratedAt ?? null}
                   viewHref={experimentReportViewPath(contextId)}
@@ -189,13 +203,14 @@ async function ExperimentWorkspaceContent({
                 />
               )}
 
-              {state ? (
+              {state && selected ? (
                 <ExperimentStateView
+                  key={selected.id}
                   state={state}
                   editable={
                     canEdit
                       ? {
-                          contextId,
+                          contextId: collabRoomId(contextId, selected.id),
                           currentUser: toSessionUser(session),
                           canSubmit: true,
                         }
@@ -216,6 +231,10 @@ async function ExperimentWorkspaceContent({
 
           <GridCol span={{ base: 12, md: 4 }}>
             <Stack gap="lg">
+              {status && (
+                <TicketActions contextId={contextId} status={status} lastPublish={published} />
+              )}
+
               <Card withBorder radius="md" padding="lg">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb="sm">
                   {t("requester")}
@@ -278,7 +297,7 @@ async function ExperimentWorkspaceContent({
                   />
                   <Detail
                     label={t("templateId")}
-                    value={ticket?.templateId}
+                    value={selected?.state.templateId}
                     mono
                   />
                   <Detail

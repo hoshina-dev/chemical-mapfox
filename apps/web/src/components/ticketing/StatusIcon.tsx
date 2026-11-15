@@ -13,12 +13,13 @@ export function statusIconKind(status: string): StatusIconKind {
   const s = status.toLowerCase();
   if (s === "requested") return "requested";
   if (s === "open") return "open";
-  if (s === "pending" || s === "sample_received") return "sample_received";
+  if (s === "received" || s === "pending" || s === "sample_received") return "sample_received";
   if (s === "experimenting" || s === "experiment_started" || s === "in_progress") {
     return "in_progress";
   }
-  if (s === "finalizing" || s === "results_submitted") return "finalizing";
-  if (s === "completed" || s === "closed") return "completed";
+  // COMPLETED = every method finished, results ready; CLOSED = released.
+  if (s === "completed" || s === "finalizing" || s === "results_submitted") return "finalizing";
+  if (s === "closed") return "completed";
   if (s === "cancelled" || s === "canceled") return "cancelled";
   return "unknown";
 }
