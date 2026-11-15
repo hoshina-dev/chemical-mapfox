@@ -1,4 +1,4 @@
-import { Alert, Container, Stack, Text, Title } from "@mantine/core";
+import { Alert, Button, Container, Stack, Text, Title } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -12,7 +12,7 @@ import {
   reportFormPath,
   sampleOnboardingPath,
 } from "@/lib/internal/routes";
-import { getSampleType, SampleTrackerError } from "@/lib/sample-tracker/client";
+import { getReportForm, getSampleType, SampleTrackerError } from "@/lib/sample-tracker/client";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +44,14 @@ async function ReportFormContent({ params }: { params: Promise<{ sampleId: strin
     throw error;
   }
   const fields = sample.reportForm?.fields ?? [];
+  // The field map alone is not enough: reports are printed on the stored blank PDF.
+  const hasPdf = await getReportForm(session.userId, sampleId).then(
+    () => true,
+    (error) => {
+      if (error instanceof SampleTrackerError && error.status === 404) return false;
+      throw error;
+    },
+  );
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
@@ -58,18 +66,25 @@ async function ReportFormContent({ params }: { params: Promise<{ sampleId: strin
           <Title order={2}>{t("title")}</Title>
           <Text c="dimmed">{t("subtitle")}</Text>
         </Stack>
-        {sample.reportForm ? (
+        {hasPdf && sample.reportForm ? (
           <Alert color="green" variant="light" title={t("currentTitle")}>
             <Text size="sm">{t("currentBody", { count: fields.length })}</Text>
-            <Text size="sm" component="a" href={`${reportFormPath(sampleId)}/pdf`} target="_blank" c="blue">
-              {t("download")}
-            </Text>
           </Alert>
         ) : (
-          <Alert color="gray" variant="light" title={t("noneTitle")}>
+          <Alert color="red" variant="light" title={t("noneTitle")}>
             {t("noneBody")}
           </Alert>
         )}
+        <Button
+          component="a"
+          href={hasPdf ? `${reportFormPath(sampleId)}/pdf` : undefined}
+          target="_blank"
+          variant="default"
+          w="fit-content"
+          disabled={!hasPdf}
+        >
+          {t("download")}
+        </Button>
         <ReportFormUpload
           sampleId={sampleId}
           initialFields={JSON.stringify({ fields }, null, 2)}
