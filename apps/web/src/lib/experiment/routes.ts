@@ -24,14 +24,13 @@ export function requestCatalogPath() {
 }
 
 /**
- * Onboarding flow for a template. The template id is the route segment; the
- * sample id rides along as a query param so the page can load the template
- * directly (templates are addressed by sample + template id) without sweeping
- * every sample first.
+ * The request form for one sample, starting from `templateId`; `methods` are
+ * the other methods of the same sample type to tick in advance.
  */
-export function requestTemplatePath(templateId: string, sampleId?: string) {
-  return sampleId
-    ? `${BASE}/request/${templateId}?sampleId=${encodeURIComponent(sampleId)}`
+export function requestTemplatePath(templateId: string, methods: string[] = []) {
+  const others = methods.filter((id) => id !== templateId);
+  return others.length > 0
+    ? `${BASE}/request/${templateId}?methods=${others.map(encodeURIComponent).join(",")}`
     : `${BASE}/request/${templateId}`;
 }
 

@@ -5,7 +5,7 @@ import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEdit
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireAdmin } from "@/lib/auth/dal";
-import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
+import { hasReportForm, listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
 import { sampleOnboardingPath } from "@/lib/internal/routes";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
@@ -19,6 +19,8 @@ interface SampleCard {
   /** Template count, or null if it couldn't be loaded for this sample. */
   templateCount: number | null;
   isVisibleOnWeb: boolean;
+  /** Whether the blank report form (PDF) is stored. */
+  hasReportForm: boolean;
 }
 
 async function loadSamples(actor: string): Promise<SampleCard[]> {
@@ -26,14 +28,16 @@ async function loadSamples(actor: string): Promise<SampleCard[]> {
   return Promise.all(
     samples.map(async (sample) => {
       let templateCount: number | null = null;
-      try {
-        templateCount = (await listTemplates(actor, sample.id)).length;
-      } catch {
-        templateCount = null;
-      }
+      const [templates, reportForm] = await Promise.allSettled([
+        listTemplates(actor, sample.id),
+        hasReportForm(actor, sample.id),
+      ]);
+      if (templates.status === "fulfilled") templateCount = templates.value.length;
       return {
         id: sample.id,
         isVisibleOnWeb: sample.isVisibleOnWeb,
+        // unknown (unreachable) is not reported as missing
+        hasReportForm: reportForm.status === "rejected" || reportForm.value,
         name: sample.name,
         description: sample.description ?? undefined,
         templateCount,
@@ -106,6 +110,7 @@ async function OnboardingPageContent() {
               visible: sample.isVisibleOnWeb,
               count: sample.templateCount,
               href: sampleOnboardingPath(sample.id),
+              hasReportForm: sample.hasReportForm,
             }))}
           />
         )}

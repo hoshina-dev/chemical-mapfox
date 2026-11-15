@@ -20,7 +20,6 @@ export interface TemplateSummary {
   lineageId: string;
   title: string;
   description?: string;
-  hasPdfTemplate: boolean;
   isVisibleOnWeb: boolean;
   displayOrder: number;
 }
@@ -39,7 +38,6 @@ export interface LoadedTemplate {
   template: ExperimentTemplate;
   wireSnapshot: TemplateWireSnapshot;
   valid: boolean;
-  hasPdfTemplate: boolean;
 }
 
 /** The current state of an experiment: its frozen forms + entered values. */

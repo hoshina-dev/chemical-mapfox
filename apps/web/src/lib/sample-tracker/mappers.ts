@@ -29,7 +29,6 @@ export function templateToLoaded(t: ExperimentTemplate): LoadedTemplate {
     id: t.id,
     lineageId: t.id,
     meta: { title: t.name, description: t.description ?? undefined },
-    hasPdfTemplate: true, // reports are per sample type now
   };
 }
 
@@ -41,7 +40,6 @@ export function toTemplateSummary(t: ExperimentTemplate): TemplateSummary {
     lineageId: t.id,
     title: t.name,
     description: t.description ?? undefined,
-    hasPdfTemplate: true,
     isVisibleOnWeb: t.isVisibleOnWeb,
     displayOrder: t.displayOrder,
   };

@@ -11,6 +11,7 @@ import {
   Timeline,
   TimelineItem,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 
@@ -42,6 +43,13 @@ import { listTicketEvents, type PublishReport, type TicketEvent } from "@/lib/sa
 import { collabRoomId } from "@/lib/sample-tracker/mappers";
 
 export const dynamic = "force-dynamic";
+
+/** Method switcher colours by experiment status. */
+const METHOD_COLOR: Record<string, string> = {
+  PENDING: "gray",
+  IN_PROGRESS: "yellow",
+  FINISHED: "green",
+};
 
 /**
  * Synchronous by design: Next withholds a route's entire HTML until the page
@@ -164,15 +172,17 @@ async function ExperimentWorkspaceContent({
               {ws.experiments.length > 1 && (
                 <Group gap="xs">
                   {ws.experiments.map((exp) => (
-                    <LinkButton
-                      key={exp.id}
-                      href={`?experiment=${exp.id}`}
-                      variant={exp.id === selected?.id ? "filled" : "default"}
-                      size="xs"
-                      rightSection={<StatusChip status={exp.status} variant="badge" size="xs" />}
-                    >
-                      {exp.name}
-                    </LinkButton>
+                    // Colour = the method's phase (hover for its name); filled = the one shown.
+                    <Tooltip key={exp.id} label={t(`methodStatus.${exp.status}`)} withArrow>
+                      <LinkButton
+                        href={`?experiment=${exp.id}`}
+                        color={METHOD_COLOR[exp.status] ?? "gray"}
+                        variant={exp.id === selected?.id ? "filled" : "light"}
+                        size="xs"
+                      >
+                        {exp.name}
+                      </LinkButton>
+                    </Tooltip>
                   ))}
                 </Group>
               )}

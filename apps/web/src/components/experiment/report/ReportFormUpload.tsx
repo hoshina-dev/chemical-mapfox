@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, FileInput, Stack, Textarea } from "@mantine/core";
+import { Alert, Button, FileButton, Group, Stack, Text, Textarea } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -40,14 +40,26 @@ export function ReportFormUpload({
 
   return (
     <Stack gap="md" maw={720}>
-      <FileInput
-        label={t("fileLabel")}
-        description={t("fileDescription")}
-        accept="application/pdf"
-        value={file}
-        onChange={setFile}
-        clearable
-      />
+      <Stack gap={4}>
+        <Text size="sm" fw={500}>
+          {t("fileLabel")}
+        </Text>
+        <Text size="xs" c="dimmed">
+          {t("fileDescription")}
+        </Text>
+        <Group gap="sm" mt={4}>
+          <FileButton onChange={setFile} accept="application/pdf">
+            {(props) => (
+              <Button {...props} variant="default">
+                {t("chooseFile")}
+              </Button>
+            )}
+          </FileButton>
+          <Text size="sm" c={file ? undefined : "dimmed"}>
+            {file?.name ?? t("noFile")}
+          </Text>
+        </Group>
+      </Stack>
       <Textarea
         label={t("fieldsLabel")}
         description={t("fieldsDescription")}

@@ -7,7 +7,7 @@ import {
   AccordionPanel,
   Badge,
   Box,
-  Card,
+  Checkbox,
   Group,
   Paper,
   Stack,
@@ -24,35 +24,14 @@ import { requestTemplatePath } from "@/lib/experiment/routes";
 export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
   const t = useTranslations("experiment.request.catalog");
   const [query, setQuery] = useState("");
+  // Ticked methods per sample type; one request = one sample with these methods.
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
 
-  const totalTemplates = useMemo(
-    () => groups.reduce((sum, group) => sum + group.templates.length, 0),
-    [groups],
-  );
-
+  // Search finds sample types by name; a match keeps all its methods.
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return groups;
-    return groups
-      .map((group) => {
-        const specimenMatches = group.sampleName.toLowerCase().includes(q);
-        const templates = group.templates.filter((tpl) =>
-          specimenMatches
-            ? true
-            : [tpl.title, tpl.description].some((v) =>
-                v?.toLowerCase().includes(q),
-              ),
-        );
-        if (templates.length === 0 && !specimenMatches) return null;
-        return { ...group, templates };
-      })
-      .filter((group): group is CatalogGroup => group !== null);
+    return q ? groups.filter((group) => group.sampleName.toLowerCase().includes(q)) : groups;
   }, [groups, query]);
-
-  const matchCount = useMemo(
-    () => filtered.reduce((sum, group) => sum + group.templates.length, 0),
-    [filtered],
-  );
 
   return (
     <Stack gap="md">
@@ -65,7 +44,7 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
           aria-label={t("searchAriaLabel")}
         />
         <Text size="sm" c="dimmed">
-          {t("experimentCount", { visible: matchCount, total: totalTemplates })}
+          {t("sampleCount", { visible: filtered.length, total: groups.length })}
         </Text>
       </Group>
 
@@ -73,7 +52,7 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
         <Paper withBorder radius="md">
           <Box p="xl">
             <Text c="dimmed" ta="center" size="sm">
-              {totalTemplates === 0 ? t("noSpecimens") : t("noMatches")}
+              {groups.length === 0 ? t("noSpecimens") : t("noMatches")}
             </Text>
           </Box>
         </Paper>
@@ -100,34 +79,60 @@ export function RequestCatalog({ groups }: { groups: CatalogGroup[] }) {
                     {t("noTemplates")}
                   </Text>
                 ) : (
-                  <Stack gap="sm">
-                    {group.templates.map((tpl) => (
-                      <Card key={tpl.templateId} withBorder radius="md" padding="md">
-                        <Group justify="space-between" align="flex-start" wrap="nowrap">
-                          <Stack gap={2} style={{ minWidth: 0 }}>
-                            <Text fw={500}>{tpl.title}</Text>
-                            {tpl.description && (
-                              <Text size="sm" c="dimmed">
-                                {tpl.description}
-                              </Text>
-                            )}
-                          </Stack>
-                          <LinkButton
-                            href={requestTemplatePath(tpl.templateId, tpl.sampleId)}
-                            size="xs"
-                          >
-                            {t("requestButton")}
-                          </LinkButton>
-                        </Group>
-                      </Card>
-                    ))}
-                  </Stack>
+                  <SampleMethods
+                    group={group}
+                    chosen={selected[group.sampleId] ?? []}
+                    onChange={(ids) => setSelected((prev) => ({ ...prev, [group.sampleId]: ids }))}
+                  />
                 )}
               </AccordionPanel>
             </AccordionItem>
           ))}
         </Accordion>
       )}
+    </Stack>
+  );
+}
+
+/** A sample type's methods as tick boxes, with one Request button for the ticked ones. */
+function SampleMethods({
+  group,
+  chosen,
+  onChange,
+}: {
+  group: CatalogGroup;
+  chosen: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const t = useTranslations("experiment.request.catalog");
+  // In catalogue order, whatever order they were ticked in.
+  const ordered = group.templates.map((tpl) => tpl.templateId).filter((id) => chosen.includes(id));
+  const [first, ...rest] = ordered;
+  return (
+    <Stack gap="sm">
+      <Group justify="flex-end">
+        {first ? (
+          <LinkButton href={requestTemplatePath(first, rest)} size="xs">
+            {t("requestSelected", { count: ordered.length })}
+          </LinkButton>
+        ) : (
+          <Text size="sm" c="dimmed">
+            {t("tickToRequest")}
+          </Text>
+        )}
+      </Group>
+      <Checkbox.Group value={chosen} onChange={onChange}>
+        <Stack gap="xs">
+          {group.templates.map((tpl) => (
+            <Checkbox
+              key={tpl.templateId}
+              value={tpl.templateId}
+              label={tpl.title}
+              description={tpl.description ?? undefined}
+            />
+          ))}
+        </Stack>
+      </Checkbox.Group>
     </Stack>
   );
 }

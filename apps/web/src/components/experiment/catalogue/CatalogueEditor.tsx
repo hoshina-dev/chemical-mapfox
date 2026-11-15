@@ -12,7 +12,6 @@ import {
   ActionIcon,
   Alert,
   Anchor,
-  Badge,
   Card,
   Group,
   SimpleGrid,
@@ -40,7 +39,8 @@ export interface CatalogueItem {
   href: string;
   visible: boolean;
   count?: number | null;
-  hasPdfTemplate?: boolean;
+  /** Sample types: false when no blank report form (PDF) is stored. */
+  hasReportForm?: boolean;
 }
 
 export function CatalogueEditor({
@@ -258,10 +258,10 @@ function CatalogueRow({
       <Anchor component={Link} href={item.href} fw={600} c="green.8">
         {item.name}
       </Anchor>
-      {item.hasPdfTemplate === false && (
-        <Badge color="yellow" variant="light" size="sm">
-          {t("noReportLayout")}
-        </Badge>
+      {item.hasReportForm === false && (
+        <Text c="red" size="sm" fw={500}>
+          {t("noReportTemplate")}
+        </Text>
       )}
     </Group>
   );

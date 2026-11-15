@@ -12,7 +12,7 @@ import {
   reportFormPath,
   sampleOnboardingPath,
 } from "@/lib/internal/routes";
-import { getReportForm, getSampleType, SampleTrackerError } from "@/lib/sample-tracker/client";
+import { getSampleType, hasReportForm, SampleTrackerError } from "@/lib/sample-tracker/client";
 
 export const dynamic = "force-dynamic";
 
@@ -45,13 +45,7 @@ async function ReportFormContent({ params }: { params: Promise<{ sampleId: strin
   }
   const fields = sample.reportForm?.fields ?? [];
   // The field map alone is not enough: reports are printed on the stored blank PDF.
-  const hasPdf = await getReportForm(session.userId, sampleId).then(
-    () => true,
-    (error) => {
-      if (error instanceof SampleTrackerError && error.status === 404) return false;
-      throw error;
-    },
-  );
+  const hasPdf = await hasReportForm(session.userId, sampleId);
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">

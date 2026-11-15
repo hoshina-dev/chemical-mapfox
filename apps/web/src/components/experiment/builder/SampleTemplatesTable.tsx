@@ -21,7 +21,6 @@ export function SampleTemplatesTable({
         description: template.description,
         href: templateBuilderPath(template),
         visible: template.isVisibleOnWeb,
-        hasPdfTemplate: template.hasPdfTemplate,
       }))}
     />
   );

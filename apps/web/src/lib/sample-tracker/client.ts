@@ -293,6 +293,17 @@ export const setTemplatesWebOrder = (actor: string, sampleTypeId: string, templa
 export const getReportForm = (actor: string | undefined, sampleTypeId: string) =>
   stBytes(`/sample-types/${sampleTypeId}/report-form`, { actor });
 
+/** Whether the sample type's blank report form (PDF) is stored. HEAD: nothing is downloaded. */
+export async function hasReportForm(actor: string | undefined, sampleTypeId: string): Promise<boolean> {
+  try {
+    await request(`/sample-types/${sampleTypeId}/report-form`, { actor, method: "HEAD" });
+    return true;
+  } catch (error) {
+    if (error instanceof SampleTrackerError && error.status === 404) return false;
+    throw error;
+  }
+}
+
 export function putReportForm(
   actor: string,
   sampleTypeId: string,

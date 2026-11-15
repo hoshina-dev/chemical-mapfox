@@ -11,7 +11,7 @@ import {
   onboardingPath,
   reportFormPath,
 } from "@/lib/internal/routes";
-import { getSampleType, listTemplates } from "@/lib/sample-tracker/client";
+import { getSampleType, hasReportForm, listTemplates } from "@/lib/sample-tracker/client";
 import { toTemplateSummary } from "@/lib/sample-tracker/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
@@ -21,17 +21,21 @@ export const dynamic = "force-dynamic";
 interface SampleTemplates {
   sampleName: string;
   sampleDescription?: string;
+  /** Whether the blank report form (PDF) is stored; without it no report can be published. */
+  hasReportForm: boolean;
   templates: TemplateSummary[];
 }
 
 async function loadSample(actor: string, sampleId: string): Promise<SampleTemplates> {
-  const [sample, templates] = await Promise.all([
+  const [sample, templates, reportForm] = await Promise.all([
     getSampleType(actor, sampleId),
     listTemplates(actor, sampleId),
+    hasReportForm(actor, sampleId),
   ]);
   return {
     sampleName: sample.name,
     sampleDescription: sample.description ?? undefined,
+    hasReportForm: reportForm,
     templates: templates.map(toTemplateSummary),
   };
 }
@@ -87,9 +91,16 @@ async function SampleOnboardingPageContent({
         />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>
-            <Title order={2}>
-              {data?.sampleName ?? t("sample.titleFallback")}
-            </Title>
+            <Group gap="sm" align="baseline">
+              <Title order={2}>
+                {data?.sampleName ?? t("sample.titleFallback")}
+              </Title>
+              {data && !data.hasReportForm && (
+                <Text c="red" size="sm" fw={500}>
+                  {t("sample.noReportTemplate")}
+                </Text>
+              )}
+            </Group>
             <Text c="dimmed">
               {data?.sampleDescription ?? t("sample.defaultDescription")}
             </Text>

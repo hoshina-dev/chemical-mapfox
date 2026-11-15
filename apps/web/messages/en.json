@@ -365,16 +365,17 @@
       "catalog": {
         "breadcrumb": "Request an experiment",
         "title": "Request an experiment",
-        "subtitle": "Browse the specimens our labs support and start a request from a template.",
+        "subtitle": "Browse the samples our labs support and tick the methods to run on your sample.",
         "loadErrorTitle": "Could not load the catalogue",
         "loadErrorFallback": "Failed to load the catalogue.",
-        "searchPlaceholder": "Search specimens or experiments…",
+        "searchPlaceholder": "Search samples…",
         "searchAriaLabel": "Search the catalogue",
-        "experimentCount": "{visible} of {total, plural, one {# experiment} other {# experiments}}",
+        "sampleCount": "{visible} of {total, plural, one {# sample} other {# samples}}",
         "noSpecimens": "No specimens are available yet.",
-        "noMatches": "No experiments match your search.",
+        "noMatches": "No samples match your search.",
         "noTemplates": "No templates available yet.",
-        "requestButton": "Request"
+        "requestSelected": "Request {count}",
+        "tickToRequest": "Tick the methods to run on your sample."
       },
       "form": {
         "outOfDateTitle": "Template may be out of date",
@@ -471,7 +472,12 @@
         "closed": "Closed"
       },
       "finishedTitle": "Experiment finished",
-      "finishedBody": "Its results are saved. Reopen it to correct values; it then needs finishing again."
+      "finishedBody": "Its results are saved. Reopen it to correct values; it then needs finishing again.",
+      "methodStatus": {
+        "PENDING": "Not started",
+        "IN_PROGRESS": "In progress",
+        "FINISHED": "Finished"
+      }
     },
     "startExperiment": {
       "button": "Start experiment",
@@ -573,7 +579,8 @@
         "newTemplate": "New template",
         "loadSampleFallback": "Failed to load sample.",
         "emptyTemplates": "No templates yet for this sample. Create the first one.",
-        "reportForm": "Report form"
+        "reportForm": "Report form",
+        "noReportTemplate": "* No report template"
       }
     },
     "registerSample": {
@@ -590,14 +597,14 @@
       "nameRequired": "Sample name is required."
     },
     "catalogue": {
-      "help": "Drag items by their handles to reorder both catalogues. Changes save automatically. Visibility affects only the landing page. New items start hidden.",
-      "visibility": "Show on landing page",
-      "visibilityFor": "Show {name} on landing page",
+      "help": "Drag items by their handles to reorder both catalogues. Changes save automatically. Hidden items are not shown to clients and cannot be requested. New items start hidden.",
+      "visibility": "Show to clients",
+      "visibilityFor": "Show {name} to clients",
       "reorder": "Reorder",
       "dragHandle": "Reorder {name}",
       "experiment": "Experiment",
       "description": "Description",
-      "noReportLayout": "No report layout",
+      "noReportTemplate": "* No report template",
       "noDescription": "No description",
       "templateCount": "{count, plural, one {# template} other {# templates}}",
       "countUnavailable": "Template count unavailable",
@@ -622,6 +629,8 @@
       "noneBody": "Upload the blank PDF and its field map. Without one, reports cannot be published for this sample type.",
       "fileLabel": "Blank form (PDF)",
       "fileDescription": "The lab's report with labels and grid, values left empty.",
+      "chooseFile": "Choose PDF",
+      "noFile": "No file chosen",
       "fieldsLabel": "Field map (JSON)",
       "fieldsDescription": "A list of fields, each with page, x, y, size, align, prefix and source. x and y are PDF points from the top-left corner, y on the text baseline.",
       "upload": "Upload",

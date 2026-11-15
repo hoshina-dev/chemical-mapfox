@@ -365,16 +365,17 @@
       "catalog": {
         "breadcrumb": "Zamów eksperyment",
         "title": "Zamów eksperyment",
-        "subtitle": "Przeglądaj próbki obsługiwane przez nasze laboratoria i rozpocznij zgłoszenie na podstawie szablonu.",
+        "subtitle": "Przeglądaj próbki obsługiwane przez nasze laboratoria i zaznacz metody do wykonania na Twojej próbce.",
         "loadErrorTitle": "Nie udało się załadować katalogu",
         "loadErrorFallback": "Nie udało się załadować katalogu.",
-        "searchPlaceholder": "Szukaj próbek lub eksperymentów…",
+        "searchPlaceholder": "Szukaj próbek…",
         "searchAriaLabel": "Szukaj w katalogu",
-        "experimentCount": "{visible} z {total, plural, one {# eksperyment} few {# eksperymenty} many {# eksperymentów} other {# eksperymentów}}",
+        "sampleCount": "{visible} z {total, plural, one {# próbki} few {# próbek} many {# próbek} other {# próbek}}",
         "noSpecimens": "Brak dostępnych próbek.",
-        "noMatches": "Żaden eksperyment nie pasuje do wyszukiwania.",
+        "noMatches": "Żadna próbka nie pasuje do wyszukiwania.",
         "noTemplates": "Brak dostępnych szablonów.",
-        "requestButton": "Zamów"
+        "requestSelected": "Zamów {count}",
+        "tickToRequest": "Zaznacz metody do wykonania na Twojej próbce."
       },
       "form": {
         "outOfDateTitle": "Szablon może być nieaktualny",
@@ -471,7 +472,12 @@
         "closed": "Zamknięte"
       },
       "finishedTitle": "Badanie zakończone",
-      "finishedBody": "Wyniki są zapisane. Otwórz ponownie, aby poprawić wartości; potem trzeba je znowu zakończyć."
+      "finishedBody": "Wyniki są zapisane. Otwórz ponownie, aby poprawić wartości; potem trzeba je znowu zakończyć.",
+      "methodStatus": {
+        "PENDING": "Nierozpoczęta",
+        "IN_PROGRESS": "W toku",
+        "FINISHED": "Zakończona"
+      }
     },
     "startExperiment": {
       "button": "Rozpocznij eksperyment",
@@ -573,7 +579,8 @@
         "newTemplate": "Nowy szablon",
         "loadSampleFallback": "Nie udało się załadować próbki.",
         "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy.",
-        "reportForm": "Formularz sprawozdania"
+        "reportForm": "Formularz sprawozdania",
+        "noReportTemplate": "* Brak szablonu raportu"
       }
     },
     "registerSample": {
@@ -590,14 +597,14 @@
       "nameRequired": "Nazwa próbki jest wymagana."
     },
     "catalogue": {
-      "help": "Przeciągaj elementy za uchwyty, aby zmienić kolejność w obu katalogach. Zmiany zapisują się automatycznie. Widoczność dotyczy tylko strony głównej. Nowe elementy są początkowo ukryte.",
-      "visibility": "Pokaż na stronie głównej",
-      "visibilityFor": "Pokaż {name} na stronie głównej",
+      "help": "Przeciągaj elementy za uchwyty, aby zmienić kolejność w obu katalogach. Zmiany zapisują się automatycznie. Ukryte elementy nie są widoczne dla klientów i nie można ich zamówić. Nowe elementy są początkowo ukryte.",
+      "visibility": "Pokaż klientom",
+      "visibilityFor": "Pokaż {name} klientom",
       "reorder": "Zmień kolejność",
       "dragHandle": "Zmień kolejność: {name}",
       "experiment": "Badanie",
       "description": "Opis",
-      "noReportLayout": "Brak układu raportu",
+      "noReportTemplate": "* Brak szablonu raportu",
       "noDescription": "Brak opisu",
       "templateCount": "{count, plural, one {# szablon} few {# szablony} many {# szablonów} other {# szablonu}}",
       "countUnavailable": "Liczba szablonów niedostępna",
@@ -622,6 +629,8 @@
       "noneBody": "Prześlij pusty PDF i mapę pól. Bez nich nie można publikować sprawozdań dla tego rodzaju próbki.",
       "fileLabel": "Pusty formularz (PDF)",
       "fileDescription": "Sprawozdanie laboratorium z etykietami i siatką, bez wartości.",
+      "chooseFile": "Wybierz PDF",
+      "noFile": "Nie wybrano pliku",
       "fieldsLabel": "Mapa pól (JSON)",
       "fieldsDescription": "Lista pól, każde z page, x, y, size, align, prefix i source. x i y w punktach PDF od lewego górnego rogu, y na linii bazowej tekstu.",
       "upload": "Prześlij",

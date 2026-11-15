@@ -29,6 +29,8 @@ interface RequestExperimentFormProps {
   sampleName: string;
   /** The method the client came for; ticked and always requested. */
   templateId: string;
+  /** Other methods ticked in advance (unknown ids are ignored). */
+  initialMethods?: string[];
   /** Every method of the sample type. */
   methods: RequestMethod[];
   canRequest: boolean;
@@ -42,6 +44,7 @@ interface RequestExperimentFormProps {
 export function RequestExperimentForm({
   sampleName,
   templateId,
+  initialMethods = [],
   methods,
   canRequest,
   submitLabel,
@@ -51,7 +54,10 @@ export function RequestExperimentForm({
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chosen, setChosen] = useState<string[]>([templateId]);
+  const [chosen, setChosen] = useState<string[]>(() => [
+    templateId,
+    ...methods.map((m) => m.id).filter((id) => id !== templateId && initialMethods.includes(id)),
+  ]);
 
   const intake = useMemo(
     () =>

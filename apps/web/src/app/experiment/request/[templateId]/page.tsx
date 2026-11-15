@@ -34,10 +34,14 @@ export default function RequestExperimentPage(props: Parameters<typeof RequestEx
 
 async function RequestExperimentPageContent({
   params,
+  searchParams,
 }: {
   params: Promise<{ templateId: string }>;
+  /** `methods`: other methods of the sample type ticked in the catalogue. */
+  searchParams: Promise<{ methods?: string }>;
 }) {
   const { templateId } = await params;
+  const { methods } = await searchParams;
   const t = await getTranslations("experiment.request");
 
   const loaded = await loadRequestTemplate(templateId);
@@ -72,6 +76,7 @@ async function RequestExperimentPageContent({
           <RequestExperimentForm
             sampleName={loaded.sampleName}
             templateId={templateId}
+            initialMethods={(methods ?? "").split(",")}
             methods={loaded.methods
               .filter((m) => m.valid)
               .map((m) => ({
