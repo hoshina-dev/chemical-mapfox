@@ -1,416 +1,214 @@
 import type { ExperimentTemplate } from "@repo/forms";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/log/handled", () => ({ logHandledError: vi.fn() }));
-vi.mock("@/lib/experiment-manager/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/experiment-manager/client")>();
-  return {
-    ...actual,
-    listSamples: vi.fn(),
-    listExperimentTemplates: vi.fn(),
-    getExperimentTemplate: vi.fn(),
-    createSample: vi.fn(),
-    createExperimentTemplate: vi.fn(),
-    updateExperimentTemplate: vi.fn(),
-    evaluateCalculations: vi.fn(),
-    upsertPdfTemplate: vi.fn(),
-    setSampleWebVisibility: vi.fn(),
-    setTemplateWebVisibility: vi.fn(),
-  };
-});
+vi.mock("@/lib/sample-tracker/client", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/sample-tracker/client")>()),
+  createSampleType: vi.fn(),
+  createTemplate: vi.fn(),
+  getTemplate: vi.fn(),
+  listSampleTypes: vi.fn(),
+  setSampleTypeWebVisibility: vi.fn(),
+  setTemplateWebVisibility: vi.fn(),
+  updateTemplate: vi.fn(),
+}));
 
 import {
-  createSample,
-  createExperimentTemplate,
-  evaluateCalculations,
-  getExperimentTemplate,
-  listExperimentTemplates,
-  listSamples,
-  setSampleWebVisibility,
+  createSampleType,
+  createTemplate,
+  type ExperimentTemplate as StoredTemplate,
+  getTemplate,
+  listSampleTypes,
+  type SampleType,
+  SampleTrackerError,
+  setSampleTypeWebVisibility,
   setTemplateWebVisibility,
-  updateExperimentTemplate,
-  upsertPdfTemplate,
-} from "@/lib/experiment-manager/client";
-import { ExperimentManagerError } from "@/lib/experiment-manager/client";
+  updateTemplate,
+} from "@/lib/sample-tracker/client";
 
-import { onboardTemplate, setCatalogueVisibility, simpleReportLayout, testOnboardingCalculations, listOnboardingSamples, listOnboardingTemplates, getOnboardingTemplate, createOnboardingSample } from "./onboarding";
+import { onboardTemplate, setCatalogueVisibility } from "./onboarding";
 
-const draft: ExperimentTemplate = {
-  clientForm: { name: "Client", questions: [{ id: "client_note", type: "string", label: "Note" }] },
+const template: ExperimentTemplate = {
+  clientForm: { name: "Client", questions: [] },
   labForm: {
     name: "Lab",
-    questions: [
-      { id: "mass", type: "number", label: "Mass" },
-      {
-        id: "reps",
-        type: "repeatable-group",
-        label: "Reps",
-        config: { count: 2, questions: [{ id: "reading", type: "number", label: "Reading" }] },
-      },
-    ],
+    questions: [{ id: "mass", type: "number", label: "Mass" }],
   },
-  calculations: { doubled: { formula: "values['mass'] * 2" } },
+  calculations: { double: { formula: "values['mass'] * 2", result: 4 } },
 };
 
-const okRun = {
-  values: { mass: 1 },
-  order: ["doubled"],
-  calculations: { doubled: { formula: "values['mass'] * 2", status: "ok" as const, result: 2 } },
-  missing_values: [],
-  duplicate_question_ids: [],
-};
-
-const sample = {
-  id: "sample-1",
-  name: "Coal",
-  description: null,
-  is_visible_on_web: false,
-  display_order: 1,
-};
+const water = { id: "s-water", name: "Water" } as SampleType;
+const saved = (id: string, sampleTypeId: string) =>
+  ({ id, sampleTypeId }) as StoredTemplate;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(listSamples).mockResolvedValue({ samples: [sample] });
-  vi.mocked(evaluateCalculations).mockResolvedValue(okRun);
-  vi.mocked(createExperimentTemplate).mockResolvedValue({
-    id: "tmpl-1",
-    lineage_id: "lin-1",
-    name: "Ash",
-    version: 1,
-    is_current: true,
-    has_pdf_template: false,
-    is_visible_on_web: false,
-    display_order: 1,
-  });
-  vi.mocked(updateExperimentTemplate).mockResolvedValue({
-    id: "tmpl-2",
-    lineage_id: "lin-1",
-    name: "Ash",
-    version: 2,
-    is_current: true,
-    has_pdf_template: true,
-    is_visible_on_web: false,
-    display_order: 1,
-  });
-  vi.mocked(upsertPdfTemplate).mockResolvedValue({
-    template_id: "tmpl-1",
-    components: [],
-  } as never);
-});
-
-describe("onboarding reads", () => {
-  it("lists samples and templates and loads one template", async () => {
-    const samples = await listOnboardingSamples();
-    expect(samples.success && samples.data[0]).toMatchObject({ id: "sample-1", name: "Coal", visible: false });
-
-    vi.mocked(listExperimentTemplates).mockResolvedValue({
-      sample_id: "sample-1",
-      experiments: [
-        {
-          id: "tmpl-1",
-          lineage_id: "lin-1",
-          name: "Ash",
-          description: "loss",
-          version: 1,
-          is_current: true,
-          has_pdf_template: false,
-          is_visible_on_web: true,
-          display_order: 1,
-        },
-        {
-          id: "tmpl-0",
-          lineage_id: "lin-0",
-          name: "Bare",
-          version: 1,
-          is_current: false,
-          has_pdf_template: false,
-          is_visible_on_web: false,
-          display_order: 2,
-        },
-      ],
-    });
-    const templates = await listOnboardingTemplates("sample-1");
-    expect(templates.success && templates.data[0]?.lineageId).toBe("lin-1");
-
-    vi.mocked(getExperimentTemplate).mockResolvedValue({
-      id: "tmpl-1",
-      lineage_id: "lin-1",
-      name: "Ash",
-      description: "loss",
-      version: 3,
-      is_current: true,
-      has_pdf_template: true,
-      is_visible_on_web: false,
-      display_order: 1,
-      clientForm: draft.clientForm,
-      labForm: draft.labForm,
-      calculations: { doubled: { formula: "values['mass'] * 2", result: 2 } },
-    });
-    const loaded = await getOnboardingTemplate("sample-1", "tmpl-1");
-    expect(loaded.success && loaded.data.template.calculations.doubled).toEqual({
-      formula: "values['mass'] * 2",
-    });
-
-    vi.mocked(getExperimentTemplate).mockResolvedValue({
-      id: "tmpl-0",
-      lineage_id: "lin-0",
-      name: "Bare",
-      description: null,
-      version: 1,
-      is_current: true,
-      has_pdf_template: false,
-      is_visible_on_web: false,
-      display_order: 1,
-      clientForm: { name: "Client", questions: [] },
-      labForm: { name: "Lab", questions: [] },
-      calculations: {},
-    });
-    const bare = await getOnboardingTemplate("sample-1", "tmpl-0");
-    expect(bare.success && bare.data.description).toBeNull();
-  });
-
-  it("surfaces list and load failures", async () => {
-    vi.mocked(listSamples).mockRejectedValue(new Error("down"));
-    expect((await listOnboardingSamples()).success).toBe(false);
-    vi.mocked(listExperimentTemplates).mockRejectedValue(new Error("down"));
-    expect((await listOnboardingTemplates("sample-1")).success).toBe(false);
-    vi.mocked(getExperimentTemplate).mockRejectedValue(new Error("down"));
-    expect((await getOnboardingTemplate("sample-1", "missing")).success).toBe(false);
-  });
-});
-
-describe("createOnboardingSample", () => {
-  it("rejects a blank name and creates a trimmed one", async () => {
-    expect((await createOnboardingSample("  ")).success).toBe(false);
-    vi.mocked(createSample).mockResolvedValue({ ...sample, name: "Coal" });
-    await createOnboardingSample("Coal");
-    expect(createSample).toHaveBeenCalledWith({ name: "Coal", description: null });
-    const created = await createOnboardingSample(" Coal ", " raw ");
-    expect(createSample).toHaveBeenCalledWith({ name: "Coal", description: "raw" });
-    expect(created.success && created.data.id).toBe("sample-1");
-  });
-
-  it("returns the engine's detail when create fails", async () => {
-    vi.mocked(createSample).mockRejectedValue(
-      new ExperimentManagerError("fail", 422, { detail: "name taken" }),
-    );
-    const result = await createOnboardingSample("Coal");
-    expect(result.success).toBe(false);
-    if (!result.success) expect(result.error).toContain("name taken");
-  });
+  vi.mocked(listSampleTypes).mockResolvedValue([water]);
+  vi.mocked(createTemplate).mockResolvedValue(saved("t-new", "s-water"));
 });
 
 describe("onboardTemplate", () => {
-  it("refuses a broken formula or a failed dry run before writing", async () => {
-    const broken = await onboardTemplate({
-      sampleName: "Coal",
-      title: "Ash",
-      template: { ...draft, calculations: { bad: { formula: "mass * 2" } } },
+  it("reuses a sample matched by name (any case) and saves formulas without results", async () => {
+    const result = await onboardTemplate("staff-ada", {
+      sampleName: " water ",
+      title: " pH ",
+      template,
     });
-    expect(broken.success).toBe(false);
-    expect(createExperimentTemplate).not.toHaveBeenCalled();
 
-    vi.mocked(evaluateCalculations).mockResolvedValue({
-      ...okRun,
-      calculations: {
-        doubled: {
-          formula: "values['mass'] * 2",
-          status: "error",
-          error: { kind: "runtime", message: "Calculation error in 'doubled': boom" },
-        },
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        sampleId: "s-water",
+        createdSample: false,
+        templateId: "t-new",
+        published: false,
       },
     });
-    const failedRun = await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft });
-    expect(failedRun.success).toBe(false);
-    if (!failedRun.success) expect(failedRun.error).toContain("boom");
-    expect(createExperimentTemplate).not.toHaveBeenCalled();
-  });
-
-  it("reports a dry run that failed with no error message, and duplicate ids from the engine", async () => {
-    vi.mocked(evaluateCalculations).mockResolvedValue({
-      ...okRun,
-      calculations: { doubled: { formula: "x", status: "skipped" } },
-      duplicate_question_ids: ["mass"],
+    expect(createSampleType).not.toHaveBeenCalled();
+    expect(createTemplate).toHaveBeenCalledWith("staff-ada", "s-water", {
+      name: "pH",
+      description: null,
+      template: expect.objectContaining({
+        calculations: { double: { formula: "values['mass'] * 2" } },
+      }),
     });
-    const result = await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toContain("skipped");
-      expect(result.error).toContain("mass");
-    }
   });
 
-  it("rejects an empty title, a missing sample, and an invalid template", async () => {
-    expect((await onboardTemplate({ sampleId: "sample-1", title: "  ", template: draft })).success).toBe(false);
-    expect(
-      (await onboardTemplate({ sampleId: "missing", title: "Ash", template: draft })).success,
-    ).toBe(false);
-    expect((await onboardTemplate({ title: "Ash", template: draft })).success).toBe(false);
-    const invalid = await onboardTemplate({
-      sampleId: "sample-1",
-      title: "Ash",
-      template: { ...draft, labForm: { name: "Lab", questions: [{ id: "x" } as never] } },
-    });
-    expect(invalid.success).toBe(false);
-  });
+  it("creates the sample when the name is new", async () => {
+    vi.mocked(createSampleType).mockResolvedValue({
+      id: "s-coal",
+      name: "Coal",
+    } as SampleType);
+    vi.mocked(createTemplate).mockResolvedValue(saved("t-new", "s-coal"));
 
-  it("creates the sample and template, writes a layout, and publishes", async () => {
-    vi.mocked(listSamples).mockResolvedValue({ samples: [] });
-    vi.mocked(createSample).mockResolvedValue(sample);
-    await onboardTemplate({
+    const result = await onboardTemplate("staff-ada", {
       sampleName: "Coal",
       title: "Ash",
-      template: { ...draft, calculations: {} },
-      reportLayout: false,
+      template,
     });
-    expect(createSample).toHaveBeenCalledWith({ name: "Coal", description: null });
-    const result = await onboardTemplate({
-      sampleName: "Coal",
-      sampleDescription: "Raw",
-      title: "Ash",
-      description: "Loss",
-      template: { ...draft, calculations: {} },
-      publish: true,
+    expect(result).toMatchObject({
+      success: true,
+      data: { sampleId: "s-coal", createdSample: true },
     });
-    expect(createSample).toHaveBeenCalledWith({ name: "Coal", description: "Raw" });
-    expect(evaluateCalculations).not.toHaveBeenCalled();
-    expect(createExperimentTemplate).toHaveBeenCalled();
-    expect(upsertPdfTemplate).toHaveBeenCalled();
-    const components = vi.mocked(upsertPdfTemplate).mock.calls[0]?.[2] as { content?: string }[];
-    expect(components.some((component) => component.content?.includes("{{reading}}"))).toBe(true);
-    expect(setTemplateWebVisibility).toHaveBeenCalledWith("sample-1", "lin-1", true);
-    expect(result.success && result.data.published).toBe(true);
-    expect(result.success && result.data.createdSample).toBe(true);
+    expect(createSampleType).toHaveBeenCalledWith("staff-ada", {
+      name: "Coal",
+      description: null,
+    });
   });
 
-  it("revises a lineage and skips the layout when asked", async () => {
-    const result = await onboardTemplate({
-      sampleId: "sample-1",
-      lineageId: "lin-1",
-      title: "Ash",
-      template: draft,
-      reportLayout: false,
+  it("saves nothing when a formula reads an unknown question", async () => {
+    const result = await onboardTemplate("staff-ada", {
+      sampleName: "Water",
+      title: "pH",
+      template: {
+        ...template,
+        calculations: { bad: { formula: "values['volume'] * 2" } },
+      },
     });
-    expect(updateExperimentTemplate).toHaveBeenCalled();
-    expect(createExperimentTemplate).not.toHaveBeenCalled();
-    expect(upsertPdfTemplate).not.toHaveBeenCalled();
-    expect(result.success && result.data.reportLayout).toBe("kept");
-    expect(result.success && result.data.formulaCheck?.order).toEqual(["doubled"]);
+
+    expect(result).toMatchObject({
+      success: false,
+      error: expect.stringContaining("volume"),
+    });
+    expect(listSampleTypes).not.toHaveBeenCalled();
+    expect(createTemplate).not.toHaveBeenCalled();
   });
 
-  it("keeps a revised method's existing layout unless told to replace it", async () => {
-    const kept = await onboardTemplate({ sampleId: "sample-1", lineageId: "lin-1", title: "Ash", template: draft });
-    expect(upsertPdfTemplate).not.toHaveBeenCalled();
-    expect(kept.success && kept.data.reportLayout).toBe("kept");
+  it("revises a template in place under its own sample", async () => {
+    vi.mocked(updateTemplate).mockResolvedValue(saved("t-1", "s-water"));
 
-    vi.mocked(upsertPdfTemplate).mockResolvedValue({ template_id: "tmpl-9", components: [] } as never);
-    const replaced = await onboardTemplate({
-      sampleId: "sample-1",
-      lineageId: "lin-1",
-      title: "Ash",
-      template: draft,
-      reportLayout: true,
+    const result = await onboardTemplate("staff-ada", {
+      templateId: "t-1",
+      title: "pH v2",
+      template,
     });
-    expect(upsertPdfTemplate).toHaveBeenCalledOnce();
-    expect(replaced.success && replaced.data.reportLayout).toBe("written");
-  });
-
-  it("matches an existing sample name and refuses an ambiguous one", async () => {
-    const result = await onboardTemplate({
-      sampleName: "coal",
-      title: "Ash",
-      template: { ...draft, calculations: {} },
-      reportLayout: false,
+    expect(result).toMatchObject({
+      success: true,
+      data: { sampleId: "s-water", sampleName: "Water", templateId: "t-1" },
     });
-    expect(createSample).not.toHaveBeenCalled();
-    expect(result.success && result.data.sampleId).toBe("sample-1");
-
-    vi.mocked(listSamples).mockResolvedValue({
-      samples: [sample, { ...sample, id: "sample-2" }],
-    });
-    const ambiguous = await onboardTemplate({
-      sampleName: "Coal",
-      title: "Ash",
-      template: draft,
-      reportLayout: false,
-    });
-    expect(ambiguous.success).toBe(false);
-  });
-
-  it("keeps the template when the layout or publish step fails", async () => {
-    vi.mocked(upsertPdfTemplate).mockRejectedValue(new Error("pdf down"));
-    const layout = await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft });
-    expect(layout.success && layout.data.warning).toMatch(/PDF layout/);
-    expect(layout.success && layout.data.reportLayout).toBe("none");
-    expect(setSampleWebVisibility).not.toHaveBeenCalled();
-
-    vi.mocked(upsertPdfTemplate).mockResolvedValue({ template_id: "tmpl-9", components: [] } as never);
-    vi.mocked(setSampleWebVisibility).mockRejectedValue(new Error("nope"));
-    const publish = await onboardTemplate({
-      sampleId: "sample-1",
-      title: "Ash",
-      template: { ...draft, calculations: {} },
-      publish: true,
-    });
-    expect(publish.success && publish.data.published).toBe(false);
-    expect(publish.success && publish.data.warning).toMatch(/not published/);
-    expect(publish.success && publish.data.templateId).toBe("tmpl-9");
-  });
-
-  it("surfaces sample lookup, save, and dry-run transport errors", async () => {
-    vi.mocked(evaluateCalculations).mockRejectedValue(new Error("engine down"));
-    expect((await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft })).success).toBe(false);
-
-    vi.mocked(evaluateCalculations).mockResolvedValue(okRun);
-    vi.mocked(listSamples).mockRejectedValue(new Error("down"));
-    expect((await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft })).success).toBe(false);
-
-    vi.mocked(listSamples).mockResolvedValue({ samples: [sample] });
-    vi.mocked(createExperimentTemplate).mockRejectedValue(new Error("nope"));
-    expect((await onboardTemplate({ sampleId: "sample-1", title: "Ash", template: draft })).success).toBe(false);
-  });
-});
-
-describe("testOnboardingCalculations", () => {
-  it("rejects a bad draft and returns a dry run", async () => {
-    expect(
-      (await testOnboardingCalculations({ ...draft, calculations: { bad: { formula: "mass" } } }, {})).success,
-    ).toBe(false);
-    const result = await testOnboardingCalculations(draft, { mass: 5 });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects a template that does not parse and a dry run that throws", async () => {
-    const invalid = await testOnboardingCalculations(
-      { ...draft, labForm: { name: "Lab", questions: [{ id: 1 } as never] } },
-      {},
+    expect(updateTemplate).toHaveBeenCalledWith(
+      "staff-ada",
+      "t-1",
+      expect.objectContaining({ name: "pH v2" }),
     );
-    expect(invalid.success).toBe(false);
-    vi.mocked(evaluateCalculations).mockRejectedValue(new Error("down"));
-    expect((await testOnboardingCalculations(draft, {})).success).toBe(false);
+    expect(createTemplate).not.toHaveBeenCalled();
   });
-});
 
-describe("simpleReportLayout", () => {
-  it("starts a new page once the lines run past the bottom", () => {
-    const components = simpleReportLayout("Ash", Array.from({ length: 40 }, (_, i) => `row ${i}`));
-    expect(components.some((component) => component.type === "pagebreak")).toBe(true);
+  it("shows the sample and the method only when asked, and keeps the save when that fails", async () => {
+    vi.mocked(setTemplateWebVisibility).mockRejectedValue(
+      new SampleTrackerError("x", 409, "busy"),
+    );
+
+    const result = await onboardTemplate("staff-ada", {
+      sampleId: "s-water",
+      title: "pH",
+      template,
+      publish: true,
+    });
+    expect(setSampleTypeWebVisibility).toHaveBeenCalledWith(
+      "staff-ada",
+      "s-water",
+      true,
+    );
+    expect(result).toMatchObject({
+      success: true,
+      data: {
+        templateId: "t-new",
+        published: false,
+        warning: expect.stringContaining("busy"),
+      },
+    });
+  });
+
+  it("refuses an unknown sample id or no sample at all", async () => {
+    expect(
+      await onboardTemplate("staff-ada", {
+        sampleId: "s-x",
+        title: "pH",
+        template,
+      }),
+    ).toMatchObject({
+      success: false,
+      error: "No sample with id s-x.",
+    });
+    expect(
+      await onboardTemplate("staff-ada", { title: "pH", template }),
+    ).toMatchObject({
+      success: false,
+      error: "Give sampleId or sampleName.",
+    });
+    expect(createTemplate).not.toHaveBeenCalled();
   });
 });
 
 describe("setCatalogueVisibility", () => {
-  it("toggles a method when given a lineage, otherwise the sample", async () => {
-    const method = await setCatalogueVisibility("sample-1", "lin-1", false);
-    expect(setTemplateWebVisibility).toHaveBeenCalledWith("sample-1", "lin-1", false);
-    expect(method).toEqual({ success: true, data: { sampleId: "sample-1", lineageId: "lin-1", visible: false } });
+  it("refuses a template that belongs to another sample", async () => {
+    vi.mocked(getTemplate).mockResolvedValue(saved("t-1", "s-other"));
 
-    await setCatalogueVisibility("sample-1", undefined, true);
-    expect(setSampleWebVisibility).toHaveBeenCalledWith("sample-1", true);
+    const result = await setCatalogueVisibility(
+      "staff-ada",
+      "s-water",
+      "t-1",
+      true,
+    );
+    expect(result.success).toBe(false);
+    expect(setTemplateWebVisibility).not.toHaveBeenCalled();
   });
 
-  it("reports a backend failure", async () => {
-    vi.mocked(setSampleWebVisibility).mockRejectedValue(new Error("down"));
-    expect((await setCatalogueVisibility("sample-1", undefined, true)).success).toBe(false);
+  it("toggles the whole sample without a template id", async () => {
+    const result = await setCatalogueVisibility(
+      "staff-ada",
+      "s-water",
+      undefined,
+      false,
+    );
+    expect(result.success).toBe(true);
+    expect(setSampleTypeWebVisibility).toHaveBeenCalledWith(
+      "staff-ada",
+      "s-water",
+      false,
+    );
   });
 });

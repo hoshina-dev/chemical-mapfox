@@ -6,7 +6,7 @@ import { cache } from "react";
 
 import { appRoleForSession } from "./appRole";
 import { myExperimentsPath } from "../experiment/routes";
-import { experimentListingPath } from "../experiment-manager/routes";
+import { experimentListingPath } from "@/lib/internal/routes";
 import { SESSION_COOKIE } from "./constants";
 import type { SessionPayload, SessionUser } from "./definitions";
 import { resolveSession } from "./sessionStore";

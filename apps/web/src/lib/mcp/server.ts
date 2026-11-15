@@ -4,74 +4,68 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import {
   AnswerValue,
+  answerFieldIds,
   ExperimentTemplate,
   FormAnswers,
-  answerFieldIds,
   type Question,
 } from "@repo/forms";
 import { z } from "zod";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import { readTemplate, readValues } from "@/lib/collab/room";
+import { statusMeta } from "@/lib/experiment/tickets";
 import { getExperimentWorkspace, listExperimentsForStaff } from "@/lib/internal/experiments";
+import { experimentReportDownloadPath } from "@/lib/internal/routes";
 import { logger } from "@/lib/log/logger";
 import { grantedScopes } from "@/lib/oauth/scopes";
 import type { McpActor } from "@/lib/oauth/store";
+import {
+  createSampleType,
+  getTemplate,
+  getTicket,
+  listSampleTypes,
+  listTemplates,
+  sampleTrackerMessage,
+} from "@/lib/sample-tracker/client";
+import { collabRoomId, templateToLoaded } from "@/lib/sample-tracker/mappers";
 import { FORMULA_GUIDE } from "@/lib/staff/formulas";
 import { recordLabValues } from "@/lib/staff/labValues";
+import { checkIn, close, start } from "@/lib/staff/lifecycle";
+import { onboardTemplate, refreshOnboarding, setCatalogueVisibility } from "@/lib/staff/onboarding";
 
 import { listDocs, readDoc } from "./docs";
-import {
-  createOnboardingSample,
-  getOnboardingTemplate,
-  listOnboardingSamples,
-  listOnboardingTemplates,
-  onboardTemplate,
-  setCatalogueVisibility,
-  testOnboardingCalculations,
-} from "@/lib/staff/onboarding";
-import {
-  checkInSample,
-  closeTicket,
-  getReportUrl,
-  queueReport,
-  runCalculations,
-  startExperiment,
-  submitExperiment,
-} from "@/lib/staff/workflow";
-import { ticketsApi } from "@/lib/ticketing/client";
-import { statusMeta } from "@/lib/ticketing/tickets";
 
-const STATUSES = ["REQUESTED", "PENDING", "EXPERIMENTING", "FINALIZING", "CLOSED"] as const;
+const STATUSES = ["REQUESTED", "RECEIVED", "IN_PROGRESS", "COMPLETED", "CLOSED", "CANCELLED"] as const;
 
 // Tool text is read by the model, which answers the user in their language.
-const INSTRUCTIONS = `Lab workspace for ChemFox staff. Experiments move through
-REQUESTED (waiting for the sample) → PENDING (sample received) → EXPERIMENTING
-(lab form open for measurements) → FINALIZING (calculations + PDF report) → CLOSED.
-Use list_experiments to find an experiment and get_experiment to read its lab form
-before recording values. Every write acts as the signed-in staff member; confirm
-irreversible steps (submit_experiment, close_ticket) with the user first.
+const INSTRUCTIONS = `Lab workspace for ChemFox staff. A ticket is one sample with one
+experiment per requested method. Tickets move through REQUESTED (waiting for the
+sample) → RECEIVED (sample checked in) → IN_PROGRESS (methods started) →
+COMPLETED (every method finished) → CLOSED, or CANCELLED. Each experiment is
+PENDING → IN_PROGRESS → FINISHED.
+Use list_experiments to find a ticket and get_experiment to read it (its
+experiments and the lab form of one) before recording values. Every write acts
+as the signed-in staff member; confirm close_ticket (irreversible) with the user first.
+
+You never run calculations. A staff member finishes each experiment in the
+browser, which runs its formulas, and publishes the report there too.
 
 record_lab_values takes labForm question ids as keys. Match each value's JSON type
 to its question: numbers as numbers (not strings), select/radio as the option
 value (not its label), multi-select/checkbox-group/tags as string arrays, date
 YYYY-MM-DD, time HH:mm, datetime YYYY-MM-DDTHH:mm, boolean true/false. A
-repeatable group's child id takes an array with one entry per repetition. Required
-fields are only enforced by submit_experiment.
-
-generate_report runs in the background: poll get_experiment until report.status
-is "success" (or "failed"), then use get_report_download_url.
+repeatable group's child id takes an array with one entry per repetition.
+Required fields are only enforced when the experiment is finished.
 
 Onboarding a method from a spreadsheet the user gives you (you read the file;
 this server cannot): list_samples and list_templates first, get_template to
 revise. Question ids are unique snake_case across both forms. onboard_template
-creates the sample when the name is new, checks formulas, and writes a plain
-PDF layout when the method has none, so clients can request it. To edit a
-method, get_template, change it, and pass the result back with its lineageId:
-that saves a new version (experiments already requested keep theirs) and keeps
-the method's existing PDF layout unless reportLayout is true. publish stays
-false unless the user asks to show it on the catalogue;
-set_catalogue_visibility shows or hides it later.
+creates the sample when the name is new and checks formulas without running
+them; ask the user to test them on the method's builder page. To edit a
+method, get_template, change it, and pass the result back with its templateId:
+experiments already requested keep their own copy. publish stays false unless
+the user asks to show it on the catalogue; set_catalogue_visibility shows or
+hides it later. The report form (blank PDF + field map) is uploaded on the site.
 
 How-to guides for this site are available through list_docs and read_doc.
 Read the relevant one before explaining a page or workflow to the user, and
@@ -83,18 +77,24 @@ they disconnect the app in Settings → Connected apps and connect again.
 
 ${FORMULA_GUIDE}`;
 
-const NEXT_STEP: Record<string, string> = {
+const NEXT_STEP: Record<(typeof STATUSES)[number], string> = {
   REQUESTED: "Waiting for the sample. Use check_in_sample once it arrives.",
-  PENDING: "Sample received. Use start_experiment to open the lab form.",
-  EXPERIMENTING:
-    "Record measurements with record_lab_values, then submit_experiment when the lab form is complete.",
-  FINALIZING:
-    "Run run_calculations, then generate_report; close_ticket once the report is ready. record_lab_values can still fix values here.",
-  CLOSED: "Closed. Use get_report_download_url for the PDF report.",
+  RECEIVED: "Sample checked in. Use start_experiment for each method.",
+  IN_PROGRESS:
+    "Record measurements with record_lab_values on started experiments. Staff finish each one in the browser.",
+  COMPLETED: "Every method is finished. Staff publish the report in the browser; close_ticket when done.",
+  CLOSED: "Closed. get_report_download_url gives the report once it is published.",
+  CANCELLED: "Cancelled. Nothing more to do.",
 };
 
 const contextIdShape = {
-  contextId: z.string().min(1).describe("Experiment context id (from list_experiments)."),
+  contextId: z.string().min(1).describe("Ticket id (from list_experiments)."),
+};
+const experimentIdShape = {
+  experimentId: z.string().min(1).describe("Experiment id (from get_experiment's experiments)."),
+};
+const sampleIdShape = {
+  sampleId: z.string().min(1).describe("Sample id from list_samples."),
 };
 
 function ok(data: unknown): CallToolResult {
@@ -105,26 +105,13 @@ function fail(message: string): CallToolResult {
   return { content: [{ type: "text", text: message }], isError: true };
 }
 
+function fromAction<T>(result: ActionResult<T>, describe: (data: T) => unknown): CallToolResult {
+  return result.success ? ok(describe(result.data)) : fail(result.error);
+}
+
 function pickAnswers(questions: Question[], values: FormAnswers): FormAnswers {
   const ids = answerFieldIds(questions);
   return Object.fromEntries(Object.entries(values).filter(([id]) => ids.has(id)));
-}
-
-// The staff UI only offers these steps in FINALIZING; experiment-manager doesn't check.
-async function requireFinalizing(contextId: string): Promise<CallToolResult | null> {
-  let status: string | undefined;
-  try {
-    status = (await ticketsApi.apiV1TicketsIdGet(contextId)).status;
-  } catch {
-    return fail(`No experiment found for context id ${contextId}.`);
-  }
-  return status === "FINALIZING"
-    ? null
-    : fail(`Only allowed in the FINALIZING stage; this experiment is ${status ?? "unknown"}.`);
-}
-
-function fromAction<T>(result: ActionResult<T>, describe: (data: T) => unknown): CallToolResult {
-  return result.success ? ok(describe(result.data)) : fail(result.error);
 }
 
 export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
@@ -144,7 +131,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
         result = await run(args);
       } catch (err) {
         logger.error({ op: "mcp.tool", tool, userId: actor.userId, clientId: actor.clientId, err }, "mcp tool failed");
-        return fail("Something went wrong on the lab server. Try again.");
+        return fail(sampleTrackerMessage(err, "Something went wrong on the lab server. Try again."));
       }
       logger.info(
         {
@@ -166,14 +153,14 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
     {
       title: "List experiments",
       description:
-        "List lab experiments, most recently updated first. Filter by status and/or a text query matched against the title, requester and context id.",
+        "List lab tickets, most recently updated first. Filter by status and/or a text query matched against the title, requester and ticket id.",
       inputSchema: {
         status: z.enum(STATUSES).optional(),
         query: z
           .string()
           .optional()
           .describe(
-            "Case-insensitive substring of the experiment title, requester name/email or context id. Intake answers aren't searched.",
+            "Case-insensitive substring of the ticket title, requester name/email or ticket id. Intake answers aren't searched.",
           ),
         limit: z.number().int().min(1).max(100).optional().describe("Default 25."),
       },
@@ -212,47 +199,57 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
     {
       title: "Get experiment",
       description:
-        "Everything about one experiment: ticket stage, requester, the client's intake answers, the lab form questions with their current values, calculations and report status.",
-      inputSchema: contextIdShape,
+        "One ticket: its stage, requester, experiments (one per method), and for one experiment the client's intake answers, the lab form questions with their current values and the calculation results. Without experimentId, the first experiment not yet finished.",
+      inputSchema: { ...contextIdShape, experimentId: experimentIdShape.experimentId.optional() },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    audited("get_experiment", async ({ contextId }) => {
-      const ws = await getExperimentWorkspace(contextId);
-      if (!ws.ticket?.contextId && !ws.state) {
-        return fail(`No experiment found for context id ${contextId}.`);
+    audited("get_experiment", async ({ contextId, experimentId }) => {
+      const ws = await getExperimentWorkspace(contextId, experimentId);
+      if (!ws.ticket) return fail(`No ticket found with id ${contextId}.`);
+      const selected = ws.selected;
+      if (experimentId && selected?.id !== experimentId) {
+        return fail(`Experiment ${experimentId} is not on ticket ${contextId}.`);
       }
-      const status = ws.ticket?.status ?? null;
-      let labValues = ws.state?.values ?? {};
-      // While experimenting, the collab buffer is newer than experiment-manager.
-      if (status === "EXPERIMENTING" && (await readTemplate(contextId))) {
-        labValues = await readValues(contextId);
+      const status = ws.ticket.status;
+      let labValues = selected?.state.values ?? {};
+      // While its method is in progress, the collab room is newer than what is stored.
+      if (selected?.status === "IN_PROGRESS") {
+        const room = collabRoomId(contextId, selected.id);
+        if (await readTemplate(room)) labValues = await readValues(room);
       }
-      const state = ws.state;
+      const state = selected?.state;
       return ok({
         contextId,
         title: ws.experimentTitle,
         sampleType: ws.sampleType,
         status,
-        statusLabel: status ? statusMeta(status).label : null,
-        nextStep: status ? NEXT_STEP[status] : undefined,
+        statusLabel: statusMeta(status).label,
+        nextStep: NEXT_STEP[status as (typeof STATUSES)[number]],
         requester: ws.requester ? { name: ws.requester.name, email: ws.requester.email } : null,
-        timeline: ws.ticket && {
+        timeline: {
           createdAt: ws.ticket.createdAt,
           sampleReceivedAt: ws.ticket.sampleReceivedAt,
           experimentStartedAt: ws.ticket.experimentStartedAt,
           resultsSubmittedAt: ws.ticket.resultsSubmittedAt,
           closedAt: ws.ticket.closedAt,
         },
-        clientIntake: state && {
-          questions: state.template.clientForm.questions,
-          answers: pickAnswers(state.template.clientForm.questions, state.values),
-        },
-        labForm: state && {
-          questions: state.template.labForm.questions,
-          values: pickAnswers(state.template.labForm.questions, labValues),
-        },
-        calculations: state?.wireSnapshot.calculations,
-        report: state && { status: state.reportStatus, generatedAt: state.reportGeneratedAt },
+        reportPublishedAt: ws.raw?.reportPublishedAt ?? null,
+        experiments: ws.experiments.map((e) => ({ id: e.id, method: e.name, status: e.status })),
+        experiment: selected &&
+          state && {
+            id: selected.id,
+            method: selected.name,
+            status: selected.status,
+            clientIntake: {
+              questions: state.template.clientForm.questions,
+              answers: pickAnswers(state.template.clientForm.questions, state.values),
+            },
+            labForm: {
+              questions: state.template.labForm.questions,
+              values: pickAnswers(state.template.labForm.questions, labValues),
+            },
+            calculations: state.wireSnapshot.calculations,
+          },
         warnings: Object.values(ws.errors).length > 0 ? ws.errors : undefined,
       });
     }),
@@ -264,236 +261,72 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
       {
         title: "Record lab values",
         description:
-          "Save lab-form answers (keys are lab form question ids from get_experiment; for a repeatable group, the child id with an array value per repetition). null clears a field. All-or-nothing: if any value is invalid or a colleague is editing that field, nothing is saved. Allowed while EXPERIMENTING (shown live to colleagues) or FINALIZING (fixes; rerun calculations afterwards).",
+          "Save lab-form answers of one IN_PROGRESS experiment (keys are lab form question ids from get_experiment; for a repeatable group, the child id with an array value per repetition). null clears a field. Shown live to colleagues with the form open. All-or-nothing: if any value is invalid or a colleague is editing that field, nothing is saved.",
         inputSchema: {
           ...contextIdShape,
+          ...experimentIdShape,
           values: z
             .record(z.string(), AnswerValue)
             .describe("Lab form question id → value; see the server instructions for formats."),
         },
         annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
       },
-      audited("record_lab_values", async ({ contextId, values }) => {
+      audited("record_lab_values", async ({ contextId, experimentId, values }) => {
         if (Object.keys(values).length === 0) return fail("No values given.");
-        const res = await recordLabValues(contextId, values, `mcp:${actor.grantId}`);
-        return fromAction(res, (data) => ({
+        const editor = { userId: actor.userId, connectionId: `mcp:${actor.grantId}` };
+        return fromAction(await recordLabValues(editor, contextId, experimentId, values), (data) => ({
           ...data,
-          note:
-            data.stage === "FINALIZING"
-              ? "Saved. Calculation results were cleared; run run_calculations again."
-              : "Saved.",
+          note: "Saved. A staff member finishes the experiment in the browser.",
         }));
       }),
     );
 
-    const transitions = [
+    // The ticket's status after a step, read back from sample_tracker.
+    const statusAfter = async (contextId: string) => ({
+      contextId,
+      status: (await getTicket(actor.userId, contextId)).status,
+    });
+
+    server.registerTool(
+      "check_in_sample",
       {
-        name: "check_in_sample",
         title: "Check in sample",
-        description: "Mark the physical sample as received (REQUESTED → PENDING).",
-        run: checkInSample,
-        destructive: false,
+        description: "Mark the physical sample as received (REQUESTED → RECEIVED).",
+        inputSchema: contextIdShape,
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
       },
+      audited("check_in_sample", async ({ contextId }) => {
+        const res = await checkIn(actor.userId, contextId);
+        return res.success ? ok(await statusAfter(contextId)) : fail(res.error);
+      }),
+    );
+
+    server.registerTool(
+      "start_experiment",
       {
-        name: "start_experiment",
         title: "Start experiment",
-        description: "Open the lab form for measurements (PENDING → EXPERIMENTING).",
-        run: startExperiment,
-        destructive: false,
+        description: "Open one method's lab form for measurements (PENDING → IN_PROGRESS). The sample must be checked in.",
+        inputSchema: { ...contextIdShape, ...experimentIdShape },
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
       },
+      audited("start_experiment", async ({ contextId, experimentId }) => {
+        const res = await start(actor.userId, contextId, experimentId);
+        return res.success ? ok(await statusAfter(contextId)) : fail(res.error);
+      }),
+    );
+
+    server.registerTool(
+      "close_ticket",
       {
-        name: "submit_experiment",
-        title: "Submit experiment",
-        description:
-          "Submit the completed lab form (EXPERIMENTING → FINALIZING). Checks every required field and rule first. There is no way back to EXPERIMENTING.",
-        run: submitExperiment,
-        destructive: true,
-      },
-      {
-        name: "close_ticket",
         title: "Close ticket",
-        description:
-          "Close a finalized experiment (FINALIZING → CLOSED). Requires calculations and a generated report. Irreversible.",
-        run: closeTicket,
-        destructive: true,
-      },
-    ] as const;
-
-    for (const t of transitions) {
-      server.registerTool(
-        t.name,
-        {
-          title: t.title,
-          description: t.description,
-          inputSchema: contextIdShape,
-          annotations: { readOnlyHint: false, destructiveHint: t.destructive, openWorldHint: false },
-        },
-        audited(t.name, async ({ contextId }) =>
-          fromAction(await t.run(contextId), (data) => ({ contextId, status: data.status })),
-        ),
-      );
-    }
-
-    server.registerTool(
-      "run_calculations",
-      {
-        title: "Run calculations",
-        description: "Evaluate the experiment's formulas against the recorded values (FINALIZING stage). Safe to rerun.",
+        description: "Close a COMPLETED ticket (every method finished). Irreversible.",
         inputSchema: contextIdShape,
-        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+        annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
       },
-      audited(
-        "run_calculations",
-        async ({ contextId }) =>
-          (await requireFinalizing(contextId)) ??
-          fromAction(await runCalculations(contextId), () => ({
-            contextId,
-            note: "Calculations finished. Use get_experiment to read the results.",
-          })),
-      ),
-    );
-
-    server.registerTool(
-      "generate_report",
-      {
-        title: "Generate PDF report",
-        description:
-          "Queue PDF report generation (FINALIZING stage, after run_calculations). It runs in the background; check get_experiment for the report status.",
-        inputSchema: contextIdShape,
-        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-      },
-      audited(
-        "generate_report",
-        async ({ contextId }) =>
-          (await requireFinalizing(contextId)) ??
-          fromAction(await queueReport(contextId), (data) => ({ contextId, reportStatus: data.status })),
-      ),
-    );
-  }
-
-  const sampleIdShape = {
-    sampleId: z.string().min(1).describe("Sample id from list_samples."),
-  };
-
-  server.registerTool(
-    "list_samples",
-    {
-      title: "List samples",
-      description: "Specimen types a method can be onboarded under.",
-      inputSchema: {},
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    },
-    audited("list_samples", async () => fromAction(await listOnboardingSamples(), (data) => data)),
-  );
-
-  server.registerTool(
-    "list_templates",
-    {
-      title: "List templates",
-      description:
-        "Methods already onboarded for one sample. Use lineageId with onboard_template to revise one instead of creating another.",
-      inputSchema: sampleIdShape,
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    },
-    audited("list_templates", async ({ sampleId }) =>
-      fromAction(await listOnboardingTemplates(sampleId), (data) => data),
-    ),
-  );
-
-  server.registerTool(
-    "get_template",
-    {
-      title: "Get template",
-      description: "One method: both forms, formulas, and whether a PDF layout exists.",
-      inputSchema: {
-        ...sampleIdShape,
-        templateId: z.string().min(1).describe("Template version id from list_templates."),
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    },
-    audited("get_template", async ({ sampleId, templateId }) =>
-      fromAction(await getOnboardingTemplate(sampleId, templateId), (data) => data),
-    ),
-  );
-
-  server.registerTool(
-    "test_template_calculations",
-    {
-      title: "Test template calculations",
-      description:
-        "Dry-run a draft's formulas the way experiment-manager will, without saving. See the server instructions for the formula language. Stand-in answers fill any question omitted from values.",
-      inputSchema: {
-        template: ExperimentTemplate,
-        values: FormAnswers.optional().describe("Trial answers keyed by question id. Stand-ins fill the rest."),
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false },
-    },
-    audited("test_template_calculations", async ({ template, values }) =>
-      fromAction(await testOnboardingCalculations(template, values ?? {}), (data) => data),
-    ),
-  );
-
-  if (scopes.has("templates:write")) {
-    server.registerTool(
-      "create_sample",
-      {
-        title: "Create sample",
-        description: "Register a specimen type. Prefer onboard_template, which creates the sample when the name is new.",
-        inputSchema: {
-          name: z.string().min(1),
-          description: z.string().optional(),
-        },
-        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
-      },
-      audited("create_sample", async ({ name, description }) =>
-        fromAction(await createOnboardingSample(name, description), (data) => data),
-      ),
-    );
-
-    server.registerTool(
-      "onboard_template",
-      {
-        title: "Onboard a method",
-        description:
-          "Create or revise a method from forms and formulas you extracted from the user's spreadsheet. Checks formulas the way experiment-manager runs them and saves nothing if a formula fails. Writes a plain PDF layout only when the method has none (see reportLayout). Does not publish unless publish is true.",
-        inputSchema: {
-          sampleId: z.string().optional(),
-          sampleName: z.string().optional().describe("Matched case-insensitively. Created when no sample has this name."),
-          sampleDescription: z.string().optional(),
-          title: z.string().min(1),
-          description: z.string().optional(),
-          lineageId: z.string().optional().describe("Set to revise this method. Omit to create one."),
-          template: ExperimentTemplate,
-          trialValues: FormAnswers.optional().describe("Answers to dry-run formulas with. Stand-ins fill the rest."),
-          reportLayout: z
-          .boolean()
-          .optional()
-          .describe(
-            "Omit to write a plain layout only when the method has none (a revision keeps a designed one). true replaces the layout; false never writes one.",
-          ),
-          publish: z.boolean().optional().describe("Default false. Also shows the sample on the catalogue."),
-        },
-        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
-      },
-      audited("onboard_template", async (args) => fromAction(await onboardTemplate(args), (data) => data)),
-    );
-
-    server.registerTool(
-      "set_catalogue_visibility",
-      {
-        title: "Show or hide on the catalogue",
-        description:
-          "Show or hide a sample, or one method under it (pass lineageId), on the public catalogue. A method only shows when its sample is visible too. Does not create a new template version.",
-        inputSchema: {
-          ...sampleIdShape,
-          lineageId: z.string().optional().describe("Method lineage id from list_templates. Omit to toggle the whole sample."),
-          visible: z.boolean(),
-        },
-        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-      },
-      audited("set_catalogue_visibility", async ({ sampleId, lineageId, visible }) =>
-        fromAction(await setCatalogueVisibility(sampleId, lineageId, visible), (data) => data),
-      ),
+      audited("close_ticket", async ({ contextId }) => {
+        const res = await close(actor.userId, contextId);
+        return res.success ? ok(await statusAfter(contextId)) : fail(res.error);
+      }),
     );
   }
 
@@ -501,14 +334,164 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
     "get_report_download_url",
     {
       title: "Get report download link",
-      description: "A short-lived download link for the generated PDF report.",
+      description:
+        "Link to the ticket's PDF report, once a staff member published it. It opens on the site, signed in as staff.",
       inputSchema: contextIdShape,
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    audited("get_report_download_url", async ({ contextId }) =>
-      fromAction(await getReportUrl(contextId), (data) => ({ contextId, url: data.url })),
+    audited("get_report_download_url", async ({ contextId }) => {
+      const ticket = await getTicket(actor.userId, contextId);
+      if (!ticket.reportPublishedAt) {
+        return fail("The report is not published yet. A staff member publishes it in the browser.");
+      }
+      return ok({ contextId, url: `${origin}${experimentReportDownloadPath(contextId)}` });
+    }),
+  );
+
+  server.registerTool(
+    "list_samples",
+    {
+      title: "List samples",
+      description: "Sample types a method can be onboarded under, in catalogue order.",
+      inputSchema: {},
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("list_samples", async () =>
+      ok(
+        (await listSampleTypes(actor.userId)).map((s) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          visible: s.isVisibleOnWeb,
+          hasReportForm: s.reportForm !== null,
+        })),
+      ),
     ),
   );
+
+  server.registerTool(
+    "list_templates",
+    {
+      title: "List templates",
+      description:
+        "Methods already onboarded for one sample. Pass templateId to onboard_template to revise one instead of creating another.",
+      inputSchema: sampleIdShape,
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("list_templates", async ({ sampleId }) =>
+      ok(
+        (await listTemplates(actor.userId, sampleId)).map((t) => ({
+          templateId: t.id,
+          title: t.name,
+          description: t.description,
+          visible: t.isVisibleOnWeb,
+        })),
+      ),
+    ),
+  );
+
+  server.registerTool(
+    "get_template",
+    {
+      title: "Get template",
+      description: "One method: both forms and its formulas.",
+      inputSchema: { templateId: z.string().min(1).describe("Template id from list_templates.") },
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    audited("get_template", async ({ templateId }) => {
+      const raw = await getTemplate(actor.userId, templateId);
+      const { template, meta } = templateToLoaded(raw);
+      return ok({
+        templateId: raw.id,
+        sampleId: raw.sampleTypeId,
+        title: meta.title,
+        description: meta.description ?? null,
+        visible: raw.isVisibleOnWeb,
+        template: {
+          clientForm: template.clientForm,
+          labForm: template.labForm,
+          calculations: Object.fromEntries(
+            Object.entries(template.calculations).map(([name, { formula }]) => [name, { formula }]),
+          ),
+        },
+      });
+    }),
+  );
+
+  if (scopes.has("templates:write")) {
+    server.registerTool(
+      "create_sample",
+      {
+        title: "Create sample",
+        description:
+          "Register a sample type (hidden from the catalogue until shown). Prefer onboard_template, which creates the sample when the name is new.",
+        inputSchema: {
+          name: z.string().min(1),
+          description: z.string().optional(),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      audited("create_sample", async ({ name, description }) => {
+        const trimmed = name.trim();
+        if (!trimmed) return fail("Sample name is required.");
+        const sample = await createSampleType(actor.userId, {
+          name: trimmed,
+          description: description?.trim() || null,
+        });
+        refreshOnboarding(sample.id);
+        return ok({ id: sample.id, name: sample.name });
+      }),
+    );
+
+    server.registerTool(
+      "onboard_template",
+      {
+        title: "Onboard a method",
+        description:
+          "Create or revise a method from forms and formulas you extracted from the user's spreadsheet. Formulas are checked without running them (unknown names, cycles, bad question ids); saves nothing if that check fails. Does not show it on the catalogue unless publish is true.",
+        inputSchema: {
+          sampleId: z.string().optional(),
+          sampleName: z
+            .string()
+            .optional()
+            .describe("Matched case-insensitively. Created when no sample has this name."),
+          sampleDescription: z.string().optional(),
+          title: z.string().min(1),
+          description: z.string().optional(),
+          templateId: z.string().optional().describe("Set to revise this method. Omit to create one."),
+          template: ExperimentTemplate,
+          publish: z
+            .boolean()
+            .optional()
+            .describe("Default false. Also shows the sample and the method on the catalogue."),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+      },
+      audited("onboard_template", async (args) => fromAction(await onboardTemplate(actor.userId, args), (data) => data)),
+    );
+
+    server.registerTool(
+      "set_catalogue_visibility",
+      {
+        title: "Show or hide on the catalogue",
+        description:
+          "Show or hide a sample, or one method under it (pass templateId), on the public catalogue. A method only shows when its sample is visible too.",
+        inputSchema: {
+          ...sampleIdShape,
+          templateId: z.string().optional().describe("Method id from list_templates. Omit to toggle the whole sample."),
+          visible: z.boolean(),
+        },
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      audited("set_catalogue_visibility", async ({ sampleId, templateId, visible }) =>
+        fromAction(await setCatalogueVisibility(actor.userId, sampleId, templateId, visible), () => ({
+          sampleId,
+          templateId,
+          visible,
+        })),
+      ),
+    );
+  }
 
   server.registerTool(
     "list_docs",

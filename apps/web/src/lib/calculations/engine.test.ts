@@ -1,7 +1,7 @@
 import { loadPyodide } from "pyodide";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client";
+import type { CalculationDryRunResponse } from "@/lib/calculations/types";
 
 import { ENGINE_SOURCE } from "./engineSource";
 

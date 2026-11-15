@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CalculationDryRunResponse } from "@/lib/experiment-manager/client";
+import type { CalculationDryRunResponse } from "@/lib/calculations/types";
 
 import type { SandboxCommand, SandboxReply } from "./protocol";
 

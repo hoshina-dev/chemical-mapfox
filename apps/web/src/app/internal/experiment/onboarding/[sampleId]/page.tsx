@@ -5,18 +5,14 @@ import { SampleTemplatesTable } from "@/components/experiment/builder/SampleTemp
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { LinkButton } from "@/components/links";
 import { requireAdmin } from "@/lib/auth/dal";
-import {
-  getSample,
-  listExperimentTemplates,
-} from "@/lib/experiment-manager/client";
-import {
-  type TemplateSummary,
-  toTemplateSummary,
-} from "@/lib/experiment-manager/mappers";
+import type { TemplateSummary } from "@/lib/experiment/templates";
 import {
   newTemplatePath,
   onboardingPath,
-} from "@/lib/experiment-manager/routes";
+  reportFormPath,
+} from "@/lib/internal/routes";
+import { getSampleType, hasReportForm, listTemplates } from "@/lib/sample-tracker/client";
+import { toTemplateSummary } from "@/lib/sample-tracker/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -25,18 +21,22 @@ export const dynamic = "force-dynamic";
 interface SampleTemplates {
   sampleName: string;
   sampleDescription?: string;
+  /** Whether the blank report form (PDF) is stored; without it no report can be published. */
+  hasReportForm: boolean;
   templates: TemplateSummary[];
 }
 
-async function loadSample(sampleId: string): Promise<SampleTemplates> {
-  const [sample, { experiments }] = await Promise.all([
-    getSample(sampleId),
-    listExperimentTemplates(sampleId),
+async function loadSample(actor: string, sampleId: string): Promise<SampleTemplates> {
+  const [sample, templates, reportForm] = await Promise.all([
+    getSampleType(actor, sampleId),
+    listTemplates(actor, sampleId),
+    hasReportForm(actor, sampleId),
   ]);
   return {
     sampleName: sample.name,
     sampleDescription: sample.description ?? undefined,
-    templates: experiments.map((row) => toTemplateSummary(sampleId, row)),
+    hasReportForm: reportForm,
+    templates: templates.map(toTemplateSummary),
   };
 }
 
@@ -67,14 +67,14 @@ async function SampleOnboardingPageContent({
 }: {
   params: Promise<{ sampleId: string }>;
 }) {
-  await requireAdmin();
+  const session = await requireAdmin();
   const { sampleId } = await params;
   const t = await getTranslations("staff.onboarding");
 
   let data: SampleTemplates | null = null;
   let loadError: string | null = null;
   try {
-    data = await loadSample(sampleId);
+    data = await loadSample(session.userId, sampleId);
   } catch (error) {
     loadError =
       error instanceof Error ? error.message : t("sample.loadSampleFallback");
@@ -91,16 +91,28 @@ async function SampleOnboardingPageContent({
         />
         <Group justify="space-between" align="flex-end">
           <Stack gap={4}>
-            <Title order={2}>
-              {data?.sampleName ?? t("sample.titleFallback")}
-            </Title>
+            <Group gap="sm" align="baseline">
+              <Title order={2}>
+                {data?.sampleName ?? t("sample.titleFallback")}
+              </Title>
+              {data && !data.hasReportForm && (
+                <Text c="red" size="sm" fw={500}>
+                  {t("sample.noReportTemplate")}
+                </Text>
+              )}
+            </Group>
             <Text c="dimmed">
               {data?.sampleDescription ?? t("sample.defaultDescription")}
             </Text>
           </Stack>
-          <LinkButton href={newTemplatePath(sampleId)} color="green">
-            {t("sample.newTemplate")}
-          </LinkButton>
+          <Group gap="sm">
+            <LinkButton href={reportFormPath(sampleId)} variant="default">
+              {t("sample.reportForm")}
+            </LinkButton>
+            <LinkButton href={newTemplatePath(sampleId)} color="green">
+              {t("sample.newTemplate")}
+            </LinkButton>
+          </Group>
         </Group>
 
         {loadError && (

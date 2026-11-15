@@ -19,8 +19,8 @@ sees them. To change a grant, disconnect and connect again.
 | Scope | Tools |
 |---|---|
 | `experiments:read` | every read-only tool, including the docs tools |
-| `experiments:write` | `record_lab_values`, stage transitions, `run_calculations`, `generate_report` |
-| `templates:write` | `create_sample`, `onboard_template`, `set_catalogue_visibility` |
+| `experiments:write` | none yet (the write tools are being rebuilt on sample_tracker) |
+| `templates:write` | none yet |
 
 A request with no scope gets all three. `staff`, the only scope before the
 split, still means all three, so existing grants keep full access.
@@ -74,80 +74,36 @@ consent screen rather than a rejection.
 ## Tools
 
 Defined in `lib/mcp/server.ts`; every call is logged (`op: "mcp.tool"`) with
-the user, client and context id.
+the user, client and ticket id.
 
-| Tool | Stage | Notes |
-|---|---|---|
-| `list_experiments` | any | filter by status / text |
-| `get_experiment` | any | ticket, requester, intake answers, lab form questions + values, calculations, report |
-| `record_lab_values` | EXPERIMENTING, FINALIZING | see below |
-| `check_in_sample` | REQUESTED → PENDING | |
-| `start_experiment` | PENDING → EXPERIMENTING | |
-| `submit_experiment` | EXPERIMENTING → FINALIZING | full validation; irreversible |
-| `run_calculations` | FINALIZING | |
-| `generate_report` | FINALIZING | async; poll via `get_experiment` |
-| `get_report_download_url` | report generated | |
-| `close_ticket` | FINALIZING → CLOSED | irreversible |
-| `list_samples` / `list_templates` / `get_template` | onboarding | what is already set up |
-| `create_sample` | onboarding | `onboard_template` also creates a sample by name |
-| `test_template_calculations` | onboarding | dry run, nothing saved |
-| `onboard_template` | onboarding | create or revise a method from forms + formulas |
-| `set_catalogue_visibility` | onboarding | show or hide a sample or method on the public catalogue |
-| `list_docs` / `read_doc` | any | the site's staff and client guides, plus a question-type reference |
+The connector is **read-only** for now. The write tools (lab values, stage
+transitions, calculations, report, onboarding) drove the retired
+ticketing-service and experiment-manager and were removed with them. They are
+to be rebuilt on sample_tracker: see `TODO(MCP rework)` at the top of
+`apps/web/src/lib/sample-tracker/client.ts`.
 
-The connector does not fetch spreadsheets. The assistant reads the file the
-staff member gives it, then calls `onboard_template`.
-
-Revising a method (`lineageId`) saves a new version. experiment-manager copies
-the previous PDF layout to it, so `onboard_template` only writes its plain
-layout when the method has none, unless `reportLayout: true`.
+| Tool | Notes |
+|---|---|
+| `list_experiments` | tickets, filter by status / text |
+| `get_experiment` | ticket, requester, intake answers, lab form questions + values (live while the method is in progress), calculations, report |
+| `list_docs` / `read_doc` | the site's staff and client guides, plus a question-type reference |
 
 The docs tools (`lib/mcp/docs.ts`) render the same `docs.staff.*` /
 `docs.client.*` copy as `/internal/docs` and `/experiment/docs`, in English,
 with a link to each page. A new guide in `lib/docs/nav.ts` shows up there
 without changes.
 
-## Formulas
-
-Formulas are the Python subset experiment-manager evaluates
-(`app/services/calculation_service.py`, builtins in `app/form_schema.py`).
-An answer is `values['question_id']`. Another calculation is a bare name,
-ordered by dependency. Builtins are `round`, `abs`, `min`, `max`, `sum`,
-`len`, `zip`, `mean`, `median`, `stdev`, plus the `math` module. A
-repeatable-group child is a list. `onboard_template` refuses to save when
-that check fails.
-
-The lifecycle tools call the same functions as the workspace's server actions
-(`lib/staff/workflow.ts`); the actions only add the cookie-session check.
-
-`record_lab_values` (`lib/staff/labValues.ts`) is all-or-nothing:
-
-- **EXPERIMENTING:** values are validated (`validateField`, submit rules minus
-  `required`) and written through the collaborative editor's Redis buffer and
-  pub/sub as connection `mcp:{grantId}`, so staff with the workspace open see
-  them live. A field someone currently holds a soft lock on is refused instead
-  of overwritten. The buffer is flushed to experiment-manager immediately.
-- **FINALIZING:** merged with the stored values and written through the same
-  "fix values" path as the workspace (calculation results are cleared).
-
 ## Trying it locally
 
 You don't need real backends or an AI subscription:
 
-1. Start the local catalogue stack
-   ([`catalogue-local-testing.md`](catalogue-local-testing.md)): real
-   experiment-manager plus a ticketing double that runs the full lifecycle.
-   Request an experiment as `client@example.com` to have something to work on.
+1. Start the local stack from the workspace repo (`./run.sh local up web`:
+   web on :3000 with sample_tracker, custapi and Redis).
 2. Run the MCP Inspector: `npx @modelcontextprotocol/inspector`, choose
-   *Streamable HTTP*, URL `http://localhost:55441/api/mcp`, and use
-   *Open Auth Settings → Quick OAuth Flow*. Sign in as `admin@example.com` and
+   *Streamable HTTP*, URL `http://localhost:3000/api/mcp`, and use
+   *Open Auth Settings → Quick OAuth Flow*. Sign in as a staff account and
    allow access (localhost isn't Claude or ChatGPT, so expect the warning).
 3. List tools and call `list_experiments`.
-
-On that stack, `get_report_download_url` returns a URL on the S3 double's
-Docker hostname (`object-storage:5000`), which the host can't resolve.
-
-The acceptance suite (`e2e/features/mcp/`) runs the same flow headlessly.
 
 ## Connecting Claude or ChatGPT
 

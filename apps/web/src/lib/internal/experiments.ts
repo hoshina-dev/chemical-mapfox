@@ -1,19 +1,18 @@
 import "server-only";
 
 import { usersApi } from "@/lib/custapi/client";
+import type { ExperimentState } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
 import {
-  ExperimentManagerError,
-  getExperiment,
-  listExperimentTemplates,
-  listSamples,
-} from "@/lib/experiment-manager/client";
-import {
-  type ExperimentState,
-  experimentDetailToState,
-} from "@/lib/experiment-manager/mappers";
-import { ticketsApi } from "@/lib/ticketing/client";
-import { type ExperimentTicket, toExperimentTicket } from "@/lib/ticketing/tickets";
+  type ExperimentStatus,
+  getTicket,
+  listSampleTypes,
+  listTickets,
+  SampleTrackerError,
+  type Ticket,
+} from "@/lib/sample-tracker/client";
+import { experimentToState, toExperimentTicket } from "@/lib/sample-tracker/mappers";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 export interface Requester {
   id: string;
@@ -25,35 +24,11 @@ export interface Requester {
 /** A ticket joined with its requester for the staff listing. */
 export interface EnrichedTicket extends ExperimentTicket {
   sampleType: string | null;
-  /** Display title sourced from ticketing-service. */
+  /** Display title: the ticket name (the sample type's name at request). */
   experimentTitle: string | null;
   requester: Requester | null;
-}
-
-interface TemplateInfo {
-  sampleType: string;
-  title: string;
-}
-
-/**
- * Index of every experiment template keyed by both its version id and lineage
- * id (a ticket may reference either), mapping to its sample type + title.
- * One samples sweep — cheap enough for an internal listing.
- */
-async function loadTemplateIndex(): Promise<Map<string, TemplateInfo>> {
-  const { samples } = await listSamples();
-  const index = new Map<string, TemplateInfo>();
-  await Promise.all(
-    samples.map(async (sample) => {
-      const { experiments } = await listExperimentTemplates(sample.id);
-      for (const tpl of experiments) {
-        const info: TemplateInfo = { sampleType: sample.name, title: tpl.name };
-        index.set(tpl.id, info);
-        index.set(tpl.lineage_id, info);
-      }
-    }),
-  );
-  return index;
+  /** "finished/total" methods. */
+  progress: { finished: number; total: number };
 }
 
 function toRequester(user: {
@@ -81,23 +56,24 @@ async function loadRequesterIndex(): Promise<Map<string, Requester>> {
   return index;
 }
 
+async function sampleTypeNames(): Promise<Map<string, string>> {
+  try {
+    return new Map((await listSampleTypes(undefined)).map((st) => [st.id, st.name]));
+  } catch (error) {
+    logHandledError(error, { op: "sampleTypeNames", service: "sample-tracker", level: "warn" });
+    return new Map();
+  }
+}
+
 /**
- * All experiment tickets for the staff listing. Ticketing owns display names,
- * matching the client listing; requester info is a single best-effort custapi
- * lookup for staff context.
+ * All tickets for the staff listing, with requester info from one best-effort
+ * custapi lookup.
  */
 export async function listExperimentsForStaff(): Promise<{
   tickets: EnrichedTicket[];
   enrichmentDegraded: boolean;
 }> {
-  const rows = await ticketsApi.apiV1TicketsGet(
-    undefined,
-    undefined,
-    undefined,
-    "updated_at",
-    "desc",
-  );
-  const base = rows.map(toExperimentTicket);
+  const [rows, names] = await Promise.all([listTickets(undefined), sampleTypeNames()]);
 
   let requesterIndex: Map<string, Requester> | null = null;
   try {
@@ -108,33 +84,41 @@ export async function listExperimentsForStaff(): Promise<{
       service: "custapi",
       level: "warn",
     });
-    requesterIndex = null;
   }
 
-  const tickets: EnrichedTicket[] = base.map((ticket) => {
-    const requester = ticket.userId
-      ? (requesterIndex?.get(ticket.userId) ?? null)
-      : null;
-    return {
-      ...ticket,
-      sampleType: null,
-      experimentTitle: ticket.name,
-      requester,
-    };
-  });
+  const tickets: EnrichedTicket[] = rows.map((row) => ({
+    ...toExperimentTicket(row),
+    sampleType: names.get(row.sampleTypeId) ?? null,
+    experimentTitle: row.name,
+    requester: requesterIndex?.get(row.requesterUserId) ?? null,
+    progress: { finished: row.finished, total: row.total },
+  }));
+  return { tickets, enrichmentDegraded: requesterIndex === null };
+}
 
-  return {
-    tickets,
-    enrichmentDegraded: requesterIndex === null,
-  };
+/** One experiment (method) of the ticket in the workspace. */
+export interface WorkspaceExperiment {
+  id: string;
+  name: string;
+  status: ExperimentStatus;
+  contextVersion: number;
+  startedAt: string | null;
+  finishedAt: string | null;
+  state: ExperimentState;
 }
 
 export interface ExperimentWorkspace {
   contextId: string;
   ticket: ExperimentTicket | null;
+  /** The ticket as sample_tracker returned it (raw view, report state). */
+  raw: Ticket | null;
   requester: Requester | null;
   sampleType: string | null;
   experimentTitle: string | null;
+  experiments: WorkspaceExperiment[];
+  /** The selected experiment (or the first one still open). */
+  selected: WorkspaceExperiment | null;
+  /** The selected experiment's state, as before (one experiment per page). */
   state: ExperimentState | null;
   errors: { ticket?: string; state?: string };
 }
@@ -143,90 +127,78 @@ async function loadRequester(userId: string): Promise<Requester | null> {
   try {
     return toRequester(await usersApi.usersIdIdGet(userId));
   } catch (error) {
-    logHandledError(error, {
-      op: "loadRequester",
-      service: "custapi",
-      userId,
-      level: "warn",
-    });
+    logHandledError(error, { op: "loadRequester", service: "custapi", userId, level: "warn" });
     return null;
   }
 }
 
 /**
- * Everything the (non-realtime) experiment workspace needs: the ticket, the
- * requester, the display title/sample type, and the current experiment state
- * (forms + entered values). Ticketing owns display names. Each source is
- * best-effort and reported via `errors`, so the page degrades gracefully when a
- * backend is unreachable or the experiment context hasn't been created yet.
+ * Everything a ticket page needs: the ticket, the requester, the sample type and
+ * every experiment with its state. `experimentId` picks the experiment shown;
+ * otherwise the first one not finished. A missing ticket leaves `ticket` null.
  */
 export async function getExperimentWorkspace(
   contextId: string,
+  experimentId?: string,
 ): Promise<ExperimentWorkspace> {
   const errors: ExperimentWorkspace["errors"] = {};
+  let raw: Ticket | null = null;
+  try {
+    raw = await getTicket(undefined, contextId);
+  } catch (error) {
+    if (!(error instanceof SampleTrackerError && error.status === 404)) {
+      logHandledError(error, { op: "getExperimentWorkspace.ticket", contextId });
+      errors.ticket = error instanceof Error ? error.message : "Failed to load ticket.";
+    }
+  }
+  if (!raw) {
+    return {
+      contextId,
+      ticket: null,
+      raw: null,
+      requester: null,
+      sampleType: null,
+      experimentTitle: null,
+      experiments: [],
+      selected: null,
+      state: null,
+      errors,
+    };
+  }
 
-  const [ticketResult, stateResult, tplResult] = await Promise.allSettled([
-    ticketsApi.apiV1TicketsIdGet(contextId),
-    getExperiment(contextId),
-    loadTemplateIndex(),
+  const published = raw.reportPublishedAt;
+  const experiments: WorkspaceExperiment[] = raw.experiments.map((e) => ({
+    id: e.id,
+    name: e.templateName,
+    status: e.status,
+    contextVersion: e.contextVersion,
+    startedAt: e.startedAt,
+    finishedAt: e.finishedAt,
+    state: {
+      ...experimentToState(raw, e),
+      reportStatus: published ? "success" : null,
+      reportGeneratedAt: published,
+    },
+  }));
+  const selected =
+    experiments.find((e) => e.id === experimentId) ??
+    experiments.find((e) => e.status !== "FINISHED") ??
+    experiments[0] ??
+    null;
+  const [names, requester] = await Promise.all([
+    sampleTypeNames(),
+    loadRequester(raw.requesterUserId),
   ]);
-
-  let ticket: ExperimentTicket | null = null;
-  if (ticketResult.status === "fulfilled") {
-    ticket = toExperimentTicket(ticketResult.value);
-  } else {
-    logHandledError(ticketResult.reason, {
-      op: "getExperimentWorkspace.ticket",
-      contextId,
-    });
-    errors.ticket =
-      ticketResult.reason instanceof Error
-        ? ticketResult.reason.message
-        : "Failed to load ticket.";
-  }
-
-  let state: ExperimentState | null = null;
-  if (stateResult.status === "fulfilled") {
-    state = experimentDetailToState(stateResult.value);
-  } else if (
-    stateResult.reason instanceof ExperimentManagerError &&
-    stateResult.reason.status === 404
-  ) {
-    // No experiment context exists for this id yet — an expected state for a
-    // ticket whose experiment hasn't been created. Leave `state` null without
-    // recording an error so the page shows the friendly empty state.
-  } else {
-    logHandledError(stateResult.reason, {
-      op: "getExperimentWorkspace.state",
-      contextId,
-    });
-    errors.state =
-      stateResult.reason instanceof Error
-        ? stateResult.reason.message
-        : "Failed to load experiment state.";
-  }
-
-  const templateIndex =
-    tplResult.status === "fulfilled" ? tplResult.value : null;
-  if (tplResult.status === "rejected") {
-    logHandledError(tplResult.reason, {
-      op: "getExperimentWorkspace.templates",
-      contextId,
-      level: "warn",
-    });
-  }
-  const templateId = state?.templateId ?? ticket?.templateId ?? null;
-  const info = templateId ? (templateIndex?.get(templateId) ?? null) : null;
-
-  const requester = ticket?.userId ? await loadRequester(ticket.userId) : null;
-
   return {
     contextId,
-    ticket,
+    ticket: toExperimentTicket(raw),
+    raw,
     requester,
-    sampleType: info?.sampleType ?? null,
-    experimentTitle: ticket?.name ?? info?.title ?? null,
-    state,
+    sampleType: names.get(raw.sampleTypeId) ?? null,
+    experimentTitle: raw.name,
+    experiments,
+    selected,
+    state: selected?.state ?? null,
     errors,
   };
 }

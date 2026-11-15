@@ -1,13 +1,10 @@
 import "server-only";
 
-import {
-  listExperimentTemplates,
-  listSamples,
-} from "@/lib/experiment-manager/client";
+import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
 
 /**
- * Laboratory-offer data for the public landing page: every specimen type the
- * labs support, each with the experiment methods (templates) defined for it.
+ * Laboratory-offer data for the public landing page: the sample types and
+ * methods (templates) staff show on the web, in their catalogue order.
  */
 
 export interface OfferExperiment {
@@ -25,29 +22,26 @@ export interface OfferSample {
 }
 
 /**
- * Loads the offer from Experiment Manager. Best-effort: returns `null` if the
+ * Loads the offer from sample_tracker. Best-effort: returns `null` if the
  * service can't be reached (the landing section degrades to a friendly
  * fallback), and treats a sample whose templates fail to load as having no
  * methods rather than failing the whole page.
  */
 export async function getLabOffer(): Promise<OfferSample[] | null> {
   try {
-    const { samples } = await listSamples();
-    const visible = samples.filter((sample) => sample.is_visible_on_web);
+    const visible = (await listSampleTypes(undefined)).filter(
+      (s) => s.isVisibleOnWeb,
+    );
     return await Promise.all(
       visible.map(async (sample): Promise<OfferSample> => {
         let experiments: OfferExperiment[] = [];
         try {
-          const { experiments: templates } = await listExperimentTemplates(
-            sample.id,
-          );
+          const templates = await listTemplates(undefined, sample.id);
           experiments = templates
-            .filter(
-              (template) => template.is_current && template.is_visible_on_web,
-            )
+            .filter((t) => t.isVisibleOnWeb)
             .map((t) => ({
               id: t.id,
-              canRequest: t.has_pdf_template,
+              canRequest: true,
               name: t.name,
               description: t.description ?? undefined,
             }));

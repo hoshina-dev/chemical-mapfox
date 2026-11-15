@@ -1,22 +1,16 @@
 import "server-only";
 
-import {
-  ExperimentManagerError,
-  getExperimentTemplate,
-  listExperimentTemplates,
-  listSamples,
-} from "@/lib/experiment-manager/client";
-import {
-  isRequestableTemplate,
-  type LoadedTemplate,
-  templateDetailToLoaded,
-} from "@/lib/experiment-manager/mappers";
+import type { LoadedTemplate } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
-import { ticketsApi } from "@/lib/ticketing/client";
 import {
-  type ExperimentTicket,
-  toExperimentTicket,
-} from "@/lib/ticketing/tickets";
+  getTemplate,
+  listSampleTypes,
+  listTemplates,
+  listTickets,
+  SampleTrackerError,
+} from "@/lib/sample-tracker/client";
+import { templateToLoaded, toExperimentTicket } from "@/lib/sample-tracker/mappers";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 /** A requestable template within a specimen (sample) group. */
 export interface CatalogTemplate {
@@ -36,27 +30,26 @@ export interface CatalogGroup {
 }
 
 /**
- * The full catalogue of requestable experiments, grouped by specimen. Only the
- * **current** version of each template is offered; groups with no current
- * template are kept (with an empty list) so the lab's specimen coverage is
- * visible. Uses the persisted catalogue order returned by Experiment Manager.
+ * The catalogue of requestable experiments, grouped by sample type: the ones staff
+ * show on the web, in catalogue order. Groups with no template are kept so the
+ * lab's specimen coverage is visible.
  */
 export async function listRequestCatalog(): Promise<CatalogGroup[]> {
-  const { samples } = await listSamples();
-  const groups = await Promise.all(
+  const samples = (await listSampleTypes(undefined)).filter(
+    (s) => s.isVisibleOnWeb,
+  );
+  return Promise.all(
     samples.map(async (sample): Promise<CatalogGroup> => {
       let templates: CatalogTemplate[] = [];
       try {
-        const { experiments } = await listExperimentTemplates(sample.id);
-        templates = experiments
-          // A template without a report layout can't be requested
-          .filter(isRequestableTemplate)
+        templates = (await listTemplates(undefined, sample.id))
+          .filter((tpl) => tpl.isVisibleOnWeb)
           .map((tpl) => ({
             sampleId: sample.id,
             templateId: tpl.id,
-            lineageId: tpl.lineage_id,
+            lineageId: tpl.id,
             title: tpl.name,
-            description: tpl.description ?? null,
+            description: tpl.description,
           }));
       } catch (error) {
         // A single specimen's templates failing shouldn't blank the catalogue.
@@ -65,78 +58,62 @@ export async function listRequestCatalog(): Promise<CatalogGroup[]> {
           sampleId: sample.id,
           level: "warn",
         });
-        templates = [];
       }
       return {
         sampleId: sample.id,
         sampleName: sample.name,
-        sampleDescription: sample.description ?? null,
+        sampleDescription: sample.description,
         templates,
       };
     }),
   );
-  return groups;
+}
+
+/** The template a request starts from, with every method of its sample type. */
+export interface RequestTemplates {
+  sampleId: string;
+  sampleName: string;
+  template: LoadedTemplate;
+  /** The sample type's templates shown on the web, `template` included. */
+  methods: LoadedTemplate[];
 }
 
 /**
- * Resolve a template for the onboarding flow. When the sample id is known (it
- * rides along as a query param from the catalogue) we load it directly;
- * otherwise we sweep the specimens to find which one owns the template.
+ * Resolve a template for the request flow, with the other methods of its sample
+ * type so the client can request several on one sample. null when unknown or
+ * hidden (hidden ones cannot be requested).
  */
 export async function loadRequestTemplate(
   templateId: string,
-  sampleId?: string,
-): Promise<{ sampleId: string; template: LoadedTemplate } | null> {
-  if (sampleId) {
-    try {
-      const detail = await getExperimentTemplate(sampleId, templateId);
-      return { sampleId, template: templateDetailToLoaded(detail) };
-    } catch (error) {
-      if (error instanceof ExperimentManagerError && error.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+): Promise<RequestTemplates | null> {
+  let tpl;
+  try {
+    tpl = await getTemplate(undefined, templateId);
+  } catch (error) {
+    if (error instanceof SampleTrackerError && error.status === 404) return null;
+    throw error;
   }
-
-  const { samples } = await listSamples();
-  for (const sample of samples) {
-    try {
-      const { experiments } = await listExperimentTemplates(sample.id);
-      if (experiments.some((tpl) => tpl.id === templateId)) {
-        const detail = await getExperimentTemplate(sample.id, templateId);
-        return {
-          sampleId: sample.id,
-          template: templateDetailToLoaded(detail),
-        };
-      }
-    } catch (error) {
-      logHandledError(error, {
-        op: "loadRequestTemplate.scan",
-        sampleId: sample.id,
-        level: "warn",
-      });
-    }
-  }
-  return null;
+  const [samples, siblings] = await Promise.all([
+    listSampleTypes(undefined),
+    listTemplates(undefined, tpl.sampleTypeId),
+  ]);
+  const sample = samples.find((s) => s.id === tpl.sampleTypeId);
+  if (!sample?.isVisibleOnWeb || !tpl.isVisibleOnWeb) return null;
+  return {
+    sampleId: sample.id,
+    sampleName: sample.name,
+    template: templateToLoaded(tpl),
+    methods: siblings.filter((m) => m.isVisibleOnWeb).map(templateToLoaded),
+  };
 }
 
-/** One of the client's own experiments, sourced directly from ticketing. */
+/** One of the client's own tickets (one physical sample). */
 export type MyExperiment = ExperimentTicket;
 
-/**
- * Every experiment the given user has requested, newest first. Ticketing owns
- * the display name so this listing does not fan out to Experiment Manager.
- */
+/** Every ticket the given user requested, most recently updated first. */
 export async function listMyExperiments(
   userId: string,
 ): Promise<MyExperiment[]> {
-  const rows = await ticketsApi.apiV1TicketsGet(
-    userId,
-    undefined,
-    undefined,
-    "updated_at",
-    "desc",
-  );
+  const rows = await listTickets(userId, { requesterUserId: userId });
   return rows.map(toExperimentTicket);
 }

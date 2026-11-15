@@ -284,7 +284,7 @@ export function Landing({
                                     component={Link}
                                     href={
                                       exp.canRequest
-                                        ? requestTemplatePath(exp.id, sample.id)
+                                        ? requestTemplatePath(exp.id)
                                         : "#contact"
                                     }
                                     fz="sm"

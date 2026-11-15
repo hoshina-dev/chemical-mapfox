@@ -11,7 +11,7 @@ import { requireSession } from "@/lib/auth/dal";
 import { usersApi } from "@/lib/custapi/client";
 import { logHandledError } from "@/lib/log/handled";
 import { listUserGrants, type ConnectedApp } from "@/lib/oauth/store";
-import { getNotificationPreferences } from "@/lib/ticketing/notification-preferences";
+import { getNotificationPreferences } from "@/lib/sample-tracker/notification-preferences";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 

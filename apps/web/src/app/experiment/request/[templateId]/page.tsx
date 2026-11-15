@@ -1,4 +1,4 @@
-import { Alert, Card, Container, Stack, Text, Title } from "@mantine/core";
+import { Alert, Card, Container, Stack, Title } from "@mantine/core";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -37,13 +37,14 @@ async function RequestExperimentPageContent({
   searchParams,
 }: {
   params: Promise<{ templateId: string }>;
-  searchParams: Promise<{ sampleId?: string }>;
+  /** `methods`: other methods of the sample type ticked in the catalogue. */
+  searchParams: Promise<{ methods?: string }>;
 }) {
   const { templateId } = await params;
-  const { sampleId } = await searchParams;
+  const { methods } = await searchParams;
   const t = await getTranslations("experiment.request");
 
-  const loaded = await loadRequestTemplate(templateId, sampleId);
+  const loaded = await loadRequestTemplate(templateId);
   if (!loaded) {
     notFound();
   }
@@ -54,16 +55,11 @@ async function RequestExperimentPageContent({
         <Breadcrumbs
           items={[
             { label: t("catalog.breadcrumb"), href: requestCatalogPath() },
-            { label: loaded.template.meta.title },
+            { label: loaded.sampleName },
           ]}
         />
 
-        <Stack gap={4}>
-          <Title order={2}>{loaded.template.meta.title}</Title>
-          {loaded.template.meta.description && (
-            <Text c="dimmed">{loaded.template.meta.description}</Text>
-          )}
-        </Stack>
+        <Title order={2}>{loaded.sampleName}</Title>
 
         {!loaded.template.valid && (
           <Alert color="orange" variant="light" title={t("form.outOfDateTitle")}>
@@ -71,18 +67,19 @@ async function RequestExperimentPageContent({
           </Alert>
         )}
 
-        {loaded.template.valid && !loaded.template.hasPdfTemplate && (
-          <Alert color="orange" variant="light" title={t("form.noReportLayoutTitle")}>
-            {t("form.noReportLayoutBody")}
-          </Alert>
-        )}
-
         <Card withBorder radius="md" padding="lg">
           <RequestExperimentForm
-            sampleId={loaded.sampleId}
             templateId={templateId}
-            clientForm={loaded.template.template.clientForm}
-            canRequest={loaded.template.valid && loaded.template.hasPdfTemplate}
+            initialMethods={(methods ?? "").split(",")}
+            methods={loaded.methods
+              .filter((m) => m.valid)
+              .map((m) => ({
+                id: m.id,
+                title: m.meta.title,
+                description: m.meta.description,
+                clientForm: m.template.clientForm,
+              }))}
+            canRequest={loaded.template.valid}
           />
         </Card>
       </Stack>

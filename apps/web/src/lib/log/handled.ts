@@ -8,7 +8,7 @@ export interface HandledErrorContext {
   action?: string;
   /** Non-action operation, e.g. `collab.hydrate`. */
   op?: string;
-  service?: "custapi" | "ticketing" | "experiment-manager" | "s3" | "redis";
+  service?: "custapi" | "sample-tracker" | "s3" | "redis";
   /**
    * Expected domain failure (bad credentials, missing resource, validation).
    * Logged at `info` so it does not page as an outage.

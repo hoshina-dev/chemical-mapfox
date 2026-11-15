@@ -19,7 +19,7 @@ import { FormRenderer } from "@repo/forms";
 import { useTranslations } from "next-intl";
 
 import type { SessionUser } from "@/lib/auth/definitions";
-import type { ExperimentState } from "@/lib/experiment-manager/mappers";
+import type { ExperimentState } from "@/lib/experiment/templates";
 
 import { LabFormEditor } from "./collab/LabFormEditor";
 import readable from "./readableFields.module.css";

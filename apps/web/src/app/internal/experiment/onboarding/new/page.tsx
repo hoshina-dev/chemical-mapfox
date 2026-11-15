@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { NewTemplateFlow } from "@/components/experiment/builder/NewTemplateFlow";
 import { requireAdmin } from "@/lib/auth/dal";
-import { listSamples } from "@/lib/experiment-manager/client";
+import { listSampleTypes } from "@/lib/sample-tracker/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -35,14 +35,13 @@ async function NewTemplatePageContent({
 }: {
   searchParams: Promise<{ sampleId?: string }>;
 }) {
-  await requireAdmin();
+  const session = await requireAdmin();
   const { sampleId } = await searchParams;
   const t = await getTranslations("builder.newPage");
   let samples: { id: string; name: string }[] = [];
   let loadError: string | null = null;
   try {
-    const res = await listSamples();
-    samples = res.samples.map((s) => ({ id: s.id, name: s.name }));
+    samples = (await listSampleTypes(session.userId)).map((s) => ({ id: s.id, name: s.name }));
   } catch (error) {
     loadError =
       error instanceof Error ? error.message : t("loadSamplesFallback");

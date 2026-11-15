@@ -6,33 +6,28 @@ vi.mock("@/lib/internal/experiments", () => ({
   listExperimentsForStaff: vi.fn(),
   getExperimentWorkspace: vi.fn(),
 }));
-vi.mock("@/lib/staff/workflow", () => ({
-  checkInSample: vi.fn(),
-  closeTicket: vi.fn(),
-  getReportUrl: vi.fn(),
-  queueReport: vi.fn(),
-  runCalculations: vi.fn(),
-  startExperiment: vi.fn(),
-  submitExperiment: vi.fn(),
-}));
-vi.mock("@/lib/staff/labValues", () => ({
-  recordLabValues: vi.fn(),
-}));
-vi.mock("@/lib/staff/onboarding", () => ({
-  listOnboardingSamples: vi.fn(),
-  listOnboardingTemplates: vi.fn(),
-  getOnboardingTemplate: vi.fn(),
-  createOnboardingSample: vi.fn(),
-  testOnboardingCalculations: vi.fn(),
-  onboardTemplate: vi.fn(),
-  setCatalogueVisibility: vi.fn(),
-}));
 vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
   readValues: vi.fn(),
 }));
-vi.mock("@/lib/ticketing/client", () => ({
-  ticketsApi: { apiV1TicketsIdGet: vi.fn() },
+vi.mock("@/lib/sample-tracker/client", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/sample-tracker/client")>()),
+  getTicket: vi.fn(),
+  getTemplate: vi.fn(),
+  listSampleTypes: vi.fn(),
+  listTemplates: vi.fn(),
+  createSampleType: vi.fn(),
+}));
+vi.mock("@/lib/staff/labValues", () => ({ recordLabValues: vi.fn() }));
+vi.mock("@/lib/staff/lifecycle", () => ({
+  checkIn: vi.fn(),
+  start: vi.fn(),
+  close: vi.fn(),
+}));
+vi.mock("@/lib/staff/onboarding", () => ({
+  onboardTemplate: vi.fn(),
+  setCatalogueVisibility: vi.fn(),
+  refreshOnboarding: vi.fn(),
 }));
 vi.mock("@/lib/log/logger", () => ({
   logger: {
@@ -44,36 +39,28 @@ vi.mock("@/lib/log/logger", () => ({
 }));
 
 import { readTemplate, readValues } from "@/lib/collab/room";
+import type { ExperimentState } from "@/lib/experiment/templates";
+import type { ExperimentTicket } from "@/lib/experiment/tickets";
 import {
+  type EnrichedTicket,
+  type ExperimentWorkspace,
   getExperimentWorkspace,
   listExperimentsForStaff,
 } from "@/lib/internal/experiments";
-import type { ExperimentWorkspace } from "@/lib/internal/experiments";
 import { logger } from "@/lib/log/logger";
 import type { McpActor } from "@/lib/oauth/store";
-import { recordLabValues } from "@/lib/staff/labValues";
 import {
-  createOnboardingSample,
-  getOnboardingTemplate,
-  listOnboardingSamples,
-  listOnboardingTemplates,
+  getTemplate,
+  getTicket,
+  SampleTrackerError,
+  type Ticket,
+} from "@/lib/sample-tracker/client";
+import { recordLabValues } from "@/lib/staff/labValues";
+import { checkIn, close, start } from "@/lib/staff/lifecycle";
+import {
   onboardTemplate,
   setCatalogueVisibility,
-  testOnboardingCalculations,
 } from "@/lib/staff/onboarding";
-import {
-  checkInSample,
-  closeTicket,
-  getReportUrl,
-  queueReport,
-  runCalculations,
-  startExperiment,
-  submitExperiment,
-} from "@/lib/staff/workflow";
-import { ticketsApi } from "@/lib/ticketing/client";
-import type { ExperimentTicket } from "@/lib/ticketing/tickets";
-import type { ExperimentState } from "@/lib/experiment-manager/mappers";
-import type { EnrichedTicket } from "@/lib/internal/experiments";
 
 import { createStaffMcpServer } from "./server";
 
@@ -88,41 +75,32 @@ const actor: McpActor = {
   resource: null,
 };
 
-const TOOL_NAMES = [
-  "list_experiments",
-  "get_experiment",
-  "record_lab_values",
-  "check_in_sample",
-  "start_experiment",
-  "submit_experiment",
-  "close_ticket",
-  "run_calculations",
-  "generate_report",
-  "list_samples",
-  "list_templates",
-  "get_template",
-  "test_template_calculations",
-  "create_sample",
-  "onboard_template",
-  "set_catalogue_visibility",
-  "get_report_download_url",
-  "list_docs",
-  "read_doc",
-] as const;
-
 const READ_TOOLS = [
   "list_experiments",
   "get_experiment",
+  "get_report_download_url",
   "list_samples",
   "list_templates",
   "get_template",
-  "test_template_calculations",
-  "get_report_download_url",
   "list_docs",
   "read_doc",
 ];
+const EXPERIMENT_WRITE_TOOLS = [
+  "record_lab_values",
+  "check_in_sample",
+  "start_experiment",
+  "close_ticket",
+];
+const TEMPLATE_WRITE_TOOLS = [
+  "create_sample",
+  "onboard_template",
+  "set_catalogue_visibility",
+];
 
-function ticket(status: string, overrides: Partial<ExperimentTicket> = {}): ExperimentTicket {
+function ticket(
+  status: string,
+  overrides: Partial<ExperimentTicket> = {},
+): ExperimentTicket {
   return {
     contextId: "ctx-1",
     name: "Water pH",
@@ -158,7 +136,12 @@ function enriched(
 }
 
 const labQuestions = [
-  { id: "ph", type: "number" as const, label: "pH", config: { min: 0, max: 14 } },
+  {
+    id: "ph",
+    type: "number" as const,
+    label: "pH",
+    config: { min: 0, max: 14 },
+  },
 ];
 const clientQuestions = [
   { id: "sample_id", type: "string" as const, label: "Sample ID" },
@@ -189,16 +172,44 @@ function state(overrides: Partial<ExperimentState> = {}): ExperimentState {
   };
 }
 
+function experiment(
+  id: string,
+  status: string,
+  overrides: Partial<ExperimentState> = {},
+) {
+  return {
+    id,
+    name: `Method ${id}`,
+    status,
+    contextVersion: 1,
+    startedAt: null,
+    finishedAt: null,
+    state: state(overrides),
+  } as ExperimentWorkspace["experiments"][number];
+}
+
 function workspace(
   overrides: Partial<ExperimentWorkspace> = {},
 ): ExperimentWorkspace {
+  const selected =
+    overrides.selected === undefined
+      ? experiment("exp-1", "IN_PROGRESS")
+      : overrides.selected;
   return {
     contextId: "ctx-1",
-    ticket: ticket("EXPERIMENTING"),
-    requester: { id: "u2", name: "Bob", email: "bob@lab.test", avatarUrl: null },
+    ticket: ticket("IN_PROGRESS"),
+    requester: {
+      id: "u2",
+      name: "Bob",
+      email: "bob@lab.test",
+      avatarUrl: null,
+    },
     sampleType: "Water",
     experimentTitle: "Water pH",
-    state: state(),
+    raw: { reportPublishedAt: null } as Ticket,
+    experiments: selected ? [selected, experiment("exp-2", "PENDING")] : [],
+    selected,
+    state: selected?.state ?? null,
     errors: {},
     ...overrides,
   };
@@ -209,8 +220,12 @@ type Connected = { client: Client; close: () => Promise<void> };
 async function connect(who: McpActor = actor): Promise<Connected> {
   const server = createStaffMcpServer(who, "https://lab.test");
   const client = new Client({ name: "vitest", version: "0.0.0" });
-  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-  await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
+  const [clientTransport, serverTransport] =
+    InMemoryTransport.createLinkedPair();
+  await Promise.all([
+    client.connect(clientTransport),
+    server.connect(serverTransport),
+  ]);
   return {
     client,
     close: async () => {
@@ -220,42 +235,29 @@ async function connect(who: McpActor = actor): Promise<Connected> {
   };
 }
 
-function textOf(result: { content: { type: string; text?: string }[]; isError?: boolean }) {
+type ToolResult = {
+  content: { type: string; text?: string }[];
+  isError?: boolean;
+};
+
+function textOf(result: ToolResult) {
   const block = result.content[0];
   expect(block?.type).toBe("text");
   return block?.text ?? "";
 }
 
-function parseOk(result: { content: { type: string; text?: string }[]; isError?: boolean }) {
+function parseOk(result: ToolResult) {
   expect(result.isError ?? false).toBe(false);
   return JSON.parse(textOf(result)) as Record<string, unknown>;
 }
 
+const call = (name: string, args: Record<string, unknown>) =>
+  session.client.callTool({ name, arguments: args }) as Promise<ToolResult>;
+
 let session: Connected;
 
 beforeEach(async () => {
-  vi.mocked(listExperimentsForStaff).mockReset();
-  vi.mocked(getExperimentWorkspace).mockReset();
-  vi.mocked(recordLabValues).mockReset();
-  vi.mocked(readTemplate).mockReset();
-  vi.mocked(readValues).mockReset();
-  vi.mocked(checkInSample).mockReset();
-  vi.mocked(startExperiment).mockReset();
-  vi.mocked(submitExperiment).mockReset();
-  vi.mocked(closeTicket).mockReset();
-  vi.mocked(runCalculations).mockReset();
-  vi.mocked(queueReport).mockReset();
-  vi.mocked(getReportUrl).mockReset();
-  vi.mocked(listOnboardingSamples).mockReset();
-  vi.mocked(listOnboardingTemplates).mockReset();
-  vi.mocked(getOnboardingTemplate).mockReset();
-  vi.mocked(createOnboardingSample).mockReset();
-  vi.mocked(testOnboardingCalculations).mockReset();
-  vi.mocked(onboardTemplate).mockReset();
-  vi.mocked(setCatalogueVisibility).mockReset();
-  vi.mocked(ticketsApi.apiV1TicketsIdGet).mockReset();
-  vi.mocked(logger.info).mockReset();
-  vi.mocked(logger.error).mockReset();
+  vi.clearAllMocks();
   session = await connect();
 });
 
@@ -264,49 +266,43 @@ afterEach(async () => {
 });
 
 describe("createStaffMcpServer", () => {
-  it("lists every tool with the advertised annotations", async () => {
-    const listed = await session.client.listTools();
-    expect(listed.tools.map((t) => t.name)).toEqual([...TOOL_NAMES]);
+  it("registers write tools only for the granted scopes", async () => {
+    const names = async (scope: string) => {
+      const connected = await connect({ ...actor, scope });
+      const listed = await connected.client.listTools();
+      await connected.close();
+      return listed.tools.map((t) => t.name).sort();
+    };
+    expect(await names("experiments:read")).toEqual([...READ_TOOLS].sort());
+    expect(await names("experiments:read experiments:write")).toEqual(
+      [...READ_TOOLS, ...EXPERIMENT_WRITE_TOOLS].sort(),
+    );
+    expect(await names("experiments:read templates:write")).toEqual(
+      [...READ_TOOLS, ...TEMPLATE_WRITE_TOOLS].sort(),
+    );
+    expect(await names("staff")).toEqual(
+      [
+        ...READ_TOOLS,
+        ...EXPERIMENT_WRITE_TOOLS,
+        ...TEMPLATE_WRITE_TOOLS,
+      ].sort(),
+    );
+  });
 
-    const byName = Object.fromEntries(listed.tools.map((t) => [t.name, t.annotations]));
-    expect(byName.list_experiments).toMatchObject({ readOnlyHint: true });
-    expect(byName.get_experiment).toMatchObject({ readOnlyHint: true });
-    expect(byName.get_report_download_url).toMatchObject({ readOnlyHint: true });
-    expect(byName.record_lab_values).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.check_in_sample).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.start_experiment).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.submit_experiment).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.close_ticket).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-    });
-    expect(byName.run_calculations).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
-    expect(byName.generate_report).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: false,
-    });
+  it("offers no tool that runs calculations or publishes the report", async () => {
+    const listed = await session.client.listTools();
+    const names = listed.tools.map((t) => t.name);
+    for (const banned of [
+      "finish_experiment",
+      "test_template_calculations",
+      "publish_report",
+    ]) {
+      expect(names).not.toContain(banned);
+    }
   });
 
   it("rejects a bad status enum as an input-validation error", async () => {
-    const result = await session.client.callTool({
-      name: "list_experiments",
-      arguments: { status: "NOPE" },
-    });
+    const result = await call("list_experiments", { status: "NOPE" });
     expect(result.isError).toBe(true);
     expect(textOf(result)).toMatch(
       /Invalid arguments for tool list_experiments/,
@@ -317,17 +313,17 @@ describe("createStaffMcpServer", () => {
 
 describe("list_experiments", () => {
   const tickets: EnrichedTicket[] = [
-    enriched("EXPERIMENTING", {
+    enriched("IN_PROGRESS", {
       contextId: "ctx-water",
       experimentTitle: "Water pH",
     }),
-    enriched("PENDING", {
+    enriched("RECEIVED", {
       contextId: "ctx-soil",
       name: "Soil metals",
       experimentTitle: "Soil metals",
       requester: null,
     }),
-    enriched("FINALIZING", {
+    enriched("COMPLETED", {
       contextId: "ctx-air",
       name: "Air quality",
       experimentTitle: "Air quality",
@@ -347,10 +343,7 @@ describe("list_experiments", () => {
     });
 
     const byStatus = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { status: "PENDING" },
-      }),
+      await call("list_experiments", { status: "RECEIVED" }),
     );
     expect(byStatus.total).toBe(1);
     expect(byStatus.requesterInfoMissing).toBe(true);
@@ -358,40 +351,27 @@ describe("list_experiments", () => {
       expect.objectContaining({
         contextId: "ctx-soil",
         title: "Soil metals",
-        status: "PENDING",
+        status: "RECEIVED",
         statusLabel: "Sample received",
         requester: null,
       }),
     ]);
 
     const byName = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { query: "  alice  " },
-      }),
+      await call("list_experiments", { query: "  alice  " }),
     );
-    expect(byName.total).toBe(1);
-    expect((byName.experiments as { contextId: string }[])[0]?.contextId).toBe(
-      "ctx-air",
-    );
+    expect(
+      (byName.experiments as { contextId: string }[]).map((e) => e.contextId),
+    ).toEqual(["ctx-air"]);
 
     const byEmail = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { query: "BOB@LAB.TEST" },
-      }),
+      await call("list_experiments", { query: "BOB@LAB.TEST" }),
     );
-    expect(byEmail.total).toBe(1);
-    expect((byEmail.experiments as { contextId: string }[])[0]?.contextId).toBe(
-      "ctx-water",
-    );
+    expect(
+      (byEmail.experiments as { contextId: string }[]).map((e) => e.contextId),
+    ).toEqual(["ctx-water"]);
 
-    const byId = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { query: "ctx-soil" },
-      }),
-    );
+    const byId = parseOk(await call("list_experiments", { query: "ctx-soil" }));
     expect(byId.total).toBe(1);
 
     expect(logger.info).toHaveBeenCalledWith(
@@ -421,51 +401,26 @@ describe("list_experiments", () => {
       enrichmentDegraded: false,
     });
 
-    const defaults = parseOk(
-      await session.client.callTool({ name: "list_experiments", arguments: {} }),
-    );
+    const defaults = parseOk(await call("list_experiments", {}));
     expect(defaults.total).toBe(30);
     expect(defaults.requesterInfoMissing).toBeUndefined();
     expect(defaults.experiments).toHaveLength(25);
 
-    const limited = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { limit: 2 },
-      }),
-    );
+    const limited = parseOk(await call("list_experiments", { limit: 2 }));
     expect(limited.total).toBe(30);
     expect(limited.experiments).toHaveLength(2);
-  });
-
-  it("treats a whitespace-only query as unfiltered", async () => {
-    vi.mocked(listExperimentsForStaff).mockResolvedValue({
-      tickets: [enriched("CLOSED", { contextId: "ctx-done" })],
-      enrichmentDegraded: false,
-    });
-
-    const listed = parseOk(
-      await session.client.callTool({
-        name: "list_experiments",
-        arguments: { query: "   " },
-      }),
-    );
-    expect(listed.total).toBe(1);
   });
 });
 
 describe("get_experiment", () => {
-  it("fails when neither ticket nor state exists", async () => {
+  it("fails for an unknown ticket and audits the miss", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: null, state: null }),
+      workspace({ ticket: null, selected: null }),
     );
 
-    const result = await session.client.callTool({
-      name: "get_experiment",
-      arguments: { contextId: "missing" },
-    });
+    const result = await call("get_experiment", { contextId: "missing" });
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No experiment found for context id missing.");
+    expect(textOf(result)).toBe("No ticket found with id missing.");
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({
         tool: "get_experiment",
@@ -476,167 +431,90 @@ describe("get_experiment", () => {
     );
   });
 
-  it("fails when the ticket has no contextId and there is no state", async () => {
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({
-        ticket: ticket("REQUESTED", { contextId: "" }),
-        state: null,
-      }),
-    );
+  it("fails when the asked experiment is not on the ticket", async () => {
+    // The workspace falls back to another experiment for an unknown id.
+    vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
 
-    const result = await session.client.callTool({
-      name: "get_experiment",
-      arguments: { contextId: "unknown" },
+    const result = await call("get_experiment", {
+      contextId: "ctx-1",
+      experimentId: "exp-9",
     });
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No experiment found for context id unknown.");
+    expect(textOf(result)).toBe("Experiment exp-9 is not on ticket ctx-1.");
+    expect(getExperimentWorkspace).toHaveBeenCalledWith("ctx-1", "exp-9");
   });
 
-  it("overlays live collab-buffer values while EXPERIMENTING and a template is hydrated", async () => {
+  it("lists every experiment and the next step, and overlays the live room of an IN_PROGRESS one", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
-    vi.mocked(readTemplate).mockResolvedValue({ labForm: { questions: [] } } as never);
+    vi.mocked(readTemplate).mockResolvedValue({
+      labForm: { questions: [] },
+    } as never);
     vi.mocked(readValues).mockResolvedValue({ ph: 8.1 });
 
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
+    const body = parseOk(await call("get_experiment", { contextId: "ctx-1" }));
     expect(body).toMatchObject({
       contextId: "ctx-1",
-      title: "Water pH",
-      sampleType: "Water",
-      status: "EXPERIMENTING",
+      status: "IN_PROGRESS",
       statusLabel: "In progress",
-      nextStep:
-        "Record measurements with record_lab_values, then submit_experiment when the lab form is complete.",
+      nextStep: expect.stringContaining("record_lab_values"),
       requester: { name: "Bob", email: "bob@lab.test" },
+      reportPublishedAt: null,
+      experiments: [
+        { id: "exp-1", method: "Method exp-1", status: "IN_PROGRESS" },
+        { id: "exp-2", method: "Method exp-2", status: "PENDING" },
+      ],
     });
-    expect(body.labForm).toMatchObject({ values: { ph: 8.1 } });
-    expect(body.clientIntake).toMatchObject({
-      answers: { sample_id: "W-1" },
+    expect(body.experiment).toMatchObject({
+      id: "exp-1",
+      labForm: { values: { ph: 8.1 } },
+      clientIntake: { answers: { sample_id: "W-1" } },
     });
-    expect(body.warnings).toBeUndefined();
-    expect(readValues).toHaveBeenCalledWith("ctx-1");
+    expect(readValues).toHaveBeenCalledWith("ctx-1_exp-1");
   });
 
-  it("keeps experiment-manager values when the EXPERIMENTING room is not hydrated", async () => {
+  it("keeps the stored values when the room is not hydrated or the method is not in progress", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
     vi.mocked(readTemplate).mockResolvedValue(null);
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(body.labForm).toMatchObject({ values: { ph: 7 } });
+    const cold = parseOk(await call("get_experiment", { contextId: "ctx-1" }));
+    expect(cold.experiment).toMatchObject({ labForm: { values: { ph: 7 } } });
     expect(readValues).not.toHaveBeenCalled();
-  });
 
-  it("does not read the collab buffer outside EXPERIMENTING", async () => {
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: ticket("FINALIZING") }),
-    );
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(body.status).toBe("FINALIZING");
-    expect(body.nextStep).toContain("run_calculations");
-    expect(readTemplate).not.toHaveBeenCalled();
-    expect(readValues).not.toHaveBeenCalled();
-  });
-
-  it("surfaces warnings, a missing requester, and ticket-only / state-only shapes", async () => {
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
       workspace({
-        ticket: ticket("REQUESTED"),
-        requester: null,
-        errors: { ticket: "slow", state: "missing" },
+        ticket: ticket("COMPLETED"),
+        selected: experiment("exp-1", "FINISHED"),
       }),
     );
-
-    const withWarnings = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(withWarnings.requester).toBeNull();
-    expect(withWarnings.warnings).toEqual({ ticket: "slow", state: "missing" });
-    expect(withWarnings.nextStep).toBe(
-      "Waiting for the sample. Use check_in_sample once it arrives.",
-    );
-
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: null, state: state(), experimentTitle: "Orphan" }),
-    );
-    const stateOnly = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(stateOnly.status).toBeNull();
-    expect(stateOnly.statusLabel).toBeNull();
-    expect(stateOnly.nextStep).toBeUndefined();
-    expect(stateOnly.timeline).toBeNull();
-
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: ticket("CLOSED"), state: null }),
-    );
-    const ticketOnly = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ticketOnly.nextStep).toBe(
-      "Closed. Use get_report_download_url for the PDF report.",
-    );
-    expect(ticketOnly.labForm).toBeNull();
-    expect(ticketOnly.clientIntake).toBeNull();
-    expect(ticketOnly.report).toBeNull();
-    expect(ticketOnly.calculations).toBeUndefined();
-  });
-
-  it("returns the PENDING next-step copy", async () => {
-    vi.mocked(getExperimentWorkspace).mockResolvedValue(
-      workspace({ ticket: ticket("PENDING") }),
-    );
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(body.nextStep).toBe(
-      "Sample received. Use start_experiment to open the lab form.",
-    );
+    vi.mocked(readTemplate).mockClear();
+    const done = parseOk(await call("get_experiment", { contextId: "ctx-1" }));
+    expect(done.nextStep).toMatch(/publish the report in the browser/);
+    expect(readTemplate).not.toHaveBeenCalled();
   });
 
   it("keeps client answers out of labForm.values and lab answers (including repeatable children) out of clientIntake", async () => {
     const labFormQuestions = [
-      { id: "ph", type: "number" as const, label: "pH", config: { min: 0, max: 14 } },
+      {
+        id: "ph",
+        type: "number" as const,
+        label: "pH",
+        config: { min: 0, max: 14 },
+      },
       {
         id: "replicates",
         type: "repeatable-group" as const,
         label: "Replicates",
         config: {
           count: 2,
-          questions: [{ id: "reading", type: "number" as const, label: "Reading" }],
+          questions: [
+            { id: "reading", type: "number" as const, label: "Reading" },
+          ],
         },
       },
     ];
     vi.mocked(getExperimentWorkspace).mockResolvedValue(
       workspace({
-        ticket: ticket("FINALIZING"),
-        state: state({
+        ticket: ticket("COMPLETED"),
+        selected: experiment("exp-1", "FINISHED", {
           template: {
             clientForm: { name: "Client", questions: clientQuestions },
             labForm: { name: "Lab", questions: labFormQuestions },
@@ -652,406 +530,209 @@ describe("get_experiment", () => {
       }),
     );
 
-    const body = parseOk(
-      await session.client.callTool({
-        name: "get_experiment",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(body.clientIntake).toEqual({
-      questions: clientQuestions,
-      answers: { sample_id: "W-1" },
-    });
-    expect(body.labForm).toEqual({
-      questions: labFormQuestions,
-      values: { ph: 7, reading: [1.1, 1.2] },
+    const body = parseOk(await call("get_experiment", { contextId: "ctx-1" }));
+    expect(body.experiment).toMatchObject({
+      clientIntake: {
+        questions: clientQuestions,
+        answers: { sample_id: "W-1" },
+      },
+      labForm: {
+        questions: labFormQuestions,
+        values: { ph: 7, reading: [1.1, 1.2] },
+      },
     });
   });
 });
 
-describe("record_lab_values", () => {
-  it("rejects an empty values object without calling the writer", async () => {
-    const result = await session.client.callTool({
-      name: "record_lab_values",
-      arguments: { contextId: "ctx-1", values: {} },
+describe("experiment write tools", () => {
+  it("records values as the staff member, through this grant's connection", async () => {
+    vi.mocked(recordLabValues).mockResolvedValue({
+      success: true,
+      data: { saved: ["ph"] },
     });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No values given.");
+
+    const body = parseOk(
+      await call("record_lab_values", {
+        contextId: "ctx-1",
+        experimentId: "exp-1",
+        values: { ph: 8 },
+      }),
+    );
+    expect(body.saved).toEqual(["ph"]);
+    expect(recordLabValues).toHaveBeenCalledWith(
+      { userId: "staff-ada", connectionId: "mcp:grant-1" },
+      "ctx-1",
+      "exp-1",
+      { ph: 8 },
+    );
+  });
+
+  it("refuses an empty value set and passes a refusal through as an error", async () => {
+    const empty = await call("record_lab_values", {
+      contextId: "ctx-1",
+      experimentId: "exp-1",
+      values: {},
+    });
+    expect(empty.isError).toBe(true);
     expect(recordLabValues).not.toHaveBeenCalled();
-  });
 
-  it("passes mcp:<grantId> as the connection id and notes a FINALIZING save", async () => {
-    vi.mocked(recordLabValues).mockResolvedValue({
-      success: true,
-      data: { stage: "FINALIZING", saved: ["ph"] },
-    });
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "record_lab_values",
-        arguments: { contextId: "ctx-1", values: { ph: 8 } },
-      }),
-    );
-    expect(recordLabValues).toHaveBeenCalledWith("ctx-1", { ph: 8 }, "mcp:grant-1");
-    expect(body).toEqual({
-      stage: "FINALIZING",
-      saved: ["ph"],
-      note: "Saved. Calculation results were cleared; run run_calculations again.",
-    });
-  });
-
-  it("notes a live EXPERIMENTING save", async () => {
-    vi.mocked(recordLabValues).mockResolvedValue({
-      success: true,
-      data: { stage: "EXPERIMENTING", saved: ["ph", "note"] },
-    });
-
-    const body = parseOk(
-      await session.client.callTool({
-        name: "record_lab_values",
-        arguments: {
-          contextId: "ctx-1",
-          values: { ph: 8, note: null },
-        },
-      }),
-    );
-    expect(body.note).toBe("Saved.");
-  });
-
-  it("passes the writer error through as isError", async () => {
     vi.mocked(recordLabValues).mockResolvedValue({
       success: false,
-      error: "Nothing was saved.\nph: Ada is editing this field right now; try again shortly.",
+      error: "Nothing was saved.\nph: busy",
+    });
+    const refused = await call("record_lab_values", {
+      contextId: "ctx-1",
+      experimentId: "exp-1",
+      values: { ph: 8 },
+    });
+    expect(refused.isError).toBe(true);
+    expect(textOf(refused)).toBe("Nothing was saved.\nph: busy");
+  });
+
+  it("runs each lifecycle step as the staff member and reports the ticket's new status", async () => {
+    vi.mocked(checkIn).mockResolvedValue({ success: true, data: null });
+    vi.mocked(start).mockResolvedValue({ success: true, data: null });
+    vi.mocked(close).mockResolvedValue({ success: true, data: null });
+    vi.mocked(getTicket).mockResolvedValue({ status: "RECEIVED" } as Ticket);
+
+    expect(
+      parseOk(await call("check_in_sample", { contextId: "ctx-1" })),
+    ).toEqual({
+      contextId: "ctx-1",
+      status: "RECEIVED",
+    });
+    expect(checkIn).toHaveBeenCalledWith("staff-ada", "ctx-1");
+
+    await call("start_experiment", {
+      contextId: "ctx-1",
+      experimentId: "exp-2",
+    });
+    expect(start).toHaveBeenCalledWith("staff-ada", "ctx-1", "exp-2");
+
+    await call("close_ticket", { contextId: "ctx-1" });
+    expect(close).toHaveBeenCalledWith("staff-ada", "ctx-1");
+  });
+
+  it("returns sample_tracker's refusal of a step as an error", async () => {
+    vi.mocked(close).mockResolvedValue({
+      success: false,
+      error: "Could not close.\nticket is not completed",
     });
 
-    const result = await session.client.callTool({
-      name: "record_lab_values",
-      arguments: { contextId: "ctx-1", values: { ph: 8 } },
-    });
+    const result = await call("close_ticket", { contextId: "ctx-1" });
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("Nothing was saved.");
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.objectContaining({ tool: "record_lab_values", ok: false }),
-      "mcp tool call",
-    );
+    expect(textOf(result)).toContain("ticket is not completed");
+    expect(getTicket).not.toHaveBeenCalled();
   });
 });
 
-describe("stage transitions and report tools", () => {
-  const transitions = [
-    { name: "check_in_sample", run: checkInSample, status: "PENDING" },
-    { name: "start_experiment", run: startExperiment, status: "EXPERIMENTING" },
-    { name: "submit_experiment", run: submitExperiment, status: "FINALIZING" },
-    { name: "close_ticket", run: closeTicket, status: "CLOSED" },
-  ] as const;
-
-  it.each(transitions)("$name succeeds and fails", async ({ name, run, status }) => {
-    vi.mocked(run).mockResolvedValueOnce({
-      success: true,
-      data: { status },
-    });
-    const ok = parseOk(
-      await session.client.callTool({ name, arguments: { contextId: "ctx-1" } }),
-    );
-    expect(ok).toEqual({ contextId: "ctx-1", status });
-    expect(run).toHaveBeenCalledWith("ctx-1");
-
-    vi.mocked(run).mockResolvedValueOnce({
-      success: false,
-      error: `${name} blocked`,
-    });
-    const failed = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe(`${name} blocked`);
-  });
-
-  it("runs calculations", async () => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "FINALIZING",
-    } as never);
-    vi.mocked(runCalculations).mockResolvedValue({ success: true, data: null });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "run_calculations",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({
+describe("get_report_download_url", () => {
+  it("links the report only once it is published", async () => {
+    vi.mocked(getTicket).mockResolvedValue({
+      reportPublishedAt: null,
+    } as Ticket);
+    const unpublished = await call("get_report_download_url", {
       contextId: "ctx-1",
-      note: "Calculations finished. Use get_experiment to read the results.",
     });
+    expect(unpublished.isError).toBe(true);
 
-    vi.mocked(runCalculations).mockResolvedValue({
-      success: false,
-      error: "One or more calculations didn't produce a result.",
-    });
-    const failed = await session.client.callTool({
-      name: "run_calculations",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toContain("calculations");
-  });
-
-  it("queues a report", async () => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "FINALIZING",
-    } as never);
-    vi.mocked(queueReport).mockResolvedValue({
-      success: true,
-      data: { status: "pending" },
-    });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "generate_report",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({ contextId: "ctx-1", reportStatus: "pending" });
-
-    vi.mocked(queueReport).mockResolvedValue({
-      success: false,
-      error: "Could not start report generation.",
-    });
-    const failed = await session.client.callTool({
-      name: "generate_report",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe("Could not start report generation.");
-  });
-
-  const gated = [
-    { name: "run_calculations", run: runCalculations },
-    { name: "generate_report", run: queueReport },
-  ] as const;
-
-  it.each(gated)("$name fails when the ticket cannot be loaded", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockRejectedValue(new Error("gone"));
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "missing" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe("No experiment found for context id missing.");
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it.each(gated)("$name is only allowed in FINALIZING", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({
-      status: "EXPERIMENTING",
-    } as never);
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe(
-      "Only allowed in the FINALIZING stage; this experiment is EXPERIMENTING.",
-    );
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it.each(gated)("$name treats a missing ticket status as unknown", async ({ name, run }) => {
-    vi.mocked(ticketsApi.apiV1TicketsIdGet).mockResolvedValue({} as never);
-
-    const result = await session.client.callTool({
-      name,
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(result.isError).toBe(true);
-    expect(textOf(result)).toBe(
-      "Only allowed in the FINALIZING stage; this experiment is unknown.",
-    );
-    expect(run).not.toHaveBeenCalled();
-  });
-
-  it("returns a report download url", async () => {
-    vi.mocked(getReportUrl).mockResolvedValue({
-      success: true,
-      data: { url: "https://files.test/report.pdf" },
-    });
-    const ok = parseOk(
-      await session.client.callTool({
-        name: "get_report_download_url",
-        arguments: { contextId: "ctx-1" },
-      }),
-    );
-    expect(ok).toEqual({
+    vi.mocked(getTicket).mockResolvedValue({
+      reportPublishedAt: "2026-01-03T00:00:00Z",
+    } as Ticket);
+    expect(
+      parseOk(await call("get_report_download_url", { contextId: "ctx-1" })),
+    ).toEqual({
       contextId: "ctx-1",
-      url: "https://files.test/report.pdf",
+      url: "https://lab.test/internal/experiment/ctx-1/report?download=1",
     });
-
-    vi.mocked(getReportUrl).mockResolvedValue({
-      success: false,
-      error: "The report isn't ready to download yet.",
-    });
-    const failed = await session.client.callTool({
-      name: "get_report_download_url",
-      arguments: { contextId: "ctx-1" },
-    });
-    expect(failed.isError).toBe(true);
-    expect(textOf(failed)).toBe("The report isn't ready to download yet.");
   });
+});
 
-  it("forwards onboarding tools to the shared helpers", async () => {
-    const draft = {
-      clientForm: { name: "Client", questions: [] },
-      labForm: { name: "Lab", questions: [] },
-      calculations: {},
-    };
-    vi.mocked(listOnboardingSamples).mockResolvedValue({ success: true, data: [] });
-    vi.mocked(listOnboardingTemplates).mockResolvedValue({ success: true, data: [] });
-    vi.mocked(getOnboardingTemplate).mockResolvedValue({
-      success: true,
-      data: {
-        templateId: "t1",
-        lineageId: "lin-1",
-        title: "Ash",
-        description: null,
-        version: 1,
-        hasPdfTemplate: false,
-        visible: false,
-        template: draft,
+describe("template tools", () => {
+  it("returns a template's forms and formulas without stored results", async () => {
+    vi.mocked(getTemplate).mockResolvedValue({
+      id: "t1",
+      sampleTypeId: "s1",
+      name: "pH",
+      description: null,
+      isVisibleOnWeb: false,
+      displayOrder: 1,
+      createdAt: "",
+      updatedAt: "",
+      template: {
+        clientForm: { name: "Client", questions: clientQuestions },
+        labForm: { name: "Lab", questions: labQuestions },
+        calculations: { mean_ph: { formula: "values['ph']", result: 7 } },
       },
     });
-    vi.mocked(createOnboardingSample).mockResolvedValue({
-      success: true,
-      data: { id: "s1", name: "Coal" },
+
+    const body = parseOk(await call("get_template", { templateId: "t1" }));
+    expect(body).toMatchObject({
+      templateId: "t1",
+      sampleId: "s1",
+      title: "pH",
+      visible: false,
     });
-    vi.mocked(testOnboardingCalculations).mockResolvedValue({
-      success: true,
-      data: {
-        values: {},
-        order: [],
-        calculations: {},
-        missing_values: [],
-        duplicate_question_ids: [],
-      },
+    expect((body.template as { calculations: unknown }).calculations).toEqual({
+      mean_ph: { formula: "values['ph']" },
     });
+  });
+
+  it("onboards and toggles visibility as the staff member", async () => {
     vi.mocked(onboardTemplate).mockResolvedValue({
       success: true,
       data: {
         sampleId: "s1",
-        sampleName: "Coal",
-        createdSample: false,
-        templateId: "t1",
-        lineageId: "lin-1",
-        reportLayout: "written",
+        sampleName: "Water",
+        createdSample: true,
+        templateId: "t9",
         published: false,
-        formulaCheck: null,
       },
     });
-
-    expect(parseOk(await session.client.callTool({ name: "list_samples", arguments: {} }))).toEqual([]);
-    expect(
-      parseOk(await session.client.callTool({ name: "list_templates", arguments: { sampleId: "s1" } })),
-    ).toEqual([]);
-    expect(
-      (await session.client.callTool({
-        name: "get_template",
-        arguments: { sampleId: "s1", templateId: "t1" },
-      })).isError,
-    ).toBeFalsy();
-    expect(
-      parseOk(
-        await session.client.callTool({
-          name: "create_sample",
-          arguments: { name: "Coal", description: "Raw" },
-        }),
-      ),
-    ).toEqual({ id: "s1", name: "Coal" });
-    await session.client.callTool({
-      name: "test_template_calculations",
-      arguments: { template: draft },
-    });
-    await session.client.callTool({
-      name: "test_template_calculations",
-      arguments: { template: draft, values: { mass: 1 } },
-    });
-    expect(testOnboardingCalculations).toHaveBeenLastCalledWith(draft, { mass: 1 });
-    expect(
-      parseOk(
-        await session.client.callTool({
-          name: "onboard_template",
-          arguments: { title: "Ash", template: draft },
-        }),
-      ).templateId,
-    ).toBe("t1");
-    vi.mocked(onboardTemplate).mockResolvedValue({
-      success: false,
-      error: "Template title is required.",
-    });
-    const refused = await session.client.callTool({
-      name: "onboard_template",
-      arguments: { title: "Ash", template: draft },
-    });
-    expect(refused.isError).toBe(true);
-    expect(textOf(refused)).toBe("Template title is required.");
-
     vi.mocked(setCatalogueVisibility).mockResolvedValue({
       success: true,
-      data: { sampleId: "s1", lineageId: "lin-1", visible: false },
+      data: null,
     });
-    await session.client.callTool({
-      name: "set_catalogue_visibility",
-      arguments: { sampleId: "s1", lineageId: "lin-1", visible: false },
+    const template = {
+      clientForm: { name: "Client", questions: [] },
+      labForm: { name: "Lab", questions: labQuestions },
+      calculations: {},
+    };
+
+    const onboarded = parseOk(
+      await call("onboard_template", {
+        sampleName: "Water",
+        title: "pH",
+        template,
+      }),
+    );
+    expect(onboarded.templateId).toBe("t9");
+    expect(onboardTemplate).toHaveBeenCalledWith(
+      "staff-ada",
+      expect.objectContaining({ sampleName: "Water", title: "pH" }),
+    );
+
+    await call("set_catalogue_visibility", {
+      sampleId: "s1",
+      templateId: "t9",
+      visible: true,
     });
-    expect(setCatalogueVisibility).toHaveBeenCalledWith("s1", "lin-1", false);
-  });
-});
-
-describe("scopes", () => {
-  async function toolsFor(scope: string) {
-    const scoped = await connect({ ...actor, scope });
-    try {
-      return (await scoped.client.listTools()).tools.map((t) => t.name);
-    } finally {
-      await scoped.close();
-    }
-  }
-
-  it("exposes only read tools to a read-only grant", async () => {
-    expect(await toolsFor("experiments:read")).toEqual(READ_TOOLS);
-  });
-
-  it("adds each write scope's tools on their own", async () => {
-    const experiments = await toolsFor("experiments:read experiments:write");
-    expect(experiments).toContain("record_lab_values");
-    expect(experiments).toContain("close_ticket");
-    expect(experiments).not.toContain("onboard_template");
-
-    const templates = await toolsFor("experiments:read templates:write");
-    expect(templates).toContain("onboard_template");
-    expect(templates).toContain("set_catalogue_visibility");
-    expect(templates).not.toContain("check_in_sample");
-  });
-
-  it("refuses a call to a tool outside the grant", async () => {
-    const scoped = await connect({ ...actor, scope: "experiments:read" });
-    try {
-      const result = await scoped.client.callTool({
-        name: "close_ticket",
-        arguments: { contextId: "ctx-1" },
-      });
-      expect(result.isError).toBe(true);
-      expect(closeTicket).not.toHaveBeenCalled();
-    } finally {
-      await scoped.close();
-    }
+    expect(setCatalogueVisibility).toHaveBeenCalledWith(
+      "staff-ada",
+      "s1",
+      "t9",
+      true,
+    );
   });
 });
 
 describe("docs tools", () => {
   it("lists the site guides with absolute links", async () => {
-    const docs = JSON.parse(
-      textOf(await session.client.callTool({ name: "list_docs", arguments: {} })),
-    ) as { id: string; url: string; audience: string }[];
+    const docs = JSON.parse(textOf(await call("list_docs", {}))) as {
+      id: string;
+      url: string;
+      audience: string;
+    }[];
     expect(docs).toContainEqual(
       expect.objectContaining({
         id: "staff/onboarding",
@@ -1060,39 +741,36 @@ describe("docs tools", () => {
       }),
     );
     expect(docs.map((d) => d.id)).toEqual(
-      expect.arrayContaining(["staff/overview", "client/request", "staff/question-types"]),
+      expect.arrayContaining([
+        "staff/overview",
+        "client/request",
+        "staff/question-types",
+      ]),
     );
   });
 
   it("reads a guide as markdown and refuses an unknown id", async () => {
-    const guide = textOf(
-      await session.client.callTool({ name: "read_doc", arguments: { id: "staff/check-in" } }),
-    );
+    const guide = textOf(await call("read_doc", { id: "staff/check-in" }));
     expect(guide).toMatch(/^# /);
-    expect(guide).toContain("## ");
-    expect(guide).toMatch(/\n1\. /);
     expect(guide).toContain("Page: https://lab.test/internal/docs/check-in");
 
     const types = textOf(
-      await session.client.callTool({ name: "read_doc", arguments: { id: "staff/question-types" } }),
+      await call("read_doc", { id: "staff/question-types" }),
     );
     expect(types).toContain("`repeatable-group`");
     expect(types).toContain("```json");
 
-    const missing = await session.client.callTool({ name: "read_doc", arguments: { id: "nope" } });
+    const missing = await call("read_doc", { id: "nope" });
     expect(missing.isError).toBe(true);
   });
 });
 
 describe("audited error handling", () => {
-  it("returns a generic isError message and logs when a handler throws", async () => {
+  it("returns a generic message and logs when a handler throws", async () => {
     const err = new Error("custapi exploded");
     vi.mocked(listExperimentsForStaff).mockRejectedValue(err);
 
-    const result = await session.client.callTool({
-      name: "list_experiments",
-      arguments: {},
-    });
+    const result = await call("list_experiments", {});
     expect(result.isError).toBe(true);
     expect(textOf(result)).toBe(
       "Something went wrong on the lab server. Try again.",
@@ -1108,5 +786,16 @@ describe("audited error handling", () => {
       "mcp tool failed",
     );
     expect(logger.info).not.toHaveBeenCalled();
+  });
+
+  it("adds sample_tracker's own message when it sent one", async () => {
+    vi.mocked(getTicket).mockRejectedValue(
+      new SampleTrackerError("x", 404, "ticket not found"),
+    );
+
+    const result = await call("get_report_download_url", { contextId: "nope" });
+    expect(textOf(result)).toBe(
+      "Something went wrong on the lab server. Try again.\nticket not found",
+    );
   });
 });

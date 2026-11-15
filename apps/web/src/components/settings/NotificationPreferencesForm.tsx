@@ -14,8 +14,8 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { saveNotificationPreferencesAction } from "@/app/actions/notification-preferences";
-import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
-import type { StageNotificationPreference } from "@/lib/ticketing/notification-preferences";
+import { statusTranslationKey } from "@/lib/experiment/statusI18n";
+import type { StageNotificationPreference } from "@/lib/sample-tracker/notification-preferences";
 
 function stageLabel(
   stage: string,

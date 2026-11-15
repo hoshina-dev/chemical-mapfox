@@ -2,17 +2,11 @@ import "server-only";
 
 import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
 
+import type { TemplateWireSnapshot } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
-import {
-  getExperiment,
-  updateExperiment,
-} from "@/lib/experiment-manager/client";
-import {
-  experimentDetailToState,
-  templateToExperimentUpdate,
-  type TemplateWireSnapshot,
-} from "@/lib/experiment-manager/mappers";
 import { getRedis } from "@/lib/redis/client";
+import { getTicket, saveValues } from "@/lib/sample-tracker/client";
+import { experimentToState, parseRoomId } from "@/lib/sample-tracker/mappers";
 
 import type { LockMap, PresenceEntry, ServerMessage } from "./events";
 
@@ -21,6 +15,7 @@ const kTemplate = (ctx: string) => `template:${ctx}`;
 const kRawSnapshot = (ctx: string) => `rawSnapshot:${ctx}`;
 const kValues = (ctx: string) => `values:${ctx}`;
 const kDirty = (ctx: string) => `dirty:${ctx}`;
+const kEditor = (ctx: string) => `editor:${ctx}`;
 const kFlushLock = (ctx: string) => `flush:${ctx}`;
 const kLock = (ctx: string, field: string) => `lock:${ctx}:${field}`;
 const kPresence = (ctx: string, connectionId: string) =>
@@ -32,19 +27,29 @@ const LOCK_TTL_MS = 15_000;
 const PRESENCE_TTL_S = 30;
 const FLUSH_DEBOUNCE_MS = 10_000;
 
-// --- Hydration: seed the live buffer from experiment-manager once per room ---
+// --- Hydration: seed the live buffer from sample_tracker once per room ---
+
+/** The room's ticket and experiment; a room id is `{ticketId}_{experimentId}`. */
+function roomRef(ctx: string) {
+  const ref = parseRoomId(ctx);
+  if (!ref) throw new Error(`not a collaboration room: ${ctx}`);
+  return ref;
+}
 
 /**
- * Ensure `template:{ctx}` + `values:{ctx}` exist in Redis, seeding them from
- * experiment-manager on first access. Idempotent — a no-op once seeded.
- * Throws if the EM context can't be loaded (e.g. 404 / unreachable).
+ * Ensure `template:{ctx}` + `values:{ctx}` exist in Redis, seeding them from the
+ * experiment in sample_tracker on first access. Idempotent — a no-op once seeded.
+ * Throws if the experiment can't be loaded (e.g. 404 / unreachable).
  */
 export async function hydrate(ctx: string): Promise<void> {
   const redis = getRedis();
   if (await redis.exists(kTemplate(ctx))) return;
 
-  const detail = await getExperiment(ctx);
-  const state = experimentDetailToState(detail);
+  const { ticketId, experimentId } = roomRef(ctx);
+  const ticket = await getTicket(undefined, ticketId);
+  const experiment = ticket.experiments.find((e) => e.id === experimentId);
+  if (!experiment) throw new Error(`experiment ${experimentId} is not on ticket ${ticketId}`);
+  const state = experimentToState(ticket, experiment);
 
   const multi = redis.multi();
   multi.set(kTemplate(ctx), JSON.stringify(state.template), "EX", ROOM_TTL_S, "NX");
@@ -98,11 +103,16 @@ export async function readValues(
 
 // --- Edits + persistence ---
 
-/** Write a single field into the live buffer and mark the room dirty. */
+/**
+ * Write a single field into the live buffer and mark the room dirty. `userId` is
+ * who edited: the next save to sample_tracker is made as the last editor (callers
+ * without a user, i.e. MCP until its rework, keep the previous editor).
+ */
 export async function applyEdit(
   ctx: string,
   field: string,
   value: AnswerValue,
+  userId?: string,
 ): Promise<void> {
   const redis = getRedis();
   if (value === undefined || value === null) {
@@ -110,12 +120,43 @@ export async function applyEdit(
   } else {
     await redis.hset(kValues(ctx), field, JSON.stringify(value));
   }
+  if (userId) await redis.set(kEditor(ctx), userId, "EX", ROOM_TTL_S);
   await redis.set(kDirty(ctx), "1");
 }
 
+/** Every answer id of a form (repeatable-group children included). */
+function answerIds(questions: unknown[]): string[] {
+  return questions.flatMap((q) => {
+    const question = q as { id?: string; type?: string; config?: { questions?: unknown[] } };
+    const children =
+      question.type === "repeatable-group" ? answerIds(question.config?.questions ?? []) : [];
+    return question.id ? [question.id, ...children] : children;
+  });
+}
+
 /**
- * Persist the buffer to experiment-manager. Single-flight across pods via a
- * short NX lock so two pods never PUT concurrently. Returns true if it flushed.
+ * Save the lab form's answers from the buffer to sample_tracker as a merge patch:
+ * every lab form field, `null` for the cleared ones, so the client's intake
+ * answers are never touched. Made as the last editor.
+ */
+async function persist(ctx: string): Promise<boolean> {
+  const redis = getRedis();
+  const snapshot = await readRawSnapshot(ctx);
+  const editor = await redis.get(kEditor(ctx));
+  if (!snapshot || !editor) return false;
+  const values = await readValues(ctx);
+  const patch = Object.fromEntries(
+    answerIds(snapshot.labForm.questions ?? []).map((id) => [id, values[id] ?? null]),
+  );
+  const { ticketId, experimentId } = roomRef(ctx);
+  await saveValues(editor, ticketId, experimentId, { values: patch });
+  await redis.del(kDirty(ctx));
+  return true;
+}
+
+/**
+ * Persist the buffer to sample_tracker. Single-flight across pods via a short NX
+ * lock so two pods never save concurrently. Returns true if it flushed.
  */
 export async function flushNow(ctx: string): Promise<boolean> {
   const redis = getRedis();
@@ -123,29 +164,23 @@ export async function flushNow(ctx: string): Promise<boolean> {
   if (got !== "OK") return false;
   try {
     if (!(await redis.get(kDirty(ctx)))) return false;
-    const snapshot = await readRawSnapshot(ctx);
-    if (!snapshot) return false;
-    const values = await readValues(ctx);
-    await updateExperiment(ctx, templateToExperimentUpdate(snapshot, values));
-    await redis.del(kDirty(ctx));
-    return true;
+    return await persist(ctx);
   } finally {
     await redis.del(kFlushLock(ctx));
   }
 }
 
 /**
- * Persist the buffer to experiment-manager unconditionally (ignores the dirty
- * flag and the debounce). Used by the submit action so the final values are
- * guaranteed flushed before the status transition. Requires the room to be
- * hydrated first.
+ * Persist the buffer to sample_tracker when it holds unsaved edits, ignoring the
+ * debounce. Used before finishing so the final values are saved first.
  */
 export async function persistNow(ctx: string): Promise<void> {
-  const snapshot = await readRawSnapshot(ctx);
-  if (!snapshot) throw new Error(`room ${ctx} is not hydrated`);
-  const values = await readValues(ctx);
-  await updateExperiment(ctx, templateToExperimentUpdate(snapshot, values));
-  await getRedis().del(kDirty(ctx));
+  if (await getRedis().get(kDirty(ctx))) await persist(ctx);
+}
+
+/** Forget the room's buffer (after finish or reopen the stored experiment is the truth). */
+export async function resetRoom(ctx: string): Promise<void> {
+  await getRedis().del(kTemplate(ctx), kRawSnapshot(ctx), kValues(ctx), kDirty(ctx), kEditor(ctx));
 }
 
 // Per-pod debounce timers. The self-hosted Node process is long-lived, so a

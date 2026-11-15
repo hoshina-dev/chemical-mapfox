@@ -115,8 +115,8 @@
     },
     "notifications": {
       "title": "Email notifications",
-      "subtitle": "Choose which experiment stages should email you. Turn a stage off if you do not want an email for that status.",
-      "emailForStage": "Email me when a ticket reaches {stage}",
+      "subtitle": "Choose which steps of your requests should email you.",
+      "emailForStage": "Email me at: {stage}",
       "loadErrorTitle": "Could not load notification preferences",
       "loadErrorFallback": "Failed to load notification preferences.",
       "saveErrorFallback": "Failed to save notification preferences."
@@ -289,7 +289,8 @@
     "resultsSubmitted": "Results submitted",
     "completed": "Completed",
     "closed": "Closed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "methodFinished": "Method finished"
   },
   "experiment": {
     "nav": {
@@ -319,7 +320,7 @@
         "requested": "Requested",
         "sampleReceived": "Sample received",
         "inProgress": "In progress",
-        "finalizing": "Finalizing",
+        "finalizing": "Results ready",
         "closed": "Closed",
         "cancelled": "Cancelled",
         "other": "Other"
@@ -364,16 +365,17 @@
       "catalog": {
         "breadcrumb": "Request an experiment",
         "title": "Request an experiment",
-        "subtitle": "Browse the specimens our labs support and start a request from a template.",
+        "subtitle": "Browse the samples our labs support and tick the methods to run on your sample.",
         "loadErrorTitle": "Could not load the catalogue",
         "loadErrorFallback": "Failed to load the catalogue.",
-        "searchPlaceholder": "Search specimens or experiments…",
+        "searchPlaceholder": "Search samples…",
         "searchAriaLabel": "Search the catalogue",
-        "experimentCount": "{visible} of {total, plural, one {# experiment} other {# experiments}}",
+        "sampleCount": "{visible} of {total, plural, one {# sample} other {# samples}}",
         "noSpecimens": "No specimens are available yet.",
-        "noMatches": "No experiments match your search.",
+        "noMatches": "No samples match your search.",
         "noTemplates": "No templates available yet.",
-        "requestButton": "Request"
+        "requestSelected": "Request {count}",
+        "tickToRequest": "Tick the methods to run on your sample."
       },
       "form": {
         "outOfDateTitle": "Template may be out of date",
@@ -381,9 +383,10 @@
         "noReportLayoutTitle": "Report layout not set up",
         "noReportLayoutBody": "This experiment has no report layout defined yet, so it can't be requested. Please check back later.",
         "errorTitle": "Could not submit your request",
-        "noIntake": "This experiment needs no intake details — submit to send your request to the lab.",
+        "noIntake": "None of these methods needs input from you. Check the list above and submit your request.",
         "submit": "Submit request",
-        "missingRequired": "Fill in all required fields before submitting"
+        "missingRequired": "Fill in all required fields before submitting",
+        "requestedLabel": "{count, plural, one {Requested method} other {Requested methods}}"
       },
       "errors": {
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
@@ -466,6 +469,13 @@
         "experimentStarted": "Experiment started",
         "resultsSubmitted": "Results submitted",
         "closed": "Closed"
+      },
+      "finishedTitle": "Experiment finished",
+      "finishedBody": "Its results are saved. Reopen it to correct values; it then needs finishing again.",
+      "methodStatus": {
+        "PENDING": "Not started",
+        "IN_PROGRESS": "In progress",
+        "FINISHED": "Finished"
       }
     },
     "startExperiment": {
@@ -509,85 +519,13 @@
       }
     },
     "collab": {
-      "submitFailedTitle": "Submit failed",
-      "submittedTitle": "Submitted",
-      "submittedBody": "Experiment submitted to the final stage.",
-      "submitToFinalStage": "Submit to final stage",
+      "submitFailedTitle": "Could not finish",
+      "submittedTitle": "Finished",
+      "submittedBody": "Results calculated and the experiment is finished.",
+      "submitToFinalStage": "Finish experiment",
       "noOneEditing": "No one else is editing right now.",
       "editingNow": "Editing now:",
       "missingRequiredTitle": "Fill in all required fields before submitting"
-    },
-    "finalize": {
-      "title": "Finalize",
-      "reportBadge": "Report: {status}",
-      "status": {
-        "queued": "Queued",
-        "generating": "Generating…",
-        "ready": "Ready",
-        "failed": "Failed",
-        "notGenerated": "Not generated"
-      },
-      "calculate": "Calculate",
-      "recalculate": "Recalculate",
-      "generateReport": "Generate report",
-      "regenerateReport": "Regenerate report",
-      "viewReport": "View report",
-      "download": "Download",
-      "closeTicket": "Close ticket",
-      "readyToClose": "Ready to close. Closing locks further calculation and report generation.",
-      "notReadyToClose": "Run calculations and generate the report before closing this ticket.",
-      "reportReady": "Report ready",
-      "reportReadySince": "Report ready since <date></date>.",
-      "runCalcsFirst": "Run the calculations first to enable report generation.",
-      "reportGenFailed": "Report generation failed. You can try again.",
-      "calcFailedTitle": "Calculation failed",
-      "genErrorTitle": "Could not generate report",
-      "closeErrorTitle": "Could not close ticket",
-      "closeModalTitle": "Close ticket?",
-      "closeModalBody": "This will mark the ticket as closed. Calculations and report generation will no longer be available after closing.",
-      "fixValues": "Fix values",
-      "fixChoiceTitle": "What needs fixing?",
-      "fixChoiceBody": "A calculation error can come from either a wrong input value or a bug in the formula itself. Pick which one applies here.",
-      "fixChoiceValuesTitle": "The input values are wrong",
-      "fixChoiceValuesBody": "Edit this ticket's lab-form values (e.g. a mistyped measurement). Only affects this experiment.",
-      "editValues": "Edit values",
-      "fixChoiceFormulaTitle": "The formula is wrong",
-      "fixChoiceFormulaBody": "Edit this ticket's own calculation formula(s) directly. Scoped to this experiment only — doesn't affect the shared template or any other experiment.",
-      "editFormula": "Edit formula",
-      "fixValuesModalTitle": "Fix lab values",
-      "fixValuesModalBody": "Edit the lab-form values below and save. Any existing calculation results will be cleared since they were computed from the old values — re-run Calculate afterward.",
-      "fixValuesErrorTitle": "Could not save values",
-      "saveValues": "Save values",
-      "fixFormulaModalTitle": "Fix calculation formula",
-      "fixFormulaModalBody": "Edit the formula(s) below and save. This only changes this experiment's own calculation — re-run Calculate afterward to see the new result.",
-      "fixFormulaErrorTitle": "Could not save formula",
-      "saveFormula": "Save formula",
-      "calcLoadFailed": "Could not load this experiment's calculations.",
-      "calcSaveFailed": "Could not save the calculation results.",
-      "calcInputsChanged": "The values or formulas changed while calculating. Calculate again.",
-      "calcNoResult": "One or more calculations didn't produce a result. Check the formulas and values, then try again."
-    },
-    "actions": {
-      "notAllowedSubmit": "You aren't allowed to submit this experiment.",
-      "saveBeforeSubmit": "Couldn't save the latest values before submitting. Try again.",
-      "submitFailed": "Could not submit to the final stage.",
-      "notAllowedCheckIn": "You aren't allowed to check in this sample.",
-      "checkInFailed": "Could not check in this sample.",
-      "notAllowedStart": "You aren't allowed to start this experiment.",
-      "startFailed": "Could not start this experiment.",
-      "notAllowedCalculate": "You aren't allowed to run calculations.",
-      "calculateFailed": "Could not run calculations.",
-      "notAllowedGenerate": "You aren't allowed to generate a report.",
-      "generateFailed": "Could not start report generation.",
-      "notAllowedViewReport": "You aren't allowed to view this report.",
-      "reportStatusFailed": "Could not check the report status.",
-      "notAllowedDownload": "You aren't allowed to download this report.",
-      "reportNotReady": "The report isn't ready to download yet.",
-      "notAllowedClose": "You aren't allowed to close this ticket.",
-      "verifyCloseFailed": "Could not verify this experiment is ready to close.",
-      "runCalcsBeforeClose": "Run calculations before closing this ticket.",
-      "generateBeforeClose": "Generate the PDF report before closing this ticket.",
-      "closeFailed": "Could not close this ticket."
     },
     "raw": {
       "breadcrumb": "Raw JSON",
@@ -595,7 +533,7 @@
       "ticketHeading": "Ticket (ticketing-service)",
       "ticketErrorTitle": "Ticketing Service error",
       "ticketErrorFallback": "Failed to load ticket.",
-      "experimentHeading": "Experiment (experiment-manager)",
+      "experimentHeading": "Event history",
       "experimentReturned": "Experiment Manager returned {status}",
       "experimentErrorTitle": "Experiment Manager error",
       "experimentNotFound": "No experiment context has been created for this id yet, so there is no state to show.",
@@ -639,7 +577,9 @@
         "defaultDescription": "Experiment templates for this sample.",
         "newTemplate": "New template",
         "loadSampleFallback": "Failed to load sample.",
-        "emptyTemplates": "No templates yet for this sample. Create the first one."
+        "emptyTemplates": "No templates yet for this sample. Create the first one.",
+        "reportForm": "Report form",
+        "noReportTemplate": "* No report template"
       }
     },
     "registerSample": {
@@ -655,21 +595,15 @@
       "create": "Create",
       "nameRequired": "Sample name is required."
     },
-    "templatesTable": {
-      "template": "Template",
-      "description": "Description",
-      "editTooltip": "Click to edit \"{title}\"",
-      "noReportLayout": "No report layout"
-    },
     "catalogue": {
-      "help": "Drag items by their handles to reorder both catalogues. Changes save automatically. Visibility affects only the landing page. New items start hidden.",
-      "visibility": "Show on landing page",
-      "visibilityFor": "Show {name} on landing page",
+      "help": "Drag items by their handles to reorder both catalogues. Changes save automatically. Hidden items are not shown to clients and cannot be requested. New items start hidden.",
+      "visibility": "Show to clients",
+      "visibilityFor": "Show {name} to clients",
       "reorder": "Reorder",
       "dragHandle": "Reorder {name}",
       "experiment": "Experiment",
       "description": "Description",
-      "noReportLayout": "No report layout",
+      "noReportTemplate": "* No report template",
       "noDescription": "No description",
       "templateCount": "{count, plural, one {# template} other {# templates}}",
       "countUnavailable": "Template count unavailable",
@@ -683,6 +617,92 @@
       "dragPosition": "{name} is at position {position}.",
       "dragCancelled": "Reordering cancelled.",
       "dragFinished": "Item dropped."
+    },
+    "reportForm": {
+      "title": "Report form",
+      "subtitle": "The blank report (PDF) for this sample type and where each value is printed on it. One report per sample.",
+      "noneTitle": "No report form yet",
+      "noneBody": "Upload the blank PDF, then place the values on it. Without one, reports cannot be published for this sample type.",
+      "fileLabel": "Blank form (PDF)",
+      "fileDescription": "The lab's report with labels and grid, values left empty.",
+      "chooseFile": "Upload PDF",
+      "replaceFile": "Replace PDF",
+      "missing": "Choose a PDF.",
+      "uploadError": "Could not save the report form.",
+      "saveError": "Could not save the placed values.",
+      "general": "General",
+      "experiment": "Experiment",
+      "noExperiments": "This sample type has no methods yet.",
+      "noFields": "This method has no results or form questions to print.",
+      "pickHint": "Pick a value on the right, then click where it goes.",
+      "placeHint": "Click on the page to place {label}. Esc cancels.",
+      "page": "Page {page} of {count}",
+      "prevPage": "Previous page",
+      "nextPage": "Next page",
+      "remove": "Remove {label}",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "loadError": "Could not open the blank form.",
+      "sources": {
+        "sampleType": {
+          "name": "Sample type"
+        },
+        "ticket": {
+          "description": "Sample description",
+          "receivedAt": "Date received"
+        },
+        "experiments": {
+          "firstStartedAt": "Testing started",
+          "lastFinishedAt": "Testing finished"
+        },
+        "report": {
+          "publishedAt": "Date published",
+          "number": "Report number",
+          "orderNumber": "Order number"
+        },
+        "client": {
+          "name": "Client name",
+          "address": "Client address",
+          "postcodeCity": "Client postcode and city",
+          "taxId": "Client tax ID"
+        },
+        "authorizedBy": {
+          "name": "Authorized by",
+          "title": "Authorizer's title"
+        }
+      },
+      "kinds": {
+        "result": "Results",
+        "lab": "Lab form",
+        "client": "Client form"
+      }
+    },
+    "lifecycle": {
+      "forbidden": "Only lab staff can do this.",
+      "checkInFailed": "Could not check the sample in.",
+      "startFailed": "Could not start the experiment.",
+      "finishFailed": "Could not finish the experiment.",
+      "reopenFailed": "Could not reopen the experiment.",
+      "closeFailed": "Could not change the ticket.",
+      "publishFailed": "Could not publish the report.",
+      "reopen": {
+        "button": "Reopen to correct",
+        "title": "Reopen experiment",
+        "reason": "Reason",
+        "reasonDescription": "Recorded in the ticket's history.",
+        "cancel": "Cancel",
+        "confirm": "Reopen"
+      },
+      "ticket": {
+        "title": "Ticket",
+        "publish": "Publish report",
+        "close": "Close ticket",
+        "cancel": "Cancel ticket",
+        "dismiss": "Back",
+        "cancelTitle": "Cancel ticket",
+        "cancelReason": "Reason",
+        "cancelConfirm": "Cancel ticket"
+      }
     }
   },
   "builder": {
@@ -695,7 +715,7 @@
     "livePreview": "Live preview",
     "createTemplate": "Create template",
     "saveChanges": "Save changes",
-    "designPdf": "Design PDF report",
+    "designPdf": "Report form",
     "delete": "Delete",
     "deleteConfirm": "Delete this experiment template?",
     "draftNotValidTitle": "Draft is not valid",
@@ -845,7 +865,7 @@
     },
     "calculationTester": {
       "title": "Test calculations",
-      "subtitle": "Runs your formulas through the real calculation engine using the values captured above, or each question's default where no value was captured. Nothing is saved.",
+      "subtitle": "Captures what the forms above hold and runs your formulas on it through the real calculation engine (a question left empty uses its default). Nothing is saved.",
       "run": "Run calculations",
       "runAgain": "Run again",
       "none": "This template has no calculations to test.",
@@ -879,101 +899,10 @@
       "createTemplate": "Could not create template.",
       "saveTemplate": "Could not save template.",
       "deleteTemplate": "Could not delete template."
-    }
-  },
-  "pdfEditor": {
-    "back": "← Back",
-    "title": "PDF Template",
-    "addText": "+ Text",
-    "addShape": "+ Shape",
-    "addPage": "+ Page",
-    "copy": "Copy",
-    "paste": "Paste",
-    "duplicate": "Duplicate",
-    "delete": "Delete",
-    "deleteCount": "Delete ({count})",
-    "undo": "Undo",
-    "undoTooltip": "Undo (Ctrl/Cmd+Z)",
-    "redo": "Redo",
-    "redoTooltip": "Redo (Ctrl/Cmd+Shift+Z)",
-    "zoomOut": "Zoom out",
-    "resetZoom": "Reset zoom",
-    "zoomIn": "Zoom in",
-    "snap": "Snap",
-    "unsavedChanges": "Unsaved changes",
-    "previewRaw": "Show placeholders",
-    "previewDefaults": "Use defaults",
-    "previewExperiment": "From experiment",
-    "pickExperiment": "Pick experiment…",
-    "openRealPdf": "Open real PDF",
-    "openRealPdfTooltip": "Save, render, and open the real generated PDF for this experiment",
-    "save": "Save",
-    "saved": "Saved",
-    "openedPdf": "Opened PDF",
-    "pdfTimedOut": "Timed out waiting for the PDF",
-    "reportGenFailed": "Report generation failed",
-    "variables": "Variables",
-    "variablesHint": "Click to insert into a selected text box, else copy {token}",
-    "searchVariables": "Search variables…",
-    "noMatches": "No matches",
-    "copiedExclaim": "Copied!",
-    "components": "Components",
-    "pageBreak": "— page break —",
-    "lock": "Lock",
-    "unlock": "Unlock",
-    "emptyCanvas": "Canvas is empty — add a Text or Shape component",
-    "page": "Page {number}",
-    "pageOfPages": "Page {page} of {total}",
-    "inspectorTab": "Inspector",
-    "pagesTab": "Pages",
-    "group": {
-      "selected": "{count} components selected",
-      "shiftClickHint": "Shift-click to add/remove. Drag to move together.",
-      "align": "Align",
-      "left": "Left",
-      "center": "Center",
-      "right": "Right",
-      "top": "Top",
-      "middle": "Middle",
-      "bottom": "Bottom",
-      "distribute": "Distribute",
-      "needThree": "Needs 3+ selected",
-      "horizontally": "Horizontally",
-      "vertically": "Vertically"
     },
-    "inspector": {
-      "selectComponent": "Select a component to edit",
-      "order": "Order",
-      "toBack": "To back",
-      "back": "Back",
-      "forward": "Fwd",
-      "toFront": "To front",
-      "position": "Position",
-      "content": "Content",
-      "contentPlaceholder": "Text (supports '{{'variables'}}')",
-      "unknownVariables": "{count, plural, one {Unknown variable} other {Unknown variables}}: {vars}",
-      "style": "Style",
-      "font": "Font",
-      "size": "Size",
-      "align": "Align",
-      "color": "Color",
-      "bold": "Bold",
-      "italic": "Italic",
-      "shape": "Shape",
-      "type": "Type",
-      "strokeWidth": "Stroke width",
-      "fill": "Fill"
-    },
-    "pages": {
-      "pageLabel": "Page {number}",
-      "componentCount": "{count, plural, one {# component} other {# components}}",
-      "deleteConfirm": "Delete page {number}? Its {count, plural, one {# component} other {# components}} will be removed."
-    },
-    "unavailableTitle": "PDF editor unavailable",
-    "loadTemplateError": "Could not load the experiment template.",
-    "loadLayoutError": "Could not load the PDF layout.",
-    "reportRequiredTitle": "Report layout required",
-    "reportRequiredBody": "This template can't be requested or used until it has a report layout. Design one below and save before leaving this page."
+    "deleteConfirmReport": "Delete this experiment template? {count, plural, one {# value placed on the report form is removed with it.} other {# values placed on the report form are removed with it.}}",
+    "removedFromReportTitle": "Removed from the report form",
+    "removedFromReportBody": "{fields}. This method no longer has them; place new values on the report form if needed."
   },
   "docs": {
     "layout": {
@@ -1273,7 +1202,7 @@
           "onboarding": "Register specimen types and open a sample’s template list.",
           "components": "Live previews and schema fields for every question type in the form engine.",
           "templates": "Create and edit client intake forms, lab forms, and calculations.",
-          "pdfReport": "Design the PDF report layout for a template with variables and preview.",
+          "pdfReport": "Upload the blank report form (PDF) and place its values on it.",
           "aiAssistants": "Connect Claude or ChatGPT so the assistant can act as you in the lab workspace."
         }
       },
@@ -1327,44 +1256,44 @@
       },
       "workspace": {
         "title": "Lab workspace",
-        "subtitle": "The workspace is where staff start an experiment and fill the collaborative lab form.",
+        "subtitle": "The workspace shows one ticket (one sample) with its methods; start, fill and finish each one.",
         "sections": {
           "stages": {
-            "heading": "What you can do at each stage",
-            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nSample received — use Start experiment to move to In progress and unlock editing.\n\nIn progress — the lab form is editable; Submit to final stage moves the ticket to Finalizing.\n\nLater stages keep the lab form readable but not collaboratively editable."
+            "heading": "What you can do",
+            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nReceived — pick a method and use Start experiment to unlock its lab form.\n\nIn progress — the method's lab form is editable; Finish experiment calculates and finishes it.\n\nFinished — reopen it with a reason to correct values.\n\nThe ticket panel publishes the report, closes or cancels the ticket."
           },
           "collab": {
             "heading": "Collaborative editing",
-            "body": "While the ticket is In progress, several technicians can edit the lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to Experiment Manager. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
+            "body": "While a method is in progress, several technicians can edit its lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to the sample tracker. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
           },
           "tabs": {
             "heading": "Lab form, client intake, and calculations",
-            "body": "The workspace shows three tabs: Lab form (editable in progress), Client intake (the requester’s answers, always read-only), and Calculations (formulas and computed results from the template).\n\nUse Submit to final stage only when lab entry is complete. That transitions In progress → Finalizing."
+            "body": "Each method shows three tabs: Lab form (editable in progress), Client intake (the requester’s answers, always read-only), and Calculations (formulas and results).\n\nUse the buttons above the form to switch between the ticket's methods."
           }
         }
       },
       "finalize": {
-        "title": "Finalize & reports",
-        "subtitle": "In Finalizing, run calculations (when the template defines them), generate the PDF report, then close the ticket.",
+        "title": "Finish & report",
+        "subtitle": "Finish each method of the ticket, then publish the sample's report and close the ticket.",
         "sections": {
           "flow": {
             "heading": "Recommended order",
-            "body": "Finish collaborative lab entry before submitting to Finalizing. Then:",
+            "body": "Each method (experiment) of the ticket is finished on its own:",
             "steps": [
-              "Open the Finalize panel on the workspace.",
-              "If the template has calculations, run Calculate (you can recalculate later if values change).",
-              "Generate the report once calculations are ready (or immediately if there are none).",
-              "When the report status is Ready, view or download the PDF.",
-              "Close the ticket when the report is ready — closing locks further calculation and report generation."
+              "Complete the lab form of the method.",
+              "Choose Finish experiment: the values are saved, the formulas run in your browser and the results are stored.",
+              "Repeat for every method; when all are finished the ticket is Completed.",
+              "Publish the report: from then on you and the client can download it.",
+              "Close the ticket."
             ]
           },
           "report": {
-            "heading": "Report status",
-            "body": "Generation is asynchronous. Status moves through Queued and Generating to Ready, or Failed if something went wrong. You can regenerate after a failure or when you need a fresh PDF. Requesters can view and download the same report from their experiment detail once it is ready."
+            "heading": "The report",
+            "body": "There is one report per sample, built from the sample type's report form each time it is opened, so it always shows the current results. Publishing again replaces the numbers. Requesters can open the same report from their request once it is published."
           },
           "close": {
-            "heading": "Closing the ticket",
-            "body": "Close ticket marks the experiment Completed. The app asks for confirmation because calculation and report actions stop afterward. Make sure calculations (if any) and the report are ready before you close."
+            "heading": "Correcting and closing",
+            "body": "To correct a finished method, reopen it with a reason, change the values and finish it again. Close the ticket once the report is published; a closed ticket can still have its report published again."
           }
         }
       },
@@ -1443,33 +1372,32 @@
         }
       },
       "pdfReport": {
-        "title": "PDF report layout",
-        "subtitle": "Design the PDF report for a template: place text and shapes, insert form variables, preview with real experiment data, then save.",
+        "title": "Report form",
+        "subtitle": "One report per sample: each sample type has a blank report form (PDF) and the places where each value is printed on it.",
         "sections": {
           "open": {
-            "heading": "Open the PDF editor",
-            "body": "From an existing template in the builder, choose Design PDF report. You can also open the /pdf route under that template. A missing layout simply starts with an empty canvas — that is normal until the first save.",
+            "heading": "Open the report form",
+            "body": "Open Onboarding → sample type → Report form (also reachable from Report form in the template builder).",
             "steps": [
-              "Open Onboarding → sample → template (for example Total Moisture Determination under Coal).",
-              "Choose Design PDF report.",
-              "Use Back to return to the form builder when finished."
+              "Open Onboarding and choose the sample type (for example Coal).",
+              "Choose Report form."
             ]
           },
           "canvas": {
-            "heading": "Build the layout",
-            "body": "Add Text or Shape components to the canvas. Move and resize them, use snap when helpful, and manage pages from the Pages tab. The Inspector edits the selected component: position, content, font, color, and shape options.\n\nText supports variables with the '{{'name'}}' syntax so report values fill in at generation time."
+            "heading": "The blank form",
+            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept. Replace PDF swaps it and keeps the values already placed."
           },
           "variables": {
-            "heading": "Variables",
-            "body": "The Variables panel lists fields from the Client form, Lab form, and calculations. Click a variable to insert it into the selected text box, or copy the token. Search the list when templates are large."
+            "heading": "Place the values",
+            "body": "The panel on the right lists what a report can print: General (sample type, description and dates) and, for the experiment chosen in the list, its results, lab form values and client answers (one colour each; a value picked in the list lights up everywhere it is placed). Pick one, then click on the page where it should print; the dot marks the start of the text line. Drag a value or use the arrow keys (Shift for bigger steps) to move it, and Delete or × to remove it. A value can be placed more than once. Grey values (client, report number, signer) are kept but print nothing yet."
           },
           "preview": {
-            "heading": "Preview modes",
-            "body": "Show placeholders leaves variable tokens visible. Use defaults fills sample defaults from the template. From experiment lets you pick a real experiment context to preview with live values. Open real PDF saves, renders, and opens the generated PDF for that experiment when you need a true output check."
+            "heading": "Check it",
+            "body": "Publish the report of a completed ticket of this sample type and open it: values are written onto the blank form in Helvetica, numbers with a decimal comma, dates as dd.mm.yyyy."
           },
           "save": {
-            "heading": "Save the layout",
-            "body": "Save stores the PDF component layout for this template. Unsaved changes are indicated in the toolbar. After the layout is saved, staff can Generate report from a Finalizing workspace, and requesters can view or download the PDF when report status is ready."
+            "heading": "Saving",
+            "body": "Every change is saved on its own a moment later; the panel shows Saving… and Saved. A value that no longer exists for this sample type is refused with the reason."
           }
         }
       },
@@ -1702,10 +1630,6 @@
       "staff-builder-calculations": {
         "alt": "Calculations section in the template builder",
         "caption": "Template calculations"
-      },
-      "staff-pdf-editor": {
-        "alt": "PDF report layout editor with canvas and variables",
-        "caption": "PDF report editor"
       },
       "staff-mcp-consent": {
         "alt": "Consent screen asking to connect Claude to Harper Analytics",

@@ -26,7 +26,6 @@ export type DocsScreenshotId =
   | "staff-new-template"
   | "staff-template-builder"
   | "staff-builder-calculations"
-  | "staff-pdf-editor"
   | "staff-component-reference"
   | "staff-mcp-consent"
   | "staff-mcp-consent-unknown-app"
@@ -147,11 +146,6 @@ export const DOCS_SCREENSHOTS: Record<DocsScreenshotId, DocsScreenshotMeta> = {
     localized: true,
     capture: "Calculations section in the template builder with formulas.",
   },
-  "staff-pdf-editor": {
-    id: "staff-pdf-editor",
-    localized: true,
-    capture: "PDF report layout editor canvas with variables and components.",
-  },
   "staff-component-reference": {
     id: "staff-component-reference",
     localized: true,
@@ -230,9 +224,6 @@ export const GUIDE_SECTION_FIGURES: Record<
     create: "staff-new-template",
     forms: "staff-template-builder",
     calculations: "staff-builder-calculations",
-  },
-  "docs.staff.pdfReport": {
-    open: "staff-pdf-editor",
   },
   "docs.staff.aiAssistants": {
     consent: "staff-mcp-consent",

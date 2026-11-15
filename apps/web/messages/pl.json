@@ -115,8 +115,8 @@
     },
     "notifications": {
       "title": "Powiadomienia e-mail",
-      "subtitle": "Wybierz etapy eksperymentu, o których chcesz dostawać e-mail. Wyłącz etap, jeśli nie chcesz powiadomienia dla tego statusu.",
-      "emailForStage": "Wyślij e-mail, gdy zgłoszenie osiągnie etap {stage}",
+      "subtitle": "Wybierz, o których etapach zgłoszeń chcesz dostawać e-mail.",
+      "emailForStage": "Wyślij e-mail przy: {stage}",
       "loadErrorTitle": "Nie udało się wczytać preferencji powiadomień",
       "loadErrorFallback": "Nie udało się wczytać preferencji powiadomień.",
       "saveErrorFallback": "Nie udało się zapisać preferencji powiadomień."
@@ -289,7 +289,8 @@
     "resultsSubmitted": "Wyniki przesłane",
     "completed": "Zakończone",
     "closed": "Zamknięte",
-    "cancelled": "Anulowane"
+    "cancelled": "Anulowane",
+    "methodFinished": "Metoda zakończona"
   },
   "experiment": {
     "nav": {
@@ -319,7 +320,7 @@
         "requested": "Zgłoszono",
         "sampleReceived": "Próbka przyjęta",
         "inProgress": "W toku",
-        "finalizing": "Finalizowanie",
+        "finalizing": "Wyniki gotowe",
         "closed": "Zamknięte",
         "cancelled": "Anulowane",
         "other": "Inne"
@@ -364,16 +365,17 @@
       "catalog": {
         "breadcrumb": "Zamów eksperyment",
         "title": "Zamów eksperyment",
-        "subtitle": "Przeglądaj próbki obsługiwane przez nasze laboratoria i rozpocznij zgłoszenie na podstawie szablonu.",
+        "subtitle": "Przeglądaj próbki obsługiwane przez nasze laboratoria i zaznacz metody do wykonania na Twojej próbce.",
         "loadErrorTitle": "Nie udało się załadować katalogu",
         "loadErrorFallback": "Nie udało się załadować katalogu.",
-        "searchPlaceholder": "Szukaj próbek lub eksperymentów…",
+        "searchPlaceholder": "Szukaj próbek…",
         "searchAriaLabel": "Szukaj w katalogu",
-        "experimentCount": "{visible} z {total, plural, one {# eksperyment} few {# eksperymenty} many {# eksperymentów} other {# eksperymentów}}",
+        "sampleCount": "{visible} z {total, plural, one {# próbki} few {# próbek} many {# próbek} other {# próbek}}",
         "noSpecimens": "Brak dostępnych próbek.",
-        "noMatches": "Żaden eksperyment nie pasuje do wyszukiwania.",
+        "noMatches": "Żadna próbka nie pasuje do wyszukiwania.",
         "noTemplates": "Brak dostępnych szablonów.",
-        "requestButton": "Zamów"
+        "requestSelected": "Zamów {count}",
+        "tickToRequest": "Zaznacz metody do wykonania na Twojej próbce."
       },
       "form": {
         "outOfDateTitle": "Szablon może być nieaktualny",
@@ -381,9 +383,10 @@
         "noReportLayoutTitle": "Nie skonfigurowano układu raportu",
         "noReportLayoutBody": "Ten eksperyment nie ma jeszcze zdefiniowanego układu raportu, więc nie można go zamówić. Sprawdź ponownie później.",
         "errorTitle": "Nie udało się przesłać zgłoszenia",
-        "noIntake": "Ten eksperyment nie wymaga danych wstępnych — prześlij, aby wysłać zgłoszenie do laboratorium.",
+        "noIntake": "Żadna z tych metod nie wymaga od Ciebie danych. Sprawdź listę powyżej i wyślij zgłoszenie.",
         "submit": "Prześlij zgłoszenie",
-        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
+        "missingRequired": "Uzupełnij wszystkie wymagane pola przed przesłaniem",
+        "requestedLabel": "{count, plural, one {Zamawiana metoda} other {Zamawiane metody}}"
       },
       "errors": {
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
@@ -466,6 +469,13 @@
         "experimentStarted": "Eksperyment rozpoczęty",
         "resultsSubmitted": "Wyniki przesłane",
         "closed": "Zamknięte"
+      },
+      "finishedTitle": "Badanie zakończone",
+      "finishedBody": "Wyniki są zapisane. Otwórz ponownie, aby poprawić wartości; potem trzeba je znowu zakończyć.",
+      "methodStatus": {
+        "PENDING": "Nierozpoczęta",
+        "IN_PROGRESS": "W toku",
+        "FINISHED": "Zakończona"
       }
     },
     "startExperiment": {
@@ -509,85 +519,13 @@
       }
     },
     "collab": {
-      "submitFailedTitle": "Przesyłanie nie powiodło się",
-      "submittedTitle": "Przesłano",
-      "submittedBody": "Eksperyment przesłany do etapu końcowego.",
-      "submitToFinalStage": "Prześlij do etapu końcowego",
+      "submitFailedTitle": "Nie udało się zakończyć",
+      "submittedTitle": "Zakończono",
+      "submittedBody": "Wyniki obliczone, badanie zakończone.",
+      "submitToFinalStage": "Zakończ badanie",
       "noOneEditing": "Nikt inny obecnie nie edytuje.",
       "editingNow": "Teraz edytują:",
       "missingRequiredTitle": "Uzupełnij wszystkie wymagane pola przed przesłaniem"
-    },
-    "finalize": {
-      "title": "Finalizacja",
-      "reportBadge": "Raport: {status}",
-      "status": {
-        "queued": "W kolejce",
-        "generating": "Generowanie…",
-        "ready": "Gotowy",
-        "failed": "Niepowodzenie",
-        "notGenerated": "Nie wygenerowano"
-      },
-      "calculate": "Oblicz",
-      "recalculate": "Przelicz ponownie",
-      "generateReport": "Generuj raport",
-      "regenerateReport": "Wygeneruj raport ponownie",
-      "viewReport": "Wyświetl raport",
-      "download": "Pobierz",
-      "closeTicket": "Zamknij zgłoszenie",
-      "readyToClose": "Gotowe do zamknięcia. Zamknięcie blokuje dalsze obliczenia i generowanie raportów.",
-      "notReadyToClose": "Wykonaj obliczenia i wygeneruj raport przed zamknięciem tego zgłoszenia.",
-      "reportReady": "Raport gotowy",
-      "reportReadySince": "Raport gotowy od <date></date>.",
-      "runCalcsFirst": "Najpierw wykonaj obliczenia, aby umożliwić generowanie raportu.",
-      "reportGenFailed": "Generowanie raportu nie powiodło się. Możesz spróbować ponownie.",
-      "calcFailedTitle": "Obliczenia nie powiodły się",
-      "genErrorTitle": "Nie udało się wygenerować raportu",
-      "closeErrorTitle": "Nie udało się zamknąć zgłoszenia",
-      "closeModalTitle": "Zamknąć zgłoszenie?",
-      "closeModalBody": "Spowoduje to oznaczenie zgłoszenia jako zamknięte. Po zamknięciu obliczenia i generowanie raportów nie będą już dostępne.",
-      "fixValues": "Popraw wartości",
-      "fixChoiceTitle": "Co wymaga poprawy?",
-      "fixChoiceBody": "Błąd obliczeń może wynikać z błędnej wartości wejściowej albo z błędu w samej formule. Wybierz, co dotyczy tego przypadku.",
-      "fixChoiceValuesTitle": "Wartości wejściowe są błędne",
-      "fixChoiceValuesBody": "Popraw wartości formularza laboratoryjnego tego zgłoszenia (np. błędnie wpisany pomiar). Dotyczy tylko tego eksperymentu.",
-      "editValues": "Edytuj wartości",
-      "fixChoiceFormulaTitle": "Formuła jest błędna",
-      "fixChoiceFormulaBody": "Edytuj formułę(-y) obliczeń tego zgłoszenia bezpośrednio. Dotyczy tylko tego eksperymentu — nie wpływa na współdzielony szablon ani inne eksperymenty.",
-      "editFormula": "Edytuj formułę",
-      "fixValuesModalTitle": "Popraw wartości laboratoryjne",
-      "fixValuesModalBody": "Edytuj poniższe wartości formularza laboratoryjnego i zapisz. Wszelkie istniejące wyniki obliczeń zostaną wyczyszczone, ponieważ zostały obliczone na podstawie starych wartości — uruchom ponownie obliczenia po zapisaniu.",
-      "fixValuesErrorTitle": "Nie udało się zapisać wartości",
-      "saveValues": "Zapisz wartości",
-      "fixFormulaModalTitle": "Popraw formułę obliczeń",
-      "fixFormulaModalBody": "Edytuj poniższą formułę(-y) i zapisz. Zmienia to tylko obliczenia tego eksperymentu — uruchom ponownie obliczenia po zapisaniu, aby zobaczyć nowy wynik.",
-      "fixFormulaErrorTitle": "Nie udało się zapisać formuły",
-      "saveFormula": "Zapisz formułę",
-      "calcLoadFailed": "Nie udało się wczytać obliczeń tego eksperymentu.",
-      "calcSaveFailed": "Nie udało się zapisać wyników obliczeń.",
-      "calcInputsChanged": "Wartości lub formuły zmieniły się w trakcie obliczeń. Oblicz ponownie.",
-      "calcNoResult": "Co najmniej jedno obliczenie nie dało wyniku. Sprawdź formuły i wartości, a następnie spróbuj ponownie."
-    },
-    "actions": {
-      "notAllowedSubmit": "Nie masz uprawnień do przesłania tego eksperymentu.",
-      "saveBeforeSubmit": "Nie udało się zapisać najnowszych wartości przed przesłaniem. Spróbuj ponownie.",
-      "submitFailed": "Nie udało się przesłać do etapu końcowego.",
-      "notAllowedCheckIn": "Nie masz uprawnień do przyjęcia tej próbki.",
-      "checkInFailed": "Nie udało się przyjąć tej próbki.",
-      "notAllowedStart": "Nie masz uprawnień do rozpoczęcia tego eksperymentu.",
-      "startFailed": "Nie udało się rozpocząć tego eksperymentu.",
-      "notAllowedCalculate": "Nie masz uprawnień do wykonywania obliczeń.",
-      "calculateFailed": "Nie udało się wykonać obliczeń.",
-      "notAllowedGenerate": "Nie masz uprawnień do generowania raportu.",
-      "generateFailed": "Nie udało się rozpocząć generowania raportu.",
-      "notAllowedViewReport": "Nie masz uprawnień do wyświetlenia tego raportu.",
-      "reportStatusFailed": "Nie udało się sprawdzić statusu raportu.",
-      "notAllowedDownload": "Nie masz uprawnień do pobrania tego raportu.",
-      "reportNotReady": "Raport nie jest jeszcze gotowy do pobrania.",
-      "notAllowedClose": "Nie masz uprawnień do zamknięcia tego zgłoszenia.",
-      "verifyCloseFailed": "Nie udało się zweryfikować, czy ten eksperyment jest gotowy do zamknięcia.",
-      "runCalcsBeforeClose": "Wykonaj obliczenia przed zamknięciem tego zgłoszenia.",
-      "generateBeforeClose": "Wygeneruj raport PDF przed zamknięciem tego zgłoszenia.",
-      "closeFailed": "Nie udało się zamknąć tego zgłoszenia."
     },
     "raw": {
       "breadcrumb": "Surowy JSON",
@@ -595,7 +533,7 @@
       "ticketHeading": "Zgłoszenie (ticketing-service)",
       "ticketErrorTitle": "Błąd usługi zgłoszeń",
       "ticketErrorFallback": "Nie udało się załadować zgłoszenia.",
-      "experimentHeading": "Eksperyment (experiment-manager)",
+      "experimentHeading": "Historia zdarzeń",
       "experimentReturned": "Experiment Manager zwrócił {status}",
       "experimentErrorTitle": "Błąd Experiment Manager",
       "experimentNotFound": "Dla tego identyfikatora nie utworzono jeszcze kontekstu eksperymentu, więc nie ma stanu do wyświetlenia.",
@@ -639,7 +577,9 @@
         "defaultDescription": "Szablony eksperymentów dla tej próbki.",
         "newTemplate": "Nowy szablon",
         "loadSampleFallback": "Nie udało się załadować próbki.",
-        "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy."
+        "emptyTemplates": "Brak szablonów dla tej próbki. Utwórz pierwszy.",
+        "reportForm": "Formularz sprawozdania",
+        "noReportTemplate": "* Brak szablonu raportu"
       }
     },
     "registerSample": {
@@ -655,21 +595,15 @@
       "create": "Utwórz",
       "nameRequired": "Nazwa próbki jest wymagana."
     },
-    "templatesTable": {
-      "template": "Szablon",
-      "description": "Opis",
-      "editTooltip": "Kliknij, aby edytować „{title}”",
-      "noReportLayout": "Brak układu raportu"
-    },
     "catalogue": {
-      "help": "Przeciągaj elementy za uchwyty, aby zmienić kolejność w obu katalogach. Zmiany zapisują się automatycznie. Widoczność dotyczy tylko strony głównej. Nowe elementy są początkowo ukryte.",
-      "visibility": "Pokaż na stronie głównej",
-      "visibilityFor": "Pokaż {name} na stronie głównej",
+      "help": "Przeciągaj elementy za uchwyty, aby zmienić kolejność w obu katalogach. Zmiany zapisują się automatycznie. Ukryte elementy nie są widoczne dla klientów i nie można ich zamówić. Nowe elementy są początkowo ukryte.",
+      "visibility": "Pokaż klientom",
+      "visibilityFor": "Pokaż {name} klientom",
       "reorder": "Zmień kolejność",
       "dragHandle": "Zmień kolejność: {name}",
       "experiment": "Badanie",
       "description": "Opis",
-      "noReportLayout": "Brak układu raportu",
+      "noReportTemplate": "* Brak szablonu raportu",
       "noDescription": "Brak opisu",
       "templateCount": "{count, plural, one {# szablon} few {# szablony} many {# szablonów} other {# szablonu}}",
       "countUnavailable": "Liczba szablonów niedostępna",
@@ -683,6 +617,92 @@
       "dragPosition": "{name} znajduje się na pozycji {position}.",
       "dragCancelled": "Anulowano zmianę kolejności.",
       "dragFinished": "Upuszczono element."
+    },
+    "reportForm": {
+      "title": "Formularz sprawozdania",
+      "subtitle": "Pusty formularz sprawozdania (PDF) dla tego rodzaju próbki i miejsca, w których drukowane są wartości. Jedno sprawozdanie na próbkę.",
+      "noneTitle": "Brak formularza sprawozdania",
+      "noneBody": "Prześlij pusty PDF, a potem umieść na nim wartości. Bez niego nie można publikować sprawozdań dla tego rodzaju próbki.",
+      "fileLabel": "Pusty formularz (PDF)",
+      "fileDescription": "Sprawozdanie laboratorium z etykietami i siatką, bez wartości.",
+      "chooseFile": "Prześlij PDF",
+      "replaceFile": "Zamień PDF",
+      "missing": "Wybierz plik PDF.",
+      "uploadError": "Nie udało się zapisać formularza sprawozdania.",
+      "saveError": "Nie udało się zapisać umieszczonych wartości.",
+      "general": "Ogólne",
+      "experiment": "Badanie",
+      "noExperiments": "Ten rodzaj próbki nie ma jeszcze metod.",
+      "noFields": "Ta metoda nie ma wyników ani pytań do wydrukowania.",
+      "pickHint": "Wybierz wartość po prawej, a potem kliknij, gdzie ma się znaleźć.",
+      "placeHint": "Kliknij na stronie, aby umieścić: {label}. Esc anuluje.",
+      "page": "Strona {page} z {count}",
+      "prevPage": "Poprzednia strona",
+      "nextPage": "Następna strona",
+      "remove": "Usuń: {label}",
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano",
+      "loadError": "Nie udało się otworzyć pustego formularza.",
+      "sources": {
+        "sampleType": {
+          "name": "Rodzaj próbki"
+        },
+        "ticket": {
+          "description": "Opis próbki",
+          "receivedAt": "Data przyjęcia"
+        },
+        "experiments": {
+          "firstStartedAt": "Rozpoczęcie badań",
+          "lastFinishedAt": "Zakończenie badań"
+        },
+        "report": {
+          "publishedAt": "Data publikacji",
+          "number": "Numer sprawozdania",
+          "orderNumber": "Numer zlecenia"
+        },
+        "client": {
+          "name": "Nazwa klienta",
+          "address": "Adres klienta",
+          "postcodeCity": "Kod pocztowy i miasto klienta",
+          "taxId": "NIP klienta"
+        },
+        "authorizedBy": {
+          "name": "Zatwierdził",
+          "title": "Stanowisko zatwierdzającego"
+        }
+      },
+      "kinds": {
+        "result": "Wyniki",
+        "lab": "Formularz laboratoryjny",
+        "client": "Formularz klienta"
+      }
+    },
+    "lifecycle": {
+      "forbidden": "Tylko personel laboratorium może to zrobić.",
+      "checkInFailed": "Nie udało się przyjąć próbki.",
+      "startFailed": "Nie udało się rozpocząć badania.",
+      "finishFailed": "Nie udało się zakończyć badania.",
+      "reopenFailed": "Nie udało się ponownie otworzyć badania.",
+      "closeFailed": "Nie udało się zmienić zgłoszenia.",
+      "publishFailed": "Nie udało się opublikować sprawozdania.",
+      "reopen": {
+        "button": "Otwórz do poprawy",
+        "title": "Ponowne otwarcie badania",
+        "reason": "Powód",
+        "reasonDescription": "Zapisywany w historii zgłoszenia.",
+        "cancel": "Anuluj",
+        "confirm": "Otwórz"
+      },
+      "ticket": {
+        "title": "Zgłoszenie",
+        "publish": "Opublikuj sprawozdanie",
+        "close": "Zamknij zgłoszenie",
+        "cancel": "Anuluj zgłoszenie",
+        "dismiss": "Wróć",
+        "cancelTitle": "Anulowanie zgłoszenia",
+        "cancelReason": "Powód",
+        "cancelConfirm": "Anuluj zgłoszenie"
+      }
     }
   },
   "builder": {
@@ -695,7 +715,7 @@
     "livePreview": "Podgląd na żywo",
     "createTemplate": "Utwórz szablon",
     "saveChanges": "Zapisz zmiany",
-    "designPdf": "Zaprojektuj raport PDF",
+    "designPdf": "Formularz sprawozdania",
     "delete": "Usuń",
     "deleteConfirm": "Usunąć ten szablon eksperymentu?",
     "draftNotValidTitle": "Wersja robocza jest nieprawidłowa",
@@ -845,7 +865,7 @@
     },
     "calculationTester": {
       "title": "Przetestuj obliczenia",
-      "subtitle": "Uruchamia Twoje formuły w prawdziwym silniku obliczeniowym, korzystając z wartości przechwyconych powyżej lub z wartości domyślnej pytania, gdy nic nie przechwycono. Nic nie jest zapisywane.",
+      "subtitle": "Przechwytuje to, co zawierają formularze powyżej, i uruchamia na tym Twoje formuły w prawdziwym silniku obliczeniowym (puste pytanie przyjmuje wartość domyślną). Nic nie jest zapisywane.",
       "run": "Uruchom obliczenia",
       "runAgain": "Uruchom ponownie",
       "none": "Ten szablon nie ma obliczeń do przetestowania.",
@@ -879,101 +899,10 @@
       "createTemplate": "Nie udało się utworzyć szablonu.",
       "saveTemplate": "Nie udało się zapisać szablonu.",
       "deleteTemplate": "Nie udało się usunąć szablonu."
-    }
-  },
-  "pdfEditor": {
-    "back": "← Wstecz",
-    "title": "Szablon PDF",
-    "addText": "+ Tekst",
-    "addShape": "+ Kształt",
-    "addPage": "+ Strona",
-    "copy": "Kopiuj",
-    "paste": "Wklej",
-    "duplicate": "Duplikuj",
-    "delete": "Usuń",
-    "deleteCount": "Usuń ({count})",
-    "undo": "Cofnij",
-    "undoTooltip": "Cofnij (Ctrl/Cmd+Z)",
-    "redo": "Ponów",
-    "redoTooltip": "Ponów (Ctrl/Cmd+Shift+Z)",
-    "zoomOut": "Pomniejsz",
-    "resetZoom": "Resetuj powiększenie",
-    "zoomIn": "Powiększ",
-    "snap": "Przyciąganie",
-    "unsavedChanges": "Niezapisane zmiany",
-    "previewRaw": "Pokaż symbole zastępcze",
-    "previewDefaults": "Użyj wartości domyślnych",
-    "previewExperiment": "Z eksperymentu",
-    "pickExperiment": "Wybierz eksperyment…",
-    "openRealPdf": "Otwórz rzeczywisty PDF",
-    "openRealPdfTooltip": "Zapisz, wyrenderuj i otwórz rzeczywisty wygenerowany PDF dla tego eksperymentu",
-    "save": "Zapisz",
-    "saved": "Zapisano",
-    "openedPdf": "Otwarto PDF",
-    "pdfTimedOut": "Przekroczono limit czasu oczekiwania na PDF",
-    "reportGenFailed": "Generowanie raportu nie powiodło się",
-    "variables": "Zmienne",
-    "variablesHint": "Kliknij, aby wstawić do zaznaczonego pola tekstowego, w przeciwnym razie skopiuj {token}",
-    "searchVariables": "Szukaj zmiennych…",
-    "noMatches": "Brak dopasowań",
-    "copiedExclaim": "Skopiowano!",
-    "components": "Komponenty",
-    "pageBreak": "— podział strony —",
-    "lock": "Zablokuj",
-    "unlock": "Odblokuj",
-    "emptyCanvas": "Obszar roboczy jest pusty — dodaj komponent Tekst lub Kształt",
-    "page": "Strona {number}",
-    "pageOfPages": "Strona {page} z {total}",
-    "inspectorTab": "Inspektor",
-    "pagesTab": "Strony",
-    "group": {
-      "selected": "Zaznaczono {count} komponentów",
-      "shiftClickHint": "Shift + kliknięcie, aby dodać/usunąć. Przeciągnij, aby przesunąć razem.",
-      "align": "Wyrównaj",
-      "left": "Do lewej",
-      "center": "Do środka",
-      "right": "Do prawej",
-      "top": "Do góry",
-      "middle": "Do środka (pion)",
-      "bottom": "Do dołu",
-      "distribute": "Rozmieść",
-      "needThree": "Wymaga zaznaczenia co najmniej 3",
-      "horizontally": "Poziomo",
-      "vertically": "Pionowo"
     },
-    "inspector": {
-      "selectComponent": "Wybierz komponent do edycji",
-      "order": "Kolejność",
-      "toBack": "Na spód",
-      "back": "Do tyłu",
-      "forward": "Do przodu",
-      "toFront": "Na wierzch",
-      "position": "Pozycja",
-      "content": "Treść",
-      "contentPlaceholder": "Tekst (obsługuje '{{'zmienne'}}')",
-      "unknownVariables": "{count, plural, one {Nieznana zmienna} few {Nieznane zmienne} many {Nieznane zmienne} other {Nieznane zmienne}}: {vars}",
-      "style": "Styl",
-      "font": "Czcionka",
-      "size": "Rozmiar",
-      "align": "Wyrównanie",
-      "color": "Kolor",
-      "bold": "Pogrubienie",
-      "italic": "Kursywa",
-      "shape": "Kształt",
-      "type": "Typ",
-      "strokeWidth": "Grubość linii",
-      "fill": "Wypełnienie"
-    },
-    "pages": {
-      "pageLabel": "Strona {number}",
-      "componentCount": "{count, plural, one {# komponent} few {# komponenty} many {# komponentów} other {# komponentów}}",
-      "deleteConfirm": "Usunąć stronę {number}? Spowoduje to usunięcie {count, plural, one {# komponentu} few {# komponentów} many {# komponentów} other {# komponentów}}."
-    },
-    "unavailableTitle": "Edytor PDF niedostępny",
-    "loadTemplateError": "Nie udało się załadować szablonu eksperymentu.",
-    "loadLayoutError": "Nie udało się załadować układu PDF.",
-    "reportRequiredTitle": "Wymagany układ raportu",
-    "reportRequiredBody": "Tego szablonu nie można zamówić ani użyć, dopóki nie ma układu raportu. Zaprojektuj go poniżej i zapisz przed opuszczeniem tej strony."
+    "deleteConfirmReport": "Usunąć ten szablon badania? {count, plural, one {# wartość umieszczona na formularzu sprawozdania zostanie usunięta razem z nim.} few {# wartości umieszczone na formularzu sprawozdania zostaną usunięte razem z nim.} many {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.} other {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.}}",
+    "removedFromReportTitle": "Usunięto z formularza sprawozdania",
+    "removedFromReportBody": "{fields}. Ta metoda już ich nie ma; w razie potrzeby umieść nowe wartości na formularzu sprawozdania."
   },
   "docs": {
     "layout": {
@@ -1273,7 +1202,7 @@
           "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
           "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
           "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
-          "pdfReport": "Projektuj układ raportu PDF dla szablonu ze zmiennymi i podglądem.",
+          "pdfReport": "Prześlij pusty formularz sprawozdania (PDF) i umieść na nim wartości.",
           "aiAssistants": "Połącz Claude lub ChatGPT, aby asystent mógł działać w Twoim imieniu w przestrzeni laboratorium."
         }
       },
@@ -1326,45 +1255,45 @@
         }
       },
       "workspace": {
-        "title": "Przestrzeń robocza laboratorium",
-        "subtitle": "Przestrzeń robocza to miejsce, w którym personel rozpoczyna eksperyment i wypełnia wspólny formularz laboratoryjny.",
+        "title": "Stanowisko laboratoryjne",
+        "subtitle": "Stanowisko pokazuje jedno zgłoszenie (jedną próbkę) z jego metodami; rozpocznij, uzupełnij i zakończ każdą.",
         "sections": {
           "stages": {
-            "heading": "Co możesz zrobić na każdym etapie",
-            "body": "Zgłoszono — próbki jeszcze nie ma; skorzystaj z linku do przyjęcia.\n\nPróbka przyjęta — użyj Rozpocznij eksperyment, aby przejść do W toku i odblokować edycję.\n\nW toku — formularz laboratoryjny jest edytowalny; Prześlij do etapu końcowego przenosi zgłoszenie do Finalizowanie.\n\nPóźniejsze etapy pozostawiają formularz laboratoryjny do odczytu, ale bez wspólnej edycji."
+            "heading": "Co możesz zrobić",
+            "body": "Zgłoszone — próbki jeszcze nie ma; przejdź do przyjęcia.\n\nPrzyjęte — wybierz metodę i użyj Rozpocznij badanie, aby odblokować jej formularz.\n\nW toku — formularz laboratoryjny metody jest edytowalny; Zakończ badanie liczy wyniki i kończy metodę.\n\nZakończone — otwórz ponownie z podaniem powodu, aby poprawić wartości.\n\nPanel zgłoszenia publikuje sprawozdanie, zamyka lub anuluje zgłoszenie."
           },
           "collab": {
             "heading": "Wspólna edycja",
-            "body": "Gdy zgłoszenie ma status W toku, kilku techników może jednocześnie edytować formularz laboratoryjny. Widzisz, kto jeszcze jest obecny (awatar i nazwa po najechaniu). Gdy ktoś skupi pole, jest ono miękko zablokowane dla innych — podświetlone i wyłączone, żebyście nie nadpisywali sobie wpisów — ale wartości pozostają czytelne i aktualizują się na żywo.\n\nEdycje są przesyłane między otwartymi kartami i automatycznie zapisywane w Experiment Manager. Wyczyszczenie pola jest celowe: opróżnij kontrolkę, aby usunąć zapisaną wartość. Tożsamość jest per karta przeglądarki, więc dwie karty tej samej osoby nie kradną sobie blokad."
+            "body": "Gdy metoda jest w toku, kilku techników może jednocześnie edytować jej formularz. Widzisz, kto jeszcze jest obecny (awatar i nazwa po najechaniu). Gdy ktoś zaznaczy pole, jest ono miękko zablokowane dla innych — podświetlone i wyłączone, abyś nie pisał w tym samym miejscu — ale wartości pozostają widoczne na bieżąco.\n\nZmiany przesyłane są między otwartymi kartami i zapisywane automatycznie w systemie próbek. Wyczyszczenie pola jest celowe: opróżnij pole, aby usunąć zapisaną wartość. Tożsamość jest per karta przeglądarki, więc dwie karty tej samej osoby nie przejmują sobie blokad."
           },
           "tabs": {
-            "heading": "Formularz laboratoryjny, przyjęcie klienta i obliczenia",
-            "body": "Przestrzeń robocza pokazuje trzy karty: Formularz laboratoryjny (edytowalny w toku), Dane od klienta (odpowiedzi zlecającego, zawsze tylko do odczytu) oraz Obliczenia (formuły i wyniki obliczone z szablonu).\n\nUżyj Prześlij do etapu końcowego dopiero, gdy wprowadzanie danych laboratoryjnych jest zakończone. To przechodzi W toku → Finalizowanie."
+            "heading": "Formularz laboratoryjny, dane klienta i obliczenia",
+            "body": "Każda metoda ma trzy karty: Formularz laboratoryjny (edytowalny w toku), Dane klienta (odpowiedzi zleceniodawcy, zawsze tylko do odczytu) i Obliczenia (wzory i wyniki).\n\nPrzyciski nad formularzem przełączają między metodami zgłoszenia."
           }
         }
       },
       "finalize": {
-        "title": "Finalizowanie i raporty",
-        "subtitle": "W statusie Finalizowanie uruchom obliczenia (gdy szablon je definiuje), wygeneruj raport PDF, a następnie zamknij zgłoszenie.",
+        "title": "Zakończenie i sprawozdanie",
+        "subtitle": "Zakończ każdą metodę zgłoszenia, potem opublikuj sprawozdanie próbki i zamknij zgłoszenie.",
         "sections": {
           "flow": {
             "heading": "Zalecana kolejność",
-            "body": "Zakończ wspólną edycję laboratoryjną przed przesłaniem do Finalizowanie. Następnie:",
+            "body": "Każda metoda (badanie) zgłoszenia jest kończona osobno:",
             "steps": [
-              "Otwórz panel Finalizowanie w przestrzeni roboczej.",
-              "Jeśli szablon ma obliczenia, uruchom Oblicz (możesz przeliczyć później, gdy wartości się zmienią).",
-              "Wygeneruj raport, gdy obliczenia są gotowe (lub od razu, jeśli ich nie ma).",
-              "Gdy status raportu to Gotowy, wyświetl lub pobierz PDF.",
-              "Zamknij zgłoszenie, gdy raport jest gotowy — zamknięcie blokuje dalsze obliczenia i generowanie raportu."
+              "Uzupełnij formularz laboratoryjny metody.",
+              "Wybierz Zakończ badanie: wartości są zapisywane, wzory liczone w przeglądarce, a wyniki zapisywane.",
+              "Powtórz dla każdej metody; gdy wszystkie są zakończone, zgłoszenie jest Zakończone.",
+              "Opublikuj sprawozdanie: od tej chwili Ty i zleceniodawca możecie je pobrać.",
+              "Zamknij zgłoszenie."
             ]
           },
           "report": {
-            "heading": "Status raportu",
-            "body": "Generowanie jest asynchroniczne. Status przechodzi przez W kolejce i Generowanie do Gotowy, albo Niepowodzenie, jeśli coś poszło nie tak. Możesz wygenerować ponownie po niepowodzeniu lub gdy potrzebujesz świeżego PDF. Zlecający mogą wyświetlić i pobrać ten sam raport ze szczegółów swojego eksperymentu, gdy będzie gotowy."
+            "heading": "Sprawozdanie",
+            "body": "Jest jedno sprawozdanie na próbkę, tworzone z formularza rodzaju próbki przy każdym otwarciu, więc zawsze pokazuje aktualne wyniki. Ponowna publikacja zastępuje numery. Zleceniodawca może otworzyć to samo sprawozdanie po publikacji."
           },
           "close": {
-            "heading": "Zamykanie zgłoszenia",
-            "body": "Zamknij zgłoszenie oznacza eksperyment jako Zakończone. Interfejs prosi o potwierdzenie, ponieważ potem akcje obliczeń i raportów przestają być dostępne. Upewnij się, że obliczenia (jeśli są) i raport są gotowe przed zamknięciem."
+            "heading": "Poprawki i zamknięcie",
+            "body": "Aby poprawić zakończoną metodę, otwórz ją ponownie z podaniem powodu, zmień wartości i zakończ ponownie. Zamknij zgłoszenie po publikacji sprawozdania; zamknięte zgłoszenie nadal może mieć ponownie opublikowane sprawozdanie."
           }
         }
       },
@@ -1443,33 +1372,32 @@
         }
       },
       "pdfReport": {
-        "title": "Układ raportu PDF",
-        "subtitle": "Zaprojektuj raport PDF dla szablonu: umieść tekst i kształty, wstaw zmienne formularza, podejrzyj z rzeczywistymi danymi eksperymentu, a następnie zapisz.",
+        "title": "Formularz sprawozdania",
+        "subtitle": "Jedno sprawozdanie na próbkę: każdy rodzaj próbki ma pusty formularz sprawozdania (PDF) i miejsca, w których drukowane są wartości.",
         "sections": {
           "open": {
-            "heading": "Otwórz edytor PDF",
-            "body": "Z istniejącego szablonu w kreatorze wybierz Projektuj raport PDF. Możesz też otworzyć trasę /pdf w ramach tego szablonu. Brak układu po prostu zaczyna od pustego płótna — to normalne do pierwszego zapisu.",
+            "heading": "Otwórz formularz sprawozdania",
+            "body": "Otwórz Wdrażanie → rodzaj próbki → Formularz sprawozdania (dostępny też z kreatora szablonu).",
             "steps": [
-              "Otwórz Wdrażanie → próbka → szablon (np. Total Moisture Determination w ramach Węgiel).",
-              "Wybierz Projektuj raport PDF.",
-              "Użyj Wstecz, aby wrócić do kreatora formularzy po zakończeniu."
+              "Otwórz Wdrażanie i wybierz rodzaj próbki (np. Węgiel).",
+              "Wybierz Formularz sprawozdania."
             ]
           },
           "canvas": {
-            "heading": "Zbuduj układ",
-            "body": "Dodawaj komponenty Tekst lub Kształt na płótno. Przesuwaj i zmieniaj ich rozmiar, używaj przyciągania, gdy pomaga, i zarządzaj stronami z karty Strony. Inspektor edytuje wybrany komponent: pozycję, treść, czcionkę, kolor oraz opcje kształtu.\n\nTekst obsługuje zmienne w składni '{{'name'}}', dzięki czemu wartości raportu wypełniają się w momencie generowania."
+            "heading": "Pusty formularz",
+            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane i zachowywane jest tylko to, czego dokument używa. Zamień PDF podmienia plik i zachowuje umieszczone wartości."
           },
           "variables": {
-            "heading": "Zmienne",
-            "body": "Panel Zmienne wymienia pola z formularza klienta, formularza laboratoryjnego oraz obliczeń. Kliknij zmienną, aby wstawić ją do zaznaczonego pola tekstowego, albo skopiuj token. Przeszukaj listę, gdy szablony są duże."
+            "heading": "Umieść wartości",
+            "body": "Panel po prawej pokazuje, co może wydrukować sprawozdanie: Ogólne (rodzaj próbki, opis i daty) oraz, dla badania wybranego z listy, wyniki, wartości z formularza laboratoryjnego i odpowiedzi klienta (każdy rodzaj w swoim kolorze; wybrana wartość podświetla się wszędzie, gdzie jest umieszczona). Wybierz wartość i kliknij na stronie, gdzie ma się znaleźć; kropka oznacza początek linii tekstu. Przeciągnij wartość lub użyj strzałek (Shift — większe kroki), aby ją przesunąć, a Delete lub ×, aby ją usunąć. Wartość można umieścić więcej niż raz. Szare wartości (klient, numer sprawozdania, zatwierdzający) są zachowane, ale jeszcze nic nie drukują."
           },
           "preview": {
-            "heading": "Tryby podglądu",
-            "body": "Pokaż symbole zastępcze pozostawia tokeny zmiennych widoczne. Użyj wartości domyślnych wypełnia przykładowe wartości domyślne z szablonu. Z eksperymentu pozwala wybrać rzeczywisty kontekst eksperymentu do podglądu z żywymi wartościami. Otwórz rzeczywisty PDF zapisuje, renderuje i otwiera wygenerowany PDF dla tego eksperymentu, gdy potrzebujesz prawdziwej kontroli wyniku."
+            "heading": "Sprawdź",
+            "body": "Opublikuj sprawozdanie zakończonego zlecenia tego rodzaju próbki i otwórz je: wartości są wpisywane na pusty formularz czcionką Helvetica, liczby z przecinkiem dziesiętnym, daty jako dd.mm.rrrr."
           },
           "save": {
-            "heading": "Zapisz układ",
-            "body": "Zapisz przechowuje układ komponentów PDF dla tego szablonu. Niezapisane zmiany są oznaczone na pasku narzędzi. Po zapisaniu układu personel może Generuj raport z przestrzeni roboczej w statusie Finalizowanie, a zlecający mogą wyświetlić lub pobrać PDF, gdy status raportu jest gotowy."
+            "heading": "Zapisywanie",
+            "body": "Każda zmiana zapisuje się sama chwilę później; panel pokazuje Zapisywanie… i Zapisano. Wartość, której ten rodzaj próbki już nie ma, jest odrzucana z podaniem powodu."
           }
         }
       },
@@ -1702,10 +1630,6 @@
       "staff-builder-calculations": {
         "alt": "Sekcja obliczeń w kreatorze szablonów",
         "caption": "Obliczenia szablonu"
-      },
-      "staff-pdf-editor": {
-        "alt": "Edytor układu raportu PDF z płótnem i zmiennymi",
-        "caption": "Edytor raportu PDF"
       },
       "staff-mcp-consent": {
         "alt": "Ekran zgody z prośbą o połączenie Claude z Harper Analytics",

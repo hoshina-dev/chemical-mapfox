@@ -1,14 +1,13 @@
 import "server-only";
 
 import {
-  type AnswerIssue,
   type AnswerValue,
   describeAnswerIssue,
   type Question,
   validateField,
 } from "@repo/forms";
 
-import type { ActionResult } from "@/app/actions/experiment-manager";
+import type { ActionResult } from "@/app/actions/onboarding";
 import {
   applyEdit,
   flushNow,
@@ -19,99 +18,69 @@ import {
   readTemplate,
   scheduleFlush,
 } from "@/lib/collab/room";
-import { getExperiment } from "@/lib/experiment-manager/client";
 import { logHandledError } from "@/lib/log/handled";
-import { ticketsApi } from "@/lib/ticketing/client";
+import { getTicket } from "@/lib/sample-tracker/client";
+import { collabRoomId } from "@/lib/sample-tracker/mappers";
 
-import { updateFinalizingValues } from "./workflow";
-
-export interface LabValuesResult {
-  stage: "EXPERIMENTING" | "FINALIZING";
-  saved: string[];
-}
-
-/** Top-level question that owns `field`: itself, or a repeatable group for a child id. */
+/** Top-level question that owns `field`'s lock: itself, or the repeatable group of a child id. */
 function lockOwnerField(questions: Question[], field: string): string {
   for (const q of questions) {
-    if (q.type === "repeatable-group" && q.config.questions.some((c) => c.id === field)) {
+    if (
+      q.type === "repeatable-group" &&
+      q.config.questions.some((c) => c.id === field)
+    ) {
       return q.id;
     }
   }
   return field;
 }
 
-function issueText(issues: AnswerIssue[]): string {
-  return issues.map(describeAnswerIssue).join(" ");
-}
-
 /**
- * Writes lab-form answers on behalf of an MCP client, all-or-nothing.
- *
- * - EXPERIMENTING: goes through the collaborative editor's Redis buffer and
- *   pub/sub, so staff with the workspace open see the values live. Fields
- *   someone is editing right now are refused rather than overwritten.
- * - FINALIZING: the same "fix values" path as the workspace's fix dialog.
- *
- * `null` clears a field. Required-field checks are left to submit, since a
- * partial update can't satisfy them.
+ * Write lab-form answers for an MCP client, all-or-nothing, through the
+ * collaborative editor's buffer: staff with the workspace open see the values
+ * live, and a field someone is editing right now is refused, not overwritten.
+ * Only while the experiment is IN_PROGRESS. `null` clears a field; required
+ * fields are left to finish, since a partial update can't satisfy them.
  */
 export async function recordLabValues(
-  contextId: string,
+  editor: { userId: string; connectionId: string },
+  ticketId: string,
+  experimentId: string,
   values: Record<string, AnswerValue>,
-  connectionId: string,
-): Promise<ActionResult<LabValuesResult>> {
-  let status: string | undefined;
+): Promise<ActionResult<{ saved: string[] }>> {
+  const room = collabRoomId(ticketId, experimentId);
   try {
-    status = (await ticketsApi.apiV1TicketsIdGet(contextId)).status;
-  } catch (error) {
-    logHandledError(error, { op: "mcp.recordLabValues.ticket", contextId });
-    return { success: false, error: "Could not load this experiment's ticket." };
-  }
-
-  if (status === "FINALIZING") {
-    try {
-      const exp = await getExperiment(contextId);
-      const merged: Record<string, AnswerValue> = {
-        ...(exp.values as Record<string, AnswerValue> | undefined),
+    const ticket = await getTicket(undefined, ticketId);
+    const status = ticket.experiments.find(
+      (e) => e.id === experimentId,
+    )?.status;
+    if (status !== "IN_PROGRESS") {
+      return {
+        success: false,
+        error: `Lab values can only be recorded while the experiment is IN_PROGRESS (it is ${status ?? "not on this ticket"}).`,
       };
-      for (const [field, value] of Object.entries(values)) {
-        if (value === null) delete merged[field];
-        else merged[field] = value;
-      }
-      const res = await updateFinalizingValues(contextId, merged);
-      if (!res.success) return res;
-    } catch (error) {
-      logHandledError(error, { op: "mcp.recordLabValues.finalizing", contextId });
-      return { success: false, error: "Could not load the experiment's current values." };
     }
-    return { success: true, data: { stage: "FINALIZING", saved: Object.keys(values) } };
-  }
-
-  if (status !== "EXPERIMENTING") {
+    await hydrate(room);
+  } catch (error) {
+    logHandledError(error, { op: "mcp.recordLabValues.load", contextId: room });
     return {
       success: false,
-      error: `Lab values can only be recorded while the experiment is EXPERIMENTING or FINALIZING (it is ${status ?? "unknown"}).`,
+      error: "Could not load the experiment's lab form.",
     };
   }
-
-  try {
-    await hydrate(contextId);
-  } catch (error) {
-    logHandledError(error, { op: "mcp.recordLabValues.hydrate", contextId });
-    return { success: false, error: "Could not load the experiment's lab form." };
-  }
-  const template = await readTemplate(contextId);
-  if (!template) {
-    return { success: false, error: "Could not load the experiment's lab form." };
-  }
+  const template = await readTemplate(room);
+  if (!template)
+    return {
+      success: false,
+      error: "Could not load the experiment's lab form.",
+    };
   const questions = template.labForm.questions;
 
   const [locks, presence] = await Promise.all([
-    readLocks(contextId),
-    readPresence(contextId),
+    readLocks(room),
+    readPresence(room),
   ]);
   const names = new Map(presence.map((p) => [p.connectionId, p.name]));
-
   const problems: string[] = [];
   for (const [field, value] of Object.entries(values)) {
     const issues = validateField(questions, field, value, "submit");
@@ -120,28 +89,41 @@ export async function recordLabValues(
       continue;
     }
     const blocking = issues.filter((issue) => issue.code !== "required");
-    if (blocking.length > 0) problems.push(`${field}: ${issueText(blocking)}`);
-
+    if (blocking.length > 0)
+      problems.push(`${field}: ${blocking.map(describeAnswerIssue).join(" ")}`);
     const owner = locks[lockOwnerField(questions, field)];
-    if (owner && owner !== connectionId) {
+    if (owner && owner !== editor.connectionId) {
       const who = names.get(owner) ?? "another staff member";
-      problems.push(`${field}: ${who} is editing this field right now; try again shortly.`);
+      problems.push(
+        `${field}: ${who} is editing this field right now; try again shortly.`,
+      );
     }
   }
   if (problems.length > 0) {
-    return { success: false, error: `Nothing was saved.\n${problems.join("\n")}` };
+    return {
+      success: false,
+      error: `Nothing was saved.\n${problems.join("\n")}`,
+    };
   }
 
   for (const [field, value] of Object.entries(values)) {
-    await applyEdit(contextId, field, value);
-    await publish(contextId, { type: "edit", field, value, by: connectionId });
+    await applyEdit(room, field, value, editor.userId);
+    await publish(room, {
+      type: "edit",
+      field,
+      value,
+      by: editor.connectionId,
+    });
   }
   try {
-    if (!(await flushNow(contextId))) scheduleFlush(contextId);
+    if (!(await flushNow(room))) scheduleFlush(room);
   } catch (error) {
-    // The buffer holds the values; the debounced flush retries the write.
-    logHandledError(error, { op: "mcp.recordLabValues.flush", contextId });
-    scheduleFlush(contextId);
+    // The buffer holds the values; the debounced flush retries the save.
+    logHandledError(error, {
+      op: "mcp.recordLabValues.flush",
+      contextId: room,
+    });
+    scheduleFlush(room);
   }
-  return { success: true, data: { stage: "EXPERIMENTING", saved: Object.keys(values) } };
+  return { success: true, data: { saved: Object.keys(values) } };
 }

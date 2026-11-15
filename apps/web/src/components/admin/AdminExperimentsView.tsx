@@ -8,26 +8,26 @@ import { useRouter } from "next/navigation";
 import classes from "@/components/admin/staffListing.module.css";
 import { CopyableId } from "@/components/internal/CopyableId";
 import { LocalDateTime } from "@/components/LocalDateTime";
-import { StatusChip } from "@/components/ticketing/StatusChip";
-import { StatusIcon, statusIconKind } from "@/components/ticketing/StatusIcon";
+import { StatusChip } from "@/components/status/StatusChip";
+import { StatusIcon, statusIconKind } from "@/components/status/StatusIcon";
 import { UserAvatar } from "@/components/UserAvatar";
 import {
   experimentRawPath,
   experimentWorkspacePath,
-} from "@/lib/experiment-manager/routes";
+} from "@/lib/internal/routes";
 import type { EnrichedTicket } from "@/lib/internal/experiments";
-import { statusTranslationKey } from "@/lib/ticketing/statusI18n";
-import { statusMeta } from "@/lib/ticketing/tickets";
+import { statusTranslationKey } from "@/lib/experiment/statusI18n";
+import { statusMeta } from "@/lib/experiment/tickets";
 
 type SortField = "experiment" | "requester" | "status" | "createdAt" | "updatedAt";
 type SortDir = "asc" | "desc";
 type Group = "all" | "active" | "pending" | "done";
 
-const PENDING_STATUSES = ["requested", "open", "pending", "sample_received"];
-const ACTIVE_STATUSES = ["experimenting", "experiment_started", "in_progress", "finalizing"];
+const PENDING_STATUSES = ["requested", "open", "received", "pending", "sample_received"];
+// COMPLETED still needs staff: publish the report, close the ticket.
+const ACTIVE_STATUSES = ["experimenting", "experiment_started", "in_progress", "finalizing", "completed"];
 const DONE_STATUSES = [
   "results_submitted",
-  "completed",
   "closed",
   "cancelled",
   "canceled",
@@ -285,6 +285,11 @@ export function AdminExperimentsView({ tickets }: { tickets: EnrichedTicket[] })
                     <td style={{ padding: "12px 14px 12px 20px" }}>
                       <div style={{ fontWeight: 600, fontSize: "13.5px", marginBottom: 4 }}>
                         {ticket.experimentTitle ?? t("untitled")}
+                        {ticket.progress.total > 0 && (
+                          <span style={{ fontWeight: 400, color: "#868e96", marginLeft: 6 }}>
+                            {ticket.progress.finished}/{ticket.progress.total}
+                          </span>
+                        )}
                       </div>
                       {ticket.sampleType && (
                         <span
