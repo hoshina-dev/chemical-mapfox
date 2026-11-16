@@ -1,134 +1,115 @@
 import assert from "node:assert/strict";
 
 import { Given, Then, When } from "@cucumber/cucumber";
-import type { Locator } from "playwright";
 
-import { seedFinalizingExperiment } from "../support/stub/modules/finalization.js";
+import { clickUntil, waitForHydration } from "../support/interactions.js";
+import { runtime } from "../support/runtime.js";
+import { findTicket } from "../support/stub/modules/sample-tracker.js";
+import { seedTicketFor } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
-
-/**
- * Click `trigger` until `reveals` is visible. Mirrors the auth helper but gives
- * each click its own short timeout, so attempts against a control that is still
- * hydrating (or briefly disabled mid-transition) fail fast and retry rather than
- * blocking on actionability.
- */
-async function clickUntilVisible(
-  trigger: Locator,
-  reveals: Locator,
-  attempts = 30,
-): Promise<void> {
-  for (let i = 0; i < attempts; i += 1) {
-    try {
-      await trigger.click({ timeout: 1000 });
-    } catch {
-      // not hydrated / momentarily disabled — fall through and re-check
-    }
-    try {
-      await reveals.waitFor({ state: "visible", timeout: 1000 });
-      return;
-    } catch {
-      // not revealed yet — try again
-    }
-  }
-  await reveals.waitFor({ state: "visible", timeout: 10_000 });
-}
-
-function calculateButton(world: ChemFoxWorld): Locator {
-  return world.page.getByRole("button", { name: "Calculate", exact: true });
-}
-
-function generateButton(world: ChemFoxWorld): Locator {
-  return world.page.getByRole("button", { name: "Generate report", exact: true });
-}
-
-function closeButton(world: ChemFoxWorld): Locator {
-  return world.page.getByRole("button", { name: "Close ticket", exact: true });
-}
 
 // --- data setup ----------------------------------------------------------
 
 Given(
-  "a finalizing experiment {string} exists",
-  function (this: ChemFoxWorld, contextId: string) {
-    seedFinalizingExperiment(contextId);
+  "an in-progress purity experiment {string} requested by {string}",
+  function (this: ChemFoxWorld, contextId: string, email: string) {
+    seedTicketFor(email, {
+      id: contextId,
+      name: "Coal proximate analysis",
+      stage: "IN_PROGRESS",
+      methods: [
+        {
+          name: "Purity",
+          body: {
+            labForm: {
+              name: "Purity",
+              questions: [
+                { id: "mass_pure", type: "number", label: "Pure mass (g)" },
+                { id: "mass_total", type: "number", label: "Total mass (g)" },
+              ],
+            },
+            // Evaluated for real by the browser's Pyodide engine.
+            calculations: {
+              purity: { formula: "round(values['mass_pure'] / values['mass_total'] * 100)" },
+            },
+          },
+          values: { mass_pure: 9, mass_total: 10 },
+        },
+      ],
+    });
   },
 );
 
 // --- navigation ----------------------------------------------------------
 
 When(
-  "I open the finalization workspace for {string}",
+  "I open the workspace for {string}",
   async function (this: ChemFoxWorld, contextId: string) {
     await this.goto(`/internal/experiment/${contextId}`);
-    // The Finalize card (with its Calculate button) confirms a FINALIZING ticket
-    // rendered with its experiment context — the precondition for every action.
-    await calculateButton(this).waitFor({ state: "visible", timeout: 30_000 });
+    await this.page
+      .getByRole("heading", { name: "Coal proximate analysis" })
+      .waitFor({ state: "visible", timeout: 30_000 });
   },
 );
 
-// --- calculations --------------------------------------------------------
-
-When("I run the calculations", async function (this: ChemFoxWorld) {
-  await clickUntilVisible(
-    calculateButton(this),
-    this.page.getByRole("button", { name: "Recalculate", exact: true }),
-  );
+When("I try to publish the report", async function (this: ChemFoxWorld) {
+  // One click: each click clears the previous error before the action runs.
+  const publish = this.page.getByRole("button", { name: "Publish report", exact: true });
+  await waitForHydration(publish);
+  await publish.click();
+  await this.page
+    .getByText("Could not publish the report.")
+    .first()
+    .waitFor({ state: "visible", timeout: 15_000 });
 });
+
+// --- assertions ----------------------------------------------------------
 
 Then(
   "the calculations should show a result of {string}",
   async function (this: ChemFoxWorld, value: string) {
-    await clickUntilVisible(
+    const cell = this.page.getByRole("cell", { name: value, exact: true });
+    await clickUntil(
+      this,
       this.page.getByRole("tab", { name: /Calculations/ }),
-      this.page.getByRole("cell", { name: value, exact: true }),
+      () => cell.isVisible(),
     );
   },
 );
 
-// --- report generation ---------------------------------------------------
+Then(
+  "sample_tracker stored the result {string} for {string} on {string}",
+  function (this: ChemFoxWorld, value: string, key: string, contextId: string) {
+    const calcs = findTicket(contextId)?.experiments[0].context.calculations as
+      | Record<string, { result: unknown }>
+      | undefined;
+    assert.equal(JSON.stringify(calcs?.[key]?.result), value);
+  },
+);
 
-When("I generate the report", async function (this: ChemFoxWorld) {
-  await clickUntilVisible(
-    generateButton(this),
-    this.page.getByText(/Report:\s*(Queued|Generating|Ready)/),
-  );
-});
-
-Then("the report should reach the ready state", async function (this: ChemFoxWorld) {
-  // The "View report" control only renders once the report status is success,
-  // so its appearance is the user-visible proof the poll loop reached success.
-  await this.page
-    .getByRole("link", { name: "View report", exact: true })
-    .waitFor({ state: "visible", timeout: 45_000 });
-});
-
-Then("I should be able to download the report", async function (this: ChemFoxWorld) {
-  const download = this.page.getByRole("link", { name: "Download", exact: true });
-  await download.waitFor({ state: "visible", timeout: 15_000 });
-  const href = await download.getAttribute("href");
-  assert.ok(href && href.includes("/report"), `unexpected download href: ${href}`);
-});
-
-// --- closing the ticket --------------------------------------------------
-
-Then("I cannot close the ticket yet", async function (this: ChemFoxWorld) {
-  const button = closeButton(this);
-  await button.waitFor({ state: "visible", timeout: 15_000 });
-  assert.equal(await button.isDisabled(), true);
-});
-
-When("I close the ticket", async function (this: ChemFoxWorld) {
-  const dialog = this.page.getByRole("dialog");
-  await clickUntilVisible(closeButton(this), dialog);
-  await dialog
-    .getByRole("button", { name: "Close ticket", exact: true })
-    .click({ timeout: 15_000 });
-});
-
-Then("the ticket should be closed", async function (this: ChemFoxWorld) {
-  // Once CLOSED the FINALIZING actions are replaced by the read-only report
-  // panel, whose "Download PDF" link is unique to the closed state.
+Then("the report panel should be shown", async function (this: ChemFoxWorld) {
   await this.page
     .getByRole("link", { name: "Download PDF", exact: true })
     .waitFor({ state: "visible", timeout: 30_000 });
 });
+
+async function expectPdf(world: ChemFoxWorld, path: string) {
+  const res = await world.page.request.get(`${runtime.baseUrl}${path}`);
+  assert.equal(res.status(), 200, `${path} returned ${res.status()}`);
+  assert.match(res.headers()["content-type"] ?? "", /application\/pdf/);
+  assert.equal((await res.body()).subarray(0, 5).toString(), "%PDF-");
+}
+
+Then(
+  "the staff report download for {string} should be a PDF",
+  async function (this: ChemFoxWorld, contextId: string) {
+    await expectPdf(this, `/internal/experiment/${contextId}/report?download=1`);
+  },
+);
+
+Then(
+  "the requester report download for {string} should be a PDF",
+  async function (this: ChemFoxWorld, contextId: string) {
+    await expectPdf(this, `/experiment/listing/${contextId}/report?download=1`);
+  },
+);

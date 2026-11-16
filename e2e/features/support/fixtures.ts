@@ -42,9 +42,10 @@ export const db: Database = { users: [], orgs: [] };
 export const CHEMFOX_ORG_ID = "daef78e7-6251-4b51-92cd-c8fc16fb6cb7";
 
 let idCounter = 0;
+/** custapi ids are UUIDs, and sample_tracker refuses an actor that is not one. */
 function nextId(prefix: string): string {
   idCounter += 1;
-  return `${prefix}-${idCounter}`;
+  return pseudoUuid(`${prefix}-${idCounter}`);
 }
 
 function slug(value: string): string {

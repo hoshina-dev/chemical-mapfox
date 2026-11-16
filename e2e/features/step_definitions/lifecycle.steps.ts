@@ -4,11 +4,11 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
 import {
-  addUnrunCalculation,
-  guardTicketTransition,
-  seedExperiment,
+  failNextWrite,
+  findTicket,
   ticketStatus,
-} from "../support/stub/modules/lifecycle.js";
+} from "../support/stub/modules/sample-tracker.js";
+import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 const workspacePath = (contextId: string) =>
@@ -18,17 +18,17 @@ function button(world: ChemFoxWorld, name: string): Locator {
   return world.page.getByRole("button", { name, exact: true });
 }
 
-async function enabled(locator: Locator): Promise<boolean> {
-  const first = locator.first();
-  if (!(await first.isVisible().catch(() => false))) return false;
-  return !(await first.isDisabled().catch(() => true));
-}
-
 async function visible(locator: Locator): Promise<boolean> {
   return locator
     .first()
     .isVisible()
     .catch(() => false);
+}
+
+function status(contextId: string) {
+  const ticket = findTicket(contextId);
+  assert.ok(ticket, `no ticket "${contextId}"`);
+  return ticketStatus(ticket);
 }
 
 /**
@@ -60,22 +60,29 @@ async function clickUntil(
 
 Given(
   "an experiment {string} is at the {string} stage",
-  function (this: ChemFoxWorld, contextId: string, status: string) {
-    seedExperiment({ contextId, status });
-  },
-);
-
-Given(
-  "experiment {string} has calculations that have not been run",
-  function (this: ChemFoxWorld, contextId: string) {
-    addUnrunCalculation(contextId, "moisture_pct", "1 + 1");
+  function (this: ChemFoxWorld, contextId: string, stage: string) {
+    seedTicketFor(undefined, {
+      id: contextId,
+      name: `Experiment ${contextId}`,
+      stage: toStatus(stage),
+    });
   },
 );
 
 When(
-  "the ticketing backend will reject the next transition for {string}",
+  "another technician starts experiment {string} meanwhile",
   function (this: ChemFoxWorld, contextId: string) {
-    guardTicketTransition(contextId);
+    const ticket = findTicket(contextId);
+    assert.ok(ticket, `no ticket "${contextId}"`);
+    ticket.experiments[0].startedAt = new Date().toISOString();
+  },
+);
+
+Given(
+  "sample_tracker finds ticket {string} busy on the next command",
+  function (this: ChemFoxWorld, contextId: string) {
+    // What a lock timeout returns (apperr.MapError): 409, nothing changed.
+    failNextWrite({ pathIncludes: `tickets/${contextId}/` }, 409, "the ticket is busy; try again");
   },
 );
 
@@ -85,7 +92,7 @@ When(
   "I check in the sample for {string}",
   async function (this: ChemFoxWorld, contextId: string) {
     await clickUntil(this, button(this, "Check in sample"), async () =>
-      ticketStatus(contextId) === "PENDING",
+      status(contextId) === "RECEIVED",
     );
   },
 );
@@ -94,7 +101,7 @@ When(
   "I start the experiment {string}",
   async function (this: ChemFoxWorld, contextId: string) {
     await clickUntil(this, button(this, "Start experiment"), async () =>
-      ticketStatus(contextId) === "EXPERIMENTING",
+      status(contextId) === "IN_PROGRESS",
     );
   },
 );
@@ -102,50 +109,72 @@ When(
 When(
   "I try to start the experiment {string}",
   async function (this: ChemFoxWorld, _contextId: string) {
+    await button(this, "Start experiment").waitFor({ state: "visible", timeout: 30_000 });
     await clickUntil(this, button(this, "Start experiment"), async () =>
-      visible(
-        this.page
-          .getByRole("alert")
-          .filter({ hasText: /Could not start experiment/i }),
-      ),
+      visible(this.page.getByText("Could not start experiment", { exact: true })),
+    );
+  },
+);
+
+// After a refused start the page may refresh (when the action response renews the
+// session cookie), replacing the button and its error with the editor; either shows
+// the method as started.
+const startedByOther = (world: ChemFoxWorld) => async () =>
+  (await visible(world.page.getByRole("alert").filter({ hasText: "experiment is already started" }))) ||
+  (await visible(button(world, "Finish experiment")));
+
+When("I click Start experiment", async function (this: ChemFoxWorld) {
+  await button(this, "Start experiment").waitFor({ state: "visible", timeout: 30_000 });
+  await clickUntil(this, button(this, "Start experiment"), startedByOther(this));
+});
+
+Then(
+  "the workspace shows the method as already started",
+  async function (this: ChemFoxWorld) {
+    assert.ok(await startedByOther(this)(), "neither the refusal nor the editor is shown");
+  },
+);
+
+When(
+  "I finish the experiment {string}",
+  async function (this: ChemFoxWorld, contextId: string) {
+    // Finishing calculates in the browser (Pyodide) first; allow for its download.
+    await clickUntil(
+      this,
+      button(this, "Finish experiment"),
+      async () => findTicket(contextId)?.experiments.every((e) => e.finishedAt) ?? false,
     );
   },
 );
 
 When(
-  "I submit experiment {string} to the final stage",
+  "I publish the report for {string}",
   async function (this: ChemFoxWorld, contextId: string) {
-    await clickUntil(this, button(this, "Submit to final stage"), async () =>
-      ticketStatus(contextId) === "FINALIZING",
+    await clickUntil(this, button(this, "Publish report"), async () =>
+      Boolean(findTicket(contextId)?.events.some((e) => e.type === "ticket.report_published")),
     );
   },
 );
-
-When("I run the lifecycle calculations", async function (this: ChemFoxWorld) {
-  await clickUntil(this, button(this, "Calculate"), async () =>
-    enabled(button(this, "Generate report")),
-  );
-});
-
-When("I generate the lifecycle report", async function (this: ChemFoxWorld) {
-  await clickUntil(this, button(this, "Generate report"), async () =>
-    enabled(button(this, "Close ticket")),
-  );
-});
 
 When(
   "I close the ticket {string}",
   async function (this: ChemFoxWorld, contextId: string) {
     await clickUntil(this, button(this, "Close ticket"), async () =>
-      visible(this.page.getByRole("dialog")),
+      status(contextId) === "CLOSED",
     );
-    const confirm = this.page
-      .getByRole("dialog")
-      .getByRole("button", { name: "Close ticket", exact: true });
+  },
+);
+
+When(
+  "I cancel the ticket {string} because {string}",
+  async function (this: ChemFoxWorld, contextId: string, reason: string) {
+    const dialog = this.page.getByRole("dialog");
+    await clickUntil(this, button(this, "Cancel ticket"), () => visible(dialog));
+    await dialog.getByLabel(/^Reason/).fill(reason);
     await clickUntil(
       this,
-      confirm,
-      async () => ticketStatus(contextId) === "CLOSED",
+      dialog.getByRole("button", { name: "Cancel ticket", exact: true }),
+      async () => status(contextId) === "CANCELLED",
     );
   },
 );
@@ -154,8 +183,8 @@ When(
 
 Then(
   "ticket {string} should be in the {string} stage",
-  function (this: ChemFoxWorld, contextId: string, status: string) {
-    assert.equal(ticketStatus(contextId), status);
+  function (this: ChemFoxWorld, contextId: string, stage: string) {
+    assert.equal(status(contextId), toStatus(stage));
   },
 );
 
@@ -174,7 +203,7 @@ Then(
 Then(
   "the lab form editor should be unlocked",
   async function (this: ChemFoxWorld) {
-    await button(this, "Submit to final stage")
+    await button(this, "Finish experiment")
       .first()
       .waitFor({ state: "visible", timeout: 30_000 });
   },
@@ -183,9 +212,8 @@ Then(
 Then(
   "I should not be able to close the ticket",
   async function (this: ChemFoxWorld) {
-    const close = button(this, "Close ticket").first();
-    await close.waitFor({ state: "visible", timeout: 30_000 });
-    assert.equal(await close.isDisabled(), true);
+    await button(this, "Cancel ticket").first().waitFor({ state: "visible", timeout: 30_000 });
+    assert.equal(await button(this, "Close ticket").count(), 0);
   },
 );
 

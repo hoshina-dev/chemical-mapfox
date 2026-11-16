@@ -11,18 +11,18 @@ Feature: Client — track experiments
 
   Scenario: Experiments are grouped into the correct lifecycle lanes
     Given the following experiments exist for "client@example.com":
-      | name             | status        |
-      | Soil pH Analysis | REQUESTED     |
-      | Water Tox Panel  | PENDING       |
-      | Polymer Strength | EXPERIMENTING |
-      | Resin Cure Study | FINALIZING    |
-      | Legacy Assay     | CLOSED        |
+      | name             | status      |
+      | Soil pH Analysis | REQUESTED   |
+      | Water Tox Panel  | RECEIVED    |
+      | Polymer Strength | IN_PROGRESS |
+      | Resin Cure Study | COMPLETED   |
+      | Legacy Assay     | CLOSED      |
     And I am signed in as "client@example.com" with password "password123"
     When I visit "/experiment/listing"
     Then the "Requested" lane should contain "Soil pH Analysis"
     And the "Sample received" lane should contain "Water Tox Panel"
     And the "In progress" lane should contain "Polymer Strength"
-    And the "Finalizing" lane should contain "Resin Cure Study"
+    And the "Results ready" lane should contain "Resin Cure Study"
     And the "Closed" lane should contain "Legacy Assay"
 
   Scenario: A client with no experiments sees the empty state
@@ -41,8 +41,8 @@ Feature: Client — track experiments
 
   Scenario: A client cannot open another client's experiment
     Given the following experiments exist for "other@example.com":
-      | name              | status        | contextId    |
-      | Confidential Work | EXPERIMENTING | exp-other999 |
+      | name              | status      | contextId    |
+      | Confidential Work | IN_PROGRESS | exp-other999 |
     And I am signed in as "client@example.com" with password "password123"
     When I visit "/experiment/listing/exp-other999"
     Then I should see "This page could not be found."

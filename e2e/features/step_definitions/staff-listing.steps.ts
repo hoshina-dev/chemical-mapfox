@@ -3,10 +3,8 @@ import assert from "node:assert/strict";
 import { DataTable, Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import {
-  addExperimentRecord,
-  addTicket,
-} from "../support/stub/modules/staff-listing.js";
+import { findTicket } from "../support/stub/modules/sample-tracker.js";
+import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 function searchBox(world: ChemFoxWorld): Locator {
@@ -60,26 +58,24 @@ Given(
   "the following experiment tickets exist:",
   function (this: ChemFoxWorld, table: DataTable) {
     for (const row of table.hashes()) {
-      addTicket({
+      if (row.id && findTicket(row.id)) continue;
+      seedTicketFor(row.requester || undefined, {
         id: row.id || undefined,
         name: row.name,
-        status: row.status,
-        requesterEmail: row.requester || undefined,
-        createdAt: row.createdAt || undefined,
-        updatedAt: row.updatedAt || undefined,
+        stage: toStatus(row.status),
+        requestedAt: row.createdAt ? new Date(row.createdAt).toISOString() : undefined,
+        updatedAt: row.updatedAt ? new Date(row.updatedAt).toISOString() : undefined,
       });
     }
   },
 );
 
 Given(
-  "an experiment record exists for {string} with analyst {string}",
-  function (this: ChemFoxWorld, contextId: string, analyst: string) {
-    addExperimentRecord(contextId, {
-      id: contextId,
-      status: "experimenting",
-      values: { analyst },
-    });
+  "the lab recorded analyst {string} on {string}",
+  function (this: ChemFoxWorld, analyst: string, contextId: string) {
+    const ticket = findTicket(contextId);
+    assert.ok(ticket, `no ticket "${contextId}"`);
+    ticket.experiments[0].context.values = { analyst };
   },
 );
 
@@ -197,7 +193,7 @@ async function rawCardText(
 Then(
   "the raw ticket JSON should contain {string}",
   async function (this: ChemFoxWorld, value: string) {
-    const text = await rawCardText(this, "Ticket (ticketing-service)");
+    const text = await rawCardText(this, "Ticket");
     assert.ok(
       text.includes(value),
       `ticket JSON should contain "${value}"\n--- got ---\n${text}`,
@@ -206,12 +202,12 @@ Then(
 );
 
 Then(
-  "the raw experiment JSON should contain {string}",
+  "the raw event history should contain {string}",
   async function (this: ChemFoxWorld, value: string) {
-    const text = await rawCardText(this, "Experiment (experiment-manager)");
+    const text = await rawCardText(this, "Event history");
     assert.ok(
       text.includes(value),
-      `experiment JSON should contain "${value}"\n--- got ---\n${text}`,
+      `event history should contain "${value}"\n--- got ---\n${text}`,
     );
   },
 );

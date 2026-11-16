@@ -53,11 +53,12 @@ jobs:
           - docs
           - finalization
           - lifecycle
-          - pdf-builder
+          - report-form
           - staff-listing
           - template-authoring
           - admin-users
           - mcp
+          - i18n
 
     # No external services — backends are stubbed in-process and collaborative
     # editing uses an in-memory Redis mock inside the web app.

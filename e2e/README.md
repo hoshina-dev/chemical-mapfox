@@ -9,18 +9,20 @@ finalization, template authoring, etc.) follow the same structure.
 
 ## How it works
 
-The app is a **BFF**: it talks to its backends (custapi, ticketing-service,
-experiment-manager) **server-side**, so browser-level request interception can't
-mock them. Instead the harness:
+The app is a **BFF**: it talks to its backends (custapi, sample_tracker)
+**server-side**, so browser-level request interception can't mock them. Instead
+the harness:
 
-1. Starts an in-process **stub HTTP server** (`features/support/stub-server.ts`)
-   that answers all three backends from an in-memory fixture store
-   (`features/support/fixtures.ts`). Step definitions seed data by mutating that
-   store directly — no network round-trip.
+1. Starts an in-process **stub HTTP server** (`features/support/stub/server.ts`)
+   that answers both backends from in-memory stores: users/orgs in
+   `features/support/fixtures.ts`, and a stateful fake of sample_tracker in
+   `features/support/stub/modules/sample-tracker.ts` (its routes, derived
+   ticket statuses, guards and error messages). Step definitions seed data by
+   mutating those stores directly — no network round-trip.
 2. Boots the Next.js app (`next dev`) on its own port (default **3100**, so it
    never clashes with your `pnpm dev` on 3000), with `CUSTAPI_URL` /
-   `TICKETING_URL` / `EXPERIMENT_MANAGER_URL` pointed at the stub and the in-memory Redis
-   mock that holds sessions.
+   `SAMPLE_TRACKER_URL` pointed at the stub and the in-memory Redis mock that
+   holds sessions. Nothing reaches a real backend.
 3. Drives it with **Playwright** (Chromium). A fresh browser context per
    scenario; the fixture store is reset in a `Before` hook.
 
@@ -103,7 +105,8 @@ e2e/
 │           ├── registry.ts          # registerStub / reset / dispatch
 │           ├── types.ts             # StubModule / StubContext
 │           └── modules/
-│               └── custapi.ts       # users + organizations
+│               ├── custapi.ts        # users + organizations
+│               └── sample-tracker.ts # catalogue, tickets, reports, preferences
 └── README.md
 ```
 
@@ -122,19 +125,20 @@ shared file, which keeps parallel branches conflict-free:
    `support/interactions.ts`: under `next dev`, a click or fill that lands
    before React hydration is silently discarded, and these retry until it
    takes.
-3. **Backend stub** — if the flow hits a backend endpoint not yet modelled, drop
-   a new file `features/support/stub/modules/<area>.ts` that calls
-   `registerStub({ name, reset, handle })`. The stub server **auto-loads every
-   file** in `modules/`, so no central registration is needed. Keep per-feature
-   in-memory state inside the module and clear it in `reset()`.
-4. **Fixtures** — extend `fixtures.ts` only for shared entities (users/orgs);
-   feature-specific entities (tickets, samples, templates, experiments) should
-   live in the feature's own stub module.
+3. **Data** — seed sample_tracker through the helpers exported by
+   `stub/modules/sample-tracker.ts` (`seedSampleType`, `seedTemplate`,
+   `seedTicket`, `failNextWrite`; `support/tickets.ts` resolves a requester by
+   email). When sample_tracker gains a route, model it in that fake, matching
+   the real service's behaviour. A new backend gets its own
+   `stub/modules/<name>.ts` calling `registerStub({ name, reset, handle })`; the
+   stub server **auto-loads every file** in `modules/`.
+4. **Fixtures** — extend `fixtures.ts` only for shared entities (users/orgs).
 
 > The stub strips the shared `/api/v1` prefix, so `ctx.path` for a custapi call
-> to `/api/v1/users/email/x` is `["users","email","x"]`, and for a ticketing
-> call to `/api/v1/tickets` is `["tickets"]`. Anything no module handles returns
-> a benign `[]` (GET) / `{}` so best-effort listing calls never crash a page.
+> to `/api/v1/users/email/x` is `["users","email","x"]`, and for a
+> sample_tracker call to `/api/v1/tickets` is `["tickets"]`. An unknown
+> sample_tracker route is a 404; anything else no module handles returns a
+> benign `[]` (GET) / `{}`.
 
 ## TypeScript
 

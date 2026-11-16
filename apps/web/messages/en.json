@@ -392,7 +392,7 @@
         "noOrganization": "You aren't a member of any organization yet, so this experiment can't be requested. Join an organization and try again.",
         "templateGone": "That experiment template no longer exists.",
         "noReportLayout": "This experiment can't be requested yet — its report layout hasn't been set up.",
-        "noTicketId": "The ticketing service returned a request without an id.",
+        "noTicketId": "The lab system returned a request without an id.",
         "submitFailed": "Could not submit your experiment request.",
         "intakeNotSaved": "Your request was submitted, but saving your intake answers didn't go through. The lab may ask you to re-enter them."
       }
@@ -409,7 +409,7 @@
     },
     "experiments": {
       "title": "Experiments",
-      "subtitle": "Every experiment ticket from the ticketing service. Filter by lifecycle group, search, sort, and open a row to work the experiment.",
+      "subtitle": "Every experiment ticket in the lab system. Filter by lifecycle group, search, sort, and open a row to work the experiment.",
       "filterGroupAriaLabel": "Filter by lifecycle group",
       "filters": {
         "all": "All",
@@ -437,7 +437,7 @@
       "emptyTitle": "No experiments found",
       "emptyNone": "No experiments yet.",
       "emptyFiltered": "Try adjusting your search or filter.",
-      "loadErrorTitle": "Could not reach Ticketing Service",
+      "loadErrorTitle": "Could not reach the lab system",
       "loadErrorFallback": "Failed to load experiments.",
       "degradedTitle": "Some requester details unavailable",
       "degradedBody": "Requester details could not be loaded from the user service. The list below is complete; some requester cells may show raw user IDs."
@@ -453,7 +453,7 @@
       "pendingTitle": "Sample received — ready to start",
       "pendingBody": "The sample is checked in. Start the experiment to enter and collaborate on lab values.",
       "stateUnavailableTitle": "Current state unavailable",
-      "stateUnavailableBody": "No experiment context found for this ID yet. Values appear here once the experiment has been created in Experiment Manager.",
+      "stateUnavailableBody": "No experiment found for this ID, so there are no values to show.",
       "requester": "Requester",
       "unknownRequester": "Unknown",
       "lifecycle": "Lifecycle",
@@ -530,13 +530,13 @@
     "raw": {
       "breadcrumb": "Raw JSON",
       "title": "Raw JSON",
-      "ticketHeading": "Ticket (ticketing-service)",
-      "ticketErrorTitle": "Ticketing Service error",
+      "ticketHeading": "Ticket",
+      "ticketErrorTitle": "Could not load the ticket",
       "ticketErrorFallback": "Failed to load ticket.",
       "experimentHeading": "Event history",
-      "experimentReturned": "Experiment Manager returned {status}",
-      "experimentErrorTitle": "Experiment Manager error",
-      "experimentNotFound": "No experiment context has been created for this id yet, so there is no state to show.",
+      "experimentReturned": "The lab system returned {status}",
+      "experimentErrorTitle": "Could not load the event history",
+      "experimentNotFound": "No ticket exists for this id, so there is no history to show.",
       "experimentErrorFallback": "Failed to load experiment.",
       "noData": "No data",
       "copyJson": "Copy JSON"
@@ -565,7 +565,7 @@
       "breadcrumb": "Onboarding",
       "title": "Experiment onboarding",
       "subtitle": "Samples (specimen types) supported by the labs. Open one to manage its experiment templates, or register a new sample.",
-      "loadErrorTitle": "Could not reach Experiment Manager",
+      "loadErrorTitle": "Could not reach the lab system",
       "loadSamplesFallback": "Failed to load samples.",
       "emptyMessage": "No samples yet. Register your first one.",
       "templateCount": "{count, plural, one {# template} other {# templates}}",
@@ -891,7 +891,7 @@
       "unknownError": "Unknown error."
     },
     "newPage": {
-      "loadErrorTitle": "Could not reach Experiment Manager",
+      "loadErrorTitle": "Could not reach the lab system",
       "loadSamplesFallback": "Failed to load samples."
     },
     "errors": {
@@ -1208,7 +1208,7 @@
       },
       "experiments": {
         "title": "Experiments list",
-        "subtitle": "The Experiments page is your queue of every ticket from the ticketing service.",
+        "subtitle": "The Experiments page is your queue of every ticket in the lab system.",
         "sections": {
           "find": {
             "heading": "Find an experiment",
@@ -1367,7 +1367,7 @@
           },
           "components": {
             "heading": "Component reference",
-            "body": "Every supported question type is documented under Form components in this docs section — with a live preview and generated schema fields. Prefer those types so the frontend renderer and Experiment Manager stay aligned."
+            "body": "Every supported question type is documented under Form components in this docs section — with a live preview and generated schema fields. Prefer those types so the frontend renderer and the lab system stay aligned."
           }
         }
       },

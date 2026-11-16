@@ -1,12 +1,12 @@
 Feature: Staff experiment lifecycle transitions
   As lab staff
   I want to move an experiment ticket through its guarded lifecycle
-  So that each stage (check-in, start, submit, close) only happens when it's valid
+  So that each step (check-in, start, finish, close, cancel) only happens when it's valid
 
-  The ticket state machine is REQUESTED → PENDING ("sample received") →
-  EXPERIMENTING → FINALIZING → CLOSED. Every transition is guarded; the
-  ticketing backend rejects an invalid one with a 422 the app surfaces as a
-  friendly error.
+  sample_tracker derives the ticket status from what happened to it and its
+  methods: REQUESTED → RECEIVED → IN_PROGRESS (a method started) → COMPLETED
+  (every method finished) → CLOSED, and any open ticket can be CANCELLED with a
+  reason. It refuses an invalid command with a 409 whose message the app shows.
 
   Background:
     Given the following users exist:
@@ -18,38 +18,50 @@ Feature: Staff experiment lifecycle transitions
     Given an experiment "ctx-checkin" is at the "REQUESTED" stage
     When I visit "/internal/experiment/checkin/ctx-checkin"
     And I check in the sample for "ctx-checkin"
-    Then ticket "ctx-checkin" should be in the "PENDING" stage
+    Then ticket "ctx-checkin" should be in the "RECEIVED" stage
     And I should be on the workspace for "ctx-checkin"
 
   Scenario: Starting the experiment unlocks the collaborative editor
-    Given an experiment "ctx-start" is at the "PENDING" stage
+    Given an experiment "ctx-start" is at the "RECEIVED" stage
     When I visit "/internal/experiment/ctx-start"
     And I start the experiment "ctx-start"
-    Then ticket "ctx-start" should be in the "EXPERIMENTING" stage
+    Then ticket "ctx-start" should be in the "IN_PROGRESS" stage
     And the lab form editor should be unlocked
 
-  Scenario: Submitting the experiment moves it to the finalizing stage
-    Given an experiment "ctx-submit" is at the "EXPERIMENTING" stage
-    When I visit "/internal/experiment/ctx-submit"
-    And I submit experiment "ctx-submit" to the final stage
-    Then ticket "ctx-submit" should be in the "FINALIZING" stage
-    And I should see the message "Finalize"
+  Scenario: Finishing the last method completes the ticket
+    Given an experiment "ctx-finish" is at the "IN_PROGRESS" stage
+    When I visit "/internal/experiment/ctx-finish"
+    And I finish the experiment "ctx-finish"
+    Then ticket "ctx-finish" should be in the "COMPLETED" stage
+    And I should see the message "Experiment finished"
 
-  Scenario: Closing is blocked until calculations and the report are done
-    Given an experiment "ctx-close" is at the "FINALIZING" stage
-    And experiment "ctx-close" has calculations that have not been run
+  Scenario: Closing is offered only once every method is finished
+    Given an experiment "ctx-close" is at the "IN_PROGRESS" stage
     When I visit "/internal/experiment/ctx-close"
     Then I should not be able to close the ticket
-    And I should see the message "Run calculations and generate the report before closing this ticket."
-    When I run the lifecycle calculations
-    And I generate the lifecycle report
+    When I finish the experiment "ctx-close"
     And I close the ticket "ctx-close"
     Then ticket "ctx-close" should be in the "CLOSED" stage
 
-  Scenario: An invalid transition surfaces the friendly 422 error
-    Given an experiment "ctx-invalid" is at the "PENDING" stage
-    And the ticketing backend will reject the next transition for "ctx-invalid"
+  Scenario: Cancelling an open ticket records the reason
+    Given an experiment "ctx-cancel" is at the "RECEIVED" stage
+    When I visit "/internal/experiment/ctx-cancel"
+    And I cancel the ticket "ctx-cancel" because "Sample leaked in transit"
+    Then ticket "ctx-cancel" should be in the "CANCELLED" stage
+    And I should see the message "Sample leaked in transit"
+
+  Scenario: A refused transition surfaces sample_tracker's message
+    Given an experiment "ctx-invalid" is at the "RECEIVED" stage
+    And sample_tracker finds ticket "ctx-invalid" busy on the next command
     When I visit "/internal/experiment/ctx-invalid"
     And I try to start the experiment "ctx-invalid"
-    Then I should see the error containing "Invalid transition"
-    And ticket "ctx-invalid" should be in the "PENDING" stage
+    Then I should see the error containing "the ticket is busy; try again"
+    And ticket "ctx-invalid" should be in the "RECEIVED" stage
+
+  Scenario: A method started by someone else meanwhile shows as in progress
+    Given an experiment "ctx-race" is at the "RECEIVED" stage
+    When I visit "/internal/experiment/ctx-race"
+    And another technician starts experiment "ctx-race" meanwhile
+    And I click Start experiment
+    Then the workspace shows the method as already started
+    And ticket "ctx-race" should be in the "IN_PROGRESS" stage

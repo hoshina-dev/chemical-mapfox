@@ -10,8 +10,14 @@ export interface StubContext {
   /** Path segments with the shared `/api/v1` prefix stripped. */
   path: string[];
   url: URL;
-  /** Parse and cache the JSON request body. */
+  /** A request header (first value). */
+  header(name: string): string | undefined;
+  /** The raw request body (cached). */
+  readRaw(): Promise<Buffer>;
+  /** Parse the JSON request body ({} when empty or invalid). */
   readBody(): Promise<unknown>;
+  /** Send raw bytes. Returns `true` like `json`. */
+  send(status: number, body: Buffer | Uint8Array, contentType: string): true;
   /** Send a JSON response. Returns `true` so handlers can `return ctx.json(...)`. */
   json(status: number, body: unknown): true;
 }

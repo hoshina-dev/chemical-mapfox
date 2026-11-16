@@ -1,5 +1,6 @@
 Feature: Staff catalogue visibility and ordering
-  Staff manage the public list independently of online request eligibility.
+  Staff choose which specimens and tests the landing page and the client
+  request catalogue offer, and in which order. Hidden ones cannot be requested.
 
   Background:
     Given the following users exist:
@@ -8,25 +9,25 @@ Feature: Staff catalogue visibility and ordering
       | Casey Client | client@example.com | password123 | user  |
     And the sample "Coal" has an experiment template "Ready test"
     And the sample "Coal" has an experiment template "Other ready test"
-    And the sample "Coal" has a public experiment "Listed test" without a PDF report
+    And the sample "Coal" has an experiment template "Listed test"
     And the sample "Water" has an experiment template "Water test"
     And I am signed in as "admin@example.com" with password "password123"
 
-  Scenario: Visibility is saved independently of PDF readiness
+  Scenario: A hidden test leaves both catalogues
     When I visit the catalogue settings for "Coal"
-    And I hide "Ready test" from the landing page
+    And I hide "Ready test" from clients
     And I reload the catalogue settings
     Then "Ready test" should be hidden in catalogue settings
     When I visit "/"
     And I expand the "Coal" specimen in the laboratory offer
-    Then the public test "Listed test" should offer contact instead of an online request
+    Then the public test "Listed test" should offer an online request
     And the public test "Ready test" should not be listed
     Given I am not signed in
     And I am signed in as "client@example.com" with password "password123"
     And I visit "/experiment/request/listing"
     And I open the client catalogue group "Coal"
-    Then I should see "Ready test"
-    And client test "Listed test" should not be listed
+    Then I should see "Listed test"
+    And client test "Ready test" should not be listed
 
   Scenario: Dragged order persists and is used in both catalogues
     When I visit "/internal/experiment/onboarding"
@@ -71,13 +72,13 @@ Feature: Staff catalogue visibility and ordering
   Scenario: Failed writes restore the previous visibility
     When I visit the catalogue settings for "Coal"
     Given the next catalogue write will fail
-    When I try to hide "Ready test" from the landing page
+    When I try to hide "Ready test" from clients
     Then I should see "Could not save catalogue settings. Refresh and try again."
     And "Ready test" should be visible in catalogue settings
 
   Scenario: Hiding a specimen keeps its experiment settings intact
     When I visit "/internal/experiment/onboarding"
-    And I hide "Coal" from the landing page
+    And I hide "Coal" from clients
     When I visit "/"
     Then public specimen "Coal" should not be listed
     When I visit the catalogue settings for "Coal"
@@ -95,9 +96,8 @@ Feature: Staff catalogue visibility and ordering
     Then catalogue item "Ready test" should appear at place 2
     And the catalogue controls should fit the mobile viewport
 
-  Scenario: A listed test without a PDF cannot be requested directly
-    Given I am not signed in
-    And I am signed in as "client@example.com" with password "password123"
-    When I visit the request form for catalogue test "Listed test"
-    Then I should see "Report layout not set up"
-    And the catalogue request submit button should be disabled
+  Scenario: A specimen without a report form is flagged for staff
+    Given the sample "Water" has no report form
+    When I visit "/internal/experiment/onboarding"
+    Then catalogue item "Water" should be flagged as missing its report form
+    And catalogue item "Coal" should appear at place 1

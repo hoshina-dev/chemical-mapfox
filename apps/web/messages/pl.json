@@ -392,7 +392,7 @@
         "noOrganization": "Nie należysz jeszcze do żadnej organizacji, dlatego nie można zamówić tego eksperymentu. Dołącz do organizacji i spróbuj ponownie.",
         "templateGone": "Ten szablon eksperymentu już nie istnieje.",
         "noReportLayout": "Tego eksperymentu nie można jeszcze zamówić — nie skonfigurowano jego układu raportu.",
-        "noTicketId": "Usługa zgłoszeń zwróciła zgłoszenie bez identyfikatora.",
+        "noTicketId": "System laboratorium zwrócił zgłoszenie bez identyfikatora.",
         "submitFailed": "Nie udało się przesłać zgłoszenia eksperymentu.",
         "intakeNotSaved": "Twoje zgłoszenie zostało przesłane, ale zapisanie odpowiedzi wstępnych się nie powiodło. Laboratorium może poprosić o ich ponowne wprowadzenie."
       }
@@ -409,7 +409,7 @@
     },
     "experiments": {
       "title": "Eksperymenty",
-      "subtitle": "Wszystkie zgłoszenia eksperymentów z usługi zgłoszeń. Filtruj według grupy cyklu życia, wyszukuj, sortuj i otwórz wiersz, aby pracować nad eksperymentem.",
+      "subtitle": "Wszystkie zgłoszenia eksperymentów w systemie laboratorium. Filtruj według grupy cyklu życia, wyszukuj, sortuj i otwórz wiersz, aby pracować nad eksperymentem.",
       "filterGroupAriaLabel": "Filtruj według grupy cyklu życia",
       "filters": {
         "all": "Wszystkie",
@@ -437,7 +437,7 @@
       "emptyTitle": "Nie znaleziono eksperymentów",
       "emptyNone": "Brak eksperymentów.",
       "emptyFiltered": "Spróbuj zmienić wyszukiwanie lub filtr.",
-      "loadErrorTitle": "Nie można połączyć się z usługą zgłoszeń",
+      "loadErrorTitle": "Nie można połączyć się z systemem laboratorium",
       "loadErrorFallback": "Nie udało się załadować eksperymentów.",
       "degradedTitle": "Niektóre dane zlecających są niedostępne",
       "degradedBody": "Nie udało się załadować danych zlecających z usługi użytkowników. Poniższa lista jest kompletna; niektóre komórki zlecających mogą wyświetlać surowe identyfikatory użytkowników."
@@ -453,7 +453,7 @@
       "pendingTitle": "Próbka przyjęta — gotowe do rozpoczęcia",
       "pendingBody": "Próbka została przyjęta. Rozpocznij eksperyment, aby wprowadzać wartości laboratoryjne i współpracować nad nimi.",
       "stateUnavailableTitle": "Bieżący stan niedostępny",
-      "stateUnavailableBody": "Nie znaleziono jeszcze kontekstu eksperymentu dla tego identyfikatora. Wartości pojawią się tutaj po utworzeniu eksperymentu w Experiment Manager.",
+      "stateUnavailableBody": "Nie znaleziono eksperymentu dla tego identyfikatora, więc nie ma wartości do wyświetlenia.",
       "requester": "Zlecający",
       "unknownRequester": "Nieznany",
       "lifecycle": "Cykl życia",
@@ -530,13 +530,13 @@
     "raw": {
       "breadcrumb": "Surowy JSON",
       "title": "Surowy JSON",
-      "ticketHeading": "Zgłoszenie (ticketing-service)",
-      "ticketErrorTitle": "Błąd usługi zgłoszeń",
+      "ticketHeading": "Zgłoszenie",
+      "ticketErrorTitle": "Nie udało się załadować zgłoszenia",
       "ticketErrorFallback": "Nie udało się załadować zgłoszenia.",
       "experimentHeading": "Historia zdarzeń",
-      "experimentReturned": "Experiment Manager zwrócił {status}",
-      "experimentErrorTitle": "Błąd Experiment Manager",
-      "experimentNotFound": "Dla tego identyfikatora nie utworzono jeszcze kontekstu eksperymentu, więc nie ma stanu do wyświetlenia.",
+      "experimentReturned": "System laboratorium zwrócił {status}",
+      "experimentErrorTitle": "Nie udało się załadować historii zdarzeń",
+      "experimentNotFound": "Dla tego identyfikatora nie istnieje zgłoszenie, więc nie ma historii do wyświetlenia.",
       "experimentErrorFallback": "Nie udało się załadować eksperymentu.",
       "noData": "Brak danych",
       "copyJson": "Kopiuj JSON"
@@ -565,7 +565,7 @@
       "breadcrumb": "Wdrażanie",
       "title": "Wdrażanie eksperymentów",
       "subtitle": "Próbki (rodzaje próbek) obsługiwane przez laboratoria. Otwórz jedną, aby zarządzać jej szablonami eksperymentów, lub zarejestruj nową próbkę.",
-      "loadErrorTitle": "Nie można połączyć się z Experiment Manager",
+      "loadErrorTitle": "Nie można połączyć się z systemem laboratorium",
       "loadSamplesFallback": "Nie udało się załadować próbek.",
       "emptyMessage": "Brak próbek. Zarejestruj swoją pierwszą.",
       "templateCount": "{count, plural, one {# szablon} few {# szablony} many {# szablonów} other {# szablonów}}",
@@ -891,7 +891,7 @@
       "unknownError": "Nieznany błąd."
     },
     "newPage": {
-      "loadErrorTitle": "Nie można połączyć się z Experiment Manager",
+      "loadErrorTitle": "Nie można połączyć się z systemem laboratorium",
       "loadSamplesFallback": "Nie udało się załadować próbek."
     },
     "errors": {
@@ -1208,7 +1208,7 @@
       },
       "experiments": {
         "title": "Lista eksperymentów",
-        "subtitle": "Strona Eksperymenty to Twoja kolejka wszystkich zgłoszeń z usługi ticketingu.",
+        "subtitle": "Strona Eksperymenty to Twoja kolejka wszystkich zgłoszeń w systemie laboratorium.",
         "sections": {
           "find": {
             "heading": "Znajdź eksperyment",
@@ -1367,7 +1367,7 @@
           },
           "components": {
             "heading": "Dokumentacja komponentów",
-            "body": "Każdy obsługiwany typ pytania jest udokumentowany w Formularze — komponenty w tej sekcji dokumentacji — z podglądem na żywo i wygenerowanymi polami schematu. Preferuj te typy, aby renderer frontendu i Experiment Manager pozostały zsynchronizowane."
+            "body": "Każdy obsługiwany typ pytania jest udokumentowany w Formularze — komponenty w tej sekcji dokumentacji — z podglądem na żywo i wygenerowanymi polami schematu. Preferuj te typy, aby renderer frontendu i system laboratorium pozostały zsynchronizowane."
           }
         }
       },

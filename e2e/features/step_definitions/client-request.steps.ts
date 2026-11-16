@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import { seedCatalogTemplate } from "../support/stub/modules/client-request.js";
+import {
+  findTicket,
+  sampleTracker,
+  seedSampleType,
+  seedTemplate,
+} from "../support/stub/modules/sample-tracker.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 /**
@@ -34,11 +39,19 @@ async function clickUntilVisible(
 Given(
   "the catalog offers a sample {string} with experiment {string}",
   function (this: ChemFoxWorld, sampleName: string, templateTitle: string) {
-    seedCatalogTemplate({
-      sampleName,
-      sampleDescription: `${sampleName} specimens accepted by the lab.`,
-      templateTitle,
-      templateDescription: `${templateTitle} run on a ${sampleName} specimen.`,
+    seedSampleType(sampleName, {
+      description: `${sampleName} specimens accepted by the lab.`,
+    });
+    seedTemplate(sampleName, templateTitle, {
+      description: `${templateTitle} run on a ${sampleName} specimen.`,
+      body: {
+        clientForm: {
+          name: "Client intake",
+          questions: [
+            { id: "sample_summary", type: "string", label: "Sample description", required: true },
+          ],
+        },
+      },
     });
   },
 );
@@ -61,10 +74,9 @@ When(
     const control = this.page
       .getByRole("button")
       .filter({ hasText: sampleName });
-    // `exact` keeps this off the navbar's "Request experiment" link.
     await clickUntilVisible(
       control.first(),
-      this.page.getByRole("link", { name: "Request", exact: true }).first(),
+      this.page.getByText("Tick the methods to run on your sample.").first(),
     );
   },
 );
@@ -84,14 +96,8 @@ Then(
 When(
   "I request the experiment {string}",
   async function (this: ChemFoxWorld, templateTitle: string) {
-    // The catalogue seeds a single current template per specimen, so the one
-    // exact "Request" link (not the navbar's "Request experiment") is the one
-    // for `templateTitle`.
-    void templateTitle;
-    await this.page
-      .getByRole("link", { name: "Request", exact: true })
-      .first()
-      .click();
+    await this.page.getByRole("checkbox", { name: templateTitle }).first().check();
+    await this.page.getByRole("link", { name: "Request 1", exact: true }).click();
   },
 );
 
@@ -106,7 +112,7 @@ Then(
       { timeout: 30_000 },
     );
     await this.page
-      .getByRole("heading", { name: templateTitle })
+      .getByText(templateTitle, { exact: true })
       .first()
       .waitFor({ state: "visible", timeout: 15_000 });
   },
@@ -136,5 +142,17 @@ Then(
       { timeout: 30_000 },
     );
     assert.match(this.currentPath(), /^\/experiment\/listing\/[^/]+$/);
+  },
+);
+
+Then(
+  "the lab receives my request for {string} with {string}",
+  function (this: ChemFoxWorld, templateTitle: string, answer: string) {
+    const id = this.currentPath().split("/").at(-1) ?? "";
+    const ticket = findTicket(id);
+    assert.ok(ticket, `sample_tracker has no ticket ${id} (${sampleTracker.tickets.length} tickets)`);
+    assert.equal(ticket.experiments.length, 1);
+    assert.equal(ticket.experiments[0].templateName, templateTitle);
+    assert.deepEqual(ticket.experiments[0].context.values, { sample_summary: answer });
   },
 );

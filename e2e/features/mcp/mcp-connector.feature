@@ -40,7 +40,7 @@ Feature: MCP connector for lab staff
     When I call MCP tool "list_experiments"
     Then the MCP tool result includes experiment "ctx-mcp-coal"
     When I call MCP tool "check_in_sample" with context id "ctx-mcp-coal"
-    Then ticket "ctx-mcp-coal" should be in the "PENDING" stage
+    Then ticket "ctx-mcp-coal" should be in the "RECEIVED" stage
 
   Scenario: Unticking a permission on consent hides those tools
     Given I register an MCP client named "Claude" with redirect URI "https://claude.ai/api/mcp/auth_callback"

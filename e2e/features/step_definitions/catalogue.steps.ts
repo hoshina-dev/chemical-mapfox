@@ -3,21 +3,22 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import { waitForHydration } from "../support/interactions.js";
 import type { ChemFoxWorld } from "../support/world.js";
 import {
-  failNextCatalogueWrite,
-  catalogueWriteCount,
-  findSampleByName,
-  findTemplateByName,
-  seedTemplate,
-} from "../support/stub/modules/template-authoring.js";
+  failNextWrite,
+  findSampleType,
+  sampleTracker,
+  seedSampleType,
+} from "../support/stub/modules/sample-tracker.js";
 
-Given(
-  "the sample {string} has a public experiment {string} without a PDF report",
-  function (sample: string, name: string) {
-    seedTemplate(sample, name).pdfComponents = null;
-  },
-);
+const catalogueWriteCount = () =>
+  sampleTracker.writes.filter((w) => /web-(visibility|order)$/.test(w.path)).length;
+
+Given("the sample {string} has no report form", function (sample: string) {
+  const st = seedSampleType(sample);
+  st.reportForm = null;
+  st.reportPdf = null;
+});
 Given("the next catalogue write will fail", function () {
-  failNextCatalogueWrite();
+  failNextWrite({ pathIncludes: "web-" }, 503, "catalogue temporarily unavailable");
 });
 When(
   "I cancel and leave unchanged the drag of {string}",
@@ -43,7 +44,7 @@ When(
 When(
   "I visit the catalogue settings for {string}",
   async function (this: ChemFoxWorld, name: string) {
-    const sample = findSampleByName(name);
+    const sample = findSampleType(name);
     assert.ok(sample);
     await this.goto(`/internal/experiment/onboarding/${sample.id}`);
   },
@@ -53,20 +54,20 @@ When("I reload the catalogue settings", async function (this: ChemFoxWorld) {
 });
 
 async function hide(world: ChemFoxWorld, name: string) {
-  const input = world.page.getByLabel(`Show ${name} on landing page`, {
+  const input = world.page.getByLabel(`Show ${name} to clients`, {
     exact: true,
   });
   await waitForHydration(input);
   await input.uncheck();
 }
 When(
-  "I try to hide {string} from the landing page",
+  "I try to hide {string} from clients",
   async function (this: ChemFoxWorld, name: string) {
     await hide(this, name);
   },
 );
 When(
-  "I hide {string} from the landing page",
+  "I hide {string} from clients",
   async function (this: ChemFoxWorld, name: string) {
     await hide(this, name);
     await this.page
@@ -78,7 +79,7 @@ When(
 Then(
   "{string} should be hidden in catalogue settings",
   async function (this: ChemFoxWorld, name: string) {
-    const input = this.page.getByLabel(`Show ${name} on landing page`, {
+    const input = this.page.getByLabel(`Show ${name} to clients`, {
       exact: true,
     });
     await input.waitFor({ state: "visible", timeout: 10000 });
@@ -88,7 +89,7 @@ Then(
 Then(
   "{string} should be visible in catalogue settings",
   async function (this: ChemFoxWorld, name: string) {
-    const input = this.page.getByLabel(`Show ${name} on landing page`, {
+    const input = this.page.getByLabel(`Show ${name} to clients`, {
       exact: true,
     });
     await input.waitFor({ state: "visible", timeout: 10000 });
@@ -128,6 +129,7 @@ When(
       name: `Reorder ${name}`,
       exact: true,
     });
+    await waitForHydration(handle);
     await handle.focus();
     await handle.press("Space");
     await handle.press("ArrowDown");
@@ -178,21 +180,15 @@ When(
   },
 );
 Then(
-  "the public test {string} should offer contact instead of an online request",
+  "the public test {string} should offer an online request",
   async function (this: ChemFoxWorld, name: string) {
     const row = this.page
       .locator("#offer")
       .getByText(name, { exact: true })
       .locator("..");
     await row
-      .getByRole("link", { name: "Contact laboratory", exact: true })
+      .getByRole("link", { name: "Request this experiment", exact: true })
       .waitFor({ state: "visible", timeout: 10000 });
-    assert.equal(
-      await row
-        .getByRole("link", { name: "Request this experiment", exact: true })
-        .count(),
-      0,
-    );
   },
 );
 Then(
@@ -258,9 +254,9 @@ Then(
 Then(
   "client test {string} should appear before {string}",
   async function (this: ChemFoxWorld, a: string, b: string) {
-    const cards = this.page.getByRole("link", { name: "Request", exact: true });
+    const cards = this.page.getByRole("checkbox");
     await cards.first().waitFor({ state: "visible" });
-    const names = await cards.locator("../..").allTextContents();
+    const names = await cards.allTextContents();
     assert.ok(
       names.findIndex((s) => s.includes(a)) <
         names.findIndex((s) => s.includes(b)),
@@ -278,25 +274,14 @@ Then(
   },
 );
 
-When(
-  "I visit the request form for catalogue test {string}",
-  async function (this: ChemFoxWorld, name: string) {
-    const template = findTemplateByName(name);
-    assert.ok(template);
-    await this.goto(
-      `/experiment/request/${template.id}?sampleId=${template.sampleId}`,
-    );
-  },
-);
 Then(
-  "the catalogue request submit button should be disabled",
-  async function (this: ChemFoxWorld) {
-    assert.equal(
-      await this.page
-        .getByRole("button", { name: "Submit request", exact: true })
-        .isEnabled(),
-      false,
-    );
+  "catalogue item {string} should be flagged as missing its report form",
+  async function (this: ChemFoxWorld, name: string) {
+    await this.page
+      .getByRole("link", { name, exact: true })
+      .locator("..")
+      .getByText("No report template", { exact: false })
+      .waitFor({ state: "visible", timeout: 10000 });
   },
 );
 When(

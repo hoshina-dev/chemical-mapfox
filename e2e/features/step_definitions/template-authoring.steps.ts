@@ -5,9 +5,9 @@ import type { Locator } from "playwright";
 
 import { clickUntil, setInput } from "../support/interactions.js";
 import {
-  findSampleByName,
+  findSampleType,
   seedTemplate,
-} from "../support/stub/modules/template-authoring.js";
+} from "../support/stub/modules/sample-tracker.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 const ONBOARDING = "/internal/experiment/onboarding";
@@ -20,7 +20,7 @@ function samplePath(sampleId: string): string {
 }
 
 function sampleId(world: ChemFoxWorld, name: string): string {
-  const sample = findSampleByName(name);
+  const sample = findSampleType(name);
   assert.ok(sample, `sample "${name}" was not seeded`);
   return sample.id;
 }

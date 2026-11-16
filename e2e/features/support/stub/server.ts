@@ -8,8 +8,8 @@ import type { StubContext } from "./types.js";
 
 /**
  * A single HTTP server standing in for every backend the BFF calls server-side
- * (custapi, ticketing-service, experiment-manager). The app is configured (via
- * env) to point CUSTAPI_URL / TICKETING_URL / EXPERIMENT_MANAGER_URL here.
+ * (custapi, sample_tracker). The app is configured (via env) to point
+ * CUSTAPI_URL / SAMPLE_TRACKER_URL here.
  *
  * Behaviour lives in auto-loaded modules under `./modules/*`; this file only
  * wires HTTP ↔ the module registry, plus a benign empty-list/object fallback so
@@ -44,28 +44,40 @@ function makeContext(
   const [p0, p1, ...rest] = segments;
   const path_ = p0 === "api" && p1 === "v1" ? rest : segments;
 
-  let bodyPromise: Promise<unknown> | null = null;
+  let rawPromise: Promise<Buffer> | null = null;
+  const readRaw = () => {
+    rawPromise ??= new Promise((resolve) => {
+      const chunks: Buffer[] = [];
+      req.on("data", (c) => chunks.push(c as Buffer));
+      req.on("end", () => resolve(Buffer.concat(chunks)));
+    });
+    return rawPromise;
+  };
   return {
     method: req.method ?? "GET",
     path: path_,
     url,
-    readBody() {
-      if (!bodyPromise) {
-        bodyPromise = new Promise((resolve) => {
-          const chunks: Buffer[] = [];
-          req.on("data", (c) => chunks.push(c as Buffer));
-          req.on("end", () => {
-            const raw = Buffer.concat(chunks).toString("utf8");
-            if (!raw) return resolve({});
-            try {
-              resolve(JSON.parse(raw));
-            } catch {
-              resolve({});
-            }
-          });
-        });
+    header(name) {
+      const value = req.headers[name.toLowerCase()];
+      return Array.isArray(value) ? value[0] : value;
+    },
+    readRaw,
+    async readBody() {
+      const raw = (await readRaw()).toString("utf8");
+      if (!raw) return {};
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return {};
       }
-      return bodyPromise;
+    },
+    send(status, body, contentType) {
+      res.writeHead(status, {
+        "content-type": contentType,
+        "content-length": body.byteLength,
+      });
+      res.end(body);
+      return true;
     },
     json(status, body) {
       const payload = JSON.stringify(body ?? null);

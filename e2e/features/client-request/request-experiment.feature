@@ -26,3 +26,4 @@ Feature: Request an experiment
     When I fill in the "Sample description" field with "Dark anthracite briquettes, 2 kg"
     And I submit the request
     Then I should land on my experiment workspace
+    And the lab receives my request for "Proximate analysis" with "Dark anthracite briquettes, 2 kg"

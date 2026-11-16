@@ -14,11 +14,7 @@ import {
 import { registerStub } from "../registry.js";
 import type { StubContext } from "../types.js";
 
-/**
- * custapi (users + organizations). Ticketing/experiment-manager listing calls
- * made by post-login landing pages fall through to the server's benign
- * empty-list fallback, so pages render cleanly until a feature module owns them.
- */
+/** custapi (users + organizations). sample_tracker lives in `sample-tracker.ts`. */
 
 async function handle(ctx: StubContext): Promise<boolean> {
   const { method, path, url } = ctx;

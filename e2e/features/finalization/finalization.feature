@@ -1,39 +1,44 @@
-Feature: Finalization — calculations and PDF report
-  While a ticket is FINALIZING, lab staff run the experiment's calculations and
-  generate a PDF report. Report generation is asynchronous, so the workspace
-  polls its status until it succeeds, after which the report can be downloaded.
-  The ticket can only be closed once both calculations and the report are done.
+Feature: Finalization — calculations and the PDF report
+  Finishing a method calculates its results in the browser and stores them in
+  sample_tracker. Once every method is finished the ticket is COMPLETED: staff
+  publish the report (filled from the sample type's report form), after which
+  staff and the requester can download it, and close the ticket.
 
   Background:
     Given the following users exist:
-      | name        | email             | password    | role  |
-      | Avery Admin | admin@example.com | password123 | admin |
-    And a finalizing experiment "exp-001" exists
+      | name         | email              | password    | role  |
+      | Avery Admin  | admin@example.com  | password123 | admin |
+      | Casey Client | client@example.com | password123 | user  |
+    And an in-progress purity experiment "exp-001" requested by "client@example.com"
     And I am signed in as "admin@example.com" with password "password123"
 
-  Scenario: Running calculations populates the calculation results
-    When I open the finalization workspace for "exp-001"
-    And I run the calculations
+  Scenario: Finishing the experiment calculates and stores the results
+    When I open the workspace for "exp-001"
+    And I finish the experiment "exp-001"
     Then the calculations should show a result of "90"
+    And sample_tracker stored the result "90" for "purity" on "exp-001"
 
-  Scenario: Generating a report polls through to success
-    When I open the finalization workspace for "exp-001"
-    And I run the calculations
-    And I generate the report
-    Then the report should reach the ready state
+  Scenario: A published report can be downloaded by staff and the requester
+    When I open the workspace for "exp-001"
+    And I finish the experiment "exp-001"
+    And I publish the report for "exp-001"
+    Then the report panel should be shown
+    And the staff report download for "exp-001" should be a PDF
+    Given I am not signed in
+    And I am signed in as "client@example.com" with password "password123"
+    Then the requester report download for "exp-001" should be a PDF
 
-  Scenario: A ready report enables downloading
-    When I open the finalization workspace for "exp-001"
-    And I run the calculations
-    And I generate the report
-    Then the report should reach the ready state
-    And I should be able to download the report
+  Scenario: A report cannot be published without a report form
+    Given the sample "Coal" has no report form
+    When I open the workspace for "exp-001"
+    And I finish the experiment "exp-001"
+    And I try to publish the report
+    Then I should see the error containing "sample type has no report form"
 
-  Scenario: Closing the ticket is blocked until calculations and report are done
-    When I open the finalization workspace for "exp-001"
-    Then I cannot close the ticket yet
-    When I run the calculations
-    And I generate the report
-    And the report should reach the ready state
-    And I close the ticket
-    Then the ticket should be closed
+  Scenario: The ticket is closed after the report is published
+    When I open the workspace for "exp-001"
+    And I finish the experiment "exp-001"
+    And I publish the report for "exp-001"
+    And I close the ticket "exp-001"
+    Then ticket "exp-001" should be in the "CLOSED" stage
+    And the report panel should be shown

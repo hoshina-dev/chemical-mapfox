@@ -4,13 +4,8 @@ import { After, Given, Then, When } from "@cucumber/cucumber";
 import type { BrowserContext, Locator, Page } from "playwright";
 
 import { addUser } from "../support/fixtures.js";
-import {
-  LAB_FIELD_ID,
-  LAB_FIELD_LABEL,
-  collabStoredValues,
-  collabUpdateCount,
-  seedCollabExperiment,
-} from "../support/stub/modules/collab-editing.js";
+import { findTicket, sampleTracker } from "../support/stub/modules/sample-tracker.js";
+import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 /**
@@ -27,6 +22,19 @@ interface CollabWorld extends ChemFoxWorld {
 
 const WORKSPACE = (contextId: string) =>
   `/internal/experiment/${contextId}`;
+
+/** The single lab-form question this feature exercises. */
+const LAB_FIELD_ID = "observations";
+const LAB_FIELD_LABEL = "Observations";
+
+const storedValues = (contextId: string) =>
+  (findTicket(contextId)?.experiments[0].context.values ?? {}) as Record<string, unknown>;
+
+/** Values saves sample_tracker received for the ticket (the collab autosave). */
+const saveCount = (contextId: string) =>
+  sampleTracker.writes.filter(
+    (w) => w.path.startsWith(`tickets/${contextId}/`) && w.path.endsWith("/values"),
+  ).length;
 
 /** Poll an async predicate until it returns true or the timeout elapses. */
 async function waitFor(
@@ -79,7 +87,22 @@ Given(
     // isolated across scenarios and reruns.
     const contextId = `collab-${crypto.randomUUID()}`;
     this.collabContextId = contextId;
-    seedCollabExperiment({ contextId, status });
+    seedTicketFor(undefined, {
+      id: contextId,
+      name: "Collaborative water analysis",
+      stage: toStatus(status),
+      methods: [
+        {
+          name: "Water analysis",
+          body: {
+            labForm: {
+              name: "Lab worksheet",
+              questions: [{ id: LAB_FIELD_ID, type: "string", label: LAB_FIELD_LABEL }],
+            },
+          },
+        },
+      ],
+    });
   },
 );
 
@@ -154,16 +177,14 @@ Then(
   async function (this: CollabWorld, value: string) {
     const contextId = contextIdOf(this);
     const ok = await waitFor(
-      () =>
-        collabUpdateCount(contextId) >= 1 &&
-        collabStoredValues(contextId)[LAB_FIELD_ID] === value,
+      () => saveCount(contextId) >= 1 && storedValues(contextId)[LAB_FIELD_ID] === value,
       { timeout: 15_000 },
     );
     assert.ok(
       ok,
-      `expected experiment-manager to be updated with "${value}"; ` +
-        `saw count=${collabUpdateCount(contextId)}, ` +
-        `value=${JSON.stringify(collabStoredValues(contextId)[LAB_FIELD_ID])}`,
+      `expected sample_tracker to store "${value}"; ` +
+        `saw saves=${saveCount(contextId)}, ` +
+        `value=${JSON.stringify(storedValues(contextId)[LAB_FIELD_ID])}`,
     );
   },
 );
@@ -198,7 +219,7 @@ Then("the lab form is read-only", async function (this: CollabWorld) {
   assert.equal(
     await this.page.locator(`[data-field="${LAB_FIELD_ID}"]`).count(),
     0,
-    "expected no collaborative editor while the ticket is not EXPERIMENTING",
+    "expected no collaborative editor before the experiment is started",
   );
 });
 

@@ -11,9 +11,9 @@ Feature: Staff experiment listing
       | Beck Buyer   | beck@example.com   | password123 | user  |
     And the following experiment tickets exist:
       | id          | name          | status        | requester          | createdAt            | updatedAt            |
-      | ctx-alpha   | Acetone GC-MS | requested     | client@example.com | 2025-01-01T09:00:00Z | 2025-01-02T09:00:00Z |
-      | ctx-bravo   | Benzene NMR   | experimenting | beck@example.com   | 2025-01-03T09:00:00Z | 2025-01-04T09:00:00Z |
-      | ctx-charlie | Caffeine HPLC | closed        | client@example.com | 2025-01-05T09:00:00Z | 2025-01-06T09:00:00Z |
+      | ctx-alpha   | Acetone GC-MS | requested   | client@example.com | 2025-01-01T09:00:00Z | 2025-01-02T09:00:00Z |
+      | ctx-bravo   | Benzene NMR   | in progress | beck@example.com   | 2025-01-03T09:00:00Z | 2025-01-04T09:00:00Z |
+      | ctx-charlie | Caffeine HPLC | closed      | client@example.com | 2025-01-05T09:00:00Z | 2025-01-06T09:00:00Z |
     And I am signed in as "admin@example.com" with password "password123"
     And I visit "/internal/experiment/listing"
 

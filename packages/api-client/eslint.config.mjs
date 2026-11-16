@@ -6,8 +6,6 @@ export default [
   {
     ignores: [
       "src/custapi/**",
-      "src/ticketing/**",
-      "src/experiment-manager.d.ts",
       "dist/**",
     ],
   },
