@@ -1,3 +1,4 @@
+import { localDateString } from "@repo/forms";
 import { loadPyodide } from "pyodide";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -85,6 +86,34 @@ describe("calculation engine", () => {
     expect(report.calculations.s?.result).toBe(42);
     expect(report.calculations.f?.result).toBe(2.5);
     expect(report.calculations.p?.result).toBe(7);
+  });
+
+  it("resolves a date default of today to the local date", () => {
+    const { report } = run({
+      clientForm: {
+        name: "Client",
+        questions: [{ id: "on", type: "date", label: "On", config: { default: "today" } }],
+      },
+      labForm: {
+        name: "Lab",
+        questions: [
+          {
+            id: "runs",
+            type: "repeatable-group",
+            label: "Runs",
+            config: {
+              count: 2,
+              questions: [{ id: "run_on", type: "date", label: "Run", config: { default: "today" } }],
+            },
+          },
+        ],
+      },
+      calculations: { on2: { formula: "values['on']" } },
+      values: {},
+    });
+    const today = localDateString();
+    expect(report.values).toEqual({ on: today, run_on: [today, today] });
+    expect(report.calculations.on2?.result).toBe(localDateString());
   });
 
   it("reports each failure kind with the backend's message", () => {

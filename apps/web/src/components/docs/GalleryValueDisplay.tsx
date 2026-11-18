@@ -2,6 +2,7 @@
 
 import {
   type AnswerValue,
+  defaultFor,
   type FormAnswers,
   type Question,
   QuestionField,
@@ -13,25 +14,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type RepeatableColumn = Exclude<Extract<AnswerValue, unknown[]>, string[]>;
-
-function defaultFor(q: Question): AnswerValue {
-  if (q.type === "repeatable-group") {
-    return undefined;
-  }
-  if (q.config && "default" in q.config && q.config.default !== undefined) {
-    return q.config.default as AnswerValue;
-  }
-  switch (q.type) {
-    case "boolean":
-      return false;
-    case "multi-select":
-    case "checkbox-group":
-    case "tags":
-      return [];
-    default:
-      return undefined;
-  }
-}
 
 function initialGroupValues(question: RepeatableGroupQuestion): FormAnswers {
   const values: FormAnswers = {};

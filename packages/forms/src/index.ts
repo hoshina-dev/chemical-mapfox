@@ -2,7 +2,9 @@ export type {
   QuestionFieldProps,
   RepeatableGroupFieldProps,
 } from "./FormRenderer";
+export { configuredDefault, localDateString, TODAY_DEFAULT } from "./defaults";
 export {
+  defaultFor,
   FormRenderer,
   initialAnswersFor,
   QuestionField,

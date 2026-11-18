@@ -1,4 +1,10 @@
-import type { AnswerValue, ExperimentTemplate, FormAnswers, Question } from "@repo/forms";
+import {
+  type AnswerValue,
+  configuredDefault,
+  type ExperimentTemplate,
+  type FormAnswers,
+  type Question,
+} from "@repo/forms";
 
 /**
  * What experiment-manager actually evaluates. Source:
@@ -216,9 +222,8 @@ export function inspectFormulas(template: ExperimentTemplate): FormulaIssue[] {
 
 function standInScalar(question: Exclude<Question, { type: "repeatable-group" }>): AnswerValue {
   const config = question.config as { default?: AnswerValue; min?: number; options?: { value: AnswerValue }[] } | undefined;
-  if (config && "default" in config && config.default !== undefined && config.default !== null) {
-    return config.default;
-  }
+  const configured = configuredDefault(question);
+  if (configured !== undefined && configured !== null) return configured;
   switch (question.type) {
     case "number":
     case "rating":

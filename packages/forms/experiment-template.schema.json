@@ -490,7 +490,14 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "default": { "type": "string", "format": "date" },
+            "default": {
+              "type": "string",
+              "description": "YYYY-MM-DD, or \"today\" for the date the form is opened on.",
+              "anyOf": [
+                { "type": "string", "format": "date" },
+                { "const": "today" }
+              ]
+            },
             "min": { "type": "string", "format": "date" },
             "max": { "type": "string", "format": "date" }
           }

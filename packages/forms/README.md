@@ -46,6 +46,12 @@ The `experiment-template.schema.json` cross-form rule (question `id`s must be
 unique across **both** `clientForm` and `labForm`) cannot be expressed in JSON
 Schema and is enforced in code.
 
+A date question's `config.default` may be `"today"` instead of a fixed
+`YYYY-MM-DD`: `configuredDefault` (`src/defaults.ts`) resolves it to the local
+date whenever a form's starting answers are built, so stored answers carry the
+real date, never the sentinel. The calculation engine (`engineSource.ts`)
+resolves it the same way for fields never filled in.
+
 `examples/full-template.example.json` is a complete template that exercises
 every question type — useful as a reference and a fixture.
 

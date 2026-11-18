@@ -12,6 +12,7 @@
 export const ENGINE_SOURCE = String.raw`
 import ast
 import copy
+import datetime
 import json
 import math
 import statistics
@@ -75,6 +76,9 @@ def find_duplicate_question_ids(state):
 def _question_default(q):
     config = q.get("config") or {}
     if isinstance(config, dict) and config.get("default") is not None:
+        # Mirrors configuredDefault in @repo/forms.
+        if q.get("type") == "date" and config["default"] == "today":
+            return datetime.date.today().isoformat()
         return config["default"]
     return q.get("default")
 
