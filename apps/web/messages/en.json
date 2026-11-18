@@ -529,13 +529,6 @@
       "dishRunEngineFailed": "Could not compare the dishes"
     },
     "dishRun": {
-      "submitBlockedTitle": "This sample isn't finished yet",
-      "reason": {
-        "awaitingDishes": "Measure two dishes and let their results calculate before submitting.",
-        "awaitingNextDish": "No two dishes agree within the acceptable error yet. Measure dish {next}.",
-        "needsReview": "No two dishes agree within the acceptable error after {max, plural, one {# dish} other {# dishes}}. Re-measure a dish, or escalate this sample for review — it cannot be submitted as it stands.",
-        "configError": "This method's dish setup can't be evaluated. Ask whoever maintains the method to check its tolerance rules."
-      },
       "headline": {
         "done": "Dishes {a} and {b} agree — this sample is ready to submit",
         "awaitingDishes": "Measure dish {next}",

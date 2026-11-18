@@ -529,13 +529,6 @@
       "dishRunEngineFailed": "Nie udało się porównać naczynek"
     },
     "dishRun": {
-      "submitBlockedTitle": "Ta próbka nie jest jeszcze gotowa",
-      "reason": {
-        "awaitingDishes": "Zmierz dwa naczynka i poczekaj na obliczenie ich wyników przed przesłaniem.",
-        "awaitingNextDish": "Żadne dwa naczynka nie są jeszcze zgodne w granicach dopuszczalnego błędu. Zmierz naczynko {next}.",
-        "needsReview": "Żadne dwa naczynka nie są zgodne w granicach dopuszczalnego błędu po {max, plural, one {# naczynku} few {# naczynkach} many {# naczynkach} other {# naczynkach}}. Zmierz ponownie któreś naczynko lub przekaż tę próbkę do weryfikacji — w tym stanie nie można jej przesłać.",
-        "configError": "Nie można ocenić konfiguracji naczynek w tej metodzie. Poproś opiekuna metody o sprawdzenie reguł tolerancji."
-      },
       "headline": {
         "done": "Naczynka {a} i {b} są zgodne — tę próbkę można przesłać",
         "awaitingDishes": "Zmierz naczynko {next}",

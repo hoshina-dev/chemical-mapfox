@@ -55,3 +55,18 @@ export async function setInput(
   }
   await input.fill(value);
 }
+
+export async function expandBuilderSection(
+  world: ChemFoxWorld,
+  title: string,
+): Promise<void> {
+  const header = world.page
+    .locator("button[aria-expanded]", {
+      has: world.page.getByRole("heading", { level: 3, name: title, exact: true }),
+    })
+    .first();
+  await header.waitFor({ state: "visible", timeout: 15_000 });
+  const open = async () => (await header.getAttribute("aria-expanded")) === "true";
+  if (await open()) return;
+  await clickUntil(world, header, open);
+}

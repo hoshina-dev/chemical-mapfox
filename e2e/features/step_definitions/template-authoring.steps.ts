@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import { clickUntil, setInput } from "../support/interactions.js";
+import {
+  clickUntil,
+  expandBuilderSection,
+  setInput,
+} from "../support/interactions.js";
 import {
   findSampleType,
   seedTemplate,
@@ -129,6 +133,7 @@ When(
 When(
   "I add a short-text question with id {string} labelled {string}",
   async function (this: ChemFoxWorld, id: string, label: string) {
+    await expandBuilderSection(this, "Client form");
     const idField = this.page.getByPlaceholder("snake_case identifier");
     await clickUntil(
       this,

@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import { clickUntil, setInput } from "../support/interactions.js";
+import {
+  clickUntil,
+  expandBuilderSection,
+  setInput,
+} from "../support/interactions.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 /** Placeholders are the only stable handles on these two controls: the name
@@ -30,6 +34,7 @@ function resultRow(world: ChemFoxWorld, name: string): Locator {
 When(
   "I add a calculation {string} with formula {string}",
   async function (this: ChemFoxWorld, name: string, formula: string) {
+    await expandBuilderSection(this, "Calculations");
     const existing = await calcNameInputs(this).count();
     await clickUntil(
       this,
