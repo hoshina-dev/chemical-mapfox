@@ -1,6 +1,9 @@
 import "server-only";
 
-import { listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
+import {
+  listSampleTypes,
+  listTemplates,
+} from "@/lib/experiment-manager/client";
 
 /**
  * Laboratory-offer data for the public landing page: the sample types and
@@ -22,7 +25,7 @@ export interface OfferSample {
 }
 
 /**
- * Loads the offer from sample_tracker. Best-effort: returns `null` if the
+ * Loads the offer from experiment-manager. Best-effort: returns `null` if the
  * service can't be reached (the landing section degrades to a friendly
  * fallback), and treats a sample whose templates fail to load as having no
  * methods rather than failing the whole page.

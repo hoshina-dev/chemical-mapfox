@@ -63,7 +63,7 @@ export function BuilderApp({
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Placements the last save took off the report form (sample_tracker drops them).
+  // Placements the last save took off the report form (experiment-manager drops them).
   const [removedFromReport, setRemovedFromReport] = useState<string[]>([]);
   const [debugPayload, setDebugPayload] = useState<unknown>(null);
   const [isPending, startTransition] = useTransition();

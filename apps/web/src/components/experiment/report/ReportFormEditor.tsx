@@ -39,7 +39,7 @@ import {
   type PageSize,
   placeField,
 } from "@/lib/report/reportFields";
-import type { ReportField } from "@/lib/sample-tracker/client";
+import type { ReportField } from "@/lib/experiment-manager/client";
 
 import { ReportFormUpload } from "./ReportFormUpload";
 

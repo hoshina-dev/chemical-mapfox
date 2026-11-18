@@ -4,7 +4,7 @@ import { After, Given, Then, When } from "@cucumber/cucumber";
 import type { BrowserContext, Locator, Page } from "playwright";
 
 import { addUser } from "../support/fixtures.js";
-import { findTicket, sampleTracker } from "../support/stub/modules/sample-tracker.js";
+import { findTicket, experimentManager } from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -30,9 +30,9 @@ const LAB_FIELD_LABEL = "Observations";
 const storedValues = (contextId: string) =>
   (findTicket(contextId)?.experiments[0].context.values ?? {}) as Record<string, unknown>;
 
-/** Values saves sample_tracker received for the ticket (the collab autosave). */
+/** Values saves experiment-manager received for the ticket (the collab autosave). */
 const saveCount = (contextId: string) =>
-  sampleTracker.writes.filter(
+  experimentManager.writes.filter(
     (w) => w.path.startsWith(`tickets/${contextId}/`) && w.path.endsWith("/values"),
   ).length;
 
@@ -182,7 +182,7 @@ Then(
     );
     assert.ok(
       ok,
-      `expected sample_tracker to store "${value}"; ` +
+      `expected experiment-manager to store "${value}"; ` +
         `saw saves=${saveCount(contextId)}, ` +
         `value=${JSON.stringify(storedValues(contextId)[LAB_FIELD_ID])}`,
     );

@@ -7,9 +7,9 @@ import {
   listSampleTypes,
   listTemplates,
   listTickets,
-  SampleTrackerError,
-} from "@/lib/sample-tracker/client";
-import { templateToLoaded, toExperimentTicket } from "@/lib/sample-tracker/mappers";
+  ExperimentManagerError,
+} from "@/lib/experiment-manager/client";
+import { templateToLoaded, toExperimentTicket } from "@/lib/experiment-manager/mappers";
 import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 /** A requestable template within a specimen (sample) group. */
@@ -90,7 +90,7 @@ export async function loadRequestTemplate(
   try {
     tpl = await getTemplate(undefined, templateId);
   } catch (error) {
-    if (error instanceof SampleTrackerError && error.status === 404) return null;
+    if (error instanceof ExperimentManagerError && error.status === 404) return null;
     throw error;
   }
   const [samples, siblings] = await Promise.all([

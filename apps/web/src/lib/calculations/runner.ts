@@ -4,7 +4,7 @@ import type { CalculationEngineErrorCode, Evaluation, SandboxReply } from "./pro
 import { createSandbox, type Sandbox } from "./sandbox";
 
 /**
- * experiment-manager's sandbox wall-clock limit (`calc_sandbox_settings`; it
+ * the retired Python experiment-manager-poc's sandbox wall-clock limit (`calc_sandbox_settings`; it
  * also caps CPU at 2 s). Pyodide is slower than CPython, so a formula near the
  * limit may pass on one side only.
  */
@@ -109,7 +109,7 @@ function run(body: string): Promise<Evaluation> {
 
 /**
  * Evaluate formulas in the browser, with the same contract as
- * experiment-manager's `POST /api/calculations/evaluate`. Pyodide is fetched
+ * the retired Python experiment-manager-poc's `POST /api/calculations/evaluate`. Pyodide is fetched
  * on the first call only, so pages that never calculate never load it. Pass
  * stored data as JSON text so Python sees its floats as floats.
  */

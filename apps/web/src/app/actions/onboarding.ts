@@ -11,14 +11,14 @@ import {
   createSampleType,
   createTemplate,
   deleteTemplate,
-  sampleTrackerMessage as errorMessage,
+  experimentManagerMessage as errorMessage,
   setSampleTypesWebOrder,
   setSampleTypeWebVisibility,
   setTemplatesWebOrder,
   setTemplateWebVisibility,
   updateTemplate,
-} from "@/lib/sample-tracker/client";
-import { templateBody } from "@/lib/sample-tracker/mappers";
+} from "@/lib/experiment-manager/client";
+import { templateBody } from "@/lib/experiment-manager/mappers";
 import { refreshOnboarding } from "@/lib/staff/onboarding";
 
 export type ActionResult<T> =

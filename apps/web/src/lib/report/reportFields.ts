@@ -1,11 +1,11 @@
 import type {
   ExperimentTemplate,
   ReportField,
-} from "@/lib/sample-tracker/client";
+} from "@/lib/experiment-manager/client";
 
 // What the report form editor offers to place, and the field math. A field's x/y
 // are PDF points from the page's top-left corner, y on the text baseline (as
-// sample_tracker prints them).
+// experiment-manager prints them).
 
 /** Report values that come from the ticket, not from one experiment. */
 export const GENERAL_SOURCES = [
@@ -80,7 +80,7 @@ function methodFields(
 
 /**
  * The placements of a method's results and lab values (`placed`: the report form's
- * sources) that its new version (`after`; null = deleted) no longer has. sample_tracker
+ * sources) that its new version (`after`; null = deleted) no longer has. experiment-manager
  * drops them from the report form when the change is saved (or refuses the change while
  * the method has finished experiments). Labels come from the version before.
  */
@@ -156,7 +156,7 @@ export function placeField(
 
 /**
  * A stored map's fields as the editor saves them. Maps made before the fixed format
- * may still carry size, align or prefix, which sample_tracker no longer accepts.
+ * may still carry size, align or prefix, which experiment-manager no longer accepts.
  */
 export function storedFields(fields: readonly ReportField[]): ReportField[] {
   return fields.map(({ page, x, y, source }) => ({ page, x, y, source }));

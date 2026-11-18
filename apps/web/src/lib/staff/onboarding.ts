@@ -11,12 +11,12 @@ import {
   createTemplate,
   getTemplate,
   listSampleTypes,
-  sampleTrackerMessage,
+  experimentManagerMessage,
   setSampleTypeWebVisibility,
   setTemplateWebVisibility,
   updateTemplate,
-} from "@/lib/sample-tracker/client";
-import { templateBody } from "@/lib/sample-tracker/mappers";
+} from "@/lib/experiment-manager/client";
+import { templateBody } from "@/lib/experiment-manager/mappers";
 
 import { inspectFormulas } from "./formulas";
 
@@ -58,7 +58,7 @@ function failure(
   op: string,
 ): ActionResult<never> {
   logHandledError(error, { op });
-  return { success: false, error: sampleTrackerMessage(error, fallback) };
+  return { success: false, error: experimentManagerMessage(error, fallback) };
 }
 
 /** The sample type by id, else by name (case-insensitive), created when the name is new. */
@@ -167,7 +167,7 @@ export async function onboardTemplate(
         op: "onboardTemplate.publish",
         sampleId: sample.id,
       });
-      warning = sampleTrackerMessage(
+      warning = experimentManagerMessage(
         error,
         "The template was saved, but it was not published.",
       );

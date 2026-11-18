@@ -3,7 +3,7 @@ Feature: Staff experiment lifecycle transitions
   I want to move an experiment ticket through its guarded lifecycle
   So that each step (check-in, start, finish, close, cancel) only happens when it's valid
 
-  sample_tracker derives the ticket status from what happened to it and its
+  experiment-manager derives the ticket status from what happened to it and its
   methods: REQUESTED → RECEIVED → IN_PROGRESS (a method started) → COMPLETED
   (every method finished) → CLOSED, and any open ticket can be CANCELLED with a
   reason. It refuses an invalid command with a 409 whose message the app shows.
@@ -50,9 +50,9 @@ Feature: Staff experiment lifecycle transitions
     Then ticket "ctx-cancel" should be in the "CANCELLED" stage
     And I should see the message "Sample leaked in transit"
 
-  Scenario: A refused transition surfaces sample_tracker's message
+  Scenario: A refused transition surfaces experiment-manager's message
     Given an experiment "ctx-invalid" is at the "RECEIVED" stage
-    And sample_tracker finds ticket "ctx-invalid" busy on the next command
+    And experiment-manager finds ticket "ctx-invalid" busy on the next command
     When I visit "/internal/experiment/ctx-invalid"
     And I try to start the experiment "ctx-invalid"
     Then I should see the error containing "the ticket is busy; try again"

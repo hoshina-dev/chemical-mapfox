@@ -8,9 +8,9 @@ import { toDraft } from "@/lib/builder";
 import {
   getSampleType,
   getTemplate,
-  SampleTrackerError,
-} from "@/lib/sample-tracker/client";
-import { templateToLoaded } from "@/lib/sample-tracker/mappers";
+  ExperimentManagerError,
+} from "@/lib/experiment-manager/client";
+import { templateToLoaded } from "@/lib/experiment-manager/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -59,7 +59,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
     sampleName = sample?.name;
     reportSources = (sample?.reportForm?.fields ?? []).map((f) => f.source);
   } catch (error) {
-    if (error instanceof SampleTrackerError && error.status === 404) {
+    if (error instanceof ExperimentManagerError && error.status === 404) {
       notFound();
     }
     return (

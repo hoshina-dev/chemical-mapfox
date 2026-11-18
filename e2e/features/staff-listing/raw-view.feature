@@ -1,7 +1,7 @@
 Feature: Staff raw experiment view
   As lab staff (an admin)
   I want a raw JSON view of an experiment
-  So that I can inspect the sample_tracker ticket (with its experiments) and
+  So that I can inspect the experiment-manager ticket (with its experiments) and
   its event history
 
   Background:

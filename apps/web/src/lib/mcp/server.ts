@@ -25,9 +25,9 @@ import {
   getTicket,
   listSampleTypes,
   listTemplates,
-  sampleTrackerMessage,
-} from "@/lib/sample-tracker/client";
-import { collabRoomId, templateToLoaded } from "@/lib/sample-tracker/mappers";
+  experimentManagerMessage,
+} from "@/lib/experiment-manager/client";
+import { collabRoomId, templateToLoaded } from "@/lib/experiment-manager/mappers";
 import { FORMULA_GUIDE } from "@/lib/staff/formulas";
 import { recordLabValues } from "@/lib/staff/labValues";
 import { checkIn, close, start } from "@/lib/staff/lifecycle";
@@ -131,7 +131,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
         result = await run(args);
       } catch (err) {
         logger.error({ op: "mcp.tool", tool, userId: actor.userId, clientId: actor.clientId, err }, "mcp tool failed");
-        return fail(sampleTrackerMessage(err, "Something went wrong on the lab server. Try again."));
+        return fail(experimentManagerMessage(err, "Something went wrong on the lab server. Try again."));
       }
       logger.info(
         {
@@ -281,7 +281,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
       }),
     );
 
-    // The ticket's status after a step, read back from sample_tracker.
+    // The ticket's status after a step, read back from experiment-manager.
     const statusAfter = async (contextId: string) => ({
       contextId,
       status: (await getTicket(actor.userId, contextId)).status,

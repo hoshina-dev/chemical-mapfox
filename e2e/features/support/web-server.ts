@@ -11,7 +11,7 @@ function childEnv(): NodeJS.ProcessEnv {
     ...process.env,
     // Point every backend the BFF calls at the in-process stub.
     CUSTAPI_URL: `${stubBase}/api/v1`,
-    SAMPLE_TRACKER_URL: `${stubBase}/api/v1`,
+    EXPERIMENT_MANAGER_URL: `${stubBase}/api/v1`,
     // Sessions and collaborative editing use an in-memory Redis mock in the
     // web app — no external broker required. REDIS_URL is still set so config validation
     // passes; honour an explicit override when provided.

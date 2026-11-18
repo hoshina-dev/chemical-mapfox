@@ -44,7 +44,7 @@ export interface LabFormEditorProps {
 /**
  * Collaborative editor for the lab form: wires the live `useCollab` session to
  * the presence bar + the controlled renderer, and offers a Submit-to-final-stage
- * action. Edits are saved to sample_tracker via the collab event stream.
+ * action. Edits are saved to experiment-manager via the collab event stream.
  */
 export function LabFormEditor({
   contextId,

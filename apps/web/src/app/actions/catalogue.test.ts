@@ -1,11 +1,11 @@
 import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("@/lib/auth/dal", () => ({ requireAdmin: vi.fn() }));
-vi.mock("@/lib/sample-tracker/client", () => ({
+vi.mock("@/lib/experiment-manager/client", () => ({
   setSampleTypesWebOrder: vi.fn(),
   setSampleTypeWebVisibility: vi.fn(),
   setTemplatesWebOrder: vi.fn(),
   setTemplateWebVisibility: vi.fn(),
-  sampleTrackerMessage: (_error: unknown, fallback: string) => fallback,
+  experimentManagerMessage: (_error: unknown, fallback: string) => fallback,
 }));
 vi.mock("@/lib/log/handled", () => ({ logHandledError: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
@@ -16,7 +16,7 @@ import {
   setSampleTypeWebVisibility,
   setTemplatesWebOrder,
   setTemplateWebVisibility,
-} from "@/lib/sample-tracker/client";
+} from "@/lib/experiment-manager/client";
 
 import { setCatalogueOrderAction, setCatalogueVisibilityAction } from "./onboarding";
 

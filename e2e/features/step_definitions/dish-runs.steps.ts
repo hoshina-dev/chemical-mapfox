@@ -5,7 +5,7 @@ import { Given, Then, When } from "@cucumber/cucumber";
 import {
   findTicket,
   type TemplateBody,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -213,7 +213,7 @@ Then(
 );
 
 Then(
-  "sample_tracker should have stored a reported result for {string}",
+  "experiment-manager should have stored a reported result for {string}",
   function (this: ChemFoxWorld, contextId: string) {
     const calcs = findTicket(contextId)?.experiments[0].context.calculations as
       | Record<string, { result?: unknown }>

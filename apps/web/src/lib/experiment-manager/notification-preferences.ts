@@ -5,7 +5,7 @@ import {
   setNotificationPreferences,
 } from "./client";
 
-// The settings form speaks "stages" (status keys it can label); sample_tracker's
+// The settings form speaks "stages" (status keys it can label); experiment-manager's
 // preferences are per email event type. The mapping is fixed.
 const STAGE_BY_EVENT: Record<string, string> = {
   "ticket.requested": "requested",

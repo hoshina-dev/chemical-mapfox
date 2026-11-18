@@ -1,8 +1,8 @@
 import type { AnswerValue, ExperimentTemplate, FormAnswers, Question } from "@repo/forms";
 
 /**
- * What experiment-manager actually evaluates. Source:
- * experiment-manager `app/form_schema.py` (`CALC_BUILTINS`, `collect_values`)
+ * What the retired Python experiment-manager-poc evaluated (this engine is its port). Source:
+ * its `app/form_schema.py` (`CALC_BUILTINS`, `collect_values`)
  * and `app/services/calculation_service.py` (`_eval_formula`, `_referenced_names`,
  * `_referenced_value_keys`, `_resolve_order`).
  *

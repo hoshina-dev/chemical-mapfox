@@ -5,8 +5,8 @@ import type { AnswerValue, ExperimentTemplate } from "@repo/forms";
 import type { TemplateWireSnapshot } from "@/lib/experiment/templates";
 import { logHandledError } from "@/lib/log/handled";
 import { getRedis } from "@/lib/redis/client";
-import { getTicket, saveValues } from "@/lib/sample-tracker/client";
-import { experimentToState, parseRoomId } from "@/lib/sample-tracker/mappers";
+import { getTicket, saveValues } from "@/lib/experiment-manager/client";
+import { experimentToState, parseRoomId } from "@/lib/experiment-manager/mappers";
 
 import type { LockMap, PresenceEntry, ServerMessage } from "./events";
 
@@ -27,7 +27,7 @@ const LOCK_TTL_MS = 15_000;
 const PRESENCE_TTL_S = 30;
 const FLUSH_DEBOUNCE_MS = 10_000;
 
-// --- Hydration: seed the live buffer from sample_tracker once per room ---
+// --- Hydration: seed the live buffer from experiment-manager once per room ---
 
 /** The room's ticket and experiment; a room id is `{ticketId}_{experimentId}`. */
 function roomRef(ctx: string) {
@@ -38,7 +38,7 @@ function roomRef(ctx: string) {
 
 /**
  * Ensure `template:{ctx}` + `values:{ctx}` exist in Redis, seeding them from the
- * experiment in sample_tracker on first access. Idempotent — a no-op once seeded.
+ * experiment in experiment-manager on first access. Idempotent — a no-op once seeded.
  * Throws if the experiment can't be loaded (e.g. 404 / unreachable).
  */
 export async function hydrate(ctx: string): Promise<void> {
@@ -105,7 +105,7 @@ export async function readValues(
 
 /**
  * Write a single field into the live buffer and mark the room dirty. `userId` is
- * who edited: the next save to sample_tracker is made as the last editor (callers
+ * who edited: the next save to experiment-manager is made as the last editor (callers
  * without a user, i.e. MCP until its rework, keep the previous editor).
  */
 export async function applyEdit(
@@ -135,7 +135,7 @@ function answerIds(questions: unknown[]): string[] {
 }
 
 /**
- * Save the lab form's answers from the buffer to sample_tracker as a merge patch:
+ * Save the lab form's answers from the buffer to experiment-manager as a merge patch:
  * every lab form field, `null` for the cleared ones, so the client's intake
  * answers are never touched. Made as the last editor.
  */
@@ -155,7 +155,7 @@ async function persist(ctx: string): Promise<boolean> {
 }
 
 /**
- * Persist the buffer to sample_tracker. Single-flight across pods via a short NX
+ * Persist the buffer to experiment-manager. Single-flight across pods via a short NX
  * lock so two pods never save concurrently. Returns true if it flushed.
  */
 export async function flushNow(ctx: string): Promise<boolean> {
@@ -171,7 +171,7 @@ export async function flushNow(ctx: string): Promise<boolean> {
 }
 
 /**
- * Persist the buffer to sample_tracker when it holds unsaved edits, ignoring the
+ * Persist the buffer to experiment-manager when it holds unsaved edits, ignoring the
  * debounce. Used before finishing so the final values are saved first.
  */
 export async function persistNow(ctx: string): Promise<void> {

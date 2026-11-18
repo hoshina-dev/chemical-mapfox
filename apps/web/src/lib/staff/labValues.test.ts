@@ -11,7 +11,7 @@ vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
   scheduleFlush: vi.fn(),
 }));
-vi.mock("@/lib/sample-tracker/client", () => ({ getTicket: vi.fn() }));
+vi.mock("@/lib/experiment-manager/client", () => ({ getTicket: vi.fn() }));
 vi.mock("@/lib/log/handled", () => ({ logHandledError: vi.fn() }));
 
 import {
@@ -23,7 +23,7 @@ import {
   readTemplate,
   scheduleFlush,
 } from "@/lib/collab/room";
-import { getTicket, type Ticket } from "@/lib/sample-tracker/client";
+import { getTicket, type Ticket } from "@/lib/experiment-manager/client";
 
 import { recordLabValues } from "./labValues";
 
@@ -151,7 +151,7 @@ describe("recordLabValues", () => {
   });
 
   it("keeps the values in the room for the debounced save when saving now fails", async () => {
-    vi.mocked(flushNow).mockRejectedValue(new Error("sample_tracker down"));
+    vi.mocked(flushNow).mockRejectedValue(new Error("experiment-manager down"));
 
     const result = await recordLabValues(editor, "t1", "exp-1", { ph: 7 });
     expect(result.success).toBe(true);

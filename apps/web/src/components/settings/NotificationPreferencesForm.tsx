@@ -15,7 +15,7 @@ import { useState, useTransition } from "react";
 
 import { saveNotificationPreferencesAction } from "@/app/actions/notification-preferences";
 import { statusTranslationKey } from "@/lib/experiment/statusI18n";
-import type { StageNotificationPreference } from "@/lib/sample-tracker/notification-preferences";
+import type { StageNotificationPreference } from "@/lib/experiment-manager/notification-preferences";
 
 function stageLabel(
   stage: string,

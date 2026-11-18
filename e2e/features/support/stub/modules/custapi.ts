@@ -14,7 +14,7 @@ import {
 import { registerStub } from "../registry.js";
 import type { StubContext } from "../types.js";
 
-/** custapi (users + organizations). sample_tracker lives in `sample-tracker.ts`. */
+/** custapi (users + organizations). experiment-manager lives in `experiment-manager.ts`. */
 
 async function handle(ctx: StubContext): Promise<boolean> {
   const { method, path, url } = ctx;
