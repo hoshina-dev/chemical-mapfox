@@ -50,6 +50,7 @@ jobs:
           - client-request
           - client-tracking
           - collab-editing
+          - dish-runs
           - docs
           - finalization
           - lifecycle

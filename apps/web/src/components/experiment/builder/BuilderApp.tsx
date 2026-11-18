@@ -33,6 +33,7 @@ import { placementsRemoved } from "@/lib/report/reportFields";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { CollapsiblePanel } from "./CollapsiblePanel";
+import { DishRunEditor } from "./DishRunEditor";
 import { textProps } from "./fieldProps";
 import { SectionEditor } from "./SectionEditor";
 import { TemplatePreview } from "./TemplatePreview";
@@ -178,9 +179,12 @@ export function BuilderApp({
         />
       </CollapsiblePanel>
 
-      <SectionEditor form={form} path="clientForm" />
-      <SectionEditor form={form} path="labForm" />
-      <CalculationsEditor form={form} />
+      <SectionEditor form={form} path="clientForm" defaultOpen={false} />
+      <SectionEditor form={form} path="labForm" defaultOpen={false} />
+      <CollapsiblePanel title={t("dishRun.title")} subtitle={t("dishRun.subtitle")}>
+        <DishRunEditor form={form} />
+      </CollapsiblePanel>
+      <CalculationsEditor form={form} defaultOpen={false} />
 
       <Stack
         gap="xs"

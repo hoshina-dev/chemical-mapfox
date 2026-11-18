@@ -13,9 +13,11 @@ import { QuestionEditor } from "./QuestionEditor";
 interface SectionEditorProps {
   form: UseFormReturnType<FormDraft>;
   path: "clientForm" | "labForm";
+  /** Collapsed by default when another section is the one to start from. */
+  defaultOpen?: boolean;
 }
 
-export function SectionEditor({ form, path }: SectionEditorProps) {
+export function SectionEditor({ form, path, defaultOpen }: SectionEditorProps) {
   const t = useTranslations("builder");
   const section = form.values[path];
   const questionsPath = `${path}.questions`;
@@ -26,6 +28,7 @@ export function SectionEditor({ form, path }: SectionEditorProps) {
     <CollapsiblePanel
       title={path === "clientForm" ? t("section.clientForm") : t("section.labForm")}
       badge={t("section.questionCount", { count })}
+      defaultOpen={defaultOpen}
     >
       <TextInput
         label={t("section.name")}

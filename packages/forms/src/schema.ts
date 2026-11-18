@@ -288,10 +288,45 @@ export type Question = z.infer<typeof Question>;
 export type QuestionType = Question["type"];
 export type QuestionId = Question["id"];
 
+export const DishToleranceLimit = z.object({
+  kind: z.literal("absolute"),
+  value: z.number(),
+});
+export type DishToleranceLimit = z.infer<typeof DishToleranceLimit>;
+
+export const DishToleranceRule = z.object({
+  /** Name of the calculation compared between dishes (the end of the chain). */
+  target: z.string(),
+  label: z.string(),
+  limit: DishToleranceLimit,
+  decimals: z.number().int().min(0).optional(),
+});
+export type DishToleranceRule = z.infer<typeof DishToleranceRule>;
+
+/** One per-dish calculation as authored: a name plus plain arithmetic. */
+export const DishCalculation = z.object({
+  name: z.string(),
+  /** Ordinary arithmetic over measurement ids and earlier calculations. */
+  expression: z.string(),
+});
+export type DishCalculation = z.infer<typeof DishCalculation>;
+
+export const DishRun = z.object({
+  /** Id of the `repeatable-group` question whose repetitions are the dishes. */
+  group: z.string(),
+  maxDishes: z.number().int().min(2),
+  // ALL rules must pass for a pair to be accepted — one accepted pair.
+  rules: z.array(DishToleranceRule),
+  calculations: z.array(DishCalculation).optional(),
+  finals: z.array(z.string()).optional(),
+});
+export type DishRun = z.infer<typeof DishRun>;
+
 export const FormDoc = z.object({
   name: z.string(),
   description: z.string().optional(),
   questions: z.array(Question),
+  dishRun: DishRun.optional(),
 });
 export type FormDoc = z.infer<typeof FormDoc>;
 

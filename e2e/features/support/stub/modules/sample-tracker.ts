@@ -257,7 +257,7 @@ export interface TemplateBody {
     description?: string;
     questions: FormQuestion[];
   };
-  labForm?: { name?: string; description?: string; questions: FormQuestion[] };
+  labForm?: { name?: string; description?: string; questions: FormQuestion[]; dishRun?: Json };
   calculations?: Record<string, { formula: string; result?: unknown }>;
 }
 

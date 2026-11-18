@@ -1,7 +1,12 @@
 "use client";
 
 import { Alert, Button, Card, Group, List, Stack } from "@mantine/core";
-import type { AnswerIssue, FormAnswers, FormDoc } from "@repo/forms";
+import type {
+  AnswerIssue,
+  ExperimentTemplate,
+  FormAnswers,
+  FormDoc,
+} from "@repo/forms";
 import { validateAnswers } from "@repo/forms";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -14,14 +19,22 @@ import {
 import type { SessionUser } from "@/lib/auth/definitions";
 import type { PresenceEntry } from "@/lib/collab/events";
 import { formatAnswerIssue } from "@/lib/forms/answerIssues";
+import { visibleDishCount } from "@/lib/forms/dishRunMessages";
 
 import { CollaborativeFormRenderer } from "./CollaborativeFormRenderer";
+import { DishRunPanel } from "./DishRunPanel";
 import { PresenceBar } from "./PresenceBar";
 import { useCollab } from "./useCollab";
+import { useDishRun } from "./useDishRun";
 
 export interface LabFormEditorProps {
   contextId: string;
   doc: FormDoc;
+  /**
+   * The whole method, needed to evaluate a dish run in the browser: the engine
+   * takes a dry-run body, which is both forms plus the formulas.
+   */
+  template: ExperimentTemplate;
   initialValues: FormAnswers;
   currentUser: SessionUser;
   /** Submit is only valid from the EXPERIMENTING status. */
@@ -36,6 +49,7 @@ export interface LabFormEditorProps {
 export function LabFormEditor({
   contextId,
   doc,
+  template,
   initialValues,
   currentUser,
   canSubmit,
@@ -68,6 +82,52 @@ export function LabFormEditor({
     null,
   );
   const [issues, setIssues] = useState<AnswerIssue[]>([]);
+
+  // --- Dish runs ------------------------------------------------------------
+  // A dish-run method is rendered as its own panel rather than as a generic
+  // repeatable group.
+  const {
+    state: dishRun,
+    pending: dishRunPending,
+    stale: dishRunStale,
+    error: dishRunError,
+    check: checkDishes,
+  } = useDishRun(template, values, canSubmit);
+
+  const dishes = useMemo(() => {
+    const groupId = doc.dishRun?.group;
+    if (!groupId) return null;
+    const group = doc.questions.find((q) => q.id === groupId);
+    return group?.type === "repeatable-group" ? group : null;
+  }, [doc]);
+
+  /**
+   * The dish group with `count` cut down to the dishes worth showing.
+   */
+  const visibleDishes = useMemo(() => {
+    if (!dishes || !doc.dishRun) return null;
+    const max = Math.min(doc.dishRun.maxDishes, dishes.config.count);
+    const wanted = dishRun
+      ? visibleDishCount(dishRun, max)
+      : Math.min(2, max);
+    return { ...dishes, config: { ...dishes.config, count: wanted } };
+  }, [dishes, doc.dishRun, dishRun]);
+
+  /** Everything except the dish group — the dish group has its own panel. */
+  const otherFields = useMemo(
+    () =>
+      dishes
+        ? { ...doc, questions: doc.questions.filter((q) => q.id !== dishes.id) }
+        : doc,
+    [doc, dishes],
+  );
+
+  // A dish run must reach a pair that agrees before the sample can be
+  // submitted, and the decision must reflect the current values
+  const dishRunBlocks =
+    dishRun !== null &&
+    dishRun.phase !== "INACTIVE" &&
+    (dishRun.phase !== "DONE" || dishRunStale);
 
   // Live feedback while typing, limited to the constraints a half-entered
   // answer can't legitimately violate (the same set the collab event route
@@ -103,22 +163,58 @@ export function LabFormEditor({
     <Stack gap="md">
       <PresenceBar editors={others} />
 
-      <Card withBorder radius="md" padding="lg">
-        <CollaborativeFormRenderer
-          doc={doc}
-          values={values}
-          locks={locks}
-          editorsByConnection={editorsByConnection}
-          currentConnectionId={connectionId}
-          errors={fieldErrors}
-          onFocusField={focusField}
-          onBlurField={blurField}
-          onEdit={(field, value) => {
-            if (issues.length > 0) setIssues([]);
-            edit(field, value);
-          }}
-        />
-      </Card>
+      {visibleDishes && (
+        <Card withBorder radius="md" padding="lg">
+          <Stack gap="lg">
+            <CollaborativeFormRenderer
+              doc={{ ...doc, questions: [visibleDishes] }}
+              values={values}
+              locks={locks}
+              editorsByConnection={editorsByConnection}
+              currentConnectionId={connectionId}
+              errors={fieldErrors}
+              onFocusField={focusField}
+              onBlurField={blurField}
+              onEdit={(field, value) => {
+                if (issues.length > 0) setIssues([]);
+                edit(field, value);
+              }}
+            />
+            {dishRunError && (
+              <Alert color="red" variant="light" title={t("dishRunEngineFailed")}>
+                {dishRunError}
+              </Alert>
+            )}
+            {dishRun && (
+              <DishRunPanel
+                state={dishRun}
+                pending={dishRunPending}
+                stale={dishRunStale}
+                onCheck={checkDishes}
+              />
+            )}
+          </Stack>
+        </Card>
+      )}
+
+      {otherFields.questions.length > 0 && (
+        <Card withBorder radius="md" padding="lg">
+          <CollaborativeFormRenderer
+            doc={otherFields}
+            values={values}
+            locks={locks}
+            editorsByConnection={editorsByConnection}
+            currentConnectionId={connectionId}
+            errors={fieldErrors}
+            onFocusField={focusField}
+            onBlurField={blurField}
+            onEdit={(field, value) => {
+              if (issues.length > 0) setIssues([]);
+              edit(field, value);
+            }}
+          />
+        </Card>
+      )}
 
       {result?.error && (
         <Alert color="red" variant="light" title={t("submitFailedTitle")}>
@@ -153,7 +249,11 @@ export function LabFormEditor({
       )}
 
       <Group justify="flex-end">
-        <Button onClick={submit} loading={pending} disabled={!canSubmit}>
+        <Button
+          onClick={submit}
+          loading={pending}
+          disabled={!canSubmit || dishRunBlocks}
+        >
           {t("submitToFinalStage")}
         </Button>
       </Group>
