@@ -11,7 +11,7 @@ import {
 import {
   findSampleType,
   seedTemplate,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 const ONBOARDING = "/internal/experiment/onboarding";

@@ -35,7 +35,7 @@ const STATUS_META: Record<string, StatusMeta> = {
   received: { label: "Sample received", color: "cyan" },
   pending: { label: "Sample received", color: "cyan" },
   sample_received: { label: "Sample received", color: "cyan" },
-  // sample_tracker: REQUESTED → RECEIVED → IN_PROGRESS → COMPLETED → CLOSED
+  // experiment-manager: REQUESTED → RECEIVED → IN_PROGRESS → COMPLETED → CLOSED
   // (or CANCELLED); the others are older names, kept so old data still reads.
   experimenting: { label: "In progress", color: "yellow" },
   finalizing: { label: "Finalizing", color: "teal" },

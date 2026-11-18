@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/log/handled", () => ({ logHandledError: vi.fn() }));
-vi.mock("@/lib/sample-tracker/client", async (importActual) => ({
-  ...(await importActual<typeof import("@/lib/sample-tracker/client")>()),
+vi.mock("@/lib/experiment-manager/client", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/experiment-manager/client")>()),
   createSampleType: vi.fn(),
   createTemplate: vi.fn(),
   getTemplate: vi.fn(),
@@ -22,11 +22,11 @@ import {
   getTemplate,
   listSampleTypes,
   type SampleType,
-  SampleTrackerError,
+  ExperimentManagerError,
   setSampleTypeWebVisibility,
   setTemplateWebVisibility,
   updateTemplate,
-} from "@/lib/sample-tracker/client";
+} from "@/lib/experiment-manager/client";
 
 import { onboardTemplate, setCatalogueVisibility } from "./onboarding";
 
@@ -138,7 +138,7 @@ describe("onboardTemplate", () => {
 
   it("shows the sample and the method only when asked, and keeps the save when that fails", async () => {
     vi.mocked(setTemplateWebVisibility).mockRejectedValue(
-      new SampleTrackerError("x", 409, "busy"),
+      new ExperimentManagerError("x", 409, "busy"),
     );
 
     const result = await onboardTemplate("staff-ada", {

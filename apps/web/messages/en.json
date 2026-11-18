@@ -1368,7 +1368,7 @@
           },
           "collab": {
             "heading": "Collaborative editing",
-            "body": "While a method is in progress, several technicians can edit its lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to the sample tracker. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
+            "body": "While a method is in progress, several technicians can edit its lab form at once. You see who else is present (avatar and name on hover). When someone focuses a field, it is soft-locked for others — highlighted and disabled so you do not type over them — but values stay readable as they update live.\n\nEdits stream between open tabs and autosave to the experiment-manager. Clearing a field is intentional: empty the control so the stored value is removed. Identity is per browser tab, so two tabs for the same person do not steal each other’s locks."
           },
           "tabs": {
             "heading": "Lab form, client intake, and calculations",

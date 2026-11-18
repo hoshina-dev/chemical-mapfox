@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Back the room with an in-memory Redis and stub the sample_tracker client.
+// Back the room with an in-memory Redis and stub the experiment-manager client.
 // (ioredis-mock is imported inside the factory — vi.mock factories can't close
 // over top-level imports.)
 vi.mock("@/lib/redis/client", async () => {
@@ -8,12 +8,12 @@ vi.mock("@/lib/redis/client", async () => {
   const redis = new RedisMock();
   return { getRedis: () => redis, getSubscriber: () => redis };
 });
-vi.mock("@/lib/sample-tracker/client", () => ({
+vi.mock("@/lib/experiment-manager/client", () => ({
   getTicket: vi.fn(),
   saveValues: vi.fn(),
 }));
 
-import { getTicket, saveValues } from "@/lib/sample-tracker/client";
+import { getTicket, saveValues } from "@/lib/experiment-manager/client";
 import { logger } from "@/lib/log/logger";
 import { getRedis } from "@/lib/redis/client";
 
@@ -55,7 +55,7 @@ beforeEach(async () => {
 });
 
 describe("buffer + flush", () => {
-  it("hydrates the buffer from sample_tracker exactly once", async () => {
+  it("hydrates the buffer from experiment-manager exactly once", async () => {
     await room.hydrate(ctx);
     expect(getTicket).toHaveBeenCalledTimes(1);
     expect(await room.readValues(ctx)).toEqual({ ph: 7, purpose: "QA" });

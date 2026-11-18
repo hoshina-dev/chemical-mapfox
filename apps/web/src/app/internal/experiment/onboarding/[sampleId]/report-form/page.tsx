@@ -22,8 +22,8 @@ import {
   getSampleType,
   hasReportForm,
   listTemplates,
-  SampleTrackerError,
-} from "@/lib/sample-tracker/client";
+  ExperimentManagerError,
+} from "@/lib/experiment-manager/client";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,8 @@ async function ReportFormContent({
   try {
     sample = await getSampleType(session.userId, sampleId);
   } catch (error) {
-    if (error instanceof SampleTrackerError && error.status === 404) notFound();
+    if (error instanceof ExperimentManagerError && error.status === 404)
+      notFound();
     throw error;
   }
   // The field map alone is not enough: reports are printed on the stored blank PDF.

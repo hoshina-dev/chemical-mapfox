@@ -4,7 +4,7 @@ import { ExperimentTemplate as ExperimentTemplateSchema } from "@repo/forms";
 import type { CalculationDryRunRequest } from "@/lib/calculations/types";
 
 // View models of templates and experiments, and the parsing of their stored
-// `{clientForm, labForm, calculations}` JSON (sample_tracker keeps it as the
+// `{clientForm, labForm, calculations}` JSON (experiment-manager keeps it as the
 // experiment schema describes).
 
 /** Templates are addressed by sample type + template id. */

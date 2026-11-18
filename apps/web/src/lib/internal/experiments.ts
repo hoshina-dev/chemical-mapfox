@@ -8,10 +8,10 @@ import {
   getTicket,
   listSampleTypes,
   listTickets,
-  SampleTrackerError,
+  ExperimentManagerError,
   type Ticket,
-} from "@/lib/sample-tracker/client";
-import { experimentToState, toExperimentTicket } from "@/lib/sample-tracker/mappers";
+} from "@/lib/experiment-manager/client";
+import { experimentToState, toExperimentTicket } from "@/lib/experiment-manager/mappers";
 import type { ExperimentTicket } from "@/lib/experiment/tickets";
 
 export interface Requester {
@@ -60,7 +60,7 @@ async function sampleTypeNames(): Promise<Map<string, string>> {
   try {
     return new Map((await listSampleTypes(undefined)).map((st) => [st.id, st.name]));
   } catch (error) {
-    logHandledError(error, { op: "sampleTypeNames", service: "sample-tracker", level: "warn" });
+    logHandledError(error, { op: "sampleTypeNames", service: "experiment-manager", level: "warn" });
     return new Map();
   }
 }
@@ -110,7 +110,7 @@ export interface WorkspaceExperiment {
 export interface ExperimentWorkspace {
   contextId: string;
   ticket: ExperimentTicket | null;
-  /** The ticket as sample_tracker returned it (raw view, report state). */
+  /** The ticket as experiment-manager returned it (raw view, report state). */
   raw: Ticket | null;
   requester: Requester | null;
   sampleType: string | null;
@@ -146,7 +146,7 @@ export async function getExperimentWorkspace(
   try {
     raw = await getTicket(undefined, contextId);
   } catch (error) {
-    if (!(error instanceof SampleTrackerError && error.status === 404)) {
+    if (!(error instanceof ExperimentManagerError && error.status === 404)) {
       logHandledError(error, { op: "getExperimentWorkspace.ticket", contextId });
       errors.ticket = error instanceof Error ? error.message : "Failed to load ticket.";
     }

@@ -13,7 +13,7 @@ import { answersFor, mergeClientForms } from "@/lib/experiment/intake";
 import { myExperimentsPath } from "@/lib/experiment/routes";
 import { formatAnswerIssues } from "@/lib/forms/answerIssues";
 import { logHandledError } from "@/lib/log/handled";
-import { createTicket, sampleTrackerMessage } from "@/lib/sample-tracker/client";
+import { createTicket, experimentManagerMessage } from "@/lib/experiment-manager/client";
 
 interface RequestExperimentInput {
   /** The method the request started from; its sample type is the ticket's. */
@@ -27,7 +27,7 @@ interface RequestExperimentInput {
 /**
  * Request one ticket (one physical sample) with the chosen methods. The intake
  * answers are checked against the merged client form, then stored per method in
- * sample_tracker with the ticket. The requester is the session user.
+ * experiment-manager with the ticket. The requester is the session user.
  */
 export async function requestExperimentAction(
   input: RequestExperimentInput,
@@ -78,7 +78,7 @@ export async function requestExperimentAction(
     revalidatePath(myExperimentsPath());
     return { success: true, data: { contextId: ticket.id } };
   } catch (error) {
-    logHandledError(error, { action: "requestExperimentAction", service: "sample-tracker" });
-    return { success: false, error: sampleTrackerMessage(error, t("submitFailed")) };
+    logHandledError(error, { action: "requestExperimentAction", service: "experiment-manager" });
+    return { success: false, error: experimentManagerMessage(error, t("submitFailed")) };
   }
 }

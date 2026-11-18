@@ -8,8 +8,8 @@ import type { StubContext } from "./types.js";
 
 /**
  * A single HTTP server standing in for every backend the BFF calls server-side
- * (custapi, sample_tracker). The app is configured (via env) to point
- * CUSTAPI_URL / SAMPLE_TRACKER_URL here.
+ * (custapi, experiment-manager). The app is configured (via env) to point
+ * CUSTAPI_URL / EXPERIMENT_MANAGER_URL here.
  *
  * Behaviour lives in auto-loaded modules under `./modules/*`; this file only
  * wires HTTP ↔ the module registry, plus a benign empty-list/object fallback so

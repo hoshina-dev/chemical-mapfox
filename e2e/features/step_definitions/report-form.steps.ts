@@ -7,7 +7,7 @@ import {
   findSampleType,
   makePdf,
   seedSampleType,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 function sampleType(name: string) {
@@ -110,7 +110,7 @@ Then(
 );
 
 Then(
-  "sample_tracker stored a report form PDF for {string}",
+  "experiment-manager stored a report form PDF for {string}",
   async function (this: ChemFoxWorld, name: string) {
     const st = sampleType(name);
     for (let i = 0; i < 50 && !st.reportPdf; i += 1)
@@ -124,7 +124,7 @@ Then(
 );
 
 Then(
-  "sample_tracker's report form for {string} places {string}",
+  "experiment-manager's report form for {string} places {string}",
   function (this: ChemFoxWorld, name: string, source: string) {
     const fields = (sampleType(name).reportForm?.fields ?? []) as {
       source: string;
@@ -138,7 +138,7 @@ Then(
 );
 
 Then(
-  "sample_tracker's report form for {string} places nothing",
+  "experiment-manager's report form for {string} places nothing",
   function (this: ChemFoxWorld, name: string) {
     assert.deepEqual(sampleType(name).reportForm, { fields: [] });
   },

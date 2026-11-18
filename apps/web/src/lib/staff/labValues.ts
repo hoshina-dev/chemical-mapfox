@@ -19,8 +19,8 @@ import {
   scheduleFlush,
 } from "@/lib/collab/room";
 import { logHandledError } from "@/lib/log/handled";
-import { getTicket } from "@/lib/sample-tracker/client";
-import { collabRoomId } from "@/lib/sample-tracker/mappers";
+import { getTicket } from "@/lib/experiment-manager/client";
+import { collabRoomId } from "@/lib/experiment-manager/mappers";
 
 /** Top-level question that owns `field`'s lock: itself, or the repeatable group of a child id. */
 function lockOwnerField(questions: Question[], field: string): string {

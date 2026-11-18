@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ExperimentTemplate } from "@/lib/sample-tracker/client";
+import type { ExperimentTemplate } from "@/lib/experiment-manager/client";
 
 import {
   experimentFields,
@@ -33,7 +33,7 @@ function template(
 }
 
 describe("experimentFields", () => {
-  it("offers each method's results, lab and client questions under the sources sample_tracker accepts", () => {
+  it("offers each method's results, lab and client questions under the sources experiment-manager accepts", () => {
     const [moisture, ash] = experimentFields([
       template("t-mt", "Total moisture", {
         clientForm: {
@@ -176,7 +176,7 @@ describe("placing and moving", () => {
     expect(moveField(taxId, 1000, -1000, a4)).toMatchObject({ x: 595, y: 0 });
   });
 
-  it("drops per-field formats from a stored map (one fixed format; sample_tracker refuses them)", () => {
+  it("drops per-field formats from a stored map (one fixed format; experiment-manager refuses them)", () => {
     const stored = [
       {
         page: 1,

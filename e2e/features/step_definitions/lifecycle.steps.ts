@@ -7,7 +7,7 @@ import {
   failNextWrite,
   findTicket,
   ticketStatus,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -79,7 +79,7 @@ When(
 );
 
 Given(
-  "sample_tracker finds ticket {string} busy on the next command",
+  "experiment-manager finds ticket {string} busy on the next command",
   function (this: ChemFoxWorld, contextId: string) {
     // What a lock timeout returns (apperr.MapError): 409, nothing changed.
     failNextWrite({ pathIncludes: `tickets/${contextId}/` }, 409, "the ticket is busy; try again");

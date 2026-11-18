@@ -4,7 +4,7 @@ import { Given, Then, When } from "@cucumber/cucumber";
 
 import { clickUntil, waitForHydration } from "../support/interactions.js";
 import { runtime } from "../support/runtime.js";
-import { findTicket } from "../support/stub/modules/sample-tracker.js";
+import { findTicket } from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -78,7 +78,7 @@ Then(
 );
 
 Then(
-  "sample_tracker stored the result {string} for {string} on {string}",
+  "experiment-manager stored the result {string} for {string} on {string}",
   function (this: ChemFoxWorld, value: string, key: string, contextId: string) {
     const calcs = findTicket(contextId)?.experiments[0].context.calculations as
       | Record<string, { result: unknown }>

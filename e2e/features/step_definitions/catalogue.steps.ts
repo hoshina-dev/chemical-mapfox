@@ -5,12 +5,12 @@ import type { ChemFoxWorld } from "../support/world.js";
 import {
   failNextWrite,
   findSampleType,
-  sampleTracker,
+  experimentManager,
   seedSampleType,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 
 const catalogueWriteCount = () =>
-  sampleTracker.writes.filter((w) => /web-(visibility|order)$/.test(w.path)).length;
+  experimentManager.writes.filter((w) => /web-(visibility|order)$/.test(w.path)).length;
 
 Given("the sample {string} has no report form", function (sample: string) {
   const st = seedSampleType(sample);

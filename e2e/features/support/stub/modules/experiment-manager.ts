@@ -4,9 +4,9 @@ import { registerStub } from "../registry.js";
 import type { StubContext } from "../types.js";
 
 /**
- * In-memory sample_tracker (`SAMPLE_TRACKER_URL`, `/api/v1` stripped by the
+ * In-memory experiment-manager (`EXPERIMENT_MANAGER_URL`, `/api/v1` stripped by the
  * server). Mirrors the real service's routes, derived statuses, guards and
- * error messages (hoshina-dev/sample_tracker `internal/router/router.go`,
+ * error messages (hoshina-dev/experiment-manager `internal/router/router.go`,
  * `internal/repository/ticket_lifecycle_repository.go`), so the BFF is driven
  * exactly as in production. Step definitions seed it through the helpers below.
  */
@@ -110,7 +110,7 @@ const store: Store = {
   writes: [],
 };
 
-export const sampleTracker = store;
+export const experimentManager = store;
 
 const EMAIL_EVENTS = [
   "ticket.requested",
@@ -695,7 +695,7 @@ async function catalogue(ctx: StubContext, actor: string): Promise<boolean> {
   return false;
 }
 
-/** Apply a values patch + results under the experiment (sample_tracker's contextBuilder). */
+/** Apply a values patch + results under the experiment (experiment-manager's contextBuilder). */
 function applyValues(
   e: StExperiment,
   body: Json,
@@ -1026,7 +1026,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
           : await catalogue(ctx, actor);
     if (!handled)
       throw notFound(
-        `sample_tracker stub: ${ctx.method} /${ctx.path.join("/")} is not a route`,
+        `experiment-manager stub: ${ctx.method} /${ctx.path.join("/")} is not a route`,
       );
     return true;
   } catch (err) {
@@ -1050,4 +1050,4 @@ function reset() {
   });
 }
 
-registerStub({ name: "sample-tracker", priority: 100, reset, handle });
+registerStub({ name: "experiment-manager", priority: 100, reset, handle });

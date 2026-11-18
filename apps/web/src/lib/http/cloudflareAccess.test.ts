@@ -43,7 +43,7 @@ describe("cloudflareAccessHeaders", () => {
       "CF-Access-Client-Id": "client-id",
       "CF-Access-Client-Secret": "client-secret",
     });
-    expect(cloudflareAccessHeaders("sample-tracker")).toEqual({
+    expect(cloudflareAccessHeaders("experiment-manager")).toEqual({
       "CF-Access-Client-Id": "client-id",
       "CF-Access-Client-Secret": "client-secret",
     });

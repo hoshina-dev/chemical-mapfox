@@ -6,17 +6,17 @@ import {
   loggedFetch,
 } from "@/lib/log/downstream";
 
-import { getSampleTrackerUrl } from "./config";
+import { getExperimentManagerUrl } from "./config";
 
-/** A failed sample_tracker call; `message` from the body is in `detail`. */
-export class SampleTrackerError extends Error {
+/** A failed experiment-manager call; `message` from the body is in `detail`. */
+export class ExperimentManagerError extends Error {
   constructor(
     message: string,
     readonly status: number,
     readonly detail?: string,
   ) {
     super(message);
-    this.name = "SampleTrackerError";
+    this.name = "ExperimentManagerError";
   }
 }
 
@@ -121,11 +121,11 @@ interface Init extends DownstreamInit {
 }
 
 async function request(path: string, init: Init): Promise<Response> {
-  const url = `${getSampleTrackerUrl()}${path}`;
+  const url = `${getExperimentManagerUrl()}${path}`;
   const { actor, ...rest } = init;
   let res: Response;
   try {
-    res = await loggedFetch("sample-tracker", url, {
+    res = await loggedFetch("experiment-manager", url, {
       ...rest,
       headers: {
         Accept: "application/json",
@@ -139,8 +139,8 @@ async function request(path: string, init: Init): Promise<Response> {
     });
   } catch (error) {
     if (error instanceof DownstreamTimeoutError) {
-      throw new SampleTrackerError(
-        `sample_tracker ${rest.method ?? "GET"} ${path} timed out`,
+      throw new ExperimentManagerError(
+        `experiment-manager ${rest.method ?? "GET"} ${path} timed out`,
         504,
       );
     }
@@ -154,8 +154,8 @@ async function request(path: string, init: Init): Promise<Response> {
     } catch {
       detail = text || undefined;
     }
-    throw new SampleTrackerError(
-      `sample_tracker ${rest.method ?? "GET"} ${path} failed (${res.status})`,
+    throw new ExperimentManagerError(
+      `experiment-manager ${rest.method ?? "GET"} ${path} failed (${res.status})`,
       res.status,
       detail,
     );
@@ -182,10 +182,10 @@ const json = (body: unknown) => JSON.stringify(body);
 export const listSampleTypes = (actor: string | undefined) =>
   stFetch<SampleType[]>("/sample-types", { actor });
 
-/** One live sample type; a 404 SampleTrackerError when unknown or deleted. */
+/** One live sample type; a 404 ExperimentManagerError when unknown or deleted. */
 export async function getSampleType(actor: string | undefined, id: string): Promise<SampleType> {
   const found = (await listSampleTypes(actor)).find((st) => st.id === id);
-  if (!found) throw new SampleTrackerError("sample type not found", 404, "sample type not found");
+  if (!found) throw new ExperimentManagerError("sample type not found", 404, "sample type not found");
   return found;
 }
 
@@ -275,7 +275,7 @@ export async function hasReportForm(actor: string | undefined, sampleTypeId: str
     await request(`/sample-types/${sampleTypeId}/report-form`, { actor, method: "HEAD" });
     return true;
   } catch (error) {
-    if (error instanceof SampleTrackerError && error.status === 404) return false;
+    if (error instanceof ExperimentManagerError && error.status === 404) return false;
     throw error;
   }
 }
@@ -414,9 +414,9 @@ export const setNotificationPreferences = (
     body: json({ preferences }),
   });
 
-/** A sample_tracker failure as a readable message: its own message when it sent one. */
-export function sampleTrackerMessage(error: unknown, fallback: string): string {
-  if (error instanceof SampleTrackerError && error.detail) {
+/** A experiment-manager failure as a readable message: its own message when it sent one. */
+export function experimentManagerMessage(error: unknown, fallback: string): string {
+  if (error instanceof ExperimentManagerError && error.detail) {
     return `${fallback}\n${error.detail}`;
   }
   return fallback;

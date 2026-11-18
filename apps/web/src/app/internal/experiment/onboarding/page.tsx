@@ -5,7 +5,7 @@ import { CatalogueEditor } from "@/components/experiment/catalogue/CatalogueEdit
 import { RegisterSampleButton } from "@/components/experiment/RegisterSampleButton";
 import { Breadcrumbs } from "@/components/internal/Breadcrumbs";
 import { requireAdmin } from "@/lib/auth/dal";
-import { hasReportForm, listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
+import { hasReportForm, listSampleTypes, listTemplates } from "@/lib/experiment-manager/client";
 import { sampleOnboardingPath } from "@/lib/internal/routes";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";

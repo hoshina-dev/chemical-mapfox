@@ -5,10 +5,10 @@ import type { Locator } from "playwright";
 
 import {
   findTicket,
-  sampleTracker,
+  experimentManager,
   seedSampleType,
   seedTemplate,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
 /**
@@ -150,7 +150,7 @@ Then(
   function (this: ChemFoxWorld, templateTitle: string, answer: string) {
     const id = this.currentPath().split("/").at(-1) ?? "";
     const ticket = findTicket(id);
-    assert.ok(ticket, `sample_tracker has no ticket ${id} (${sampleTracker.tickets.length} tickets)`);
+    assert.ok(ticket, `experiment-manager has no ticket ${id} (${experimentManager.tickets.length} tickets)`);
     assert.equal(ticket.experiments.length, 1);
     assert.equal(ticket.experiments[0].templateName, templateTitle);
     assert.deepEqual(ticket.experiments[0].context.values, { sample_summary: answer });

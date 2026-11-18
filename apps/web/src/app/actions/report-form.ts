@@ -10,10 +10,10 @@ import { logHandledError } from "@/lib/log/handled";
 import {
   putReportForm,
   type ReportField,
-  sampleTrackerMessage,
-} from "@/lib/sample-tracker/client";
+  experimentManagerMessage,
+} from "@/lib/experiment-manager/client";
 
-// sample_tracker checks both parts (PDF safety, pages, known sources).
+// experiment-manager checks both parts (PDF safety, pages, known sources).
 
 /** Upload (or replace) a sample type's blank report form. Placed fields are kept. */
 export async function uploadReportFormPdfAction(
@@ -35,7 +35,7 @@ export async function uploadReportFormPdfAction(
     logHandledError(error, { action: "uploadReportFormPdfAction", sampleId });
     return {
       success: false,
-      error: sampleTrackerMessage(error, t("uploadError")),
+      error: experimentManagerMessage(error, t("uploadError")),
     };
   }
 }
@@ -56,7 +56,7 @@ export async function saveReportFieldsAction(
     const t = await getTranslations("staff.reportForm");
     return {
       success: false,
-      error: sampleTrackerMessage(error, t("saveError")),
+      error: experimentManagerMessage(error, t("saveError")),
     };
   }
 }
