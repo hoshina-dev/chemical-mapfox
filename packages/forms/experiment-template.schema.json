@@ -491,6 +491,7 @@
           "additionalProperties": false,
           "properties": {
             "default": {
+              "type": "string",
               "description": "YYYY-MM-DD, or \"today\" for the date the form is opened on.",
               "anyOf": [
                 { "type": "string", "format": "date" },
