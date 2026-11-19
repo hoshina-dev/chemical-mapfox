@@ -96,10 +96,10 @@ export function toExperimentTicket(t: TicketSummary | Ticket): ExperimentTicket 
     updatedAt: t.updatedAt,
     sampleReceivedAt: t.receivedAt,
     experimentStartedAt: started[0] ?? null,
-    // all methods finished: when the last one did
+    // all methods finished: when the last one did (at least one experiment here)
     resultsSubmittedAt:
       experiments.length > 0 && experiments.every((e) => e.finishedAt)
-        ? (experiments.map((e) => e.finishedAt as string).sort().at(-1) ?? null)
+        ? (experiments.map((e) => e.finishedAt as string).sort().at(-1) as string)
         : null,
     closedAt: t.closedAt,
     methods: t.methods ?? [],
