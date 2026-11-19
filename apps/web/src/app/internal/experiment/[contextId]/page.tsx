@@ -34,6 +34,7 @@ import {
   experimentCheckinPath,
   experimentListingPath,
   experimentReportDownloadPath,
+  experimentReportPreviewPath,
   experimentReportViewPath,
   experimentRawPath,
 } from "@/lib/internal/routes";
@@ -236,6 +237,7 @@ async function ExperimentWorkspaceContent({
                   contextId={contextId}
                   status={status}
                   published={Boolean(ws.raw?.reportPublishedAt)}
+                  previewHref={experimentReportPreviewPath(contextId)}
                 />
               )}
 

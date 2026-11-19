@@ -655,62 +655,33 @@
     },
     "reportForm": {
       "title": "Report form",
-      "subtitle": "The blank report (PDF) for this sample type and where each value is printed on it. One report per sample.",
+      "subtitle": "The blank report (PDF) for this sample type and which results its table prints. One report per sample.",
       "noneTitle": "No report form yet",
-      "noneBody": "Upload the blank PDF, then place the values on it. Without one, reports cannot be published for this sample type.",
+      "noneBody": "Upload the blank PDF, then choose the results its table prints. Without one, reports cannot be published for this sample type.",
       "fileLabel": "Blank form (PDF)",
       "fileDescription": "The lab's report with labels and grid, values left empty.",
       "chooseFile": "Upload PDF",
       "replaceFile": "Replace PDF",
       "missing": "Choose a PDF.",
       "uploadError": "Could not save the report form.",
-      "saveError": "Could not save the placed values.",
-      "general": "General",
-      "experiment": "Experiment",
+      "saveError": "Could not save the results table.",
       "noExperiments": "This sample type has no methods yet.",
-      "noFields": "This method has no results or form questions to print.",
-      "pickHint": "Pick a value on the right, then click where it goes.",
-      "placeHint": "Click on the page to place {label}. Esc cancels.",
       "page": "Page {page} of {count}",
       "prevPage": "Previous page",
       "nextPage": "Next page",
       "remove": "Remove {label}",
       "saving": "Saving…",
       "saved": "Saved",
-      "loadError": "Could not open the blank form.",
-      "sources": {
-        "sampleType": {
-          "name": "Sample type"
-        },
-        "ticket": {
-          "description": "Sample description",
-          "receivedAt": "Date received"
-        },
-        "experiments": {
-          "firstStartedAt": "Testing started",
-          "lastFinishedAt": "Testing finished"
-        },
-        "report": {
-          "publishedAt": "Date published",
-          "number": "Report number",
-          "orderNumber": "Order number"
-        },
-        "client": {
-          "name": "Client name",
-          "address": "Client address",
-          "postcodeCity": "Client postcode and city",
-          "taxId": "Client tax ID"
-        },
-        "authorizedBy": {
-          "name": "Authorized by",
-          "title": "Authorizer's title"
-        }
-      },
-      "kinds": {
-        "result": "Results",
-        "lab": "Lab form",
-        "client": "Client form"
-      }
+      "loadError": "Could not draw the report preview.",
+      "previewHint": "Preview with sample values. It updates after each change.",
+      "results": "Add results",
+      "method": "Method",
+      "noResults": "This method has no results to print.",
+      "added": "{result} (in the table)",
+      "table": "Results table",
+      "emptyTable": "No rows yet. Pick a method above and click a result to add it.",
+      "labelPlaceholder": "Label (printed when a method has several rows)",
+      "unit": "Unit"
     },
     "lifecycle": {
       "forbidden": "Only lab staff can do this.",
@@ -737,7 +708,11 @@
         "dismiss": "Back",
         "cancelTitle": "Cancel ticket",
         "cancelReason": "Reason",
-        "cancelConfirm": "Cancel ticket"
+        "cancelConfirm": "Cancel ticket",
+        "preview": "Preview report",
+        "republish": "Publish again",
+        "publishConfirm": "Publish the report? The requester is emailed.",
+        "republishConfirm": "Publish the report again from the current data? The requester is emailed and downloads show the new version."
       }
     }
   },
@@ -1004,9 +979,9 @@
       "addComparison": "Add a comparison",
       "removeComparison": "Remove this comparison"
     },
-    "deleteConfirmReport": "Delete this experiment template? {count, plural, one {# value placed on the report form is removed with it.} other {# values placed on the report form are removed with it.}}",
-    "removedFromReportTitle": "Removed from the report form",
-    "removedFromReportBody": "{fields}. This method no longer has them; place new values on the report form if needed."
+    "deleteConfirmReport": "Delete this experiment template? {count, plural, one {# row of the report table is removed with it.} other {# rows of the report table are removed with it.}}",
+    "removedFromReportTitle": "Removed from the report table",
+    "removedFromReportBody": "{fields}. This method no longer has them; add other results to the report table if needed."
   },
   "docs": {
     "layout": {
@@ -1306,7 +1281,7 @@
           "onboarding": "Register specimen types and open a sample’s template list.",
           "components": "Live previews and schema fields for every question type in the form engine.",
           "templates": "Create and edit client intake forms, lab forms, and calculations.",
-          "pdfReport": "Upload the blank report form (PDF) and place its values on it.",
+          "pdfReport": "Upload the blank report form (PDF) and choose the results its table prints.",
           "aiAssistants": "Connect Claude or ChatGPT so the assistant can act as you in the lab workspace."
         }
       },
@@ -1489,19 +1464,19 @@
           },
           "canvas": {
             "heading": "The blank form",
-            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept. Replace PDF swaps it and keeps the values already placed."
+            "body": "Upload the lab's report as a PDF with labels and grid, values left empty. The PDF is checked when you upload it: files with scripts, forms, attachments or encryption are refused, and only what the document uses is kept. Replace PDF swaps it and keeps the results table."
           },
           "variables": {
-            "heading": "Place the values",
-            "body": "The panel on the right lists what a report can print: General (sample type, description and dates) and, for the experiment chosen in the list, its results, lab form values and client answers (one colour each; a value picked in the list lights up everywhere it is placed). Pick one, then click on the page where it should print; the dot marks the start of the text line. Drag a value or use the arrow keys (Shift for bigger steps) to move it, and Delete or × to remove it. A value can be placed more than once. Grey values (client, report number, signer) are kept but print nothing yet."
+            "heading": "Choose the results",
+            "body": "Pick a method in the panel on the right and click one of its results to add a row to the table; a method's rows print together under its name and norm. Only results that hold one value are offered (a dish run offers its final value, not the per-dish ones). Give each row a label (printed when the method has several rows) and a unit; × removes a row. The table's top part (sample type, description, dates) is filled in automatically."
           },
           "preview": {
             "heading": "Check it",
-            "body": "Publish the report of a completed ticket of this sample type and open it: values are written onto the blank form in Helvetica, numbers with a decimal comma, dates as dd.mm.yyyy."
+            "body": "The preview on the left is the report drawn with sample values; it updates after each change. On a completed ticket, Preview report shows the real report before you publish it, and Publish report issues it and emails the requester. Values print exactly as the calculations stored them."
           },
           "save": {
             "heading": "Saving",
-            "body": "Every change is saved on its own a moment later; the panel shows Saving… and Saved. A value that no longer exists for this sample type is refused with the reason."
+            "body": "Every change is saved on its own a moment later; the panel shows Saving… and Saved. A row the method can no longer print is refused with the reason, shown above the panel."
           }
         }
       },

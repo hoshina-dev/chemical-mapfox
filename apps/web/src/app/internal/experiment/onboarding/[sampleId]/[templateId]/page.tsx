@@ -9,10 +9,12 @@ import {
   getSampleType,
   getTemplate,
   ExperimentManagerError,
+  type ReportForm,
 } from "@/lib/experiment-manager/client";
 import { templateToLoaded } from "@/lib/experiment-manager/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
+import { storedForm } from "@/lib/report/reportTable";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +50,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
 
   let loaded;
   let sampleName: string | undefined;
-  let reportSources: string[] = [];
+  let reportForm: ReportForm = { sections: [] };
   try {
     const [detail, sample] = await Promise.all([
       getTemplate(session.userId, templateId),
@@ -57,7 +59,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
     if (detail.sampleTypeId !== sampleId) notFound();
     loaded = templateToLoaded(detail);
     sampleName = sample?.name;
-    reportSources = (sample?.reportForm?.fields ?? []).map((f) => f.source);
+    reportForm = storedForm(sample?.reportForm ?? null);
   } catch (error) {
     if (error instanceof ExperimentManagerError && error.status === 404) {
       notFound();
@@ -85,7 +87,7 @@ async function EditTemplatePageContent({ params }: PageProps) {
         sampleName={sampleName}
         templateId={templateId}
         lineageId={loaded.lineageId}
-        reportSources={reportSources}
+        reportForm={reportForm}
       />
     </Container>
   );

@@ -655,62 +655,33 @@
     },
     "reportForm": {
       "title": "Formularz sprawozdania",
-      "subtitle": "Pusty formularz sprawozdania (PDF) dla tego rodzaju próbki i miejsca, w których drukowane są wartości. Jedno sprawozdanie na próbkę.",
+      "subtitle": "Pusty formularz sprawozdania (PDF) dla tego rodzaju próbki i wyniki drukowane w jego tabeli. Jedno sprawozdanie na próbkę.",
       "noneTitle": "Brak formularza sprawozdania",
-      "noneBody": "Prześlij pusty PDF, a potem umieść na nim wartości. Bez niego nie można publikować sprawozdań dla tego rodzaju próbki.",
+      "noneBody": "Prześlij pusty PDF, a potem wybierz wyniki drukowane w tabeli. Bez niego nie można publikować sprawozdań dla tego rodzaju próbki.",
       "fileLabel": "Pusty formularz (PDF)",
       "fileDescription": "Sprawozdanie laboratorium z etykietami i siatką, bez wartości.",
       "chooseFile": "Prześlij PDF",
       "replaceFile": "Zamień PDF",
       "missing": "Wybierz plik PDF.",
       "uploadError": "Nie udało się zapisać formularza sprawozdania.",
-      "saveError": "Nie udało się zapisać umieszczonych wartości.",
-      "general": "Ogólne",
-      "experiment": "Badanie",
+      "saveError": "Nie udało się zapisać tabeli wyników.",
       "noExperiments": "Ten rodzaj próbki nie ma jeszcze metod.",
-      "noFields": "Ta metoda nie ma wyników ani pytań do wydrukowania.",
-      "pickHint": "Wybierz wartość po prawej, a potem kliknij, gdzie ma się znaleźć.",
-      "placeHint": "Kliknij na stronie, aby umieścić: {label}. Esc anuluje.",
       "page": "Strona {page} z {count}",
       "prevPage": "Poprzednia strona",
       "nextPage": "Następna strona",
       "remove": "Usuń: {label}",
       "saving": "Zapisywanie…",
       "saved": "Zapisano",
-      "loadError": "Nie udało się otworzyć pustego formularza.",
-      "sources": {
-        "sampleType": {
-          "name": "Rodzaj próbki"
-        },
-        "ticket": {
-          "description": "Opis próbki",
-          "receivedAt": "Data przyjęcia"
-        },
-        "experiments": {
-          "firstStartedAt": "Rozpoczęcie badań",
-          "lastFinishedAt": "Zakończenie badań"
-        },
-        "report": {
-          "publishedAt": "Data publikacji",
-          "number": "Numer sprawozdania",
-          "orderNumber": "Numer zlecenia"
-        },
-        "client": {
-          "name": "Nazwa klienta",
-          "address": "Adres klienta",
-          "postcodeCity": "Kod pocztowy i miasto klienta",
-          "taxId": "NIP klienta"
-        },
-        "authorizedBy": {
-          "name": "Zatwierdził",
-          "title": "Stanowisko zatwierdzającego"
-        }
-      },
-      "kinds": {
-        "result": "Wyniki",
-        "lab": "Formularz laboratoryjny",
-        "client": "Formularz klienta"
-      }
+      "loadError": "Nie udało się narysować podglądu sprawozdania.",
+      "previewHint": "Podgląd z przykładowymi wartościami. Odświeża się po każdej zmianie.",
+      "results": "Dodaj wyniki",
+      "method": "Metoda",
+      "noResults": "Ta metoda nie ma wyników do wydrukowania.",
+      "added": "{result} (w tabeli)",
+      "table": "Tabela wyników",
+      "emptyTable": "Brak wierszy. Wybierz metodę powyżej i kliknij wynik, aby go dodać.",
+      "labelPlaceholder": "Etykieta (drukowana, gdy metoda ma kilka wierszy)",
+      "unit": "Jednostka"
     },
     "lifecycle": {
       "forbidden": "Tylko personel laboratorium może to zrobić.",
@@ -737,7 +708,11 @@
         "dismiss": "Wróć",
         "cancelTitle": "Anulowanie zgłoszenia",
         "cancelReason": "Powód",
-        "cancelConfirm": "Anuluj zgłoszenie"
+        "cancelConfirm": "Anuluj zgłoszenie",
+        "preview": "Podgląd sprawozdania",
+        "republish": "Opublikuj ponownie",
+        "publishConfirm": "Opublikować sprawozdanie? Zleceniodawca otrzyma e-mail.",
+        "republishConfirm": "Opublikować sprawozdanie ponownie z bieżących danych? Zleceniodawca otrzyma e-mail, a pobrania pokażą nową wersję."
       }
     }
   },
@@ -1004,9 +979,9 @@
       "addComparison": "Dodaj porównanie",
       "removeComparison": "Usuń to porównanie"
     },
-    "deleteConfirmReport": "Usunąć ten szablon badania? {count, plural, one {# wartość umieszczona na formularzu sprawozdania zostanie usunięta razem z nim.} few {# wartości umieszczone na formularzu sprawozdania zostaną usunięte razem z nim.} many {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.} other {# wartości umieszczonych na formularzu sprawozdania zostanie usuniętych razem z nim.}}",
-    "removedFromReportTitle": "Usunięto z formularza sprawozdania",
-    "removedFromReportBody": "{fields}. Ta metoda już ich nie ma; w razie potrzeby umieść nowe wartości na formularzu sprawozdania."
+    "deleteConfirmReport": "Usunąć ten szablon badania? {count, plural, one {# wiersz tabeli sprawozdania zostanie usunięty razem z nim.} few {# wiersze tabeli sprawozdania zostaną usunięte razem z nim.} many {# wierszy tabeli sprawozdania zostanie usuniętych razem z nim.} other {# wierszy tabeli sprawozdania zostanie usuniętych razem z nim.}}",
+    "removedFromReportTitle": "Usunięto z tabeli sprawozdania",
+    "removedFromReportBody": "{fields}. Ta metoda już ich nie ma; w razie potrzeby dodaj inne wyniki do tabeli sprawozdania."
   },
   "docs": {
     "layout": {
@@ -1306,7 +1281,7 @@
           "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
           "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
           "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
-          "pdfReport": "Prześlij pusty formularz sprawozdania (PDF) i umieść na nim wartości.",
+          "pdfReport": "Prześlij pusty formularz sprawozdania (PDF) i wybierz wyniki drukowane w jego tabeli.",
           "aiAssistants": "Połącz Claude lub ChatGPT, aby asystent mógł działać w Twoim imieniu w przestrzeni laboratorium."
         }
       },
@@ -1489,19 +1464,19 @@
           },
           "canvas": {
             "heading": "Pusty formularz",
-            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane i zachowywane jest tylko to, czego dokument używa. Zamień PDF podmienia plik i zachowuje umieszczone wartości."
+            "body": "Prześlij sprawozdanie laboratorium jako PDF z etykietami i siatką, bez wartości. PDF jest sprawdzany przy przesyłaniu: pliki ze skryptami, formularzami, załącznikami lub szyfrowaniem są odrzucane i zachowywane jest tylko to, czego dokument używa. Zamień PDF podmienia plik i zachowuje tabelę wyników."
           },
           "variables": {
-            "heading": "Umieść wartości",
-            "body": "Panel po prawej pokazuje, co może wydrukować sprawozdanie: Ogólne (rodzaj próbki, opis i daty) oraz, dla badania wybranego z listy, wyniki, wartości z formularza laboratoryjnego i odpowiedzi klienta (każdy rodzaj w swoim kolorze; wybrana wartość podświetla się wszędzie, gdzie jest umieszczona). Wybierz wartość i kliknij na stronie, gdzie ma się znaleźć; kropka oznacza początek linii tekstu. Przeciągnij wartość lub użyj strzałek (Shift — większe kroki), aby ją przesunąć, a Delete lub ×, aby ją usunąć. Wartość można umieścić więcej niż raz. Szare wartości (klient, numer sprawozdania, zatwierdzający) są zachowane, ale jeszcze nic nie drukują."
+            "heading": "Wybierz wyniki",
+            "body": "Wybierz metodę w panelu po prawej i kliknij jeden z jej wyników, aby dodać wiersz do tabeli; wiersze metody drukują się razem pod jej nazwą i normą. Oferowane są tylko wyniki z jedną wartością (przebieg naczynek oferuje wartość końcową, nie wartości dla poszczególnych naczynek). Nadaj każdemu wierszowi etykietę (drukowaną, gdy metoda ma kilka wierszy) i jednostkę; × usuwa wiersz. Górna część sprawozdania (rodzaj próbki, opis, daty) wypełnia się automatycznie."
           },
           "preview": {
             "heading": "Sprawdź",
-            "body": "Opublikuj sprawozdanie zakończonego zlecenia tego rodzaju próbki i otwórz je: wartości są wpisywane na pusty formularz czcionką Helvetica, liczby z przecinkiem dziesiętnym, daty jako dd.mm.rrrr."
+            "body": "Podgląd po lewej to sprawozdanie narysowane z przykładowymi wartościami; odświeża się po każdej zmianie. Przy zakończonym zgłoszeniu Podgląd sprawozdania pokazuje prawdziwe sprawozdanie przed publikacją, a Opublikuj sprawozdanie wydaje je i wysyła e-mail do zleceniodawcy. Wartości drukują się dokładnie tak, jak zapisały je obliczenia."
           },
           "save": {
             "heading": "Zapisywanie",
-            "body": "Każda zmiana zapisuje się sama chwilę później; panel pokazuje Zapisywanie… i Zapisano. Wartość, której ten rodzaj próbki już nie ma, jest odrzucana z podaniem powodu."
+            "body": "Każda zmiana zapisuje się sama po chwili; panel pokazuje Zapisywanie… i Zapisano. Wiersz, którego metoda nie może już wydrukować, jest odrzucany z podaniem powodu nad panelem."
           }
         }
       },
