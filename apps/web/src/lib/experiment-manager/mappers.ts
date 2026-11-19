@@ -102,6 +102,7 @@ export function toExperimentTicket(t: TicketSummary | Ticket): ExperimentTicket 
         ? (experiments.map((e) => e.finishedAt as string).sort().at(-1) ?? null)
         : null,
     closedAt: t.closedAt,
+    methods: t.methods ?? [],
     closedReason: t.closedReason,
   };
 }

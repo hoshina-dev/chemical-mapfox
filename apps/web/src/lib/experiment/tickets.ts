@@ -16,6 +16,8 @@ export interface ExperimentTicket {
   resultsSubmittedAt: string | null;
   closedAt: string | null;
   closedReason: string | null;
+  /** Names of the requested methods, so lists can tell tickets apart. */
+  methods: string[];
 }
 
 export interface StatusMeta {

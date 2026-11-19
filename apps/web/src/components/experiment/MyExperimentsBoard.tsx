@@ -122,7 +122,7 @@ export function MyExperimentsBoard({
     const q = query.trim().toLowerCase();
     if (!q) return experiments;
     return experiments.filter((exp) =>
-      [exp.name, exp.contextId].some((v) =>
+      [exp.name, exp.contextId, ...exp.methods].some((v) =>
         v?.toLowerCase().includes(q),
       ),
     );
@@ -237,9 +237,16 @@ function ExperimentCard({ experiment }: { experiment: MyExperiment }) {
       style={{ cursor: "pointer" }}
     >
       <Stack gap="xs">
-        <Text size="sm" fw={500} lineClamp={2}>
-          {experiment.name ?? t("untitled")}
-        </Text>
+        <Stack gap={2}>
+          <Text size="sm" fw={500} lineClamp={2}>
+            {experiment.name ?? t("untitled")}
+          </Text>
+          {experiment.methods.length > 0 && (
+            <Text size="xs" c="dimmed" lineClamp={2}>
+              {experiment.methods.join(" · ")}
+            </Text>
+          )}
+        </Stack>
         <Group gap="xs">
           <StatusChip status={experiment.status} variant="badge" size="xs" />
         </Group>
