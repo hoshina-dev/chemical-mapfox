@@ -702,17 +702,16 @@
       },
       "ticket": {
         "title": "Zgłoszenie",
-        "publish": "Opublikuj sprawozdanie",
-        "close": "Zamknij zgłoszenie",
+        "publish": "Opublikuj sprawozdanie i zamknij",
         "cancel": "Anuluj zgłoszenie",
         "dismiss": "Wróć",
         "cancelTitle": "Anulowanie zgłoszenia",
         "cancelReason": "Powód",
         "cancelConfirm": "Anuluj zgłoszenie",
         "preview": "Podgląd sprawozdania",
-        "republish": "Opublikuj ponownie",
-        "publishConfirm": "Opublikować sprawozdanie? Zleceniodawca otrzyma e-mail.",
-        "republishConfirm": "Opublikować sprawozdanie ponownie z bieżących danych? Zleceniodawca otrzyma e-mail, a pobrania pokażą nową wersję."
+        "republish": "Opublikuj zaktualizowane sprawozdanie",
+        "publishConfirm": "Opublikować sprawozdanie i zamknąć zgłoszenie? Zleceniodawca będzie mógł je wyświetlić i pobrać oraz otrzyma e-mail o zamknięciu zgłoszenia.",
+        "republishConfirm": "Opublikować zaktualizowane sprawozdanie z bieżących danych? Zleceniodawca zobaczy nową wersję; e-mail nie zostanie wysłany."
       }
     }
   },
@@ -1277,7 +1276,7 @@
           "experiments": "Wyszukuj, filtruj i otwieraj każde zgłoszenie eksperymentu z listy laboratoryjnej.",
           "checkIn": "Potwierdź nadejście wysłanej próbki, skanując etykietę QR zlecającego.",
           "workspace": "Rozpoczynaj eksperymenty i edytuj formularz laboratoryjny na żywo z innymi technikami.",
-          "finalize": "Uruchamiaj obliczenia, generuj raport PDF i zamykaj zgłoszenie.",
+          "finalize": "Uruchamiaj obliczenia, sprawdzaj raport PDF i publikuj go, aby zamknąć zgłoszenie.",
           "onboarding": "Rejestruj typy próbek i otwieraj listę szablonów danej próbki.",
           "components": "Podglądy na żywo i pola schematu dla każdego typu pytania w silniku formularzy.",
           "templates": "Twórz i edytuj formularze przyjęcia klienta, formularze laboratoryjne oraz obliczenia.",
@@ -1353,7 +1352,7 @@
       },
       "finalize": {
         "title": "Zakończenie i sprawozdanie",
-        "subtitle": "Zakończ każdą metodę zgłoszenia, potem opublikuj sprawozdanie próbki i zamknij zgłoszenie.",
+        "subtitle": "Zakończ każdą metodę zgłoszenia, potem opublikuj sprawozdanie próbki: publikacja zamyka zgłoszenie.",
         "sections": {
           "flow": {
             "heading": "Zalecana kolejność",
@@ -1362,8 +1361,8 @@
               "Uzupełnij formularz laboratoryjny metody.",
               "Wybierz Zakończ badanie: wartości są zapisywane, wzory liczone w przeglądarce, a wyniki zapisywane.",
               "Powtórz dla każdej metody; gdy wszystkie są zakończone, zgłoszenie jest Zakończone.",
-              "Opublikuj sprawozdanie: od tej chwili Ty i zleceniodawca możecie je pobrać.",
-              "Zamknij zgłoszenie."
+              "Sprawdź sprawozdanie przyciskiem Podgląd sprawozdania.",
+              "Wybierz Opublikuj sprawozdanie i zamknij: zgłoszenie zostaje zamknięte, a zleceniodawca może wyświetlić i pobrać sprawozdanie oraz otrzymuje e-mail."
             ]
           },
           "report": {
@@ -1371,8 +1370,8 @@
             "body": "Jest jedno sprawozdanie na próbkę, tworzone z formularza rodzaju próbki przy każdym otwarciu, więc zawsze pokazuje aktualne wyniki. Ponowna publikacja zastępuje numery. Zleceniodawca może otworzyć to samo sprawozdanie po publikacji."
           },
           "close": {
-            "heading": "Poprawki i zamknięcie",
-            "body": "Aby poprawić zakończoną metodę, otwórz ją ponownie z podaniem powodu, zmień wartości i zakończ ponownie. Zamknij zgłoszenie po publikacji sprawozdania; zamknięte zgłoszenie nadal może mieć ponownie opublikowane sprawozdanie."
+            "heading": "Poprawki sprawozdania",
+            "body": "Aby poprawić zakończoną metodę przed publikacją, otwórz ją ponownie z podaniem powodu, zmień wartości i zakończ ponownie. Po zamknięciu zgłoszenia Opublikuj zaktualizowane sprawozdanie wydaje nową wersję z bieżących danych; zleceniodawca ją widzi, a e-mail nie jest wysyłany. Zgłoszenie zamyka się tylko przez publikację sprawozdania; anulowanie wymaga podania powodu."
           }
         }
       },

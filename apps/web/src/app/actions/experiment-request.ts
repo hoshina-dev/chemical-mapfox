@@ -22,7 +22,11 @@ interface RequestExperimentInput {
   templateIds: string[];
   /** Intake answers of the merged client form, keyed by question id. */
   values: Record<string, AnswerValue>;
+  /** Made once per request form: a retry of this request returns the same ticket. */
+  requestKey: string;
 }
+
+const REQUEST_KEY = /^[A-Za-z0-9-]{8,200}$/;
 
 /**
  * Request one ticket (one physical sample) with the chosen methods. The intake
@@ -66,6 +70,7 @@ export async function requestExperimentAction(
   }
 
   try {
+    const requestKey = REQUEST_KEY.test(input.requestKey) ? input.requestKey : undefined;
     const ticket = await createTicket(session.userId, {
       name: resolved.sampleName,
       sampleTypeId: resolved.sampleId,
@@ -74,7 +79,7 @@ export async function requestExperimentAction(
       clientAnswers: Object.fromEntries(
         chosen.map((m) => [m.id, answersFor(m.template.clientForm, values.data)]),
       ),
-    });
+    }, requestKey);
     revalidatePath(myExperimentsPath());
     return { success: true, data: { contextId: ticket.id } };
   } catch (error) {

@@ -54,7 +54,7 @@ When(
 
 When("I try to publish the report", async function (this: ChemFoxWorld) {
   // One click: each click clears the previous error before the action runs.
-  const publish = this.page.getByRole("button", { name: "Publish report", exact: true });
+  const publish = this.page.getByRole("button", { name: "Publish report and close", exact: true });
   await waitForHydration(publish);
   this.page.on("dialog", (dialog) => {
     dialog.accept().catch(() => {});

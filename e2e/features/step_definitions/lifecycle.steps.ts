@@ -154,17 +154,8 @@ When(
     this.page.on("dialog", (dialog) => {
       dialog.accept().catch(() => {});
     });
-    await clickUntil(this, button(this, "Publish report"), async () =>
+    await clickUntil(this, button(this, "Publish report and close"), async () =>
       Boolean(findTicket(contextId)?.events.some((e) => e.type === "ticket.report_published")),
-    );
-  },
-);
-
-When(
-  "I close the ticket {string}",
-  async function (this: ChemFoxWorld, contextId: string) {
-    await clickUntil(this, button(this, "Close ticket"), async () =>
-      status(contextId) === "CLOSED",
     );
   },
 );
@@ -214,10 +205,10 @@ Then(
 );
 
 Then(
-  "I should not be able to close the ticket",
+  "I should not be able to publish the report",
   async function (this: ChemFoxWorld) {
     await button(this, "Cancel ticket").first().waitFor({ state: "visible", timeout: 30_000 });
-    assert.equal(await button(this, "Close ticket").count(), 0);
+    assert.equal(await button(this, "Publish report and close").count(), 0);
   },
 );
 
