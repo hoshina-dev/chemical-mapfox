@@ -65,7 +65,7 @@ them; ask the user to test them on the method's builder page. To edit a
 method, get_template, change it, and pass the result back with its templateId:
 experiments already requested keep their own copy. publish stays false unless
 the user asks to show it on the catalogue; set_catalogue_visibility shows or
-hides it later. The report form (blank PDF + field map) is uploaded on the site.
+hides it later. The report form (blank PDF + results table) is set up on the site.
 
 How-to guides for this site are available through list_docs and read_doc.
 Read the relevant one before explaining a page or workflow to the user, and

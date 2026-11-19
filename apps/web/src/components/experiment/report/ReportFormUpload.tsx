@@ -7,7 +7,7 @@ import { useState, useTransition } from "react";
 
 import { uploadReportFormPdfAction } from "@/app/actions/report-form";
 
-/** Upload or replace the blank report form (PDF); placed values are kept. */
+/** Upload or replace the blank report form (PDF); the results table is kept. */
 export function ReportFormUpload({
   sampleId,
   hasPdf,

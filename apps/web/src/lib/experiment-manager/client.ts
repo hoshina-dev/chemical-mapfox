@@ -34,7 +34,8 @@ export interface SampleType {
   id: string;
   name: string;
   description: string | null;
-  reportForm: { fields: ReportField[] } | null;
+  /** The report's results table; null until a blank form is uploaded. */
+  reportForm: ReportForm | null;
   /** Offered in the catalogues; new sample types start hidden. */
   isVisibleOnWeb: boolean;
   displayOrder: number;
@@ -42,12 +43,22 @@ export interface SampleType {
   updatedAt: string;
 }
 
-/** One value on the report form, printed in one fixed format (10 pt, starting at x). */
-export interface ReportField {
-  page: number;
-  x: number;
-  y: number;
-  source: string;
+/** A sample type's results table: one section per method, in the order they print. */
+export interface ReportForm {
+  sections: ReportSection[];
+}
+
+/** One method (experiment template) and the results it prints. */
+export interface ReportSection {
+  template: string;
+  rows: ReportRow[];
+}
+
+/** One printed result: a calculation of the section's method, as stored. */
+export interface ReportRow {
+  result: string;
+  label?: string;
+  unit?: string;
 }
 
 export interface ExperimentTemplate {
@@ -281,17 +292,17 @@ export async function hasReportForm(actor: string | undefined, sampleTypeId: str
 }
 
 /**
- * Store the blank form and/or the field map; a part left out is kept (the map
- * alone needs a stored PDF, a first PDF alone starts with an empty map).
+ * Store the blank form and/or the results table; a part left out is kept (the table
+ * alone needs a stored PDF, a first PDF alone starts with an empty table).
  */
 export function putReportForm(
   actor: string,
   sampleTypeId: string,
-  parts: { pdf?: Blob; fields?: string },
+  parts: { pdf?: Blob; form?: ReportForm },
 ) {
   const body = new FormData();
   if (parts.pdf) body.append("file", parts.pdf, "report-form.pdf");
-  if (parts.fields !== undefined) body.append("fields", parts.fields);
+  if (parts.form) body.append("fields", json(parts.form));
   return stFetch<SampleType>(`/sample-types/${sampleTypeId}/report-form`, {
     actor,
     method: "PUT",
@@ -386,10 +397,22 @@ export const reopenExperiment = (
   reason: string,
 ) => command(actor, `${exp(ticketId, experimentId)}/reopen`, { reason });
 
-/** Release the report for download (no input: what it prints comes from the ticket). */
+/** The sample type's report drawn with sample values (the report form editor's preview). */
+export const previewReportForm = (actor: string | undefined, sampleTypeId: string) =>
+  stBytes(`/sample-types/${sampleTypeId}/report-form/preview`, { actor });
+
+/**
+ * Issue the ticket's report from its current data (emails the requester). Publishing
+ * again issues anew; downloads print the latest.
+ */
 export const publishReport = (actor: string, ticketId: string) =>
   command(actor, `/tickets/${ticketId}/report`);
 
+/** What publishing would issue now; nothing is recorded, nobody is emailed. */
+export const previewReport = (actor: string | undefined, ticketId: string) =>
+  stBytes(`/tickets/${ticketId}/report/preview`, { actor });
+
+/** The issued report. */
 export const getReport = (actor: string | undefined, ticketId: string) =>
   stBytes(`/tickets/${ticketId}/report`, { actor });
 

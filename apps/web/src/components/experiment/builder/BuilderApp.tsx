@@ -29,7 +29,8 @@ import {
   templateBuilderPath,
   reportFormPath,
 } from "@/lib/internal/routes";
-import { placementsRemoved } from "@/lib/report/reportFields";
+import type { ReportForm } from "@/lib/experiment-manager/client";
+import { rowsRemoved } from "@/lib/report/reportTable";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { CollapsiblePanel } from "./CollapsiblePanel";
@@ -46,8 +47,8 @@ interface BuilderAppProps {
   templateId?: string;
   /** Stable lineage id — required for PUT updates in edit mode. */
   lineageId?: string;
-  /** Sources placed on the sample type's report form (edit mode). */
-  reportSources?: string[];
+  /** The sample type's results table (edit mode): which of this method's results it prints. */
+  reportForm?: ReportForm;
 }
 
 export function BuilderApp({
@@ -57,13 +58,13 @@ export function BuilderApp({
   sampleName,
   templateId,
   lineageId,
-  reportSources = [],
+  reportForm = { sections: [] },
 }: BuilderAppProps) {
   const t = useTranslations("builder");
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Placements the last save took off the report form (experiment-manager drops them).
+  // Rows the last save took off the report table (experiment-manager drops them).
   const [removedFromReport, setRemovedFromReport] = useState<string[]>([]);
   const [debugPayload, setDebugPayload] = useState<unknown>(null);
   const [isPending, startTransition] = useTransition();
@@ -87,7 +88,7 @@ export function BuilderApp({
     setRemovedFromReport([]);
     const payload = { meta, template: parsed.data };
     const removed = templateId
-      ? placementsRemoved(templateId, reportSources, fromDraft(initial).template, parsed.data)
+      ? rowsRemoved(templateId, reportForm, parsed.data)
       : [];
     startTransition(async () => {
       if (mode === "create") {
@@ -108,7 +109,7 @@ export function BuilderApp({
         setDebugPayload({ sampleId, templateId, lineageId, ...payload });
         return;
       }
-      setRemovedFromReport(removed.map((o) => o.label));
+      setRemovedFromReport(removed);
       if (result.data.id !== templateId) {
         router.push(
           templateBuilderPath({ sampleId, templateId: result.data.id }),
@@ -120,7 +121,7 @@ export function BuilderApp({
 
   const remove = () => {
     if (!templateId) return;
-    const removed = placementsRemoved(templateId, reportSources, fromDraft(initial).template, null);
+    const removed = rowsRemoved(templateId, reportForm, null);
     const confirmText =
       removed.length > 0 ? t("deleteConfirmReport", { count: removed.length }) : t("deleteConfirm");
     if (!window.confirm(confirmText)) return;

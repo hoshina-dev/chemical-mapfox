@@ -13,11 +13,7 @@ import {
   reportFormPath,
   sampleOnboardingPath,
 } from "@/lib/internal/routes";
-import {
-  experimentFields,
-  experimentLabels,
-  storedFields,
-} from "@/lib/report/reportFields";
+import { methodResults, storedForm } from "@/lib/report/reportTable";
 import {
   getSampleType,
   hasReportForm,
@@ -61,12 +57,11 @@ async function ReportFormContent({
       notFound();
     throw error;
   }
-  // The field map alone is not enough: reports are printed on the stored blank PDF.
+  // The table alone is not enough: reports are printed on the stored blank PDF.
   const [hasPdf, templates] = await Promise.all([
     hasReportForm(session.userId, sampleId),
     listTemplates(session.userId, sampleId),
   ]);
-  const experiments = experimentFields(templates);
   return (
     <Container size="xl" py="xl">
       <Stack gap="lg">
@@ -85,10 +80,9 @@ async function ReportFormContent({
           // Holds its own upload row: Replace PDF reloads the form in place.
           <ReportFormEditor
             sampleId={sampleId}
-            pdfUrl={`${reportFormPath(sampleId)}/pdf`}
-            initialFields={storedFields(sample.reportForm?.fields ?? [])}
-            experiments={experiments}
-            labels={experimentLabels(experiments)}
+            previewUrl={`${reportFormPath(sampleId)}/preview`}
+            initialForm={storedForm(sample.reportForm)}
+            methods={methodResults(templates)}
           />
         ) : (
           <>

@@ -26,6 +26,11 @@ export function experimentReportDownloadPath(contextId: string) {
   return `${BASE}/${contextId}/report?download=1`;
 }
 
+/** What publishing would issue now (nothing recorded, no email). */
+export function experimentReportPreviewPath(contextId: string) {
+  return `${BASE}/${contextId}/report/preview`;
+}
+
 /**
  * Sample check-in page (the target of the QR label printed by the requester).
  * Lab staff open it to confirm a shipped sample has arrived, transitioning the
@@ -53,7 +58,7 @@ export function templateBuilderPath(ref: TemplateRef) {
   return `${BASE}/onboarding/${ref.sampleId}/${ref.templateId}`;
 }
 
-/** The sample type's report form (blank PDF + field map). */
+/** The sample type's report form (blank PDF + results table). */
 export function reportFormPath(sampleId: string) {
   return `${BASE}/onboarding/${sampleId}/report-form`;
 }
