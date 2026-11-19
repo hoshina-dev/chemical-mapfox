@@ -150,6 +150,10 @@ When(
 When(
   "I publish the report for {string}",
   async function (this: ChemFoxWorld, contextId: string) {
+    // Publishing emails the requester, so the page asks to confirm.
+    this.page.on("dialog", (dialog) => {
+      dialog.accept().catch(() => {});
+    });
     await clickUntil(this, button(this, "Publish report"), async () =>
       Boolean(findTicket(contextId)?.events.some((e) => e.type === "ticket.report_published")),
     );

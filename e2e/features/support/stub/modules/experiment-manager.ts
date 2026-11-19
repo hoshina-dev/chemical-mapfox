@@ -27,7 +27,8 @@ export interface StSampleType {
   id: string;
   name: string;
   description: string | null;
-  reportForm: { fields: unknown[] } | null;
+  /** The results table `{sections}`; null until a blank form is uploaded. */
+  reportForm: { sections: unknown[] } | null;
   reportPdf: Buffer | null;
   isVisibleOnWeb: boolean;
   displayOrder: number;
@@ -197,6 +198,7 @@ function summaryWire(t: StTicket) {
     closedReason: t.closedReason,
     reportPublishedAt: reportPublishedAt(t),
     updatedAt: t.updatedAt,
+    methods: t.experiments.map((e) => e.templateName),
   };
 }
 
@@ -306,7 +308,7 @@ export function seedSampleType(
     id: randomUUID(),
     name,
     description: opts.description ?? null,
-    reportForm: opts.reportForm === false ? null : { fields: [] },
+    reportForm: opts.reportForm === false ? null : { sections: [] },
     reportPdf: opts.reportForm === false ? null : makePdf([`${name} report`]),
     isVisibleOnWeb: opts.visible ?? true,
     displayOrder: store.sampleTypes.length + 1,
@@ -652,18 +654,24 @@ async function catalogue(ctx: StubContext, actor: string): Promise<boolean> {
             throw bad("file is not a PDF");
         }
         if (!pdf) throw bad("upload the blank report form (file) first");
-        let reportForm = st.reportForm ?? { fields: [] };
+        let reportForm = st.reportForm ?? { sections: [] };
         if (typeof fields === "string") {
-          const parsed = JSON.parse(fields) as { fields?: unknown[] };
-          if (!Array.isArray(parsed.fields))
-            throw bad("fields: fields is required");
-          reportForm = { fields: parsed.fields };
+          const parsed = JSON.parse(fields) as { sections?: unknown[] };
+          if (!Array.isArray(parsed.sections))
+            throw bad("sections: sections is required");
+          reportForm = { sections: parsed.sections };
         }
         st.reportPdf = pdf;
         st.reportForm = reportForm;
         st.updatedAt = now();
         return ctx.json(200, sampleTypeWire(st));
       }
+    }
+    if (sub === "report-form" && path.length === 4 && path[3] === "preview" && method === "GET") {
+      // The real service draws the table with sample values; the fake returns a PDF.
+      if (!st.reportPdf || !st.reportForm)
+        throw notFound("sample type has no report form");
+      return ctx.send(200, makePdf([`${st.name} report preview`]), "application/pdf");
     }
     return false;
   }
@@ -879,6 +887,15 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
     touch();
     event(t, "ticket.closed", actor, null, reason ? { reason } : {});
     return ctx.json(200, ticketWire(t));
+  }
+  if (path[2] === "report" && path.length === 4 && path[3] === "preview" && method === "GET") {
+    // What publishing would issue now: nothing recorded.
+    const st = sampleType(t.sampleTypeId);
+    if (status !== "COMPLETED" && status !== "CLOSED")
+      throw conflict("ticket is not completed");
+    if (!st.reportPdf || !st.reportForm)
+      throw notFound("sample type has no report form");
+    return ctx.send(200, makePdf([`Report preview: ${t.name}`, st.name]), "application/pdf");
   }
   if (path[2] === "report" && path.length === 3) {
     const st = sampleType(t.sampleTypeId);
