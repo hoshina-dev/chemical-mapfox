@@ -89,6 +89,9 @@ export function RequestExperimentForm({
   const [issues, setIssues] = useState<AnswerIssue[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // One key per form: if a response is lost and the client submits again, experiment-manager
+  // returns the ticket the first attempt made instead of creating a second one.
+  const [requestKey] = useState(() => crypto.randomUUID());
 
   const fieldErrors: Record<string, string> = {};
   for (const issue of issues) fieldErrors[issue.path] ??= formatAnswerIssue(tIssue, issue);
@@ -110,6 +113,7 @@ export function RequestExperimentForm({
       templateId,
       templateIds: chosen.map((m) => m.id),
       values: answers,
+      requestKey,
     });
     if (!result.success) {
       setError(result.error);

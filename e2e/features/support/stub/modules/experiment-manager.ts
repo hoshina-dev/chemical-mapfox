@@ -767,6 +767,24 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
       throw bad("experimentTemplateIds is required");
     if (new Set(ids).size !== ids.length)
       throw bad("experimentTemplateIds must not contain duplicates");
+    // A retry with the same Idempotency-Key returns the ticket it made (kept in the requested event).
+    const key = ctx.header("idempotency-key") ?? "";
+    if (key.length > 200)
+      throw bad("Idempotency-Key must be 200 characters or less");
+    const earlier = key
+      ? store.tickets.find((x) =>
+          x.events.some(
+            (e) => e.type === "ticket.requested" && e.actorUserId === actor && (e.data as { requestKey?: string }).requestKey === key,
+          ),
+        )
+      : undefined;
+    if (earlier) {
+      const same =
+        earlier.sampleTypeId === st.id &&
+        earlier.experiments.map((e) => e.experimentTemplateId).join() === ids.join();
+      if (!same) throw conflict("Idempotency-Key was already used for a different request");
+      return ctx.json(200, ticketWire(earlier));
+    }
     const answers = (body.clientAnswers ?? {}) as Record<string, Json>;
     for (const k of Object.keys(answers))
       if (!ids.includes(k))
@@ -821,7 +839,7 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
         updatedAt: at,
       });
     }
-    event(row, "ticket.requested", actor, null, { experimentTemplateIds: ids });
+    event(row, "ticket.requested", actor, null, key ? { experimentTemplateIds: ids, requestKey: key } : { experimentTemplateIds: ids });
     store.tickets.push(row);
     return ctx.json(201, ticketWire(row));
   }
@@ -880,8 +898,10 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
       body.reason === undefined || body.reason === null
         ? null
         : text("reason", body.reason);
-    if (!reason && status !== "COMPLETED")
-      throw conflict("ticket is not completed; give a reason to cancel it");
+    // A ticket closes by publishing its report; without one, close only cancels (with a reason).
+    if (!reason && status === "COMPLETED")
+      throw conflict("publish the report to close the ticket");
+    if (!reason) throw conflict("ticket is not completed; give a reason to cancel it");
     t.closedAt = now();
     t.closedReason = reason;
     touch();
@@ -906,6 +926,11 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
         throw conflict("ticket is not completed");
       touch();
       event(t, "ticket.report_published", actor, null);
+      if (status === "COMPLETED") {
+        // The first publish closes the ticket; later ones issue an updated version.
+        t.closedAt = now();
+        event(t, "ticket.closed", actor, null);
+      }
       return ctx.json(200, ticketWire(t));
     }
     if (method === "GET") {

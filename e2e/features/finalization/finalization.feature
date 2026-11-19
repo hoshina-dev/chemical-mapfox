@@ -35,10 +35,9 @@ Feature: Finalization — calculations and the PDF report
     And I try to publish the report
     Then I should see the error containing "sample type has no report form"
 
-  Scenario: The ticket is closed after the report is published
+  Scenario: Publishing the report closes the ticket
     When I open the workspace for "exp-001"
     And I finish the experiment "exp-001"
     And I publish the report for "exp-001"
-    And I close the ticket "exp-001"
     Then ticket "exp-001" should be in the "CLOSED" stage
     And the report panel should be shown

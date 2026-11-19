@@ -35,12 +35,12 @@ Feature: Staff experiment lifecycle transitions
     Then ticket "ctx-finish" should be in the "COMPLETED" stage
     And I should see the message "Experiment finished"
 
-  Scenario: Closing is offered only once every method is finished
+  Scenario: Publishing the report, which closes the ticket, is offered only once every method is finished
     Given an experiment "ctx-close" is at the "IN_PROGRESS" stage
     When I visit "/internal/experiment/ctx-close"
-    Then I should not be able to close the ticket
+    Then I should not be able to publish the report
     When I finish the experiment "ctx-close"
-    And I close the ticket "ctx-close"
+    And I publish the report for "ctx-close"
     Then ticket "ctx-close" should be in the "CLOSED" stage
 
   Scenario: Cancelling an open ticket records the reason

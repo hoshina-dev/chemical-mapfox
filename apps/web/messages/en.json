@@ -702,17 +702,16 @@
       },
       "ticket": {
         "title": "Ticket",
-        "publish": "Publish report",
-        "close": "Close ticket",
+        "publish": "Publish report and close",
         "cancel": "Cancel ticket",
         "dismiss": "Back",
         "cancelTitle": "Cancel ticket",
         "cancelReason": "Reason",
         "cancelConfirm": "Cancel ticket",
         "preview": "Preview report",
-        "republish": "Publish again",
-        "publishConfirm": "Publish the report? The requester is emailed.",
-        "republishConfirm": "Publish the report again from the current data? The requester is emailed and downloads show the new version."
+        "republish": "Publish updated report",
+        "publishConfirm": "Publish the report and close the ticket? The client can then view and download it and is emailed that the ticket is closed.",
+        "republishConfirm": "Publish an updated report from the current data? The client sees the new version; no email is sent."
       }
     }
   },
@@ -1276,7 +1275,7 @@
           "experiments": "Search, filter, and open every experiment ticket from the lab listing.",
           "checkIn": "Confirm a shipped sample has arrived by scanning the requester’s QR label.",
           "workspace": "Start experiments and edit the lab form live with other technicians.",
-          "finalize": "Run calculations, generate the PDF report, and close the ticket.",
+          "finalize": "Run calculations, check the PDF report, and publish it to close the ticket.",
           "onboarding": "Register specimen types and open a sample’s template list.",
           "components": "Live previews and schema fields for every question type in the form engine.",
           "templates": "Create and edit client intake forms, lab forms, and calculations.",
@@ -1352,7 +1351,7 @@
       },
       "finalize": {
         "title": "Finish & report",
-        "subtitle": "Finish each method of the ticket, then publish the sample's report and close the ticket.",
+        "subtitle": "Finish each method of the ticket, then publish the sample's report: publishing closes the ticket.",
         "sections": {
           "flow": {
             "heading": "Recommended order",
@@ -1361,8 +1360,8 @@
               "Complete the lab form of the method.",
               "Choose Finish experiment: the values are saved, the formulas run in your browser and the results are stored.",
               "Repeat for every method; when all are finished the ticket is Completed.",
-              "Publish the report: from then on you and the client can download it.",
-              "Close the ticket."
+              "Check the report with Preview report.",
+              "Choose Publish report and close: the ticket is closed, and the client can view and download the report and is emailed."
             ]
           },
           "report": {
@@ -1370,8 +1369,8 @@
             "body": "There is one report per sample, built from the sample type's report form each time it is opened, so it always shows the current results. Publishing again replaces the numbers. Requesters can open the same report from their request once it is published."
           },
           "close": {
-            "heading": "Correcting and closing",
-            "body": "To correct a finished method, reopen it with a reason, change the values and finish it again. Close the ticket once the report is published; a closed ticket can still have its report published again."
+            "heading": "Correcting the report",
+            "body": "To correct a finished method before publishing, reopen it with a reason, change the values and finish it again. After the ticket is closed, Publish updated report issues a new version from the current data; the client sees it, and no email is sent. A ticket closes only by publishing its report; cancelling needs a reason."
           }
         }
       },

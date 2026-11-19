@@ -323,8 +323,17 @@ export interface CreateTicket {
   clientAnswers?: Record<string, Record<string, unknown>>;
 }
 
-export const createTicket = (actor: string, body: CreateTicket) =>
-  stFetch<Ticket>("/tickets", { actor, method: "POST", body: json(body) });
+/**
+ * Request a ticket. `requestKey` (one per request form) makes a retry return the ticket the
+ * first attempt created instead of a second one, e.g. after a lost response.
+ */
+export const createTicket = (actor: string, body: CreateTicket, requestKey?: string) =>
+  stFetch<Ticket>("/tickets", {
+    actor,
+    method: "POST",
+    body: json(body),
+    ...(requestKey ? { headers: { "Idempotency-Key": requestKey } } : {}),
+  });
 
 export function listTickets(
   actor: string | undefined,

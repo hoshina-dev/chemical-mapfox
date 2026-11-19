@@ -9,8 +9,9 @@ import { useState, useTransition } from "react";
 import { closeTicketAction, publishReportAction } from "@/app/actions/experiment";
 
 /**
- * Ticket-level staff actions: preview and publish the report (COMPLETED or CLOSED; again
- * after a change), close a completed ticket, cancel an open one.
+ * Ticket-level staff actions: preview and publish the report (COMPLETED or CLOSED). The first
+ * publish closes the ticket and releases the report to the client; publishing again issues
+ * an updated version. Cancel (with a reason) an open ticket.
  */
 export function TicketActions({
   contextId,
@@ -33,7 +34,6 @@ export function TicketActions({
   const [isPending, startTransition] = useTransition();
 
   const canPublish = status === "COMPLETED" || status === "CLOSED";
-  const canClose = status === "COMPLETED";
   const canCancel = !["CLOSED", "CANCELLED"].includes(status);
 
   function run(call: () => Promise<{ success: boolean; error?: string }>, done?: () => void) {
@@ -49,7 +49,7 @@ export function TicketActions({
     });
   }
 
-  if (!canPublish && !canClose && !canCancel) return null;
+  if (!canPublish && !canCancel) return null;
   return (
     <Card withBorder radius="md" padding="lg">
       <Stack gap="sm">
@@ -71,7 +71,7 @@ export function TicketActions({
                 loading={isPending}
                 variant={published ? "light" : "filled"}
                 onClick={() => {
-                  // Publishing emails the requester: confirm every time.
+                  // The first publish closes the ticket and emails the client: confirm every time.
                   if (!window.confirm(t(published ? "republishConfirm" : "publishConfirm"))) return;
                   run(() => publishReportAction(contextId));
                 }}
@@ -79,11 +79,6 @@ export function TicketActions({
                 {t(published ? "republish" : "publish")}
               </Button>
             </>
-          )}
-          {canClose && (
-            <Button variant="light" color="green" loading={isPending} onClick={() => run(() => closeTicketAction(contextId))}>
-              {t("close")}
-            </Button>
           )}
           {canCancel && (
             <Button variant="subtle" color="red" onClick={cancelModal.open}>
