@@ -92,6 +92,8 @@ export interface TicketSummary {
   closedReason: string | null;
   reportPublishedAt: string | null;
   updatedAt: string;
+  /** Names of its methods (experiments), catalogue order. */
+  methods: string[];
 }
 
 export interface TicketExperiment {
