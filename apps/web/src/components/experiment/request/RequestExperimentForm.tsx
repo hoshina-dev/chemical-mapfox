@@ -53,8 +53,8 @@ interface RequestExperimentFormProps {
 /**
  * One request = one physical sample with the methods ticked in the catalogue:
  * a short list of them, then one section per method that needs answers from the
- * client (a question shared by several methods is asked once, in the first), and
- * one submit button.
+ * client, and one submit button. Each method keeps its own answers, also for a
+ * question id another method asks too.
  */
 export function RequestExperimentForm({
   templateId,
@@ -73,40 +73,53 @@ export function RequestExperimentForm({
     ],
     [methods, templateId, initialMethods],
   );
-  // Each question once: a shared one belongs to the first method that asks it.
-  const sections = useMemo(() => {
-    const seen = new Set<string>();
-    return chosen
-      .map((m) => ({
-        method: m,
-        questions: m.clientForm.questions.filter((q) => !seen.has(q.id) && seen.add(q.id)),
-      }))
-      .filter((s) => s.questions.length > 0);
-  }, [chosen]);
-  const allQuestions = useMemo(() => sections.flatMap((s) => s.questions), [sections]);
+  const sections = useMemo(
+    () =>
+      chosen
+        .map((m) => ({ method: m, questions: m.clientForm.questions }))
+        .filter((s) => s.questions.length > 0),
+    [chosen],
+  );
 
-  const [answers, setAnswers] = useState<FormAnswers>(() => initialAnswersFor(allQuestions));
-  const [issues, setIssues] = useState<AnswerIssue[]>([]);
+  // Answers per method id, so methods asking the same question id keep their own.
+  const [answers, setAnswers] = useState<Record<string, FormAnswers>>(() =>
+    Object.fromEntries(chosen.map((m) => [m.id, initialAnswersFor(m.clientForm.questions)])),
+  );
+  const [issues, setIssues] = useState<Record<string, AnswerIssue[]>>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // One key per form: if a response is lost and the client submits again, experiment-manager
   // returns the ticket the first attempt made instead of creating a second one.
   const [requestKey] = useState(() => crypto.randomUUID());
 
-  const fieldErrors: Record<string, string> = {};
-  for (const issue of issues) fieldErrors[issue.path] ??= formatAnswerIssue(tIssue, issue);
-
-  const edit = (update: (prev: FormAnswers) => FormAnswers) => {
-    setAnswers(update);
-    if (issues.length > 0) setIssues([]);
+  const allIssues = sections.flatMap(({ method }) =>
+    (issues[method.id] ?? []).map((issue) => ({ method, issue })),
+  );
+  const fieldErrorsFor = (methodId: string) => {
+    const errors: Record<string, string> = {};
+    for (const issue of issues[methodId] ?? []) {
+      errors[issue.path] ??= formatAnswerIssue(tIssue, issue);
+    }
+    return errors;
   };
-  const done = (questions: Question[]) => validateAnswers(questions, answers).length === 0;
+
+  const edit = (methodId: string, update: (prev: FormAnswers) => FormAnswers) => {
+    setAnswers((prev) => ({ ...prev, [methodId]: update(prev[methodId] ?? {}) }));
+    if (allIssues.length > 0) setIssues({});
+  };
+  const done = (methodId: string, questions: Question[]) =>
+    validateAnswers(questions, answers[methodId] ?? {}).length === 0;
 
   async function submit() {
     if (pending || !canRequest) return;
-    const found = validateAnswers(allQuestions, answers);
+    const found = Object.fromEntries(
+      sections.map(({ method, questions }) => [
+        method.id,
+        validateAnswers(questions, answers[method.id] ?? {}),
+      ]),
+    );
     setIssues(found);
-    if (found.length > 0) return;
+    if (Object.values(found).some((list) => list.length > 0)) return;
     setPending(true);
     setError(null);
     const result = await requestExperimentAction({
@@ -151,7 +164,9 @@ export function RequestExperimentForm({
             defaultValue={sections.map((s) => s.method.id)}
           >
             {sections.map(({ method, questions }) => {
-              const complete = done(questions);
+              const complete = done(method.id, questions);
+              const values = answers[method.id] ?? {};
+              const fieldErrors = fieldErrorsFor(method.id);
               return (
                 <Accordion.Item
                   key={method.id}
@@ -176,10 +191,10 @@ export function RequestExperimentForm({
                             <RepeatableGroupField
                               key={q.id}
                               question={q}
-                              values={answers}
+                              values={values}
                               errors={fieldErrors}
                               onChange={(childId, i, value) =>
-                                edit((prev) => {
+                                edit(method.id, (prev) => {
                                   const column = Array.isArray(prev[childId])
                                     ? [...(prev[childId] as RepeatableColumn)]
                                     : [];
@@ -192,9 +207,11 @@ export function RequestExperimentForm({
                             <QuestionField
                               key={q.id}
                               question={q}
-                              value={answers[q.id]}
+                              value={values[q.id]}
                               error={fieldErrors[q.id]}
-                              onChange={(value) => edit((prev) => ({ ...prev, [q.id]: value }))}
+                              onChange={(value) =>
+                                edit(method.id, (prev) => ({ ...prev, [q.id]: value }))
+                              }
                             />
                           ),
                         )}
@@ -207,19 +224,20 @@ export function RequestExperimentForm({
           </Accordion>
         )}
 
-        {issues.length > 0 && (
+        {allIssues.length > 0 && (
           <Alert
             color="red"
             variant="light"
             title={
-              issues.every((issue) => issue.code === "required")
+              allIssues.every(({ issue }) => issue.code === "required")
                 ? t("missingRequired")
                 : tIssue("invalidTitle")
             }
           >
             <List size="sm">
-              {issues.map((issue) => (
-                <List.Item key={`${issue.path}:${issue.code}`}>
+              {allIssues.map(({ method, issue }) => (
+                <List.Item key={`${method.id}:${issue.path}:${issue.code}`}>
+                  {method.title}:{" "}
                   {issue.code === "required" ? issue.label : formatAnswerIssue(tIssue, issue)}
                 </List.Item>
               ))}
