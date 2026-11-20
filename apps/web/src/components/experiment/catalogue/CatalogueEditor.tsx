@@ -80,8 +80,14 @@ export function CatalogueEditor({
     setItems(next);
     try {
       const result = await action();
-      if (!result.success) throw new Error(result.error);
-      setStatus(t("saved"));
+      if (result.success) {
+        setStatus(t("saved"));
+      } else {
+        // A refused write says why (e.g. a method shown before the report prints it).
+        setItems(previous);
+        setError(result.error);
+        setStatus("");
+      }
     } catch {
       setItems(previous);
       setError(t("saveError"));
@@ -168,7 +174,11 @@ export function CatalogueEditor({
         {t("help")}
       </Text>
       {error && (
-        <Alert color="red" title={t("saveFailed")}>
+        <Alert
+          color="red"
+          title={t("saveFailed")}
+          style={{ whiteSpace: "pre-wrap" }}
+        >
           {error}
         </Alert>
       )}

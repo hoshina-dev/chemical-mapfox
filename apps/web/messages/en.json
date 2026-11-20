@@ -672,6 +672,7 @@
       "remove": "Remove {label}",
       "saving": "Saving…",
       "saved": "Saved",
+      "notSaved": "Not saved: your changes stay here until they can be saved.",
       "loadError": "Could not draw the report preview.",
       "previewHint": "Preview with sample values. It updates after each change.",
       "results": "Add results",

@@ -84,6 +84,8 @@ export function ReportFormEditor({
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
   }, [form, sampleId]);
+  // A refused save keeps the edits on screen, unsaved, until a later edit saves.
+  const refused = status.kind === "error";
   const update = (change: (prev: ReportForm) => ReportForm) => {
     dirty.current = true;
     setForm(change);
@@ -219,7 +221,12 @@ export function ReportFormEditor({
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack gap="md" pos="sticky" top={16}>
             {status.kind === "error" && (
-              <Alert color="red" variant="light" style={{ whiteSpace: "pre-line" }}>
+              <Alert
+                color="red"
+                variant="light"
+                title={t("notSaved")}
+                style={{ whiteSpace: "pre-line" }}
+              >
                 {status.message}
               </Alert>
             )}
@@ -272,7 +279,15 @@ export function ReportFormEditor({
               </Stack>
             </Paper>
 
-            <Stack gap="sm">
+            <Stack
+              gap="sm"
+              p="xs"
+              style={{
+                // red while the table on screen is not the saved one
+                border: `1px solid ${refused ? "var(--mantine-color-red-filled)" : "transparent"}`,
+                borderRadius: "var(--mantine-radius-md)",
+              }}
+            >
               <Text size="sm" fw={600}>
                 {t("table")}
               </Text>
@@ -327,12 +342,14 @@ export function ReportFormEditor({
               ))}
             </Stack>
 
-            <Text size="sm" c="dimmed" aria-live="polite">
+            <Text size="sm" c={refused ? "red" : "dimmed"} fw={refused ? 600 : undefined} aria-live="polite">
               {status.kind === "saving"
                 ? t("saving")
                 : status.kind === "saved"
                   ? t("saved")
-                  : null}
+                  : refused
+                    ? t("notSaved")
+                    : null}
             </Text>
           </Stack>
         </Grid.Col>
