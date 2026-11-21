@@ -163,6 +163,7 @@ describe("standInValues", () => {
       { id: "stars", type: "rating", label: "R" },
       { id: "swatch", type: "color", label: "C" },
       { id: "when", type: "date", label: "D" },
+      { id: "today", type: "date", label: "D2", config: { default: "today" } },
       { id: "clock", type: "time", label: "T" },
       { id: "stamp", type: "datetime", label: "T2" },
       { id: "tags", type: "tags", label: "Tags" },
@@ -178,6 +179,7 @@ describe("standInValues", () => {
     ];
     const values = standInValues(template(questions, {}), { mass: 9 });
     expect(values.with_default).toBe(4);
+    expect(values.today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(values.from_min).toBe(3);
     expect(values.mass).toBe(9);
     expect(values.slide).toBe(1);

@@ -799,6 +799,7 @@
       "step": "Step",
       "maxSelectable": "Max selectable values",
       "defaultChecked": "Default checked",
+      "defaultToday": "Default to today",
       "count": "Count (stars)",
       "fractions": "Fractions",
       "fractionsDescription": "2 = half stars",

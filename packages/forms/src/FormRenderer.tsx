@@ -27,6 +27,7 @@ import {
 } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 
+import { configuredDefault } from "./defaults";
 import type {
   AnswerValue,
   FormAnswers,
@@ -74,11 +75,9 @@ interface FormRendererProps {
 
 type RepeatableColumn = Exclude<Extract<AnswerValue, unknown[]>, string[]>;
 
-function defaultFor(q: Question): AnswerValue {
-  const config = q.config;
-  if (config && "default" in config && config.default !== undefined) {
-    return config.default as AnswerValue;
-  }
+export function defaultFor(q: Question): AnswerValue {
+  const configured = configuredDefault(q);
+  if (configured !== undefined) return configured;
   switch (q.type) {
     case "boolean":
       return false;

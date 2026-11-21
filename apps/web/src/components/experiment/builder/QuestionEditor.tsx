@@ -1,6 +1,6 @@
 "use client";
 
-import type { Question, QuestionType } from "@repo/forms";
+import { type Question, type QuestionType, TODAY_DEFAULT } from "@repo/forms";
 import {
   ActionIcon,
   Badge,
@@ -481,14 +481,30 @@ function TypeSpecificFields({
           />
         </>
       );
-    case "date":
+    case "date": {
+      const defaultsToToday = question.config?.default === TODAY_DEFAULT;
       return (
-        <Group grow>
-          <TextInput
-            type="date"
-            label={t("question.default")}
-            {...textProps(form, `${path}.config.default`)}
-          />
+        <Group grow align="flex-start">
+          <Stack gap={6}>
+            <TextInput
+              type="date"
+              label={t("question.default")}
+              disabled={defaultsToToday}
+              {...textProps(form, `${path}.config.default`)}
+              value={defaultsToToday ? "" : (question.config?.default ?? "")}
+            />
+            <Checkbox
+              label={t("question.defaultToday")}
+              checked={defaultsToToday}
+              // Whole `config`: Mantine's setPath no-ops when it is absent.
+              onChange={(event) =>
+                form.setFieldValue(`${path}.config`, {
+                  ...question.config,
+                  default: event.currentTarget.checked ? TODAY_DEFAULT : undefined,
+                })
+              }
+            />
+          </Stack>
           <TextInput
             type="date"
             label={t("question.min")}
@@ -501,6 +517,7 @@ function TypeSpecificFields({
           />
         </Group>
       );
+    }
     case "time":
       return (
         <Group grow>

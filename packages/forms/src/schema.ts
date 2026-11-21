@@ -189,6 +189,7 @@ export const DateQuestion = BaseQuestion.extend({
   type: z.literal("date"),
   config: z
     .object({
+      /** `YYYY-MM-DD`, or `"today"` for the date the form is opened on. */
       default: z.string().optional(),
       min: z.string().optional(),
       max: z.string().optional(),

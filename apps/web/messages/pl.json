@@ -799,6 +799,7 @@
       "step": "Krok",
       "maxSelectable": "Maks. liczba wybieranych wartości",
       "defaultChecked": "Domyślnie zaznaczone",
+      "defaultToday": "Domyślnie dzisiejsza data",
       "count": "Liczba (gwiazdek)",
       "fractions": "Ułamki",
       "fractionsDescription": "2 = połówki gwiazdek",
