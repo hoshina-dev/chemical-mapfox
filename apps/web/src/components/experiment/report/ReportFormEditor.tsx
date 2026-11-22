@@ -30,6 +30,7 @@ import {
 import { ReportFormUpload } from "./ReportFormUpload";
 
 const AUTOSAVE_MS = 800;
+const FLASH_MS = 2500;
 
 type SaveStatus =
   | { kind: "idle" | "saving" | "saved" }
@@ -67,28 +68,42 @@ export function ReportFormEditor({
   const [previewVersion, setPreviewVersion] = useState(0);
   const dirty = useRef(false);
   const chain = useRef<Promise<void>>(Promise.resolve());
+  // The table as last saved: a refused save puts it back, so the screen never shows
+  // a table that is not stored (e.g. a removed row that had to stay).
+  const saved = useRef<ReportForm>(initialForm);
+  // The table flashes red when a change is undone, then fades back.
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!flash) return;
+    const timer = setTimeout(() => setFlash(false), FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [flash]);
   useEffect(() => {
     if (!dirty.current) return;
     const timer = setTimeout(() => {
       dirty.current = false;
       setStatus({ kind: "saving" });
+      const sent = form;
       chain.current = chain.current.then(async () => {
-        const result = await saveReportTableAction(sampleId, form);
+        const result = await saveReportTableAction(sampleId, sent);
         if (result.success) {
+          saved.current = sent;
           setStatus({ kind: "saved" });
           setPreviewVersion((v) => v + 1);
-        } else {
-          setStatus({ kind: "error", message: result.error });
+          return;
         }
+        // A newer edit is already queued: let its save decide what stays.
+        if (!dirty.current) setForm(saved.current);
+        setStatus({ kind: "error", message: result.error });
+        setFlash(true);
       });
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
   }, [form, sampleId]);
-  // A refused save keeps the edits on screen, unsaved, until a later edit saves.
-  const refused = status.kind === "error";
   const update = (change: (prev: ReportForm) => ReportForm) => {
     dirty.current = true;
     setForm(change);
+    setStatus((s) => (s.kind === "error" ? { kind: "idle" } : s));
   };
 
   // --- the preview PDF ---
@@ -283,8 +298,9 @@ export function ReportFormEditor({
               gap="sm"
               p="xs"
               style={{
-                // red while the table on screen is not the saved one
-                border: `1px solid ${refused ? "var(--mantine-color-red-filled)" : "transparent"}`,
+                // flashes red when a refused change is undone, then fades
+                border: `1px solid ${flash ? "var(--mantine-color-red-filled)" : "transparent"}`,
+                transition: "border-color 1s ease-out",
                 borderRadius: "var(--mantine-radius-md)",
               }}
             >
@@ -342,14 +358,12 @@ export function ReportFormEditor({
               ))}
             </Stack>
 
-            <Text size="sm" c={refused ? "red" : "dimmed"} fw={refused ? 600 : undefined} aria-live="polite">
+            <Text size="sm" c="dimmed" aria-live="polite">
               {status.kind === "saving"
                 ? t("saving")
                 : status.kind === "saved"
                   ? t("saved")
-                  : refused
-                    ? t("notSaved")
-                    : null}
+                  : null}
             </Text>
           </Stack>
         </Grid.Col>

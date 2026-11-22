@@ -672,7 +672,7 @@
       "remove": "Usuń: {label}",
       "saving": "Zapisywanie…",
       "saved": "Zapisano",
-      "notSaved": "Nie zapisano: zmiany zostają tutaj, dopóki nie będzie można ich zapisać.",
+      "notSaved": "Tej zmiany nie można zapisać, więc została cofnięta.",
       "loadError": "Nie udało się narysować podglądu sprawozdania.",
       "previewHint": "Podgląd z przykładowymi wartościami. Odświeża się po każdej zmianie.",
       "results": "Dodaj wyniki",
