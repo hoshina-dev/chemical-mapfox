@@ -271,7 +271,7 @@
       "permissionRead": "Przeglądanie eksperymentów, zleceniodawców, formularzy laboratoryjnych, raportów, metod i poradników",
       "chooseWrite": "Wybierz, co jeszcze może robić. Odznacz to, co ma pozostać tylko do odczytu.",
       "scope": {
-        "experimentsWrite": "Prowadzenie eksperymentów: przyjmowanie próbek, zapisywanie wartości laboratoryjnych, przesyłanie, uruchamianie obliczeń, generowanie raportów i zamykanie zgłoszeń",
+        "experimentsWrite": "Prowadzenie eksperymentów (przyjmowanie próbek, rozpoczynanie badań, zapisywanie wartości laboratoryjnych i anulowanie zgłoszeń)",
         "templatesWrite": "Wdrażanie metod: tworzenie i edycja próbek oraz metod, a także pokazywanie lub ukrywanie ich w katalogu"
       },
       "redirectNote": "Po udzieleniu dostępu wrócisz do {host}.",
@@ -1279,7 +1279,7 @@
           },
           "lifecycle": {
             "heading": "Cykl życia eksperymentu",
-            "body": "Każdy eksperyment to zgłoszenie z jasną ścieżką statusów:\n\nZgłoszono → Próbka przyjęta → W toku → Finalizowanie → Zakończone (lub Anulowane).\n\nZlecający otwierają zgłoszenia i wysyłają próbki. Personel przyjmuje próbki, wypełnia formularz laboratoryjny, finalizuje obliczenia i raport PDF, a następnie zamyka zgłoszenie."
+            "body": "Każde zgłoszenie dotyczy jednej próbki i obejmuje po jednym badaniu dla każdej zleconej metody.\n\nZgłoszono → Próbka przyjęta → W toku → Zakończone → Zamknięte.\n\nPersonel przyjmuje próbkę, wykonuje i kończy każde badanie, a następnie publikuje sprawozdanie, aby zamknąć zgłoszenie. Personel może także anulować otwarte zgłoszenie po podaniu powodu."
           }
         },
         "links": {
@@ -1314,7 +1314,7 @@
           },
           "filters": {
             "heading": "Grupy cyklu życia",
-            "body": "Oczekujące obejmuje Zgłoszono i Próbka przyjęta. Aktywne obejmuje W toku i Finalizowanie. Zamknięte obejmuje Zakończone i Anulowane. Używaj tych grup, gdy chcesz krótką kolejkę pracy, którą wykonujesz właśnie teraz."
+            "body": "Oczekujące obejmują zgłoszenia ze statusem Zgłoszono lub Próbka przyjęta. Aktywne obejmują zgłoszenia W toku i Zakończone, które czekają na publikację sprawozdania. Zamknięte obejmują zgłoszenia Zamknięte i Anulowane."
           }
         }
       },
@@ -1348,7 +1348,7 @@
         "sections": {
           "stages": {
             "heading": "Co możesz zrobić",
-            "body": "Zgłoszone — próbki jeszcze nie ma; przejdź do przyjęcia.\n\nPrzyjęte — wybierz metodę i użyj Rozpocznij badanie, aby odblokować jej formularz.\n\nW toku — formularz laboratoryjny metody jest edytowalny; Zakończ badanie liczy wyniki i kończy metodę.\n\nZakończone — otwórz ponownie z podaniem powodu, aby poprawić wartości.\n\nPanel zgłoszenia publikuje sprawozdanie, zamyka lub anuluje zgłoszenie."
+            "body": "Zgłoszone — próbki jeszcze nie ma; przejdź do przyjęcia.\n\nPrzyjęte — wybierz metodę i użyj Rozpocznij badanie, aby odblokować jej formularz.\n\nW toku — formularz laboratoryjny metody jest edytowalny; Zakończ badanie liczy wyniki i kończy metodę.\n\nZakończone — otwórz ponownie z podaniem powodu, aby poprawić wartości.\n\nW panelu zgłoszenia możesz opublikować sprawozdanie i zamknąć zgłoszenie albo anulować je z podaniem powodu."
           },
           "collab": {
             "heading": "Wspólna edycja",
@@ -1517,7 +1517,7 @@
           },
           "ask": {
             "heading": "O co poprosić",
-            "body": "Po połączeniu poproś asystenta o wykonanie pracy laboratoryjnej. Na przykład: wypisz eksperymenty oczekujące na przyjęcie próbki, zapisz te odczyty dla eksperymentu X albo uruchom obliczenia i wygeneruj raport. Możesz też przekazać arkusz z opisem metody — próbką, pytaniami i wzorami — i poprosić o wdrożenie tej metody albo o zmianę metody, która już istnieje. Zmiana zapisuje nową wersję i zachowuje układ raportu PDF metody.\n\nAsystent może czytać te poradniki, więc możesz go też zapytać, jak działa dana część przestrzeni laboratorium.\n\nWartości zapisane, gdy eksperyment jest w toku, pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Pole, które edytuje współpracownik, jest odrzucane zamiast nadpisywane. Nieprawidłowe wartości są odrzucane i nic nie zostaje zapisane.\n\nAsystent pyta przed nieodwracalnymi krokami, takimi jak Prześlij do etapu końcowego i Zamknij zgłoszenie."
+            "body": "Poproś asystenta o wyświetlenie zgłoszeń oczekujących na przyjęcie próbki, rozpoczęcie metody, zapisanie odczytów lub znalezienie opublikowanego sprawozdania. Personel kończy każdą metodę w przeglądarce, gdzie wykonywane są jej obliczenia. Opublikowanie pierwszego sprawozdania w przeglądarce zamyka zgłoszenie.\n\nMożesz udostępnić arkusz z próbką, pytaniami i wzorami oraz poprosić asystenta o wdrożenie lub zmianę metody. Wcześniej zlecone eksperymenty zachowują zapisane formularze i wzory. Asystent może też czytać te poradniki i wyjaśniać, jak działa przestrzeń laboratorium.\n\nWartości zapisane podczas trwania eksperymentu pojawiają się na żywo w otwartych formularzach laboratoryjnych współpracowników. Asystent nie może zmienić pola, które edytuje współpracownik. Jeśli choć jedna wartość jest nieprawidłowa, cały zapis zostaje odrzucony.\n\nPrzed anulowaniem zgłoszenia asystent prosi o potwierdzenie i podanie powodu."
           },
           "disconnect": {
             "heading": "Odłącz aplikację",

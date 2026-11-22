@@ -41,6 +41,9 @@ Feature: MCP connector for lab staff
     Then the MCP tool result includes experiment "ctx-mcp-coal"
     When I call MCP tool "check_in_sample" with context id "ctx-mcp-coal"
     Then ticket "ctx-mcp-coal" should be in the "RECEIVED" stage
+    When I call MCP tool "cancel_ticket" with context id "ctx-mcp-coal" and reason "Sample damaged"
+    Then the MCP tool reports ticket "ctx-mcp-coal" in the "CANCELLED" stage
+    And ticket "ctx-mcp-coal" should be in the "CANCELLED" stage
 
   Scenario: Unticking a permission on consent hides those tools
     Given I register an MCP client named "Claude" with redirect URI "https://claude.ai/api/mcp/auth_callback"
@@ -53,6 +56,7 @@ Feature: MCP connector for lab staff
     When I send MCP "initialize"
     And I send MCP "tools/list"
     Then the tool list does not include "check_in_sample"
+    And the tool list does not include "cancel_ticket"
     And the tool list includes "onboard_template"
     And the tool list includes "read_doc"
 

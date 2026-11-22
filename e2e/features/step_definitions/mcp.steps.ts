@@ -43,7 +43,7 @@ const LAB_TOOLS = [
   "record_lab_values",
   "check_in_sample",
   "start_experiment",
-  "close_ticket",
+  "cancel_ticket",
   "get_report_download_url",
 ] as const;
 
@@ -211,6 +211,7 @@ async function mcpRpc(
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       Accept: MCP_ACCEPT,
+      "MCP-Protocol-Version": MCP_PROTOCOL_VERSION,
     },
     body: JSON.stringify(payload),
   });
@@ -591,11 +592,12 @@ Then(
 
 When("I send MCP {string}", async function (this: McpWorld, method: string) {
   if (method === "initialize") {
-    await mcpRpc(this, "initialize", {
+    const response = await mcpRpc(this, "initialize", {
       protocolVersion: MCP_PROTOCOL_VERSION,
       capabilities: {},
       clientInfo: { name: "e2e", version: "1.0.0" },
     });
+    assert.equal(rpcResult(response).protocolVersion, MCP_PROTOCOL_VERSION);
     return;
   }
   await mcpRpc(this, method);
@@ -658,6 +660,22 @@ When(
       name,
       arguments: { contextId },
     });
+  },
+);
+
+When(
+  "I call MCP tool {string} with context id {string} and reason {string}",
+  async function (this: McpWorld, name: string, contextId: string, reason: string) {
+    await mcpRpc(this, "tools/call", { name, arguments: { contextId, reason } });
+  },
+);
+
+Then(
+  "the MCP tool reports ticket {string} in the {string} stage",
+  function (this: McpWorld, contextId: string, status: string) {
+    const payload = toolPayload(this.lastMcp);
+    assert.equal(payload.contextId, contextId);
+    assert.equal(payload.status, status);
   },
 );
 

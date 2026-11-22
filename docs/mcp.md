@@ -19,8 +19,8 @@ sees them. To change a grant, disconnect and connect again.
 | Scope | Tools |
 |---|---|
 | `experiments:read` | every read-only tool, including the docs tools |
-| `experiments:write` | none yet (the write tools are being rebuilt on experiment-manager) |
-| `templates:write` | none yet |
+| `experiments:write` | `check_in_sample`, `start_experiment`, `record_lab_values`, `cancel_ticket` |
+| `templates:write` | `create_sample`, `onboard_template`, `set_catalogue_visibility` |
 
 A request with no scope gets all three. `staff`, the only scope before the
 split, still means all three, so existing grants keep full access.
@@ -76,16 +76,17 @@ consent screen rather than a rejection.
 Defined in `lib/mcp/server.ts`; every call is logged (`op: "mcp.tool"`) with
 the user, client and ticket id.
 
-The connector is **read-only** for now. The write tools (lab values, stage
-transitions, calculations, report, onboarding) drove the retired
-ticketing-service and experiment-manager and were removed with them. They are
-to be rebuilt on experiment-manager: see `TODO(MCP rework)` at the top of
-`apps/web/src/lib/experiment-manager/client.ts`.
+The connector reads and writes through Experiment Manager. Staff finish methods
+and run calculations in the browser. Publishing a ticket's first report from
+the browser closes the ticket. Cancelling an open ticket requires confirmation
+and a reason.
 
 | Tool | Notes |
 |---|---|
 | `list_experiments` | tickets, filter by status / text |
-| `get_experiment` | ticket, requester, intake answers, lab form questions + values (live while the method is in progress), calculations, report |
+| `get_experiment` | ticket, requester, intake answers, live lab values, stored calculations, and report status |
+| `get_report_download_url` | staff download link for a published report |
+| `list_samples` / `list_templates` / `get_template` | catalogue and method forms or formulas |
 | `list_docs` / `read_doc` | the site's staff and client guides, plus a question-type reference |
 
 The docs tools (`lib/mcp/docs.ts`) render the same `docs.staff.*` /
@@ -95,10 +96,11 @@ without changes.
 
 ## Trying it locally
 
-You don't need real backends or an AI subscription:
+The [MCP acceptance suite](../e2e/features/mcp/mcp-connector.feature) runs with
+stub backends. For a manual check with MCP Inspector:
 
-1. Start the local stack from the workspace repo (`./run.sh local up web`:
-   web on :3000 with experiment-manager, custapi and Redis).
+1. Follow the [local app setup](../README.md#getting-started) and point
+   `CUSTAPI_URL` and `EXPERIMENT_MANAGER_URL` at your development backends.
 2. Run the MCP Inspector: `npx @modelcontextprotocol/inspector`, choose
    *Streamable HTTP*, URL `http://localhost:3000/api/mcp`, and use
    *Open Auth Settings → Quick OAuth Flow*. Sign in as a staff account and

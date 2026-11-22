@@ -89,7 +89,7 @@ const EXPERIMENT_WRITE_TOOLS = [
   "record_lab_values",
   "check_in_sample",
   "start_experiment",
-  "close_ticket",
+  "cancel_ticket",
 ];
 const TEMPLATE_WRITE_TOOLS = [
   "create_sample",
@@ -431,6 +431,20 @@ describe("get_experiment", () => {
     );
   });
 
+  it("reports a backend failure when the ticket could not be loaded", async () => {
+    vi.mocked(getExperimentWorkspace).mockResolvedValue(
+      workspace({
+        ticket: null,
+        selected: null,
+        errors: { ticket: "Could not reach experiment-manager." },
+      }),
+    );
+
+    const result = await call("get_experiment", { contextId: "ctx-1" });
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toBe("Could not reach experiment-manager.");
+  });
+
   it("fails when the asked experiment is not on the ticket", async () => {
     // The workspace falls back to another experiment for an unknown id.
     vi.mocked(getExperimentWorkspace).mockResolvedValue(workspace());
@@ -487,7 +501,7 @@ describe("get_experiment", () => {
     );
     vi.mocked(readTemplate).mockClear();
     const done = parseOk(await call("get_experiment", { contextId: "ctx-1" }));
-    expect(done.nextStep).toMatch(/publish the report in the browser/);
+    expect(done.nextStep).toBe("Every method is finished. Publish the report in the browser to close the ticket.");
     expect(readTemplate).not.toHaveBeenCalled();
   });
 
@@ -609,19 +623,27 @@ describe("experiment write tools", () => {
     });
     expect(start).toHaveBeenCalledWith("staff-ada", "ctx-1", "exp-2");
 
-    await call("close_ticket", { contextId: "ctx-1" });
-    expect(close).toHaveBeenCalledWith("staff-ada", "ctx-1");
+    vi.mocked(getTicket).mockResolvedValueOnce({ status: "CANCELLED" } as Ticket);
+    expect(parseOk(await call("cancel_ticket", { contextId: "ctx-1", reason: "  Sample damaged.  " }))).toEqual({
+      contextId: "ctx-1",
+      status: "CANCELLED",
+    });
+    expect(close).toHaveBeenCalledWith("staff-ada", "ctx-1", "Sample damaged.");
   });
 
-  it("returns experiment-manager's refusal of a step as an error", async () => {
+  it("requires a cancellation reason and returns the backend's refusal as an error", async () => {
+    const missingReason = await call("cancel_ticket", { contextId: "ctx-1", reason: "   " });
+    expect(missingReason.isError).toBe(true);
+    expect(close).not.toHaveBeenCalled();
+
     vi.mocked(close).mockResolvedValue({
       success: false,
-      error: "Could not close.\nticket is not completed",
+      error: "Could not cancel.\nticket is already closed",
     });
 
-    const result = await call("close_ticket", { contextId: "ctx-1" });
+    const result = await call("cancel_ticket", { contextId: "ctx-1", reason: "Sample damaged." });
     expect(result.isError).toBe(true);
-    expect(textOf(result)).toContain("ticket is not completed");
+    expect(textOf(result)).toContain("ticket is already closed");
     expect(getTicket).not.toHaveBeenCalled();
   });
 });

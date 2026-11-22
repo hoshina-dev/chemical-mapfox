@@ -271,7 +271,7 @@
       "permissionRead": "View experiments, requesters, lab forms, reports, methods and help guides",
       "chooseWrite": "Choose what else it may do. Untick anything you want to keep read-only.",
       "scope": {
-        "experimentsWrite": "Run experiments: check in samples, record lab values, submit, run calculations, generate reports and close tickets",
+        "experimentsWrite": "Run experiments (check in samples, start methods, record lab values and cancel tickets)",
         "templatesWrite": "Onboard methods: create and edit samples and methods, and show or hide them on the catalogue"
       },
       "redirectNote": "After you allow access you'll be sent back to {host}.",
@@ -1279,7 +1279,7 @@
           },
           "lifecycle": {
             "heading": "Experiment lifecycle",
-            "body": "Every experiment is a ticket with a clear status path:\n\nRequested → Sample received → In progress → Finalizing → Completed (or Cancelled).\n\nRequesters open tickets and ship samples. Staff check samples in, run the lab form, finalize calculations and the PDF report, then close the ticket."
+            "body": "Each ticket is one sample with an experiment for each requested method.\n\nRequested → Sample received → In progress → Completed → Closed.\n\nStaff check in the sample, run and finish each method, then publish the report to close the ticket. Staff can also cancel an open ticket with a reason."
           }
         },
         "links": {
@@ -1314,7 +1314,7 @@
           },
           "filters": {
             "heading": "Lifecycle groups",
-            "body": "Pending covers Requested and Sample received. Active covers In progress and Finalizing. Closed covers Completed and Cancelled. Use these groups when you want a short queue for the work you are doing right now."
+            "body": "Pending covers Requested and Sample received. Active includes In progress and Completed tickets awaiting publication. Closed covers Closed and Cancelled tickets."
           }
         }
       },
@@ -1348,7 +1348,7 @@
         "sections": {
           "stages": {
             "heading": "What you can do",
-            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nReceived — pick a method and use Start experiment to unlock its lab form.\n\nIn progress — the method's lab form is editable; Finish experiment calculates and finishes it.\n\nFinished — reopen it with a reason to correct values.\n\nThe ticket panel publishes the report, closes or cancels the ticket."
+            "body": "Requested — the sample is not in yet; follow the link to check-in.\n\nReceived — pick a method and use Start experiment to unlock its lab form.\n\nIn progress — the method's lab form is editable; Finish experiment calculates and finishes it.\n\nFinished — reopen it with a reason to correct values.\n\nUse the ticket panel to publish the report and close the ticket, or to cancel the ticket with a reason."
           },
           "collab": {
             "heading": "Collaborative editing",
@@ -1517,7 +1517,7 @@
           },
           "ask": {
             "heading": "What to ask",
-            "body": "Once connected, ask the assistant to do lab work. For example: list experiments waiting for check-in, record these readings for experiment X, or run calculations and generate the report. You can also hand it a spreadsheet of a method — the sample, the questions, and the formulas — and ask it to onboard that method, or ask it to change a method that already exists. A change saves a new version and keeps the method's PDF layout.\n\nThe assistant can read these guides, so you can also ask it how something in the lab workspace works.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. A field a colleague is editing is refused instead of overwritten. Invalid values are rejected and nothing is saved.\n\nThe assistant asks before irreversible steps such as Submit to final stage and Close ticket."
+            "body": "Ask the assistant to list tickets awaiting check-in, start a method, record readings, or find a published report. Staff finish each method in the browser, where its calculations run. Publishing the first report in the browser closes the ticket.\n\nYou can share a spreadsheet with the sample, questions and formulas and ask the assistant to onboard or revise the method. Already requested experiments keep their saved forms and formulas. The assistant can also read these guides and explain how the lab workspace works.\n\nValues recorded while an experiment is in progress appear live in colleagues’ open lab forms. The assistant cannot change a field a colleague is editing. If any value is invalid, the whole save is refused.\n\nThe assistant asks for confirmation and a reason before cancelling a ticket."
           },
           "disconnect": {
             "heading": "Disconnect an app",

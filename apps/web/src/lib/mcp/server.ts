@@ -45,10 +45,11 @@ COMPLETED (every method finished) → CLOSED, or CANCELLED. Each experiment is
 PENDING → IN_PROGRESS → FINISHED.
 Use list_experiments to find a ticket and get_experiment to read it (its
 experiments and the lab form of one) before recording values. Every write acts
-as the signed-in staff member; confirm close_ticket (irreversible) with the user first.
+as the signed-in staff member. Confirm with the user before calling cancel_ticket
+and provide their reason.
 
 You never run calculations. A staff member finishes each experiment in the
-browser, which runs its formulas, and publishes the report there too.
+browser, which runs its formulas. Publishing the first report there closes the ticket.
 
 record_lab_values takes labForm question ids as keys. Match each value's JSON type
 to its question: numbers as numbers (not strings), select/radio as the option
@@ -82,7 +83,7 @@ const NEXT_STEP: Record<(typeof STATUSES)[number], string> = {
   RECEIVED: "Sample checked in. Use start_experiment for each method.",
   IN_PROGRESS:
     "Record measurements with record_lab_values on started experiments. Staff finish each one in the browser.",
-  COMPLETED: "Every method is finished. Staff publish the report in the browser; close_ticket when done.",
+  COMPLETED: "Every method is finished. Publish the report in the browser to close the ticket.",
   CLOSED: "Closed. get_report_download_url gives the report once it is published.",
   CANCELLED: "Cancelled. Nothing more to do.",
 };
@@ -205,7 +206,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
     },
     audited("get_experiment", async ({ contextId, experimentId }) => {
       const ws = await getExperimentWorkspace(contextId, experimentId);
-      if (!ws.ticket) return fail(`No ticket found with id ${contextId}.`);
+      if (!ws.ticket) return fail(ws.errors.ticket ?? `No ticket found with id ${contextId}.`);
       const selected = ws.selected;
       if (experimentId && selected?.id !== experimentId) {
         return fail(`Experiment ${experimentId} is not on ticket ${contextId}.`);
@@ -316,15 +317,15 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
     );
 
     server.registerTool(
-      "close_ticket",
+      "cancel_ticket",
       {
-        title: "Close ticket",
-        description: "Close a COMPLETED ticket (every method finished). Irreversible.",
-        inputSchema: contextIdShape,
+        title: "Cancel ticket",
+        description: "Permanently cancel an open ticket with a reason. Confirm with the user first.",
+        inputSchema: { ...contextIdShape, reason: z.string().trim().min(1) },
         annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
       },
-      audited("close_ticket", async ({ contextId }) => {
-        const res = await close(actor.userId, contextId);
+      audited("cancel_ticket", async ({ contextId, reason }) => {
+        const res = await close(actor.userId, contextId, reason);
         return res.success ? ok(await statusAfter(contextId)) : fail(res.error);
       }),
     );
