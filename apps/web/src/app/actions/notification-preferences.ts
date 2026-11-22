@@ -9,7 +9,7 @@ import { settingsPath } from "@/lib/settings/routes";
 import {
   updateNotificationPreferences,
   type StageNotificationPreference,
-} from "@/lib/sample-tracker/notification-preferences";
+} from "@/lib/experiment-manager/notification-preferences";
 
 export type NotificationPreferencesActionResult =
   | { success: true; preferences: StageNotificationPreference[] }
@@ -31,7 +31,7 @@ export async function saveNotificationPreferencesAction(
   } catch (error) {
     logHandledError(error, {
       action: "saveNotificationPreferencesAction",
-      service: "sample-tracker",
+      service: "experiment-manager",
       userId: session.userId,
     });
     return {

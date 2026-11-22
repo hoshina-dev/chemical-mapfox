@@ -4,9 +4,9 @@ import { registerStub } from "../registry.js";
 import type { StubContext } from "../types.js";
 
 /**
- * In-memory sample_tracker (`SAMPLE_TRACKER_URL`, `/api/v1` stripped by the
+ * In-memory experiment-manager (`EXPERIMENT_MANAGER_URL`, `/api/v1` stripped by the
  * server). Mirrors the real service's routes, derived statuses, guards and
- * error messages (hoshina-dev/sample_tracker `internal/router/router.go`,
+ * error messages (hoshina-dev/experiment-manager `internal/router/router.go`,
  * `internal/repository/ticket_lifecycle_repository.go`), so the BFF is driven
  * exactly as in production. Step definitions seed it through the helpers below.
  */
@@ -27,7 +27,8 @@ export interface StSampleType {
   id: string;
   name: string;
   description: string | null;
-  reportForm: { fields: unknown[] } | null;
+  /** The results table `{sections}`; null until a blank form is uploaded. */
+  reportForm: { sections: unknown[] } | null;
   reportPdf: Buffer | null;
   isVisibleOnWeb: boolean;
   displayOrder: number;
@@ -110,7 +111,7 @@ const store: Store = {
   writes: [],
 };
 
-export const sampleTracker = store;
+export const experimentManager = store;
 
 const EMAIL_EVENTS = [
   "ticket.requested",
@@ -197,6 +198,7 @@ function summaryWire(t: StTicket) {
     closedReason: t.closedReason,
     reportPublishedAt: reportPublishedAt(t),
     updatedAt: t.updatedAt,
+    methods: t.experiments.map((e) => e.templateName),
   };
 }
 
@@ -306,7 +308,7 @@ export function seedSampleType(
     id: randomUUID(),
     name,
     description: opts.description ?? null,
-    reportForm: opts.reportForm === false ? null : { fields: [] },
+    reportForm: opts.reportForm === false ? null : { sections: [] },
     reportPdf: opts.reportForm === false ? null : makePdf([`${name} report`]),
     isVisibleOnWeb: opts.visible ?? true,
     displayOrder: store.sampleTypes.length + 1,
@@ -652,18 +654,24 @@ async function catalogue(ctx: StubContext, actor: string): Promise<boolean> {
             throw bad("file is not a PDF");
         }
         if (!pdf) throw bad("upload the blank report form (file) first");
-        let reportForm = st.reportForm ?? { fields: [] };
+        let reportForm = st.reportForm ?? { sections: [] };
         if (typeof fields === "string") {
-          const parsed = JSON.parse(fields) as { fields?: unknown[] };
-          if (!Array.isArray(parsed.fields))
-            throw bad("fields: fields is required");
-          reportForm = { fields: parsed.fields };
+          const parsed = JSON.parse(fields) as { sections?: unknown[] };
+          if (!Array.isArray(parsed.sections))
+            throw bad("sections: sections is required");
+          reportForm = { sections: parsed.sections };
         }
         st.reportPdf = pdf;
         st.reportForm = reportForm;
         st.updatedAt = now();
         return ctx.json(200, sampleTypeWire(st));
       }
+    }
+    if (sub === "report-form" && path.length === 4 && path[3] === "preview" && method === "GET") {
+      // The real service draws the table with sample values; the fake returns a PDF.
+      if (!st.reportPdf || !st.reportForm)
+        throw notFound("sample type has no report form");
+      return ctx.send(200, makePdf([`${st.name} report preview`]), "application/pdf");
     }
     return false;
   }
@@ -695,7 +703,7 @@ async function catalogue(ctx: StubContext, actor: string): Promise<boolean> {
   return false;
 }
 
-/** Apply a values patch + results under the experiment (sample_tracker's contextBuilder). */
+/** Apply a values patch + results under the experiment (experiment-manager's contextBuilder). */
 function applyValues(
   e: StExperiment,
   body: Json,
@@ -759,6 +767,24 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
       throw bad("experimentTemplateIds is required");
     if (new Set(ids).size !== ids.length)
       throw bad("experimentTemplateIds must not contain duplicates");
+    // A retry with the same Idempotency-Key returns the ticket it made (kept in the requested event).
+    const key = ctx.header("idempotency-key") ?? "";
+    if (key.length > 200)
+      throw bad("Idempotency-Key must be 200 characters or less");
+    const earlier = key
+      ? store.tickets.find((x) =>
+          x.events.some(
+            (e) => e.type === "ticket.requested" && e.actorUserId === actor && (e.data as { requestKey?: string }).requestKey === key,
+          ),
+        )
+      : undefined;
+    if (earlier) {
+      const same =
+        earlier.sampleTypeId === st.id &&
+        earlier.experiments.map((e) => e.experimentTemplateId).join() === ids.join();
+      if (!same) throw conflict("Idempotency-Key was already used for a different request");
+      return ctx.json(200, ticketWire(earlier));
+    }
     const answers = (body.clientAnswers ?? {}) as Record<string, Json>;
     for (const k of Object.keys(answers))
       if (!ids.includes(k))
@@ -813,7 +839,7 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
         updatedAt: at,
       });
     }
-    event(row, "ticket.requested", actor, null, { experimentTemplateIds: ids });
+    event(row, "ticket.requested", actor, null, key ? { experimentTemplateIds: ids, requestKey: key } : { experimentTemplateIds: ids });
     store.tickets.push(row);
     return ctx.json(201, ticketWire(row));
   }
@@ -872,13 +898,24 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
       body.reason === undefined || body.reason === null
         ? null
         : text("reason", body.reason);
-    if (!reason && status !== "COMPLETED")
-      throw conflict("ticket is not completed; give a reason to cancel it");
+    // A ticket closes by publishing its report; without one, close only cancels (with a reason).
+    if (!reason && status === "COMPLETED")
+      throw conflict("publish the report to close the ticket");
+    if (!reason) throw conflict("ticket is not completed; give a reason to cancel it");
     t.closedAt = now();
     t.closedReason = reason;
     touch();
     event(t, "ticket.closed", actor, null, reason ? { reason } : {});
     return ctx.json(200, ticketWire(t));
+  }
+  if (path[2] === "report" && path.length === 4 && path[3] === "preview" && method === "GET") {
+    // What publishing would issue now: nothing recorded.
+    const st = sampleType(t.sampleTypeId);
+    if (status !== "COMPLETED" && status !== "CLOSED")
+      throw conflict("ticket is not completed");
+    if (!st.reportPdf || !st.reportForm)
+      throw notFound("sample type has no report form");
+    return ctx.send(200, makePdf([`Report preview: ${t.name}`, st.name]), "application/pdf");
   }
   if (path[2] === "report" && path.length === 3) {
     const st = sampleType(t.sampleTypeId);
@@ -889,6 +926,11 @@ async function tickets(ctx: StubContext, actor: string): Promise<boolean> {
         throw conflict("ticket is not completed");
       touch();
       event(t, "ticket.report_published", actor, null);
+      if (status === "COMPLETED") {
+        // The first publish closes the ticket; later ones issue an updated version.
+        t.closedAt = now();
+        event(t, "ticket.closed", actor, null);
+      }
       return ctx.json(200, ticketWire(t));
     }
     if (method === "GET") {
@@ -1026,7 +1068,7 @@ async function handle(ctx: StubContext): Promise<boolean> {
           : await catalogue(ctx, actor);
     if (!handled)
       throw notFound(
-        `sample_tracker stub: ${ctx.method} /${ctx.path.join("/")} is not a route`,
+        `experiment-manager stub: ${ctx.method} /${ctx.path.join("/")} is not a route`,
       );
     return true;
   } catch (err) {
@@ -1050,4 +1092,4 @@ function reset() {
   });
 }
 
-registerStub({ name: "sample-tracker", priority: 100, reset, handle });
+registerStub({ name: "experiment-manager", priority: 100, reset, handle });

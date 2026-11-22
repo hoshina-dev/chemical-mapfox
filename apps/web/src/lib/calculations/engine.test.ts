@@ -6,7 +6,7 @@ import type { CalculationDryRunResponse } from "@/lib/calculations/types";
 
 import { ENGINE_SOURCE } from "./engineSource";
 
-// Expected outputs were captured from experiment-manager's
+// Expected outputs were captured from the retired Python experiment-manager-poc's
 // POST /api/calculations/evaluate for the same bodies.
 
 interface EngineOutput {

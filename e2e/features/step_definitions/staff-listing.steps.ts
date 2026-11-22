@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { DataTable, Given, Then, When } from "@cucumber/cucumber";
 import type { Locator } from "playwright";
 
-import { findTicket } from "../support/stub/modules/sample-tracker.js";
+import { findTicket } from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 

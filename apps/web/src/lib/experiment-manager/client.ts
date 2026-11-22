@@ -1,22 +1,23 @@
 import "server-only";
 
+import { withDishCount } from "@/lib/forms/dishCount";
 import {
   type DownstreamInit,
   DownstreamTimeoutError,
   loggedFetch,
 } from "@/lib/log/downstream";
 
-import { getSampleTrackerUrl } from "./config";
+import { getExperimentManagerUrl } from "./config";
 
-/** A failed sample_tracker call; `message` from the body is in `detail`. */
-export class SampleTrackerError extends Error {
+/** A failed experiment-manager call; `message` from the body is in `detail`. */
+export class ExperimentManagerError extends Error {
   constructor(
     message: string,
     readonly status: number,
     readonly detail?: string,
   ) {
     super(message);
-    this.name = "SampleTrackerError";
+    this.name = "ExperimentManagerError";
   }
 }
 
@@ -34,7 +35,8 @@ export interface SampleType {
   id: string;
   name: string;
   description: string | null;
-  reportForm: { fields: ReportField[] } | null;
+  /** The report's results table; null until a blank form is uploaded. */
+  reportForm: ReportForm | null;
   /** Offered in the catalogues; new sample types start hidden. */
   isVisibleOnWeb: boolean;
   displayOrder: number;
@@ -42,12 +44,22 @@ export interface SampleType {
   updatedAt: string;
 }
 
-/** One value on the report form, printed in one fixed format (10 pt, starting at x). */
-export interface ReportField {
-  page: number;
-  x: number;
-  y: number;
-  source: string;
+/** A sample type's results table: one section per method, in the order they print. */
+export interface ReportForm {
+  sections: ReportSection[];
+}
+
+/** One method (experiment template) and the results it prints. */
+export interface ReportSection {
+  template: string;
+  rows: ReportRow[];
+}
+
+/** One printed result: a calculation of the section's method, as stored. */
+export interface ReportRow {
+  result: string;
+  label?: string;
+  unit?: string;
 }
 
 export interface ExperimentTemplate {
@@ -81,6 +93,8 @@ export interface TicketSummary {
   closedReason: string | null;
   reportPublishedAt: string | null;
   updatedAt: string;
+  /** Names of its methods (experiments), catalogue order. */
+  methods: string[];
 }
 
 export interface TicketExperiment {
@@ -121,11 +135,11 @@ interface Init extends DownstreamInit {
 }
 
 async function request(path: string, init: Init): Promise<Response> {
-  const url = `${getSampleTrackerUrl()}${path}`;
+  const url = `${getExperimentManagerUrl()}${path}`;
   const { actor, ...rest } = init;
   let res: Response;
   try {
-    res = await loggedFetch("sample-tracker", url, {
+    res = await loggedFetch("experiment-manager", url, {
       ...rest,
       headers: {
         Accept: "application/json",
@@ -139,8 +153,8 @@ async function request(path: string, init: Init): Promise<Response> {
     });
   } catch (error) {
     if (error instanceof DownstreamTimeoutError) {
-      throw new SampleTrackerError(
-        `sample_tracker ${rest.method ?? "GET"} ${path} timed out`,
+      throw new ExperimentManagerError(
+        `experiment-manager ${rest.method ?? "GET"} ${path} timed out`,
         504,
       );
     }
@@ -154,8 +168,8 @@ async function request(path: string, init: Init): Promise<Response> {
     } catch {
       detail = text || undefined;
     }
-    throw new SampleTrackerError(
-      `sample_tracker ${rest.method ?? "GET"} ${path} failed (${res.status})`,
+    throw new ExperimentManagerError(
+      `experiment-manager ${rest.method ?? "GET"} ${path} failed (${res.status})`,
       res.status,
       detail,
     );
@@ -182,10 +196,10 @@ const json = (body: unknown) => JSON.stringify(body);
 export const listSampleTypes = (actor: string | undefined) =>
   stFetch<SampleType[]>("/sample-types", { actor });
 
-/** One live sample type; a 404 SampleTrackerError when unknown or deleted. */
+/** One live sample type; a 404 ExperimentManagerError when unknown or deleted. */
 export async function getSampleType(actor: string | undefined, id: string): Promise<SampleType> {
   const found = (await listSampleTypes(actor)).find((st) => st.id === id);
-  if (!found) throw new SampleTrackerError("sample type not found", 404, "sample type not found");
+  if (!found) throw new ExperimentManagerError("sample type not found", 404, "sample type not found");
   return found;
 }
 
@@ -218,18 +232,20 @@ export interface TemplateBody {
   template: Record<string, unknown>;
 }
 
+// Every template save goes through these two: the dish group's count always follows
+// Max dishes (see withDishCount).
 export const createTemplate = (actor: string, sampleTypeId: string, body: TemplateBody) =>
   stFetch<ExperimentTemplate>(`/sample-types/${sampleTypeId}/experiment-templates`, {
     actor,
     method: "POST",
-    body: json(body),
+    body: json({ ...body, template: withDishCount(body.template) }),
   });
 
 export const updateTemplate = (actor: string, id: string, body: TemplateBody) =>
   stFetch<ExperimentTemplate>(`/experiment-templates/${id}`, {
     actor,
     method: "PUT",
-    body: json(body),
+    body: json({ ...body, template: withDishCount(body.template) }),
   });
 
 export const deleteTemplate = (actor: string, id: string) =>
@@ -275,23 +291,23 @@ export async function hasReportForm(actor: string | undefined, sampleTypeId: str
     await request(`/sample-types/${sampleTypeId}/report-form`, { actor, method: "HEAD" });
     return true;
   } catch (error) {
-    if (error instanceof SampleTrackerError && error.status === 404) return false;
+    if (error instanceof ExperimentManagerError && error.status === 404) return false;
     throw error;
   }
 }
 
 /**
- * Store the blank form and/or the field map; a part left out is kept (the map
- * alone needs a stored PDF, a first PDF alone starts with an empty map).
+ * Store the blank form and/or the results table; a part left out is kept (the table
+ * alone needs a stored PDF, a first PDF alone starts with an empty table).
  */
 export function putReportForm(
   actor: string,
   sampleTypeId: string,
-  parts: { pdf?: Blob; fields?: string },
+  parts: { pdf?: Blob; form?: ReportForm },
 ) {
   const body = new FormData();
   if (parts.pdf) body.append("file", parts.pdf, "report-form.pdf");
-  if (parts.fields !== undefined) body.append("fields", parts.fields);
+  if (parts.form) body.append("fields", json(parts.form));
   return stFetch<SampleType>(`/sample-types/${sampleTypeId}/report-form`, {
     actor,
     method: "PUT",
@@ -310,8 +326,17 @@ export interface CreateTicket {
   clientAnswers?: Record<string, Record<string, unknown>>;
 }
 
-export const createTicket = (actor: string, body: CreateTicket) =>
-  stFetch<Ticket>("/tickets", { actor, method: "POST", body: json(body) });
+/**
+ * Request a ticket. `requestKey` (one per request form) makes a retry return the ticket the
+ * first attempt created instead of a second one, e.g. after a lost response.
+ */
+export const createTicket = (actor: string, body: CreateTicket, requestKey?: string) =>
+  stFetch<Ticket>("/tickets", {
+    actor,
+    method: "POST",
+    body: json(body),
+    ...(requestKey ? { headers: { "Idempotency-Key": requestKey } } : {}),
+  });
 
 export function listTickets(
   actor: string | undefined,
@@ -386,10 +411,22 @@ export const reopenExperiment = (
   reason: string,
 ) => command(actor, `${exp(ticketId, experimentId)}/reopen`, { reason });
 
-/** Release the report for download (no input: what it prints comes from the ticket). */
+/** The sample type's report drawn with sample values (the report form editor's preview). */
+export const previewReportForm = (actor: string | undefined, sampleTypeId: string) =>
+  stBytes(`/sample-types/${sampleTypeId}/report-form/preview`, { actor });
+
+/**
+ * Issue the ticket's report from its current data (emails the requester). Publishing
+ * again issues anew; downloads print the latest.
+ */
 export const publishReport = (actor: string, ticketId: string) =>
   command(actor, `/tickets/${ticketId}/report`);
 
+/** What publishing would issue now; nothing is recorded, nobody is emailed. */
+export const previewReport = (actor: string | undefined, ticketId: string) =>
+  stBytes(`/tickets/${ticketId}/report/preview`, { actor });
+
+/** The issued report. */
 export const getReport = (actor: string | undefined, ticketId: string) =>
   stBytes(`/tickets/${ticketId}/report`, { actor });
 
@@ -414,9 +451,9 @@ export const setNotificationPreferences = (
     body: json({ preferences }),
   });
 
-/** A sample_tracker failure as a readable message: its own message when it sent one. */
-export function sampleTrackerMessage(error: unknown, fallback: string): string {
-  if (error instanceof SampleTrackerError && error.detail) {
+/** A experiment-manager failure as a readable message: its own message when it sent one. */
+export function experimentManagerMessage(error: unknown, fallback: string): string {
+  if (error instanceof ExperimentManagerError && error.detail) {
     return `${fallback}\n${error.detail}`;
   }
   return fallback;

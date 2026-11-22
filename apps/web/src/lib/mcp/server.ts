@@ -25,9 +25,9 @@ import {
   getTicket,
   listSampleTypes,
   listTemplates,
-  sampleTrackerMessage,
-} from "@/lib/sample-tracker/client";
-import { collabRoomId, templateToLoaded } from "@/lib/sample-tracker/mappers";
+  experimentManagerMessage,
+} from "@/lib/experiment-manager/client";
+import { collabRoomId, templateToLoaded } from "@/lib/experiment-manager/mappers";
 import { FORMULA_GUIDE } from "@/lib/staff/formulas";
 import { recordLabValues } from "@/lib/staff/labValues";
 import { checkIn, close, start } from "@/lib/staff/lifecycle";
@@ -65,7 +65,7 @@ them; ask the user to test them on the method's builder page. To edit a
 method, get_template, change it, and pass the result back with its templateId:
 experiments already requested keep their own copy. publish stays false unless
 the user asks to show it on the catalogue; set_catalogue_visibility shows or
-hides it later. The report form (blank PDF + field map) is uploaded on the site.
+hides it later. The report form (blank PDF + results table) is set up on the site.
 
 How-to guides for this site are available through list_docs and read_doc.
 Read the relevant one before explaining a page or workflow to the user, and
@@ -131,7 +131,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
         result = await run(args);
       } catch (err) {
         logger.error({ op: "mcp.tool", tool, userId: actor.userId, clientId: actor.clientId, err }, "mcp tool failed");
-        return fail(sampleTrackerMessage(err, "Something went wrong on the lab server. Try again."));
+        return fail(experimentManagerMessage(err, "Something went wrong on the lab server. Try again."));
       }
       logger.info(
         {
@@ -281,7 +281,7 @@ export function createStaffMcpServer(actor: McpActor, origin = ""): McpServer {
       }),
     );
 
-    // The ticket's status after a step, read back from sample_tracker.
+    // The ticket's status after a step, read back from experiment-manager.
     const statusAfter = async (contextId: string) => ({
       contextId,
       status: (await getTicket(actor.userId, contextId)).status,

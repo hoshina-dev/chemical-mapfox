@@ -19,7 +19,7 @@ sees them. To change a grant, disconnect and connect again.
 | Scope | Tools |
 |---|---|
 | `experiments:read` | every read-only tool, including the docs tools |
-| `experiments:write` | none yet (the write tools are being rebuilt on sample_tracker) |
+| `experiments:write` | none yet (the write tools are being rebuilt on experiment-manager) |
 | `templates:write` | none yet |
 
 A request with no scope gets all three. `staff`, the only scope before the
@@ -79,8 +79,8 @@ the user, client and ticket id.
 The connector is **read-only** for now. The write tools (lab values, stage
 transitions, calculations, report, onboarding) drove the retired
 ticketing-service and experiment-manager and were removed with them. They are
-to be rebuilt on sample_tracker: see `TODO(MCP rework)` at the top of
-`apps/web/src/lib/sample-tracker/client.ts`.
+to be rebuilt on experiment-manager: see `TODO(MCP rework)` at the top of
+`apps/web/src/lib/experiment-manager/client.ts`.
 
 | Tool | Notes |
 |---|---|
@@ -98,7 +98,7 @@ without changes.
 You don't need real backends or an AI subscription:
 
 1. Start the local stack from the workspace repo (`./run.sh local up web`:
-   web on :3000 with sample_tracker, custapi and Redis).
+   web on :3000 with experiment-manager, custapi and Redis).
 2. Run the MCP Inspector: `npx @modelcontextprotocol/inspector`, choose
    *Streamable HTTP*, URL `http://localhost:3000/api/mcp`, and use
    *Open Auth Settings → Quick OAuth Flow*. Sign in as a staff account and

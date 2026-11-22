@@ -3,7 +3,7 @@ Feature: Staff experiment lifecycle transitions
   I want to move an experiment ticket through its guarded lifecycle
   So that each step (check-in, start, finish, close, cancel) only happens when it's valid
 
-  sample_tracker derives the ticket status from what happened to it and its
+  experiment-manager derives the ticket status from what happened to it and its
   methods: REQUESTED → RECEIVED → IN_PROGRESS (a method started) → COMPLETED
   (every method finished) → CLOSED, and any open ticket can be CANCELLED with a
   reason. It refuses an invalid command with a 409 whose message the app shows.
@@ -35,12 +35,12 @@ Feature: Staff experiment lifecycle transitions
     Then ticket "ctx-finish" should be in the "COMPLETED" stage
     And I should see the message "Experiment finished"
 
-  Scenario: Closing is offered only once every method is finished
+  Scenario: Publishing the report, which closes the ticket, is offered only once every method is finished
     Given an experiment "ctx-close" is at the "IN_PROGRESS" stage
     When I visit "/internal/experiment/ctx-close"
-    Then I should not be able to close the ticket
+    Then I should not be able to publish the report
     When I finish the experiment "ctx-close"
-    And I close the ticket "ctx-close"
+    And I publish the report for "ctx-close"
     Then ticket "ctx-close" should be in the "CLOSED" stage
 
   Scenario: Cancelling an open ticket records the reason
@@ -50,9 +50,9 @@ Feature: Staff experiment lifecycle transitions
     Then ticket "ctx-cancel" should be in the "CANCELLED" stage
     And I should see the message "Sample leaked in transit"
 
-  Scenario: A refused transition surfaces sample_tracker's message
+  Scenario: A refused transition surfaces experiment-manager's message
     Given an experiment "ctx-invalid" is at the "RECEIVED" stage
-    And sample_tracker finds ticket "ctx-invalid" busy on the next command
+    And experiment-manager finds ticket "ctx-invalid" busy on the next command
     When I visit "/internal/experiment/ctx-invalid"
     And I try to start the experiment "ctx-invalid"
     Then I should see the error containing "the ticket is busy; try again"

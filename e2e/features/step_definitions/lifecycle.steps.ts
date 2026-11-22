@@ -7,7 +7,7 @@ import {
   failNextWrite,
   findTicket,
   ticketStatus,
-} from "../support/stub/modules/sample-tracker.js";
+} from "../support/stub/modules/experiment-manager.js";
 import { seedTicketFor, toStatus } from "../support/tickets.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
@@ -79,7 +79,7 @@ When(
 );
 
 Given(
-  "sample_tracker finds ticket {string} busy on the next command",
+  "experiment-manager finds ticket {string} busy on the next command",
   function (this: ChemFoxWorld, contextId: string) {
     // What a lock timeout returns (apperr.MapError): 409, nothing changed.
     failNextWrite({ pathIncludes: `tickets/${contextId}/` }, 409, "the ticket is busy; try again");
@@ -150,17 +150,12 @@ When(
 When(
   "I publish the report for {string}",
   async function (this: ChemFoxWorld, contextId: string) {
-    await clickUntil(this, button(this, "Publish report"), async () =>
+    // Publishing emails the requester, so the page asks to confirm.
+    this.page.on("dialog", (dialog) => {
+      dialog.accept().catch(() => {});
+    });
+    await clickUntil(this, button(this, "Publish report and close"), async () =>
       Boolean(findTicket(contextId)?.events.some((e) => e.type === "ticket.report_published")),
-    );
-  },
-);
-
-When(
-  "I close the ticket {string}",
-  async function (this: ChemFoxWorld, contextId: string) {
-    await clickUntil(this, button(this, "Close ticket"), async () =>
-      status(contextId) === "CLOSED",
     );
   },
 );
@@ -210,10 +205,10 @@ Then(
 );
 
 Then(
-  "I should not be able to close the ticket",
+  "I should not be able to publish the report",
   async function (this: ChemFoxWorld) {
     await button(this, "Cancel ticket").first().waitFor({ state: "visible", timeout: 30_000 });
-    assert.equal(await button(this, "Close ticket").count(), 0);
+    assert.equal(await button(this, "Publish report and close").count(), 0);
   },
 );
 

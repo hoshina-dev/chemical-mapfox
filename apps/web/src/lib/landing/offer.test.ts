@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/sample-tracker/client", () => ({
+vi.mock("@/lib/experiment-manager/client", () => ({
   getTemplate: vi.fn(),
   listSampleTypes: vi.fn(),
   listTemplates: vi.fn(),
-  SampleTrackerError: class extends Error {},
+  ExperimentManagerError: class extends Error {},
 }));
-import { getTemplate, listSampleTypes, listTemplates } from "@/lib/sample-tracker/client";
+import { getTemplate, listSampleTypes, listTemplates } from "@/lib/experiment-manager/client";
 import { listRequestCatalog, loadRequestTemplate } from "@/lib/experiment/data";
 
 import { getLabOffer } from "./offer";
@@ -41,7 +41,7 @@ beforeEach(() => {
 });
 
 describe("catalogue", () => {
-  it("offers every sample type with its methods, in sample_tracker's order", async () => {
+  it("offers every sample type with its methods, in experiment-manager's order", async () => {
     const offer = await getLabOffer();
     expect(offer?.map((sample) => sample.name)).toEqual(["Zinc", "Empty"]);
     expect(offer?.[0]?.experiments.map((test) => [test.name, test.canRequest])).toEqual([
@@ -94,7 +94,7 @@ describe("catalogue", () => {
     expect((await getLabOffer())?.every((sample) => sample.experiments.length === 0)).toBe(true);
   });
 
-  it("degrades to null when sample_tracker is unreachable", async () => {
+  it("degrades to null when experiment-manager is unreachable", async () => {
     vi.mocked(listSampleTypes).mockRejectedValue(new Error("offline"));
     expect(await getLabOffer()).toBeNull();
   });

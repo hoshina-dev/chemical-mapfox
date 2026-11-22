@@ -8,7 +8,7 @@ import {
   experimentListingPath,
   experimentWorkspacePath,
 } from "@/lib/internal/routes";
-import { getTicket, listTicketEvents, SampleTrackerError } from "@/lib/sample-tracker/client";
+import { getTicket, listTicketEvents, ExperimentManagerError } from "@/lib/experiment-manager/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 
@@ -69,7 +69,7 @@ async function ExperimentRawPageContent({
     // The ticket's event history (experiments are inside the ticket above).
     experiment = await listTicketEvents(undefined, contextId);
   } catch (error) {
-    if (error instanceof SampleTrackerError) {
+    if (error instanceof ExperimentManagerError) {
       experimentError = {
         status: error.status,
         body: error.detail,

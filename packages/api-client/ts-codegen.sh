@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Regenerate the TypeScript client from custapi's live OpenAPI doc. (sample_tracker
-# has a hand-written client in apps/web/src/lib/sample-tracker.)
+# Regenerate the TypeScript client from custapi's live OpenAPI doc. (experiment-manager
+# has a hand-written client in apps/web/src/lib/experiment-manager.)
 # Skips generation when a server is unreachable so local installs don't fail.
 
 check_server() {

@@ -7,7 +7,7 @@ import { redact, safeUrl } from "./serialize";
 
 export type DownstreamService =
   | "custapi"
-  | "sample-tracker"
+  | "experiment-manager"
   | "s3";
 
 export function requestUrl(input: RequestInfo | URL): string {
@@ -121,7 +121,7 @@ export interface DownstreamInit extends RequestInit {
 const DEFAULT_TIMEOUT_MS: Record<DownstreamService, number> = {
   custapi: 10_000,
   // builds the report PDF on download and parses uploaded report forms
-  "sample-tracker": 30_000,
+  "experiment-manager": 30_000,
   s3: 45_000,
 };
 

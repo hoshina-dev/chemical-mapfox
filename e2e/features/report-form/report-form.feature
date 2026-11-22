@@ -1,7 +1,7 @@
 Feature: Report form editor
   Lab staff set up one report per sample type: they upload the lab's blank
-  report (PDF) to sample_tracker, then place the values it prints by picking a
-  value and clicking where it goes. Placements autosave.
+  report (PDF) to experiment-manager, then choose the results its table prints
+  beside a preview drawn by experiment-manager.
 
   Background:
     Given the following users exist:
@@ -21,19 +21,4 @@ Feature: Report form editor
     When I open the report form of "Coal"
     And I upload a blank report form PDF
     Then the report form editor should show the PDF
-    And sample_tracker stored a report form PDF for "Coal"
-
-  Scenario: Placing a value autosaves it to sample_tracker
-    When I open the report form of "Coal"
-    Then the report form editor should show the PDF
-    When I place "Sample type" on the page
-    Then the report form should say "Saved"
-    And sample_tracker's report form for "Coal" places "sampleType.name"
-
-  Scenario: A placed value can be removed
-    Given the report form of "Coal" places "sampleType.name"
-    When I open the report form of "Coal"
-    Then the report form editor should show the PDF
-    When I remove the placed "Sample type"
-    Then the report form should say "Saved"
-    And sample_tracker's report form for "Coal" places nothing
+    And experiment-manager stored a report form PDF for "Coal"

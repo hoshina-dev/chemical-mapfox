@@ -11,8 +11,8 @@ import {
   onboardingPath,
   reportFormPath,
 } from "@/lib/internal/routes";
-import { getSampleType, hasReportForm, listTemplates } from "@/lib/sample-tracker/client";
-import { toTemplateSummary } from "@/lib/sample-tracker/mappers";
+import { getSampleType, hasReportForm, listTemplates } from "@/lib/experiment-manager/client";
+import { toTemplateSummary } from "@/lib/experiment-manager/mappers";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 

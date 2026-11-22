@@ -10,8 +10,8 @@ vi.mock("@/lib/collab/room", () => ({
   readTemplate: vi.fn(),
   readValues: vi.fn(),
 }));
-vi.mock("@/lib/sample-tracker/client", async (importActual) => ({
-  ...(await importActual<typeof import("@/lib/sample-tracker/client")>()),
+vi.mock("@/lib/experiment-manager/client", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/experiment-manager/client")>()),
   getTicket: vi.fn(),
   getTemplate: vi.fn(),
   listSampleTypes: vi.fn(),
@@ -52,9 +52,9 @@ import type { McpActor } from "@/lib/oauth/store";
 import {
   getTemplate,
   getTicket,
-  SampleTrackerError,
+  ExperimentManagerError,
   type Ticket,
-} from "@/lib/sample-tracker/client";
+} from "@/lib/experiment-manager/client";
 import { recordLabValues } from "@/lib/staff/labValues";
 import { checkIn, close, start } from "@/lib/staff/lifecycle";
 import {
@@ -613,7 +613,7 @@ describe("experiment write tools", () => {
     expect(close).toHaveBeenCalledWith("staff-ada", "ctx-1");
   });
 
-  it("returns sample_tracker's refusal of a step as an error", async () => {
+  it("returns experiment-manager's refusal of a step as an error", async () => {
     vi.mocked(close).mockResolvedValue({
       success: false,
       error: "Could not close.\nticket is not completed",
@@ -788,9 +788,9 @@ describe("audited error handling", () => {
     expect(logger.info).not.toHaveBeenCalled();
   });
 
-  it("adds sample_tracker's own message when it sent one", async () => {
+  it("adds experiment-manager's own message when it sent one", async () => {
     vi.mocked(getTicket).mockRejectedValue(
-      new SampleTrackerError("x", 404, "ticket not found"),
+      new ExperimentManagerError("x", 404, "ticket not found"),
     );
 
     const result = await call("get_report_download_url", { contextId: "nope" });

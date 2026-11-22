@@ -9,13 +9,14 @@ import { reportFormPath, sampleOnboardingPath } from "@/lib/internal/routes";
 import { logHandledError } from "@/lib/log/handled";
 import {
   putReportForm,
-  type ReportField,
-  sampleTrackerMessage,
-} from "@/lib/sample-tracker/client";
+  type ReportForm,
+  experimentManagerMessage,
+} from "@/lib/experiment-manager/client";
 
-// sample_tracker checks both parts (PDF safety, pages, known sources).
+// experiment-manager checks both parts (PDF safety; each row a printable result of the
+// section's method, labels on sections with several rows).
 
-/** Upload (or replace) a sample type's blank report form. Placed fields are kept. */
+/** Upload (or replace) a sample type's blank report form. The results table is kept. */
 export async function uploadReportFormPdfAction(
   sampleId: string,
   form: FormData,
@@ -35,28 +36,26 @@ export async function uploadReportFormPdfAction(
     logHandledError(error, { action: "uploadReportFormPdfAction", sampleId });
     return {
       success: false,
-      error: sampleTrackerMessage(error, t("uploadError")),
+      error: experimentManagerMessage(error, t("uploadError")),
     };
   }
 }
 
-/** Save where each value is printed on the stored blank form (the editor's autosave). */
-export async function saveReportFieldsAction(
+/** Save the results table (the editor's autosave). */
+export async function saveReportTableAction(
   sampleId: string,
-  fields: ReportField[],
+  form: ReportForm,
 ): Promise<ActionResult<null>> {
   const session = await requireAdmin();
   try {
-    await putReportForm(session.userId, sampleId, {
-      fields: JSON.stringify({ fields }),
-    });
+    await putReportForm(session.userId, sampleId, { form });
     return { success: true, data: null };
   } catch (error) {
-    logHandledError(error, { action: "saveReportFieldsAction", sampleId });
+    logHandledError(error, { action: "saveReportTableAction", sampleId });
     const t = await getTranslations("staff.reportForm");
     return {
       success: false,
-      error: sampleTrackerMessage(error, t("saveError")),
+      error: experimentManagerMessage(error, t("saveError")),
     };
   }
 }

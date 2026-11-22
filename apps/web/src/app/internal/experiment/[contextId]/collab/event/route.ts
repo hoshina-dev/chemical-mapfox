@@ -17,8 +17,8 @@ import {
   setPresence,
 } from "@/lib/collab/room";
 import { logHandledError } from "@/lib/log/handled";
-import { getTicket } from "@/lib/sample-tracker/client";
-import { parseRoomId } from "@/lib/sample-tracker/mappers";
+import { getTicket } from "@/lib/experiment-manager/client";
+import { parseRoomId } from "@/lib/experiment-manager/mappers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

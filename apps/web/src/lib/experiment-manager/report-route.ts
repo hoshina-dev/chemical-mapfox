@@ -22,7 +22,7 @@ async function canAccessReport(ticketId: string, access: ReportAccess): Promise<
 }
 
 /**
- * The ticket's report (one per sample), built by sample_tracker from the sample
+ * The ticket's report (one per sample), built by experiment-manager from the sample
  * type's form, for staff or the requester. `?download=1` saves instead of showing.
  */
 export async function reportPdfResponse(

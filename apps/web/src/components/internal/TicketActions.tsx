@@ -9,18 +9,22 @@ import { useState, useTransition } from "react";
 import { closeTicketAction, publishReportAction } from "@/app/actions/experiment";
 
 /**
- * Ticket-level staff actions: publish the report once (COMPLETED or CLOSED), close a
- * completed ticket, cancel an open one.
+ * Ticket-level staff actions: preview and publish the report (COMPLETED or CLOSED). The first
+ * publish closes the ticket and releases the report to the client; publishing again issues
+ * an updated version. Cancel (with a reason) an open ticket.
  */
 export function TicketActions({
   contextId,
   status,
   published,
+  previewHref,
 }: {
   contextId: string;
   status: string;
   /** Whether the report is already published (it can then be downloaded). */
   published: boolean;
+  /** What publishing would issue now (nothing recorded, no email). */
+  previewHref: string;
 }) {
   const t = useTranslations("staff.lifecycle.ticket");
   const router = useRouter();
@@ -29,8 +33,7 @@ export function TicketActions({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const canPublish = !published && (status === "COMPLETED" || status === "CLOSED");
-  const canClose = status === "COMPLETED";
+  const canPublish = status === "COMPLETED" || status === "CLOSED";
   const canCancel = !["CLOSED", "CANCELLED"].includes(status);
 
   function run(call: () => Promise<{ success: boolean; error?: string }>, done?: () => void) {
@@ -46,7 +49,7 @@ export function TicketActions({
     });
   }
 
-  if (!canPublish && !canClose && !canCancel) return null;
+  if (!canPublish && !canCancel) return null;
   return (
     <Card withBorder radius="md" padding="lg">
       <Stack gap="sm">
@@ -60,14 +63,22 @@ export function TicketActions({
         )}
         <Group gap="sm">
           {canPublish && (
-            <Button loading={isPending} onClick={() => run(() => publishReportAction(contextId))}>
-              {t("publish")}
-            </Button>
-          )}
-          {canClose && (
-            <Button variant="light" color="green" loading={isPending} onClick={() => run(() => closeTicketAction(contextId))}>
-              {t("close")}
-            </Button>
+            <>
+              <Button component="a" href={previewHref} target="_blank" rel="noreferrer" variant="default">
+                {t("preview")}
+              </Button>
+              <Button
+                loading={isPending}
+                variant={published ? "light" : "filled"}
+                onClick={() => {
+                  // The first publish closes the ticket and emails the client: confirm every time.
+                  if (!window.confirm(t(published ? "republishConfirm" : "publishConfirm"))) return;
+                  run(() => publishReportAction(contextId));
+                }}
+              >
+                {t(published ? "republish" : "publish")}
+              </Button>
+            </>
           )}
           {canCancel && (
             <Button variant="subtle" color="red" onClick={cancelModal.open}>

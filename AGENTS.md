@@ -120,7 +120,7 @@ are hand-written to mirror it and kept in sync **manually** (accepted tech debt
 Every question type's `config` (ranges, lengths, option lists) is enforced in
 **one** place — `packages/forms/src/validation.ts` — and applied at every write
 path: the renderer before submit, the server actions before writing to
-sample_tracker, and the collab event route before a keystroke enters the
+experiment-manager, and the collab event route before a keystroke enters the
 buffer. Add a constraint there, not in a component. Issues are reported as
 codes and translated via `forms.validation.*`
 (`apps/web/src/lib/forms/answerIssues.ts`). See
@@ -158,15 +158,15 @@ testing: [`docs/mcp.md`](docs/mcp.md).
 `@repo/api-client` holds the generated custapi client. Regenerate with
 `pnpm --filter @repo/api-client codegen` (runs via `pnpm dlx`; skips it when
 custapi is unreachable). Generated dirs are committed and excluded from eslint.
-sample_tracker (tickets, catalogue, report forms, email preferences; it
+experiment-manager (tickets, catalogue, report forms, email preferences; it
 replaced ticketing-service and experiment-manager) has a hand-written client in
-`apps/web/src/lib/sample-tracker/`, configured by `SAMPLE_TRACKER_URL`.
+`apps/web/src/lib/experiment-manager/`, configured by `EXPERIMENT_MANAGER_URL`.
 
 ## Calculation engine (Pyodide, in the browser)
 
 Staff UI calculations run in the browser: `apps/web/src/lib/calculations/`
 runs a Python port of the old experiment-manager calculation service
-(`engineSource.ts`) in Pyodide; sample_tracker only stores the results. Pyodide is pinned to 0.27.x (CPython 3.12, the
+(`engineSource.ts`) in Pyodide; experiment-manager only stores the results. Pyodide is pinned to 0.27.x (CPython 3.12, the
 backend's version: formula semantics such as comprehensions depend on it),
 served from `public/pyodide/<version>/` by `scripts/copy-pyodide.mjs` (run by
 `dev`/`build`), and fetched only when a page first calculates. A run is killed
@@ -184,12 +184,12 @@ frame sends back as untrusted.
   (`CalculationTester.tsx`) evaluates the draft with nothing persisted.
 - **"Finish experiment"** (`lib/staff/lifecycle.ts`) saves the editor's
   buffer, reads the stored experiment, evaluates it, and finishes it on
-  sample_tracker with the results and the version it read (refused if the
+  experiment-manager with the results and the version it read (refused if the
   values changed meanwhile). Results travel as the JSON text Python wrote, so
   `5.0` stays `5.0` in the PDF. A values save without results clears them.
 - **MCP tools** never calculate: staff finish experiments in the UI.
 
-The e2e sample_tracker fake only stores what the browser computed; the formulas
+The e2e experiment-manager fake only stores what the browser computed; the formulas
 it is seeded with are real Python, evaluated by the real engine.
 
 ## Collaborative editing (staff workspace)

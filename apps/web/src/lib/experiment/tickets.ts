@@ -16,6 +16,8 @@ export interface ExperimentTicket {
   resultsSubmittedAt: string | null;
   closedAt: string | null;
   closedReason: string | null;
+  /** Names of the requested methods, so lists can tell tickets apart. */
+  methods: string[];
 }
 
 export interface StatusMeta {
@@ -35,7 +37,7 @@ const STATUS_META: Record<string, StatusMeta> = {
   received: { label: "Sample received", color: "cyan" },
   pending: { label: "Sample received", color: "cyan" },
   sample_received: { label: "Sample received", color: "cyan" },
-  // sample_tracker: REQUESTED → RECEIVED → IN_PROGRESS → COMPLETED → CLOSED
+  // experiment-manager: REQUESTED → RECEIVED → IN_PROGRESS → COMPLETED → CLOSED
   // (or CANCELLED); the others are older names, kept so old data still reads.
   experimenting: { label: "In progress", color: "yellow" },
   finalizing: { label: "Finalizing", color: "teal" },

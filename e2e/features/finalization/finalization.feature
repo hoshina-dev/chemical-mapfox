@@ -1,6 +1,6 @@
 Feature: Finalization — calculations and the PDF report
   Finishing a method calculates its results in the browser and stores them in
-  sample_tracker. Once every method is finished the ticket is COMPLETED: staff
+  experiment-manager. Once every method is finished the ticket is COMPLETED: staff
   publish the report (filled from the sample type's report form), after which
   staff and the requester can download it, and close the ticket.
 
@@ -16,7 +16,7 @@ Feature: Finalization — calculations and the PDF report
     When I open the workspace for "exp-001"
     And I finish the experiment "exp-001"
     Then the calculations should show a result of "90"
-    And sample_tracker stored the result "90" for "purity" on "exp-001"
+    And experiment-manager stored the result "90" for "purity" on "exp-001"
 
   Scenario: A published report can be downloaded by staff and the requester
     When I open the workspace for "exp-001"
@@ -35,10 +35,9 @@ Feature: Finalization — calculations and the PDF report
     And I try to publish the report
     Then I should see the error containing "sample type has no report form"
 
-  Scenario: The ticket is closed after the report is published
+  Scenario: Publishing the report closes the ticket
     When I open the workspace for "exp-001"
     And I finish the experiment "exp-001"
     And I publish the report for "exp-001"
-    And I close the ticket "exp-001"
     Then ticket "exp-001" should be in the "CLOSED" stage
     And the report panel should be shown

@@ -20,7 +20,7 @@ import type {
 } from "./client";
 
 // The pages keep their view models (LoadedTemplate, ExperimentState, ExperimentTicket);
-// these adapters fill them from sample_tracker. Template versions are gone: a template
+// these adapters fill them from experiment-manager. Template versions are gone: a template
 // is edited in place and tickets keep their frozen copy, so lineageId = id.
 
 export function templateToLoaded(t: ExperimentTemplate): LoadedTemplate {
@@ -62,7 +62,7 @@ export function experimentToState(
   };
 }
 
-/** A template body for sample_tracker from the builder's draft. */
+/** A template body for experiment-manager from the builder's draft. */
 export function templateBody(
   meta: { title: string; description?: string },
   template: FormTemplate,
@@ -96,12 +96,13 @@ export function toExperimentTicket(t: TicketSummary | Ticket): ExperimentTicket 
     updatedAt: t.updatedAt,
     sampleReceivedAt: t.receivedAt,
     experimentStartedAt: started[0] ?? null,
-    // all methods finished: when the last one did
+    // all methods finished: when the last one did (at least one experiment here)
     resultsSubmittedAt:
       experiments.length > 0 && experiments.every((e) => e.finishedAt)
-        ? (experiments.map((e) => e.finishedAt as string).sort().at(-1) ?? null)
+        ? (experiments.map((e) => e.finishedAt as string).sort().at(-1) as string)
         : null,
     closedAt: t.closedAt,
+    methods: t.methods ?? [],
     closedReason: t.closedReason,
   };
 }

@@ -11,13 +11,13 @@ vi.mock("@/lib/collab/room", () => ({
   persistNow: vi.fn(),
   resetRoom: vi.fn(),
 }));
-vi.mock("@/lib/sample-tracker/client", async (importActual) => ({
-  ...(await importActual<typeof import("@/lib/sample-tracker/client")>()),
+vi.mock("@/lib/experiment-manager/client", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/experiment-manager/client")>()),
   finishExperiment: vi.fn(),
 }));
 
 import { resetRoom } from "@/lib/collab/room";
-import { finishExperiment } from "@/lib/sample-tracker/client";
+import { finishExperiment } from "@/lib/experiment-manager/client";
 
 import { finish } from "./lifecycle";
 

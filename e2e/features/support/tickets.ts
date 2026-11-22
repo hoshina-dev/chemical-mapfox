@@ -3,7 +3,7 @@ import {
   seedTicket,
   type SeedTicketInput,
   type TicketStatus,
-} from "./stub/modules/sample-tracker.js";
+} from "./stub/modules/experiment-manager.js";
 
 const STATUSES: TicketStatus[] = [
   "REQUESTED",
@@ -14,7 +14,7 @@ const STATUSES: TicketStatus[] = [
   "CANCELLED",
 ];
 
-/** A sample_tracker ticket status from a feature table ("in progress", "IN_PROGRESS"). */
+/** A experiment-manager ticket status from a feature table ("in progress", "IN_PROGRESS"). */
 export function toStatus(raw: string | undefined): TicketStatus {
   const status = (raw?.trim() || "REQUESTED")
     .toUpperCase()

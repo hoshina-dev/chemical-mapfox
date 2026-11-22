@@ -1,6 +1,6 @@
 /**
  * The calculation engine, run by Pyodide in `sandboxSource.ts`. A port of
- * experiment-manager's `app/services/calculation_service.py` (`dry_run`,
+ * the retired Python experiment-manager-poc's `app/services/calculation_service.py` (`dry_run`,
  * `_eval_one`, `_resolve_order`, …) and the helpers it uses from
  * `app/form_schema.py`. Keep it in step with those: templates authored here
  * must behave the same under the MCP tools, which still call the backend.

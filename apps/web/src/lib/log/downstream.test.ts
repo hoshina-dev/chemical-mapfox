@@ -43,7 +43,7 @@ describe("classifyDownstream", () => {
   });
 
   it("warns on 4xx and errors on 5xx", () => {
-    expect(classifyDownstream("sample-tracker", "/tickets", 422)).toBe("warn");
+    expect(classifyDownstream("experiment-manager", "/tickets", 422)).toBe("warn");
     expect(classifyDownstream("s3", "https://bucket/file", 404)).toBe("warn");
     expect(classifyDownstream("custapi", "/users", 500)).toBe("error");
   });
@@ -55,7 +55,7 @@ describe("classifyDownstream", () => {
       classifyDownstream("custapi", "https://custapi/api/v1/users/search?q=a", 404),
     ).toBe("warn");
     // A user 404 on a different service must not borrow custapi's exemption.
-    expect(classifyDownstream("sample-tracker", "/users/abc-123", 404)).toBe("warn");
+    expect(classifyDownstream("experiment-manager", "/users/abc-123", 404)).toBe("warn");
   });
 });
 
@@ -110,13 +110,13 @@ describe("loggedFetch", () => {
       loggedFetch("custapi", "https://custapi/ok"),
     ).resolves.toMatchObject({ status: 200 });
     await expect(
-      loggedFetch("sample-tracker", "https://st/missing"),
+      loggedFetch("experiment-manager", "https://st/missing"),
     ).resolves.toMatchObject({ status: 404 });
     await expect(
       loggedFetch("custapi", "https://custapi/auth/verify"),
     ).resolves.toMatchObject({ status: 401 });
 
-    await loggedFetch("sample-tracker", "https://st/unprocessable");
+    await loggedFetch("experiment-manager", "https://st/unprocessable");
     await loggedFetch("s3", "https://bucket/down");
     await expect(
       loggedFetch("custapi", "https://custapi/throw"),

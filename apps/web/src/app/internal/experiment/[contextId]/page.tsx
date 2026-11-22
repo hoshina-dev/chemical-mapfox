@@ -34,12 +34,13 @@ import {
   experimentCheckinPath,
   experimentListingPath,
   experimentReportDownloadPath,
+  experimentReportPreviewPath,
   experimentReportViewPath,
   experimentRawPath,
 } from "@/lib/internal/routes";
 import { StatusChip } from "@/components/status/StatusChip";
 import { getExperimentWorkspace } from "@/lib/internal/experiments";
-import { collabRoomId } from "@/lib/sample-tracker/mappers";
+import { collabRoomId } from "@/lib/experiment-manager/mappers";
 
 export const dynamic = "force-dynamic";
 
@@ -236,6 +237,7 @@ async function ExperimentWorkspaceContent({
                   contextId={contextId}
                   status={status}
                   published={Boolean(ws.raw?.reportPublishedAt)}
+                  previewHref={experimentReportPreviewPath(contextId)}
                 />
               )}
 

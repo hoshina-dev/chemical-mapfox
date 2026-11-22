@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  Accordion,
   ActionIcon,
   Alert,
-  Box,
   Grid,
   Group,
   Loader,
@@ -12,144 +10,125 @@ import {
   Select,
   Stack,
   Text,
+  TextInput,
   UnstyledButton,
 } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight, IconX } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import {
-  type KeyboardEvent,
-  type PointerEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { saveReportFieldsAction } from "@/app/actions/report-form";
+import { saveReportTableAction } from "@/app/actions/report-form";
+import { LinkButton } from "@/components/links";
+import type { ReportForm } from "@/lib/experiment-manager/client";
 import {
-  EXPERIMENT_KINDS,
-  type ExperimentFields,
-  type FieldKind,
-  fieldKind,
-  type FieldOption,
-  GENERAL_SOURCES,
-  moveField,
-  type PageSize,
-  placeField,
-} from "@/lib/report/reportFields";
-import type { ReportField } from "@/lib/sample-tracker/client";
+  addRow,
+  editRow,
+  type MethodResults,
+  removeRow,
+} from "@/lib/report/reportTable";
 
 import { ReportFormUpload } from "./ReportFormUpload";
 
 const AUTOSAVE_MS = 800;
-/** Every value prints in one fixed format: Helvetica 10 pt, starting at its point. */
-const TEXT_PT = 10;
-/** One colour per kind of value, in the list and on the page. */
-const KIND_COLOR: Record<FieldKind, string> = {
-  general: "indigo",
-  result: "orange",
-  lab: "grape",
-  client: "teal",
-};
-
-interface Item {
-  key: number;
-  field: ReportField;
-}
+const FLASH_MS = 2500;
 
 type SaveStatus =
   | { kind: "idle" | "saving" | "saved" }
   | { kind: "error"; message: string };
 
 /**
- * Place report values on the blank form: pick a value on the right, click the
- * page where it prints; drag (or arrow keys) to move, Delete or × to remove.
- * Every change is saved shortly after.
+ * The report's results table: pick a method on the right and click its results to add
+ * rows; give each a label and unit, × removes it. Every change is saved shortly after
+ * and the preview on the left (drawn by experiment-manager) reloads.
  */
 export function ReportFormEditor({
   sampleId,
-  pdfUrl,
-  initialFields,
-  experiments,
-  labels,
+  previewUrl,
+  initialForm,
+  methods,
+  sampleShown,
+  methodsPath,
+  samplesPath,
 }: {
   sampleId: string;
-  pdfUrl: string;
-  initialFields: ReportField[];
-  experiments: ExperimentFields[];
-  /** Names of the experiments' values ("Method · value"). */
-  labels: Record<string, string>;
+  /** The report drawn with sample values from the saved table. */
+  previewUrl: string;
+  initialForm: ReportForm;
+  methods: MethodResults[];
+  /** Whether clients can request this sample type at all. */
+  sampleShown: boolean;
+  /** Where this sample type's methods are shown or hidden. */
+  methodsPath: string;
+  /** Where sample types are shown or hidden. */
+  samplesPath: string;
 }) {
   const t = useTranslations("staff.reportForm");
-  const nextKey = useRef(initialFields.length);
-  const [items, setItems] = useState<Item[]>(() =>
-    initialFields.map((field, key) => ({ key, field })),
-  );
-  const [armed, setArmed] = useState<FieldOption | null>(null);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [experimentId, setExperimentId] = useState(experiments[0]?.id ?? null);
+  const [form, setForm] = useState<ReportForm>(initialForm);
+  const [methodId, setMethodId] = useState(methods[0]?.id ?? null);
+  const method = methods.find((m) => m.id === methodId) ?? null;
+  const nameOf = (id: string) => methods.find((m) => m.id === id)?.name ?? id;
+  // Methods clients cannot request yet; one with a row in the table may be shown.
+  const hidden = methods.filter((m) => !m.shown);
+  const printed = (template: string) =>
+    form.sections.some((s) => s.template === template && s.rows.length > 0);
+  const inTable = (template: string, result: string) =>
+    form.sections.some(
+      (s) => s.template === template && s.rows.some((r) => r.result === result),
+    );
 
-  const offered = useMemo(
-    () => new Set<string>([...GENERAL_SOURCES, ...Object.keys(labels)]),
-    [labels],
-  );
-  const labelOf = useCallback(
-    (source: string) =>
-      t.has(`sources.${source}`)
-        ? t(`sources.${source}`)
-        : (labels[source] ?? source),
-    [t, labels],
-  );
-  const general = GENERAL_SOURCES.map((source) => ({
-    source,
-    label: labelOf(source),
-  }));
-  const experiment = experiments.find((e) => e.id === experimentId) ?? null;
-  // The value picked in the list (or of the selected chip): all its placements light up.
-  const focusSource =
-    armed?.source ??
-    items.find((i) => i.key === selected)?.field.source ??
-    null;
-
-  // --- autosave: one save at a time, the latest fields win ---
+  // --- autosave: one save at a time, the latest table wins; the preview follows ---
   const [status, setStatus] = useState<SaveStatus>({ kind: "idle" });
+  const [previewVersion, setPreviewVersion] = useState(0);
   const dirty = useRef(false);
   const chain = useRef<Promise<void>>(Promise.resolve());
+  // The table as last saved: a refused save puts it back, so the screen never shows
+  // a table that is not stored (e.g. a removed row that had to stay).
+  const saved = useRef<ReportForm>(initialForm);
+  // The table flashes red when a change is undone, then fades back.
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!flash) return;
+    const timer = setTimeout(() => setFlash(false), FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [flash]);
   useEffect(() => {
     if (!dirty.current) return;
-    const fields = items.map((i) => i.field);
     const timer = setTimeout(() => {
       dirty.current = false;
       setStatus({ kind: "saving" });
+      const sent = form;
       chain.current = chain.current.then(async () => {
-        const result = await saveReportFieldsAction(sampleId, fields);
-        setStatus(
-          result.success
-            ? { kind: "saved" }
-            : { kind: "error", message: result.error },
-        );
+        const result = await saveReportTableAction(sampleId, sent);
+        if (result.success) {
+          saved.current = sent;
+          setStatus({ kind: "saved" });
+          setPreviewVersion((v) => v + 1);
+          return;
+        }
+        // A newer edit is already queued: let its save decide what stays.
+        if (!dirty.current) setForm(saved.current);
+        setStatus({ kind: "error", message: result.error });
+        setFlash(true);
       });
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
-  }, [items, sampleId]);
-  const update = (change: (prev: Item[]) => Item[]) => {
+  }, [form, sampleId]);
+  const update = (change: (prev: ReportForm) => ReportForm) => {
     dirty.current = true;
-    setItems(change);
+    setForm(change);
+    setStatus((s) => (s.kind === "error" ? { kind: "idle" } : s));
   };
 
-  // --- the PDF ---
+  // --- the preview PDF ---
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<PageSize | null>(null);
+  const [pageHeight, setPageHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const frame = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
 
-  // Bumped after Replace PDF, so the new form is loaded (placed values stay).
-  const [pdfVersion, setPdfVersion] = useState(0);
   useEffect(() => {
     let cancelled = false;
     let loading: { destroy(): Promise<void> } | null = null;
@@ -161,16 +140,20 @@ export function ReportFormEditor({
         import.meta.url,
       ).toString();
       if (cancelled) return;
-      const task = pdfjs.getDocument({ url: `${pdfUrl}?v=${pdfVersion}` });
+      const task = pdfjs.getDocument({ url: `${previewUrl}?v=${previewVersion}` });
       loading = task;
       const loaded = await task.promise;
-      if (!cancelled) setDoc(loaded);
+      if (!cancelled) {
+        setDoc(loaded);
+        setLoadFailed(false);
+        setPage((p) => Math.min(p, loaded.numPages));
+      }
     })().catch(() => !cancelled && setLoadFailed(true));
     return () => {
       cancelled = true;
       void loading?.destroy();
     };
-  }, [pdfUrl, pdfVersion]);
+  }, [previewUrl, previewVersion]);
 
   useEffect(() => {
     const el = frame.current;
@@ -190,12 +173,10 @@ export function ReportFormEditor({
       if (cancelled || !canvas.current) return;
       const base = p.getViewport({ scale: 1 });
       const scale = width / base.width;
-      const viewport = p.getViewport({
-        scale: scale * window.devicePixelRatio,
-      });
+      const viewport = p.getViewport({ scale: scale * window.devicePixelRatio });
       canvas.current.width = viewport.width;
       canvas.current.height = viewport.height;
-      setPageSize({ width: base.width, height: base.height });
+      setPageHeight(base.height * scale);
       task = p.render({ canvas: canvas.current, viewport });
       task.promise.catch(() => {}); // cancelled by the next render
     });
@@ -204,140 +185,6 @@ export function ReportFormEditor({
       task?.cancel();
     };
   }, [doc, page, width]);
-
-  const scale = pageSize ? width / pageSize.width : 0;
-
-  // --- interactions ---
-  useEffect(() => {
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setArmed(null);
-        setSelected(null);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  function clickPage(e: PointerEvent<HTMLDivElement>) {
-    if (!armed || !pageSize) {
-      setSelected(null);
-      return;
-    }
-    const box = e.currentTarget.getBoundingClientRect();
-    const field = placeField(
-      armed.source,
-      page,
-      (e.clientX - box.left) / scale,
-      (e.clientY - box.top) / scale,
-      pageSize,
-    );
-    const key = nextKey.current++;
-    update((prev) => [...prev, { key, field }]);
-    setSelected(key);
-    setArmed(null);
-  }
-
-  const drag = useRef<{
-    key: number;
-    x: number;
-    y: number;
-    from: ReportField;
-  } | null>(null);
-  function startDrag(e: PointerEvent<HTMLDivElement>, item: Item) {
-    e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = {
-      key: item.key,
-      x: e.clientX,
-      y: e.clientY,
-      from: item.field,
-    };
-    setSelected(item.key);
-    setArmed(null);
-  }
-  function onDrag(e: PointerEvent<HTMLDivElement>) {
-    const d = drag.current;
-    if (!d || !pageSize || (e.clientX === d.x && e.clientY === d.y)) return;
-    const moved = moveField(
-      d.from,
-      (e.clientX - d.x) / scale,
-      (e.clientY - d.y) / scale,
-      pageSize,
-    );
-    update((prev) =>
-      prev.map((i) => (i.key === d.key ? { ...i, field: moved } : i)),
-    );
-  }
-  const remove = (key: number) => {
-    update((prev) => prev.filter((i) => i.key !== key));
-    setSelected(null);
-  };
-  function onChipKey(e: KeyboardEvent<HTMLDivElement>, item: Item) {
-    if (e.key === "Delete" || e.key === "Backspace") {
-      e.preventDefault();
-      remove(item.key);
-      return;
-    }
-    const step = e.shiftKey ? 5 : 0.5;
-    const delta: Record<string, [number, number]> = {
-      ArrowLeft: [-step, 0],
-      ArrowRight: [step, 0],
-      ArrowUp: [0, -step],
-      ArrowDown: [0, step],
-    };
-    const d = delta[e.key];
-    if (!d || !pageSize) return;
-    e.preventDefault();
-    update((prev) =>
-      prev.map((i) =>
-        i.key === item.key
-          ? { ...i, field: moveField(i.field, d[0], d[1], pageSize) }
-          : i,
-      ),
-    );
-  }
-
-  const option = (o: FieldOption) => {
-    const active = armed?.source === o.source;
-    const color = KIND_COLOR[fieldKind(o.source)];
-    return (
-      <UnstyledButton
-        key={o.source}
-        onClick={() => {
-          setSelected(null);
-          setArmed(active ? null : o);
-        }}
-        px="xs"
-        py={6}
-        style={{
-          borderRadius: "var(--mantine-radius-sm)",
-          background:
-            focusSource === o.source
-              ? `var(--mantine-color-${color}-light)`
-              : undefined,
-        }}
-      >
-        <Group gap="xs" wrap="nowrap">
-          <Box
-            w={8}
-            h={8}
-            style={{
-              flexShrink: 0,
-              borderRadius: "50%",
-              background: `var(--mantine-color-${color}-filled)`,
-            }}
-          />
-          <Text size="sm" truncate>
-            {o.label}
-          </Text>
-        </Group>
-      </UnstyledButton>
-    );
-  };
-  const experimentValues = experiment
-    ? EXPERIMENT_KINDS.filter((kind) => experiment.fields[kind].length > 0)
-    : [];
 
   const pageCount = doc?.numPages ?? 0;
   return (
@@ -348,16 +195,15 @@ export function ReportFormEditor({
         onUploaded={() => {
           setPage(1);
           setDoc(null);
-          setLoadFailed(false);
-          setPdfVersion((v) => v + 1);
+          setPreviewVersion((v) => v + 1);
         }}
       />
       <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack gap="xs">
             <Group justify="space-between" mih={28}>
-              <Text size="sm" c={armed ? "blue" : "dimmed"}>
-                {armed ? t("placeHint", { label: armed.label }) : t("pickHint")}
+              <Text size="sm" c="dimmed">
+                {t("previewHint")}
               </Text>
               {pageCount > 1 && (
                 <Group gap={4}>
@@ -386,12 +232,7 @@ export function ReportFormEditor({
                 {t("loadError")}
               </Alert>
             ) : (
-              <Paper
-                withBorder
-                ref={frame}
-                pos="relative"
-                style={{ overflow: "hidden" }}
-              >
+              <Paper withBorder ref={frame} style={{ overflow: "hidden" }}>
                 {!doc && (
                   <Group justify="center" p="xl">
                     <Loader size="sm" />
@@ -399,178 +240,185 @@ export function ReportFormEditor({
                 )}
                 <canvas
                   ref={canvas}
-                  style={{
-                    display: "block",
-                    width,
-                    height: pageSize ? pageSize.height * scale : 0,
-                  }}
+                  style={{ display: "block", width, height: doc ? pageHeight : 0 }}
                 />
-                <Box
-                  pos="absolute"
-                  inset={0}
-                  onPointerDown={clickPage}
-                  style={{ cursor: armed ? "crosshair" : "default" }}
-                >
-                  {scale > 0 &&
-                    items
-                      .filter((i) => i.field.page === page)
-                      .map((item) => {
-                        const { field } = item;
-                        const isSelected = selected === item.key;
-                        const known = offered.has(field.source);
-                        const lit = field.source === focusSource;
-                        const color = known
-                          ? KIND_COLOR[fieldKind(field.source)]
-                          : "gray";
-                        return (
-                          <Box
-                            key={item.key}
-                            pos="absolute"
-                            left={field.x * scale}
-                            top={field.y * scale}
-                          >
-                            <Box
-                              tabIndex={0}
-                              role="button"
-                              aria-label={labelOf(field.source)}
-                              onPointerDown={(e) => startDrag(e, item)}
-                              onPointerMove={onDrag}
-                              onPointerUp={() => (drag.current = null)}
-                              onKeyDown={(e) => onChipKey(e, item)}
-                              onFocus={() => setSelected(item.key)}
-                              pos="absolute"
-                              bottom={0}
-                              style={{
-                                fontSize: TEXT_PT * scale,
-                                lineHeight: 1,
-                                whiteSpace: "nowrap",
-                                padding: "0 2px",
-                                cursor: "move",
-                                touchAction: "none",
-                                userSelect: "none",
-                                // Lit (picked in the list, or the same value as the
-                                // selected chip): filled in its colour.
-                                color: lit
-                                  ? "var(--mantine-color-white)"
-                                  : `var(--mantine-color-${color}-9)`,
-                                background: lit
-                                  ? `var(--mantine-color-${color}-filled)`
-                                  : known
-                                    ? `var(--mantine-color-${color}-light)`
-                                    : "repeating-linear-gradient(45deg, rgba(134,142,150,.15) 0 4px, transparent 4px 8px)",
-                                outline: `1px ${known ? "solid" : "dashed"} var(--mantine-color-${color}-${lit ? 9 : 6})`,
-                                outlineWidth: isSelected || lit ? 2 : 1,
-                              }}
-                            >
-                              {labelOf(field.source)}
-                              {isSelected && (
-                                <ActionIcon
-                                  size={16}
-                                  radius="xl"
-                                  color="red"
-                                  aria-label={t("remove", {
-                                    label: labelOf(field.source),
-                                  })}
-                                  onPointerDown={(e) => e.stopPropagation()}
-                                  onClick={() => remove(item.key)}
-                                  pos="absolute"
-                                  top={-18}
-                                  right={-10}
-                                >
-                                  <IconX size={12} />
-                                </ActionIcon>
-                              )}
-                            </Box>
-                            <Box
-                              pos="absolute"
-                              w={4}
-                              h={4}
-                              style={{
-                                borderRadius: "50%",
-                                transform: "translate(-50%, -50%)",
-                                background: `var(--mantine-color-${color}-7)`,
-                                pointerEvents: "none",
-                              }}
-                            />
-                          </Box>
-                        );
-                      })}
-                </Box>
               </Paper>
             )}
           </Stack>
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack gap="sm" pos="sticky" top={16}>
-            <Accordion
-              multiple
-              variant="separated"
-              defaultValue={["general", "experiment"]}
-            >
-              <Accordion.Item value="general">
-                <Accordion.Control>{t("general")}</Accordion.Control>
-                <Accordion.Panel>
-                  <Stack gap={2}>{general.map(option)}</Stack>
-                </Accordion.Panel>
-              </Accordion.Item>
-              <Accordion.Item value="experiment">
-                <Accordion.Control>{t("experiment")}</Accordion.Control>
-                <Accordion.Panel>
-                  {experiments.length === 0 ? (
-                    <Text size="sm" c="dimmed">
-                      {t("noExperiments")}
-                    </Text>
-                  ) : (
-                    <Stack gap="xs">
-                      <Select
-                        aria-label={t("experiment")}
-                        data={experiments.map((e) => ({
-                          value: e.id,
-                          label: e.name,
-                        }))}
-                        value={experimentId}
-                        onChange={setExperimentId}
-                        allowDeselect={false}
-                      />
-                      {experiment && experimentValues.length > 0 ? (
-                        experimentValues.map((kind) => (
-                          <Stack key={kind} gap={2}>
-                            <Text
-                              size="xs"
-                              fw={600}
-                              c="dimmed"
-                              tt="uppercase"
-                              px="xs"
-                            >
-                              {t(`kinds.${kind}`)}
-                            </Text>
-                            {experiment.fields[kind].map(option)}
-                          </Stack>
-                        ))
+          <Stack gap="md" pos="sticky" top={16}>
+            {status.kind === "error" && (
+              <Alert
+                color="red"
+                variant="light"
+                title={t("notSaved")}
+                style={{ whiteSpace: "pre-line" }}
+                withCloseButton
+                onClose={() => setStatus({ kind: "idle" })}
+              >
+                {status.message}
+              </Alert>
+            )}
+
+            {(!sampleShown || hidden.length > 0) && (
+              <Paper withBorder p="sm">
+                <Stack gap="xs">
+                  <Text size="sm" fw={600}>
+                    {t("notShownTitle")}
+                  </Text>
+                  {!sampleShown && (
+                    <Group justify="space-between" gap="xs" wrap="nowrap">
+                      <Text size="sm">{t("sampleNotShown")}</Text>
+                      <LinkButton href={samplesPath} size="compact-xs" variant="light">
+                        {t("showSample")}
+                      </LinkButton>
+                    </Group>
+                  )}
+                  {hidden.map((m) => (
+                    <Group key={m.id} justify="space-between" gap="xs" wrap="nowrap">
+                      <Text size="sm" truncate>
+                        {m.name}
+                      </Text>
+                      {printed(m.id) ? (
+                        <Text size="xs" c="teal" style={{ flexShrink: 0 }}>
+                          {t("readyToShow")}
+                        </Text>
                       ) : (
-                        <Text size="sm" c="dimmed">
-                          {t("noFields")}
+                        <Text size="xs" c="red" fw={600} style={{ flexShrink: 0 }}>
+                          {t("needsRow")}
                         </Text>
                       )}
-                    </Stack>
+                    </Group>
+                  ))}
+                  {hidden.length > 0 && (
+                    <LinkButton href={methodsPath} size="compact-sm" variant="light">
+                      {t("showMethods")}
+                    </LinkButton>
                   )}
-                </Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
-            <Text
-              size="sm"
-              c={status.kind === "error" ? "red" : "dimmed"}
-              style={{ whiteSpace: "pre-line" }}
-              aria-live="polite"
+                </Stack>
+              </Paper>
+            )}
+
+            <Paper withBorder p="sm">
+              <Stack gap="xs">
+                <Text size="sm" fw={600}>
+                  {t("results")}
+                </Text>
+                {methods.length === 0 ? (
+                  <Text size="sm" c="dimmed">
+                    {t("noExperiments")}
+                  </Text>
+                ) : (
+                  <>
+                    <Select
+                      aria-label={t("method")}
+                      data={methods.map((m) => ({ value: m.id, label: m.name }))}
+                      value={methodId}
+                      onChange={setMethodId}
+                      allowDeselect={false}
+                    />
+                    {method && method.results.length === 0 && (
+                      <Text size="sm" c="dimmed">
+                        {t("noResults")}
+                      </Text>
+                    )}
+                    {method?.results.map((result) => {
+                      const added = inTable(method.id, result);
+                      return (
+                        <UnstyledButton
+                          key={result}
+                          disabled={added}
+                          onClick={() => update((f) => addRow(f, method.id, result))}
+                          px="xs"
+                          py={6}
+                          style={{
+                            borderRadius: "var(--mantine-radius-sm)",
+                            background: added ? "var(--mantine-color-gray-light)" : undefined,
+                          }}
+                        >
+                          <Text size="sm" c={added ? "dimmed" : undefined} truncate>
+                            {added ? t("added", { result }) : `+ ${result}`}
+                          </Text>
+                        </UnstyledButton>
+                      );
+                    })}
+                  </>
+                )}
+              </Stack>
+            </Paper>
+
+            <Stack
+              gap="sm"
+              p="xs"
+              style={{
+                // flashes red when a refused change is undone, then fades
+                border: `1px solid ${flash ? "var(--mantine-color-red-filled)" : "transparent"}`,
+                transition: "border-color 1s ease-out",
+                borderRadius: "var(--mantine-radius-md)",
+              }}
             >
-              {status.kind === "error"
-                ? status.message
-                : status.kind === "saving"
-                  ? t("saving")
-                  : status.kind === "saved"
-                    ? t("saved")
-                    : null}
+              <Text size="sm" fw={600}>
+                {t("table")}
+              </Text>
+              {form.sections.length === 0 && (
+                <Text size="sm" c="dimmed">
+                  {t("emptyTable")}
+                </Text>
+              )}
+              {form.sections.map((section) => (
+                <Paper key={section.template} withBorder p="sm">
+                  <Stack gap={6}>
+                    <Text size="sm" fw={600}>
+                      {nameOf(section.template)}
+                    </Text>
+                    {section.rows.map((row) => (
+                      <Group key={row.result} gap={6} wrap="nowrap" align="flex-end">
+                        <TextInput
+                          label={row.result}
+                          placeholder={t("labelPlaceholder")}
+                          value={row.label ?? ""}
+                          onChange={(e) => {
+                            const label = e.currentTarget.value;
+                            update((f) => editRow(f, section.template, row.result, { label }));
+                          }}
+                          size="xs"
+                          style={{ flex: 1 }}
+                        />
+                        <TextInput
+                          aria-label={t("unit")}
+                          placeholder={t("unit")}
+                          value={row.unit ?? ""}
+                          onChange={(e) => {
+                            const unit = e.currentTarget.value;
+                            update((f) => editRow(f, section.template, row.result, { unit }));
+                          }}
+                          size="xs"
+                          w={72}
+                        />
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          aria-label={t("remove", { label: row.label || row.result })}
+                          onClick={() => update((f) => removeRow(f, section.template, row.result))}
+                          mb={2}
+                        >
+                          <IconX size={14} />
+                        </ActionIcon>
+                      </Group>
+                    ))}
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
+
+            <Text size="sm" c="dimmed" aria-live="polite">
+              {status.kind === "saving"
+                ? t("saving")
+                : status.kind === "saved"
+                  ? t("saved")
+                  : null}
             </Text>
           </Stack>
         </Grid.Col>

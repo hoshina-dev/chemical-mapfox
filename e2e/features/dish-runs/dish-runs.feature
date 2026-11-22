@@ -29,7 +29,7 @@ Feature: Dish runs in the lab workspace
     And a result should be reported for the accepted pair
     When I finish the experiment "ctx-dish-agree"
     Then ticket "ctx-dish-agree" should be in the "COMPLETED" stage
-    And sample_tracker should have stored a reported result for "ctx-dish-agree"
+    And experiment-manager should have stored a reported result for "ctx-dish-agree"
 
   Scenario: Dishes that disagree ask for another dish and block finishing
     Given a dish-run experiment "ctx-dish-disagree" whose first two dishes disagree

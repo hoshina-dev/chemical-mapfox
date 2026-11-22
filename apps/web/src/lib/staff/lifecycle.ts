@@ -19,13 +19,13 @@ import {
   publishReport,
   receiveTicket,
   reopenExperiment,
-  sampleTrackerMessage,
+  experimentManagerMessage,
   startExperiment,
-} from "@/lib/sample-tracker/client";
-import { collabRoomId, parseRoomId } from "@/lib/sample-tracker/mappers";
+} from "@/lib/experiment-manager/client";
+import { collabRoomId, parseRoomId } from "@/lib/experiment-manager/mappers";
 import { ACCEPTED_PAIR_CALC } from "@/lib/forms/dishFormula";
 
-// The staff ticket lifecycle on sample_tracker, used by the /internal server
+// The staff ticket lifecycle on experiment-manager, used by the /internal server
 // actions and the MCP tools. Callers must have checked the actor is staff.
 
 function refresh(ticketId: string) {
@@ -48,7 +48,7 @@ async function run(
   } catch (error) {
     logHandledError(error, { action: op, contextId: ticketId });
     const t = await getTranslations("staff.lifecycle");
-    return { success: false, error: sampleTrackerMessage(error, t(fallbackKey)) };
+    return { success: false, error: experimentManagerMessage(error, t(fallbackKey)) };
   }
 }
 
@@ -99,7 +99,7 @@ function parseExact(text: string): unknown {
 export interface FinishInputs {
   /** The stored experiment context (forms, formulas, values), numbers as stored. */
   experimentJson: string;
-  /** Sent back on finish: sample_tracker refuses if the values changed meanwhile. */
+  /** Sent back on finish: experiment-manager refuses if the values changed meanwhile. */
   version: number;
 }
 
@@ -129,7 +129,7 @@ export async function finishInputs(room: string): Promise<ActionResult<FinishInp
     };
   } catch (error) {
     logHandledError(error, { action: "finishInputs", contextId: room });
-    return { success: false, error: sampleTrackerMessage(error, t("finishFailed")) };
+    return { success: false, error: experimentManagerMessage(error, t("finishFailed")) };
   }
 }
 

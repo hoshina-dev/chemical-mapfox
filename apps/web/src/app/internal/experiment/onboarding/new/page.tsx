@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { NewTemplateFlow } from "@/components/experiment/builder/NewTemplateFlow";
 import { requireAdmin } from "@/lib/auth/dal";
-import { listSampleTypes } from "@/lib/sample-tracker/client";
+import { listSampleTypes } from "@/lib/experiment-manager/client";
 import { AsyncPanel } from "@/components/async/AsyncPanel";
 import { PanelSkeleton } from "@/components/async/PanelSkeleton";
 

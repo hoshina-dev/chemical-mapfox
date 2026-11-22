@@ -2,7 +2,7 @@ Feature: Collaborative lab-form editing
   Lab staff edit an experiment's lab form together in the staff workspace
   (/internal/experiment/{contextId}). The form is a live, multi-staff editor —
   backed by the real SSE + POST + Redis transport — but only while the
-  experiment is in progress. Edits autosave to sample_tracker; before the
+  experiment is in progress. Edits autosave to experiment-manager; before the
   experiment is started the form is read-only behind a "Start experiment" gate.
 
   # NOTE: collaborative editing uses an in-memory Redis mock (E2E_REDIS_MOCK=1)

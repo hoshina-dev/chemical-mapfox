@@ -71,7 +71,7 @@ async function MyExperimentDetailContent({
 
   // Ownership: a client may only view their own experiment. Fail closed —
   // if the ticket did not load, has no owner, or belongs to someone else,
-  // hide it entirely (as lib/sample-tracker/report-route.ts does).
+  // hide it entirely (as lib/experiment-manager/report-route.ts does).
   if (!ticket || !ticket.userId || ticket.userId !== session.userId) {
     notFound();
   }
