@@ -3,6 +3,7 @@
 import {
   ActionIcon,
   Alert,
+  Badge,
   Grid,
   Group,
   Loader,
@@ -281,9 +282,15 @@ export function ReportFormEditor({
                       <Text size="sm" truncate>
                         {m.name}
                       </Text>
-                      <Text size="xs" c={printed(m.id) ? "teal" : "dimmed"} style={{ flexShrink: 0 }}>
-                        {printed(m.id) ? t("readyToShow") : t("needsRow")}
-                      </Text>
+                      {printed(m.id) ? (
+                        <Text size="xs" c="teal" style={{ flexShrink: 0 }}>
+                          {t("readyToShow")}
+                        </Text>
+                      ) : (
+                        <Badge color="red" variant="filled" style={{ flexShrink: 0 }}>
+                          {t("needsRow")}
+                        </Badge>
+                      )}
                     </Group>
                   ))}
                   {hidden.length > 0 && (
