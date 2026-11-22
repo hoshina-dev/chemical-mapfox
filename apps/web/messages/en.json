@@ -727,6 +727,8 @@
     "editTitle": "Edit: {title}",
     "backToTemplates": "Back to templates",
     "saveFailedTitle": "Save failed",
+    "changeUndoneTitle": "This change cannot be saved, so it was undone",
+    "broughtBack": "Brought back: {fields}. Your other changes are kept.",
     "fixValidation": "Fix validation errors before saving.",
     "payloadForDebugging": "Payload (for debugging)",
     "livePreview": "Live preview",

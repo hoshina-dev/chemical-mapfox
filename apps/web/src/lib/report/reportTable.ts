@@ -131,10 +131,21 @@ export function rowsRemoved(
   form: ReportForm,
   after: unknown | null,
 ): string[] {
+  return removedRows(template, form, after).map((r) => r.label || r.result);
+}
+
+/** The printed results (calculation names) behind `rowsRemoved`. */
+export function resultsRemoved(
+  template: string,
+  form: ReportForm,
+  after: unknown | null,
+): string[] {
+  return removedRows(template, form, after).map((r) => r.result);
+}
+
+function removedRows(template: string, form: ReportForm, after: unknown | null) {
   const calculations = (after as StoredTemplate | null)?.calculations ?? {};
   const kept = new Set(Object.keys(calculations));
   const section = form.sections.find((s) => s.template === template);
-  return (section?.rows ?? [])
-    .filter((r) => !kept.has(r.result))
-    .map((r) => r.label || r.result);
+  return (section?.rows ?? []).filter((r) => !kept.has(r.result));
 }

@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 
 import { requireAdmin } from "@/lib/auth/dal";
 import { logHandledError } from "@/lib/log/handled";
+import { httpStatus } from "@/lib/log/serialize";
 import type { TemplateRef } from "@/lib/experiment/templates";
 import {
   createSampleType,
@@ -23,7 +24,8 @@ import { refreshOnboarding } from "@/lib/staff/onboarding";
 
 export type ActionResult<T> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  /** `status`: experiment-manager's HTTP status, when it refused the write. */
+  | { success: false; error: string; status?: number };
 
 interface TemplatePayload {
   meta: { title: string; description?: string };
@@ -102,6 +104,7 @@ export async function updateTemplateAction(
     return {
       success: false,
       error: errorMessage(error, t("saveTemplate")),
+      status: httpStatus(error),
     };
   }
 }

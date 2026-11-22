@@ -16,7 +16,7 @@ import { useForm } from "@mantine/form";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import {
   createTemplateAction,
@@ -30,7 +30,8 @@ import {
   reportFormPath,
 } from "@/lib/internal/routes";
 import type { ReportForm } from "@/lib/experiment-manager/client";
-import { rowsRemoved } from "@/lib/report/reportTable";
+import { resultsRemoved, rowsRemoved } from "@/lib/report/reportTable";
+import { restoreResults } from "@/lib/report/restoreResults";
 
 import { CalculationsEditor } from "./CalculationsEditor";
 import { CollapsiblePanel } from "./CollapsiblePanel";
@@ -38,6 +39,8 @@ import { DishRunEditor } from "./DishRunEditor";
 import { textProps } from "./fieldProps";
 import { SectionEditor } from "./SectionEditor";
 import { TemplatePreview } from "./TemplatePreview";
+
+const FLASH_MS = 2500;
 
 interface BuilderAppProps {
   initial: FormDraft;
@@ -68,6 +71,15 @@ export function BuilderApp({
   const [removedFromReport, setRemovedFromReport] = useState<string[]>([]);
   const [debugPayload, setDebugPayload] = useState<unknown>(null);
   const [isPending, startTransition] = useTransition();
+  // Like the report table: a refused change is undone, said in red, and the panels it
+  // touched flash red and fade.
+  const [undone, setUndone] = useState(false);
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!flash) return;
+    const timer = setTimeout(() => setFlash(false), FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [flash]);
 
   const form = useForm<FormDraft>({
     initialValues: initial,
@@ -84,6 +96,7 @@ export function BuilderApp({
       return;
     }
     setSaveError(null);
+    setUndone(false);
     setDebugPayload(null);
     setRemovedFromReport([]);
     const payload = { meta, template: parsed.data };
@@ -105,6 +118,20 @@ export function BuilderApp({
       if (!templateId || !lineageId) return;
       const result = await updateTemplateAction({ sampleId, templateId }, payload);
       if (!result.success) {
+        // Refused because the save takes printed results off the report (a method
+        // shown on the web, or one with finished experiments): put back only those,
+        // keep every other edit. (A 409 with a renamed method may be its name.)
+        const printed = resultsRemoved(templateId, reportForm, parsed.data);
+        if (result.status === 409 && printed.length > 0 && form.values.title.trim() === initial.title.trim()) {
+          const back = restoreResults(form.values, initial, printed);
+          if (back.restored.length > 0) {
+            form.setValues(back.draft);
+            setSaveError(`${result.error}\n${t("broughtBack", { fields: back.restored.join(", ") })}`);
+            setUndone(true);
+            setFlash(true);
+            return;
+          }
+        }
         setSaveError(result.error);
         setDebugPayload({ sampleId, templateId, lineageId, ...payload });
         return;
@@ -182,10 +209,19 @@ export function BuilderApp({
 
       <SectionEditor form={form} path="clientForm" defaultOpen={false} />
       <SectionEditor form={form} path="labForm" defaultOpen={false} />
-      <CollapsiblePanel title={t("dishRun.title")} subtitle={t("dishRun.subtitle")}>
-        <DishRunEditor form={form} />
-      </CollapsiblePanel>
-      <CalculationsEditor form={form} defaultOpen={false} />
+      <Stack
+        gap="md"
+        style={{
+          border: `1px solid ${flash ? "var(--mantine-color-red-filled)" : "transparent"}`,
+          transition: "border-color 1s ease-out",
+          borderRadius: "var(--mantine-radius-md)",
+        }}
+      >
+        <CollapsiblePanel title={t("dishRun.title")} subtitle={t("dishRun.subtitle")}>
+          <DishRunEditor form={form} />
+        </CollapsiblePanel>
+        <CalculationsEditor form={form} defaultOpen={false} />
+      </Stack>
 
       <Stack
         gap="xs"
@@ -216,7 +252,7 @@ export function BuilderApp({
           <Alert
             color="red"
             variant="light"
-            title={t("saveFailedTitle")}
+            title={undone ? t("changeUndoneTitle") : t("saveFailedTitle")}
             withCloseButton
             onClose={() => setSaveError(null)}
           >

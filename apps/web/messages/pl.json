@@ -727,6 +727,8 @@
     "editTitle": "Edycja: {title}",
     "backToTemplates": "Powrót do szablonów",
     "saveFailedTitle": "Zapisywanie nie powiodło się",
+    "changeUndoneTitle": "Tej zmiany nie można zapisać, więc została cofnięta",
+    "broughtBack": "Przywrócono: {fields}. Pozostałe zmiany zostały zachowane.",
     "fixValidation": "Popraw błędy walidacji przed zapisaniem.",
     "payloadForDebugging": "Ładunek (do debugowania)",
     "livePreview": "Podgląd na żywo",
