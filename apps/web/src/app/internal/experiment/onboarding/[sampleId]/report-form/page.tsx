@@ -83,6 +83,9 @@ async function ReportFormContent({
             previewUrl={`${reportFormPath(sampleId)}/preview`}
             initialForm={storedForm(sample.reportForm)}
             methods={methodResults(templates)}
+            sampleShown={sample.isVisibleOnWeb}
+            methodsPath={sampleOnboardingPath(sampleId)}
+            samplesPath={onboardingPath()}
           />
         ) : (
           <>

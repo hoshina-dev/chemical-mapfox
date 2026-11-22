@@ -19,6 +19,7 @@ import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useEffect, useRef, useState } from "react";
 
 import { saveReportTableAction } from "@/app/actions/report-form";
+import { LinkButton } from "@/components/links";
 import type { ReportForm } from "@/lib/experiment-manager/client";
 import {
   addRow,
@@ -46,18 +47,31 @@ export function ReportFormEditor({
   previewUrl,
   initialForm,
   methods,
+  sampleShown,
+  methodsPath,
+  samplesPath,
 }: {
   sampleId: string;
   /** The report drawn with sample values from the saved table. */
   previewUrl: string;
   initialForm: ReportForm;
   methods: MethodResults[];
+  /** Whether clients can request this sample type at all. */
+  sampleShown: boolean;
+  /** Where this sample type's methods are shown or hidden. */
+  methodsPath: string;
+  /** Where sample types are shown or hidden. */
+  samplesPath: string;
 }) {
   const t = useTranslations("staff.reportForm");
   const [form, setForm] = useState<ReportForm>(initialForm);
   const [methodId, setMethodId] = useState(methods[0]?.id ?? null);
   const method = methods.find((m) => m.id === methodId) ?? null;
   const nameOf = (id: string) => methods.find((m) => m.id === id)?.name ?? id;
+  // Methods clients cannot request yet; one with a row in the table may be shown.
+  const hidden = methods.filter((m) => !m.shown);
+  const printed = (template: string) =>
+    form.sections.some((s) => s.template === template && s.rows.length > 0);
   const inTable = (template: string, result: string) =>
     form.sections.some(
       (s) => s.template === template && s.rows.some((r) => r.result === result),
@@ -246,6 +260,39 @@ export function ReportFormEditor({
               >
                 {status.message}
               </Alert>
+            )}
+
+            {(!sampleShown || hidden.length > 0) && (
+              <Paper withBorder p="sm">
+                <Stack gap="xs">
+                  <Text size="sm" fw={600}>
+                    {t("notShownTitle")}
+                  </Text>
+                  {!sampleShown && (
+                    <Group justify="space-between" gap="xs" wrap="nowrap">
+                      <Text size="sm">{t("sampleNotShown")}</Text>
+                      <LinkButton href={samplesPath} size="compact-xs" variant="light">
+                        {t("showSample")}
+                      </LinkButton>
+                    </Group>
+                  )}
+                  {hidden.map((m) => (
+                    <Group key={m.id} justify="space-between" gap="xs" wrap="nowrap">
+                      <Text size="sm" truncate>
+                        {m.name}
+                      </Text>
+                      <Text size="xs" c={printed(m.id) ? "teal" : "dimmed"} style={{ flexShrink: 0 }}>
+                        {printed(m.id) ? t("readyToShow") : t("needsRow")}
+                      </Text>
+                    </Group>
+                  ))}
+                  {hidden.length > 0 && (
+                    <LinkButton href={methodsPath} size="compact-sm" variant="light">
+                      {t("showMethods")}
+                    </LinkButton>
+                  )}
+                </Stack>
+              </Paper>
             )}
 
             <Paper withBorder p="sm">

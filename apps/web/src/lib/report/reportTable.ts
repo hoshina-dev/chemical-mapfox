@@ -12,6 +12,8 @@ export interface MethodResults {
   id: string;
   name: string;
   results: string[];
+  /** Shown on the web: clients can request it. */
+  shown: boolean;
 }
 
 interface StoredTemplate {
@@ -43,6 +45,7 @@ export function methodResults(templates: ExperimentTemplate[]): MethodResults[] 
     id: t.id,
     name: t.name,
     results: printableResults(t.template),
+    shown: t.isVisibleOnWeb,
   }));
 }
 
