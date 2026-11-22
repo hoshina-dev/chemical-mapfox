@@ -241,6 +241,8 @@ export function ReportFormEditor({
                 variant="light"
                 title={t("notSaved")}
                 style={{ whiteSpace: "pre-line" }}
+                withCloseButton
+                onClose={() => setStatus({ kind: "idle" })}
               >
                 {status.message}
               </Alert>
