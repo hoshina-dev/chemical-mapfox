@@ -3,7 +3,6 @@
 import {
   ActionIcon,
   Alert,
-  Badge,
   Grid,
   Group,
   Loader,
@@ -287,9 +286,9 @@ export function ReportFormEditor({
                           {t("readyToShow")}
                         </Text>
                       ) : (
-                        <Badge color="red" variant="filled" style={{ flexShrink: 0 }}>
+                        <Text size="xs" c="red" fw={600} style={{ flexShrink: 0 }}>
                           {t("needsRow")}
-                        </Badge>
+                        </Text>
                       )}
                     </Group>
                   ))}
