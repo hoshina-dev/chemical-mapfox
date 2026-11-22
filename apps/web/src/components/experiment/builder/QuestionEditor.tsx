@@ -556,13 +556,22 @@ function TypeSpecificFields({
     case "repeatable-group": {
       const childrenPath = `${path}.config.questions`;
       const children = question.config.questions;
+      // A dish run's group repeats Max dishes times (copied on save), so it has no count of its own.
+      const dishRun = form.values.labForm.dishRun;
+      const dishGroup = path.startsWith("labForm.") && dishRun?.group === question.id;
       return (
         <>
-          <NumberInput
-            label={t("question.repetitionCount")}
-            min={1}
-            {...numberProps(form, `${path}.config.count`)}
-          />
+          {dishGroup ? (
+            <Text size="sm" c="dimmed">
+              {t("question.repetitionCountFromDishRun", { count: dishRun.maxDishes })}
+            </Text>
+          ) : (
+            <NumberInput
+              label={t("question.repetitionCount")}
+              min={1}
+              {...numberProps(form, `${path}.config.count`)}
+            />
+          )}
           <TextInput
             label={t("question.itemLabel")}
             {...textProps(form, `${path}.config.itemLabel`)}

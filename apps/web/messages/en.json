@@ -783,6 +783,7 @@
       "stepSeconds": "Step (seconds)",
       "maxTags": "Max tags",
       "repetitionCount": "Repetition count",
+      "repetitionCountFromDishRun": "Repeats {count} times: set by \"Most dishes allowed\" in the dish run.",
       "itemLabel": "Item label",
       "noChildQuestions": "No child questions yet.",
       "addChildQuestion": "Add child question",

@@ -783,6 +783,7 @@
       "stepSeconds": "Krok (sekundy)",
       "maxTags": "Maks. liczba tagów",
       "repetitionCount": "Liczba powtórzeń",
+      "repetitionCountFromDishRun": "Powtarza się {count} razy: ustawia to pole „Najwięcej dozwolonych naczynek” w analizie naczynek.",
       "itemLabel": "Etykieta elementu",
       "noChildQuestions": "Brak pytań podrzędnych.",
       "addChildQuestion": "Dodaj pytanie podrzędne",

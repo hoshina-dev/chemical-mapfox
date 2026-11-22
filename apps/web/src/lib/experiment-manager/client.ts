@@ -1,5 +1,6 @@
 import "server-only";
 
+import { withDishCount } from "@/lib/forms/dishCount";
 import {
   type DownstreamInit,
   DownstreamTimeoutError,
@@ -231,18 +232,20 @@ export interface TemplateBody {
   template: Record<string, unknown>;
 }
 
+// Every template save goes through these two: the dish group's count always follows
+// Max dishes (see withDishCount).
 export const createTemplate = (actor: string, sampleTypeId: string, body: TemplateBody) =>
   stFetch<ExperimentTemplate>(`/sample-types/${sampleTypeId}/experiment-templates`, {
     actor,
     method: "POST",
-    body: json(body),
+    body: json({ ...body, template: withDishCount(body.template) }),
   });
 
 export const updateTemplate = (actor: string, id: string, body: TemplateBody) =>
   stFetch<ExperimentTemplate>(`/experiment-templates/${id}`, {
     actor,
     method: "PUT",
-    body: json(body),
+    body: json({ ...body, template: withDishCount(body.template) }),
   });
 
 export const deleteTemplate = (actor: string, id: string) =>
