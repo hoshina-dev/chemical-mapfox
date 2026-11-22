@@ -21,8 +21,7 @@ import { useTranslations } from "next-intl";
 import type { FormDraft } from "@/lib/builder";
 
 import { CollapsiblePanel } from "./CollapsiblePanel";
-import { CompactFormulaEditor } from "./CompactFormulaEditor";
-import { MonacoFormulaEditor } from "./MonacoFormulaEditor";
+import { FormulaEditor } from "./FormulaEditor";
 
 interface CalculationsEditorProps {
   form: UseFormReturnType<FormDraft>;
@@ -59,9 +58,10 @@ function CalcRow({
         {...nameProps}
       />
       <Input.Wrapper label={isFirst ? t("formula") : undefined} style={{ flex: 2 }}>
-        <CompactFormulaEditor
+        <FormulaEditor
           value={formula}
           onChange={onFormulaChange}
+          label={t("formula")}
           onExpand={onExpand}
           placeholder={t("formulaPlaceholder")}
         />
@@ -164,8 +164,9 @@ export function CalculationsEditor({ form, defaultOpen }: CalculationsEditorProp
       >
         {activeIndex !== null && activeCalc && (
           <Stack gap="sm">
-            <MonacoFormulaEditor
+            <FormulaEditor
               value={activeCalc.formula}
+              label={t("formula")}
               onChange={(value) =>
                 form.setFieldValue(`calculations.${activeIndex}.formula`, value)
               }

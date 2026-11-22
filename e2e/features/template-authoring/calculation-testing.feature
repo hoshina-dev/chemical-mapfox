@@ -22,6 +22,17 @@ Feature: Testing calculation formulas during onboarding
     And the calculation "scaled" should show the result "50"
     And the calculation report should say "All 2 formulas evaluated successfully"
 
+  Scenario: Editing an indented formula in the expanded editor
+    When I add a calculation "total" with formula "0"
+    And I update the formula for "total" in the expanded editor to:
+      """
+      if 2 < 3:
+          result = 5
+      """
+    And I open the live preview
+    And I run the draft calculations
+    Then the calculation "total" should show the result "5"
+
   Scenario: A typo in a question id is reported without hiding the working formulas
     When I add a calculation "good" with formula "4 * 5"
     And I add a calculation "typo" with formula "values['sample_mas'] * 2"

@@ -10,9 +10,6 @@ import {
 } from "../support/interactions.js";
 import type { ChemFoxWorld } from "../support/world.js";
 
-/** Placeholders are the only stable handles on these two controls: the name
- * input's label ("Name") collides with the template metadata field, and the
- * formula editor is a `react-simple-code-editor` textarea with no label. */
 const CALC_NAME_PLACEHOLDER = "totalCost";
 const FORMULA_PLACEHOLDER = "mean(values['reading_a'])";
 
@@ -43,6 +40,31 @@ When(
     );
     await setInput(this, calcNameInputs(this).nth(existing), name);
     await setInput(this, formulaInputs(this).nth(existing), formula);
+  },
+);
+
+When(
+  "I update the formula for {string} in the expanded editor to:",
+  async function (this: ChemFoxWorld, name: string, formula: string) {
+    const drawer = this.page.getByRole("dialog", {
+      name: `Edit formula: ${name}`,
+    });
+    await clickUntil(
+      this,
+      this.page.getByRole("button", { name: "Open code editor" }),
+      () => drawer.isVisible(),
+    );
+    await setInput(
+      this,
+      drawer.getByRole("textbox", { name: "Formula" }),
+      formula,
+    );
+    await clickUntil(
+      this,
+      drawer.getByRole("button", { name: "Done" }),
+      async () => !(await drawer.isVisible()),
+    );
+    assert.equal(await formulaInputs(this).inputValue(), formula);
   },
 );
 

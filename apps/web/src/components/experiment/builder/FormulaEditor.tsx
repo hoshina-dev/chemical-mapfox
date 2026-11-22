@@ -1,6 +1,7 @@
 "use client";
 
-import { Anchor } from "@mantine/core";
+import { useId } from "react";
+import { Anchor, VisuallyHidden } from "@mantine/core";
 import Prism from "prismjs";
 import "prismjs/components/prism-python";
 import Editor from "react-simple-code-editor";
@@ -9,29 +10,35 @@ const MAX_LINES = 8;
 const LINE_HEIGHT = 20;
 const PADDING = 8;
 
-interface CompactFormulaEditorProps {
+interface FormulaEditorProps {
   value: string;
   onChange: (value: string) => void;
-  onExpand: () => void;
+  label: string;
+  onExpand?: () => void;
   placeholder?: string;
 }
 
-export function CompactFormulaEditor({
+export function FormulaEditor({
   value,
   onChange,
+  label,
   onExpand,
   placeholder,
-}: CompactFormulaEditorProps) {
+}: FormulaEditorProps) {
+  const inputId = useId();
   const lineCount = value ? value.split("\n").length : 1;
-  const hasMore = lineCount > MAX_LINES;
+  const hasMore = onExpand && lineCount > MAX_LINES;
 
   return (
     <div style={{ width: "100%" }}>
+      <VisuallyHidden>
+        <label htmlFor={inputId}>{label}</label>
+      </VisuallyHidden>
       <div
         className="formula-code"
         style={{
           position: "relative",
-          maxHeight: MAX_LINES * LINE_HEIGHT + PADDING * 2,
+          maxHeight: onExpand ? MAX_LINES * LINE_HEIGHT + PADDING * 2 : "60vh",
           overflowY: "auto",
           border: "1px solid var(--mantine-color-gray-4)",
           borderRadius: "var(--mantine-radius-sm)",
@@ -39,20 +46,20 @@ export function CompactFormulaEditor({
         }}
       >
         <Editor
+          textareaId={inputId}
           value={value}
           onValueChange={onChange}
           highlight={(code) =>
-            Prism.languages.python
-              ? Prism.highlight(code, Prism.languages.python, "python")
-              : code
+            Prism.highlight(code, Prism.languages.python ?? {}, "python")
           }
           padding={PADDING}
           placeholder={placeholder}
+          tabSize={onExpand ? 2 : 4}
           style={{
             fontFamily: "var(--mantine-font-family-monospace)",
             fontSize: 13,
             lineHeight: `${LINE_HEIGHT}px`,
-            minHeight: LINE_HEIGHT + PADDING * 2,
+            minHeight: onExpand ? LINE_HEIGHT + PADDING * 2 : "60vh",
           }}
         />
         {hasMore && (
