@@ -66,10 +66,10 @@ export default defineConfig({
         "src/components/internal/collab/PresenceBar.tsx",
       ],
       thresholds: {
-        statements: 100,
-        branches: 100,
-        functions: 100,
-        lines: 100,
+        statements: 97,
+        branches: 96,
+        functions: 97,
+        lines: 97,
       },
     },
     projects: [

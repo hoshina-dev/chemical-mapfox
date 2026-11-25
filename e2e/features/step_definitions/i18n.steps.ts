@@ -64,13 +64,39 @@ When(
     // Wait for client hydration — selecting too early changes the DOM value
     // without firing the React onChange that persists NEXT_LOCALE.
     await waitForHydration(switcher);
-    await switcher.selectOption(locale);
-    // setLocaleAction + router.refresh(); <html lang> updates with the locale.
-    await this.page.waitForFunction(
-      (next) => document.documentElement.lang === next,
-      locale,
-      { timeout: 15_000 },
-    );
+    const htmlLangIs = (timeout: number) =>
+      this.page
+        .waitForFunction(
+          (next) => document.documentElement.lang === next,
+          locale,
+          { timeout },
+        )
+        .then(
+          () => true,
+          () => false,
+        );
+    // On CI a change event sometimes never reaches onChange even after the
+    // hydration check. The cookie shows whether setLocaleAction ran: if it
+    // did, only the refresh is slow; if not, select again.
+    for (let attempt = 1; ; attempt += 1) {
+      await switcher.selectOption(locale);
+      // setLocaleAction + router.refresh(); <html lang> updates with the locale.
+      if (await htmlLangIs(5_000)) break;
+      const cookie = (await this.context.cookies()).find(
+        (c) => c.name === LOCALE_COOKIE,
+      );
+      if (cookie?.value === locale) {
+        assert.ok(
+          await htmlLangIs(15_000),
+          `<html lang> never became ${locale}`,
+        );
+        break;
+      }
+      assert.ok(
+        attempt < 3,
+        `Switching the UI language to ${locale} had no effect`,
+      );
+    }
     assert.equal(await languageSwitcher(this.page).inputValue(), locale);
   },
 );
